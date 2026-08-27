@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#b9dcf4" />
+<title>Latchlings</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <main id="home" class="screen active">
+    <div class="topbar card">
+      <div class="logo">Latchlings<small></small></div><div class="spacer"></div>
+      <div class="pill"><span id="homeStars">0</span><span>stars</span></div>
+      <button class="iconbtn" id="settingsBtn" aria-label="Settings"></button>
+    </div>
+    <div class="home-main">
+      <section class="hero card">
+        <h1>Latchlings</h1>
+        <p>Plan the route. Use the board. Snap every Latchling into the right nest.</p>
+        <div class="island" aria-hidden="true"><div class="island-base"></div><div class="home-house"></div><div class="hero-latch one"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch two"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch three"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div></div>
+        <button class="primary-btn" id="playBtn">Play</button>
+      </section>
+      <div class="home-secondary"><button class="secondary-btn" id="dailyBtn">Daily Puzzle<br><small>Practice board</small></button><button class="secondary-btn" id="levelSelectBtn">Level Select<br><small>80 handcrafted boards</small></button></div>
+    </div>
+    <nav class="bottom-tabs card"><button class="tab active" data-nav="home">Home</button><button class="tab" data-nav="play">Play</button><button class="tab" data-nav="levels">Levels</button><button class="tab" data-nav="about">Rules</button></nav>
+  </main>
+
+  <main id="levels" class="screen">
+    <div class="topbar card"><button class="iconbtn" id="levelsBack" aria-label="Back"></button><div class="game-title" style="font-size:23px">Level Select</div><div class="spacer"></div></div>
+    <div id="chapterHead" class="chapter-head card"></div>
+    <div id="chapterNav" class="chapter-nav"></div>
+    <div id="levelGrid" class="level-grid card"></div>
+    <div class="level-footer"><button class="secondary-btn" id="resetProgressBtn">Reset Progress</button><button class="secondary-btn" id="continueBtn">Continue</button></div>
+  </main>
+
+  <main id="game" class="screen">
+    <div class="topbar card game-top"><div class="logo">Latchlings<small></small></div><div class="game-title" id="levelTitle">Level 1</div><div class="moves-box"><span>Moves left</span><strong id="movesLeft">0</strong></div><button class="iconbtn" id="pauseBtn" aria-label="Pause"></button></div>
+    <div class="mechanic-note" id="mechanicNote"></div>
+    <div class="board-wrap"><div class="board" id="board"><div class="piece-layer" id="pieceLayer"></div></div></div>
+    <div class="controls"><button class="side-action" id="resetLevelBtn"><span id="resetIcon"></span><span>Reset</span></button><div class="dpad" aria-label="Directional pad">
+<svg class="dpad-base" viewBox="0 0 240 240" aria-hidden="true"><path class="dpad-edge" d="M100 10 H140 Q160 10 160 30 V70 Q160 80 170 80 H210 Q230 80 230 100 V140 Q230 160 210 160 H170 Q160 160 160 170 V210 Q160 230 140 230 H100 Q80 230 80 210 V170 Q80 160 70 160 H30 Q10 160 10 140 V100 Q10 80 30 80 H70 Q80 80 80 70 V30 Q80 10 100 10 Z"/></svg>
+<svg class="dpad-rocker" id="dpadRocker" viewBox="0 0 240 240" aria-hidden="true">
+<defs><linearGradient id="rockerFace" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff9ef"/><stop offset="46%" stop-color="#f4e2c4"/><stop offset="100%" stop-color="#e4c18e"/></linearGradient><radialGradient id="rockerShine" cx="35%" cy="27%" r="72%"><stop offset="0%" stop-color="#ffffff"/><stop offset="62%" stop-color="#ffffff" stop-opacity=".18"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs>
+<path class="dpad-face" d="M100 10 H140 Q160 10 160 30 V70 Q160 80 170 80 H210 Q230 80 230 100 V140 Q230 160 210 160 H170 Q160 160 160 170 V210 Q160 230 140 230 H100 Q80 230 80 210 V170 Q80 160 70 160 H30 Q10 160 10 140 V100 Q10 80 30 80 H70 Q80 80 80 70 V30 Q80 10 100 10 Z"/><path class="dpad-shine" d="M100 10 H140 Q160 10 160 30 V70 Q160 80 170 80 H210 Q230 80 230 100 V140 Q230 160 210 160 H170 Q160 160 160 170 V210 Q160 230 140 230 H100 Q80 230 80 210 V170 Q80 160 70 160 H30 Q10 160 10 140 V100 Q10 80 30 80 H70 Q80 80 80 70 V30 Q80 10 100 10 Z"/><path class="dpad-inner" d="M100 10 H140 Q160 10 160 30 V70 Q160 80 170 80 H210 Q230 80 230 100 V140 Q230 160 210 160 H170 Q160 160 160 170 V210 Q160 230 140 230 H100 Q80 230 80 210 V170 Q80 160 70 160 H30 Q10 160 10 140 V100 Q10 80 30 80 H70 Q80 80 80 70 V30 Q80 10 100 10 Z"/>
+<path class="dpad-arrow" d="M103 66 120 49l17 17"/><path class="dpad-arrow" d="m67 103-17 17 17 17"/><path class="dpad-arrow" d="m173 103 17 17-17 17"/><path class="dpad-arrow" d="m103 174 17 17 17-17"/>
+</svg>
+<button class="dpad-hit up" data-dir="U" aria-label="Move up"></button><button class="dpad-hit left" data-dir="L" aria-label="Move left"></button><button class="dpad-hit right" data-dir="R" aria-label="Move right"></button><button class="dpad-hit down" data-dir="D" aria-label="Move down"></button></div><button class="side-action" id="hintBtn"><span id="hintIcon"></span><span>Hint</span></button></div>
+  </main>
+
+  <main id="complete" class="screen">
+    <div class="home-main"><section class="hero card"><div class="logo" style="font-size:24px">Latchlings<small></small></div><h1 style="font-size:40px;margin-top:20px">Skyway Restored</h1><p>You cleared all 80 launch puzzles. The final board stays beaten; it does not loop back into itself.</p><div class="island" aria-hidden="true"><div class="island-base"></div><div class="home-house"></div><div class="hero-latch one"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch two"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch three"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div></div><button class="primary-btn" id="completeLevels">Level Select</button></section></div>
+  </main>
+</div>
+<div class="overlay" id="overlay"><div class="modal card" id="modal"></div></div>
+<div class="debug" id="debug"></div>
+<script src="levels.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
