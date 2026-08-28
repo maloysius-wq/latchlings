@@ -1,0 +1,57 @@
+/* chapter canvases */
+#app{--boardA:#fff4e1;--boardB:#e8d2b1;--boardEdge:#d4b78e;--cellA:rgba(255,249,236,.92);--cellB:rgba(238,218,190,.76);--cellEdge:rgba(190,158,118,.34);--themeAccent:#78b95a}
+.board{background:linear-gradient(var(--boardA),var(--boardB));border-color:var(--boardEdge);z-index:2}
+.cell{background:linear-gradient(145deg,var(--cellA),var(--cellB));border-color:var(--cellEdge);border-radius:10px}
+.board-wrap{position:relative;isolation:isolate}
+.theme-flourish{position:absolute;top:50%;width:78px;height:220px;transform:translateY(-50%);z-index:0;pointer-events:none;opacity:.48;filter:drop-shadow(0 8px 12px rgba(25,38,52,.16))}.theme-flourish.left{left:-29px}.theme-flourish.right{right:-29px;transform:translateY(-50%) scaleX(-1)}
+.mechanic-note{border-color:color-mix(in srgb,var(--themeAccent) 35%,#d6bf9e);box-shadow:0 4px 12px rgba(53,79,103,.10),inset 3px 0 0 var(--themeAccent)}
+
+/* 1 Sunpetal Meadows */
+#app.theme-ch1{--boardA:#fff3d6;--boardB:#e8d2a7;--boardEdge:#c49b68;--cellA:#fff9e8;--cellB:#efe0bd;--cellEdge:rgba(168,127,75,.34);--themeAccent:#73b755;background:radial-gradient(circle at 12% 22%,rgba(255,250,196,.92) 0 3%,transparent 9%),radial-gradient(circle at 84% 18%,rgba(255,255,255,.72) 0 4%,transparent 12%),linear-gradient(#9fd5f4 0 57%,#cde8b1 58% 73%,#8fc76c 74% 100%)}
+#app.theme-ch1 .theme-flourish{background:radial-gradient(circle at 32% 20%,#ffe78a 0 7px,#fff7c2 8px 13px,transparent 14px),radial-gradient(circle at 66% 47%,#f39b9d 0 6px,#fff0dd 7px 12px,transparent 13px),radial-gradient(circle at 38% 75%,#a9d77c 0 8px,transparent 9px),linear-gradient(87deg,transparent 45%,#689a55 46% 50%,transparent 51%)}
+#app.theme-ch1 .rock{background:linear-gradient(145deg,#c5b79c,#82745f 60%,#62584b)}
+
+/* 2 Lanternwood Grove */
+#app.theme-ch2{--boardA:#f5e8c8;--boardB:#c7aa79;--boardEdge:#6d6848;--cellA:#f9efcf;--cellB:#cdbb8e;--cellEdge:rgba(64,78,57,.42);--themeAccent:#e4a742;background:radial-gradient(circle at 18% 20%,rgba(255,193,75,.30),transparent 19%),radial-gradient(circle at 83% 34%,rgba(255,208,101,.22),transparent 17%),linear-gradient(#233e45,#355848 52%,#233c34)}
+#app.theme-ch2:before,#app.theme-ch2:after{background:linear-gradient(90deg,#162c2a 0 18%,transparent 19% 32%,#203832 33% 49%,transparent 50% 68%,#172c2b 69% 86%,transparent 87%);border-radius:0;filter:none;width:180px;height:100vh;opacity:.5;top:0}
+#app.theme-ch2 .theme-flourish{background:radial-gradient(circle at 50% 25%,#ffd77a 0 9px,rgba(255,180,61,.46) 10px 24px,transparent 25px),linear-gradient(90deg,transparent 46%,#755e43 47% 53%,transparent 54%)}
+#app.theme-ch2 .rock{background:linear-gradient(145deg,#889075,#4f5c50 62%,#34423a);box-shadow:inset 5px 6px rgba(193,221,142,.16),0 4px 6px rgba(19,31,28,.28)}
+
+/* 3 Lodestone Caverns */
+#app.theme-ch3{--boardA:#d9d5cf;--boardB:#9699a4;--boardEdge:#5c6677;--cellA:#ebe9e5;--cellB:#b4b7bf;--cellEdge:rgba(51,62,78,.42);--themeAccent:#69b8d8;background:radial-gradient(ellipse at 50% 15%,rgba(91,178,216,.18),transparent 34%),linear-gradient(#162536,#24364b 54%,#182535)}
+#app.theme-ch3 .theme-flourish{height:190px;background:linear-gradient(145deg,transparent 12%,#6fc4d5 13% 28%,transparent 29%),linear-gradient(35deg,transparent 39%,#8668c4 40% 55%,transparent 56%),linear-gradient(160deg,transparent 63%,#8ee0e4 64% 78%,transparent 79%);clip-path:polygon(50% 0,75% 34%,100% 50%,72% 65%,51% 100%,29% 65%,0 48%,27% 32%)}
+#app.theme-ch3 .rock{background:linear-gradient(145deg,#747e8d,#343f51 60%,#202b39)}
+#app.theme-ch3 .anchor{box-shadow:0 0 0 3px rgba(91,203,230,.2),0 0 16px rgba(91,203,230,.32),inset 0 1px rgba(255,255,255,.18)}
+
+/* 4 Masquerade Keep */
+#app.theme-ch4{--boardA:#eee0d7;--boardB:#bea7ad;--boardEdge:#765b72;--cellA:#f7eae1;--cellB:#d1bbc1;--cellEdge:rgba(83,57,78,.39);--themeAccent:#b78ad0;background:radial-gradient(circle at 50% 10%,rgba(227,211,255,.18),transparent 25%),linear-gradient(#211b35,#403052 55%,#27203c)}
+#app.theme-ch4 .theme-flourish{border:7px double #c5a46c;border-bottom:0;border-radius:70px 70px 0 0;height:185px;background:radial-gradient(ellipse at 50% 39%,rgba(207,163,90,.38),transparent 38%)}
+#app.theme-ch4 .gate.suit{border-color:#583f70;box-shadow:0 0 0 2px rgba(210,170,102,.26)}
+#app.theme-ch4 .rock{background:linear-gradient(145deg,#8a7588,#4d4057 60%,#302b3a)}
+
+/* 5 Prism Gardens */
+#app.theme-ch5{--boardA:#eef8ed;--boardB:#c7ddd0;--boardEdge:#7faaa2;--cellA:#f8fff6;--cellB:#d9eadc;--cellEdge:rgba(76,132,123,.31);--themeAccent:#65bfc9;background:radial-gradient(circle at 15% 18%,rgba(255,111,150,.24),transparent 17%),radial-gradient(circle at 84% 24%,rgba(77,161,246,.24),transparent 18%),radial-gradient(circle at 55% 80%,rgba(117,211,121,.27),transparent 24%),linear-gradient(#aee2e2,#dff3dc)}
+#app.theme-ch5 .theme-flourish{background:conic-gradient(from 12deg at 50% 50%,rgba(239,95,102,.75),rgba(246,183,55,.72),rgba(102,189,114,.72),rgba(76,143,244,.72),rgba(154,114,223,.72),rgba(239,95,102,.75));clip-path:polygon(50% 0,66% 33%,100% 40%,70% 59%,79% 100%,51% 72%,24% 100%,31% 61%,0 43%,35% 33%);opacity:.28}
+#app.theme-ch5 .rock{background:linear-gradient(145deg,#b9d2c7,#6c958d 62%,#466b66)}
+#app.theme-ch5 .gate.color{box-shadow:0 0 13px color-mix(in srgb,var(--gate-color) 55%,transparent)}
+
+/* 6 Copperline Junction */
+#app.theme-ch6{--boardA:#ead6bd;--boardB:#b99068;--boardEdge:#775034;--cellA:#f1dfc9;--cellB:#c49a72;--cellEdge:rgba(91,59,39,.42);--themeAccent:#bd6c39;background:repeating-linear-gradient(90deg,rgba(38,31,28,.12) 0 2px,transparent 2px 56px),linear-gradient(#65493b,#8f674c 55%,#554139)}
+#app.theme-ch6 .theme-flourish{border:10px dotted rgba(219,149,83,.55);border-radius:50%;height:150px;width:150px;background:radial-gradient(circle,transparent 0 32%,rgba(83,50,31,.3) 33% 37%,transparent 38%)}
+#app.theme-ch6 .rock{background:linear-gradient(145deg,#a87b5d,#6f4b37 62%,#4d362c)}
+#app.theme-ch6 .rail,#app.theme-ch6 .turner{background:linear-gradient(#fae9cf,#c79a68);border-color:#855c38}
+
+/* 7 Stormswitch Foundry */
+#app.theme-ch7{--boardA:#cfd1cf;--boardB:#777f86;--boardEdge:#3e4b55;--cellA:#e0e1df;--cellB:#949a9e;--cellEdge:rgba(36,48,58,.48);--themeAccent:#62b9df;background:radial-gradient(circle at 72% 16%,rgba(105,195,240,.2),transparent 20%),linear-gradient(#172533,#283a4c 52%,#182734)}
+#app.theme-ch7 .theme-flourish{background:linear-gradient(118deg,transparent 0 38%,#8bdbff 39% 45%,transparent 46% 58%,#d6f5ff 59% 63%,transparent 64%);filter:drop-shadow(0 0 12px #5ebfee);opacity:.45}
+#app.theme-ch7 .rock{background:linear-gradient(145deg,#77828c,#353f48 62%,#252e36)}
+#app.theme-ch7 .switch-tile{box-shadow:0 0 16px rgba(93,188,234,.35),var(--soft-shadow)}
+
+/* 8 Aurora Crown */
+#app.theme-ch8{--boardA:#ddd9e9;--boardB:#908da8;--boardEdge:#5c5f88;--cellA:#eeecf5;--cellB:#b2afc5;--cellEdge:rgba(53,56,91,.42);--themeAccent:#78e0d0;background:radial-gradient(circle at 18% 18%,rgba(123,238,209,.18),transparent 21%),radial-gradient(circle at 82% 27%,rgba(171,111,239,.22),transparent 22%),linear-gradient(135deg,#0d1831,#172b52 45%,#35295b 72%,#102e45)}
+#app.theme-ch8:before,#app.theme-ch8:after{background:radial-gradient(circle,#e8ffff 0 2px,transparent 3px) 0 0/38px 44px;filter:none;opacity:.42;width:260px;height:100vh;top:0}
+#app.theme-ch8 .theme-flourish{background:linear-gradient(165deg,transparent 10%,rgba(99,238,205,.55) 11% 24%,rgba(102,177,245,.5) 25% 39%,rgba(173,102,232,.5) 40% 54%,transparent 55%);filter:blur(1px) drop-shadow(0 0 12px rgba(111,226,221,.35));opacity:.55}
+#app.theme-ch8 .rock{background:linear-gradient(145deg,#737796,#333a5b 62%,#1b2440)}
+
+@media(max-width:460px){.theme-flourish{width:58px;opacity:.28}.theme-flourish.left{left:-24px}.theme-flourish.right{right:-24px}.range-chip{font-size:10px;padding:2px}.level-global{display:none}}
+@media(prefers-reduced-motion:reduce){.face,.eyes,.mouth,.win-star{animation:none!important}}
