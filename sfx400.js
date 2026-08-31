@@ -196,6 +196,7 @@
     const id = button.id || '';
     if (['levelsBack', 'rulesClose', 'settingsClose', 'cancelReset', 'resumeBtn'].includes(id)) return 'uiBack';
     if (['settingsBtn', 'pauseBtn'].includes(id) || button.dataset.nav === 'about') return 'uiOpen';
+    if (id === 'nextLevelBtn' && button.textContent.trim() === 'Finish') return null;
     if (['confirmReset', 'nextLevelBtn'].includes(id)) return 'uiConfirm';
     return 'uiTap';
   }
