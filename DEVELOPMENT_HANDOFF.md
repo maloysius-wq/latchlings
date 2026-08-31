@@ -29,6 +29,45 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-08-31 — Full licensed sound-effects pass
+
+**Status: IN PROGRESS**
+
+**User request:** Perform a full audit of Latchlings and implement high-quality real sound effects anywhere meaningful. Explicit examples include button/menu taps, selecting different Latchlings, continuous Latchling movement, and the endpoint/impact at the end of a snap. Zero procedurally generated sounds are allowed. All shipped effects must be sourced audio with licensing suitable for the game, and required attribution/provenance must be preserved.
+
+**Audit / implementation plan:**
+
+1. Audit every active interaction and game-state transition in `index.html`, `game400-a.js`, `game400-b.js`, and `music400.js` to define a restrained sonic vocabulary rather than attaching one generic click everywhere.
+2. Search reputable CC/CC0 game-audio sources. Prefer CC0 packs from established creators where the sound quality fits. Reject NC/restrictive licenses and preserve attribution for any CC BY assets.
+3. Build a permanent `SFX_CREDITS.md` containing creator, source pack/page, original filenames where available, license, license URL, and any required attribution text.
+4. Import all chosen source audio into `assets/sfx/` as local repository assets. No runtime hotlinks. No Web Audio oscillators, synthesized beeps, generated tones, procedural variation, or code-generated samples.
+5. Implement a dedicated `sfx400.js` controller with a small preloaded audio pool so rapid UI/board effects may overlap naturally without clipping the music controller. Keep SFX and music preferences separate.
+6. Planned event map, subject to audit refinement:
+   - quiet UI tap / menu navigation;
+   - modal open/close or back/confirm distinction where useful;
+   - direct Latchling selection and center-cycle selection;
+   - valid D-pad press / move launch;
+   - one continuous magnetic travel sound per snap, duration-aligned to the existing fluid movement animation rather than cell-by-cell sounds;
+   - endpoint families for edge/rock/other-Latchling/anchor/closed door/gate/rail stops where audible differentiation improves readability;
+   - invalid/no-movement bump;
+   - nest capture / successful latch;
+   - switch activation and linked door state change;
+   - turner/rail/gate pass cues only if they remain subtle and do not create audio clutter;
+   - reset, hint, pause/resume and progress-reset confirmation as appropriate;
+   - level clear, star/result reveal, out-of-moves, and campaign completion.
+7. Preserve the core rule that movement is one continuous magnetic snap. SFX must reinforce that physical model, never imply cell-by-cell hopping.
+8. Add a Settings SFX On/Off control using localStorage without adding permanent top-bar clutter. Respect first-gesture browser audio restrictions.
+9. Validate JS syntax, every referenced asset, event wiring, no procedural-audio code, reasonable polyphony, no unintended duplicate UI taps, Pages deployment, and live asset availability.
+10. Update this handoff to COMPLETED/PARTIAL/BLOCKED with final sound map, sources/licenses, files, commits, validation, deployment, and remaining risks.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, new `SFX_CREDITS.md`, new `assets/sfx/*`, new `sfx400.js`, `index.html`, and targeted event hooks in `game400-a.js` / `game400-b.js` where semantic gameplay events cannot be inferred reliably from DOM clicks alone. Existing `music400.js` should remain conceptually separate except Settings-modal coexistence.
+
+**Validation plan:** repository-backed syntax/reference checks; confirm zero oscillator/procedural sample generation; verify selection, move-start/travel/end, invalid move, capture, switch/door, modal/UI and result events; make sure movement SFX follows one continuous snap; verify SFX toggle persistence; run/inspect GitHub Pages deployment; preserve the known missing `campaign400-3.js` issue as unrelated open work.
+
+**Deployment:** stage assets and controller first, update active runtime hooks carefully, load `sfx400.js` from `index.html` only after its referenced files exist, then wait for GitHub Pages `completed / success` and verify the published asset/controller paths.
+
+---
+
 ### 2026-08-31 — Add licensed game music
 
 **Status: COMPLETED**
