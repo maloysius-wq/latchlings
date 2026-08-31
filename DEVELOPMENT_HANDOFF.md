@@ -29,6 +29,27 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-08-31 — SFX timing and softness tuning
+
+**Status: IN PROGRESS**
+
+**User feedback / goal:** Keep the current magnetic whoosh character, but make short snaps actually expose enough of the recording to hear it. Determine whether leading silence is being clipped. Make every ordinary movement collision/end-stop use the same soft wall-edge sound instead of separate rock/anchor/blocked-square impacts. Replace both the level-win cue and the Continue/Next Level confirmation cue with softer, cuter pre-recorded sounds. Preserve the zero-procedural-audio rule.
+
+**Implementation plan:**
+
+1. Measure the existing three movement WAVs for leading silence/low-level attack and total duration. If dead space exists, trim only silent/near-silent leading material from the checked-in recordings without pitch/time-stretch or synthesis.
+2. If necessary, slightly relax movement-stop playback behavior so a short snap does not chop off the useful attack, while keeping one recorded travel cue per continuous snap and preventing overlap into later moves.
+3. Route all non-capture ordinary endpoints (edge, another Latchling, rock, anchor, door, suit gate, color gate, rail) to the existing preferred `stop-soft.wav`. Retire specialized endpoint sounds from active runtime use rather than deleting provenance immediately.
+4. Search the existing CC0 Kenney interface library for gentler/cuter alternatives for `level-clear.wav` and `ui-confirm.wav`/Next Level. Import selected source recordings locally and update `SFX_CREDITS.md` with exact original filenames and purpose.
+5. Keep semantic sounds distinct so Continue/Next Level does not double-stack with level-clear.
+6. Validate active JS syntax, exact file references, WAV format, no procedural/pitch/playbackRate/randomization code, movement audio timing behavior, unified endpoint routing, and Pages deployment.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `sfx400.js`, `SFX_CREDITS.md`, selected files in `assets/sfx/`, and temporary self-removing GitHub workflows only if needed to inspect/replace binary audio. Core level data and puzzle semantics are out of scope.
+
+**Deployment plan:** stage/validate binary audio first, then update `sfx400.js`, run repository-backed validation, wait for GitHub Pages success, and finally mark this entry COMPLETED with exact source/timing decisions and commits.
+
+---
+
 ### 2026-08-31 — Full licensed sound-effects pass
 
 **Status: COMPLETED**
