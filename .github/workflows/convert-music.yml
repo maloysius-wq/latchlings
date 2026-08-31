@@ -18,11 +18,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install ffmpeg
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
       - name: Convert and normalize soundtrack for mobile browsers
         shell: bash
         run: |
           set -euo pipefail
-          command -v ffmpeg >/dev/null
           for f in assets/music/*.ogg; do
             out="${f%.ogg}.mp3"
             ffmpeg -y -loglevel error -i "$f" \
