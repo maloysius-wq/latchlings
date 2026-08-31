@@ -1,0 +1,114 @@
+name: Wire SFX Events
+
+on:
+  push:
+    paths:
+      - '.github/workflows/wire-sfx.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch semantic gameplay sound hooks
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          a = Path('game400-a.js')
+          text = a.read_text()
+          old = "function cycleLatchling(){if(animating)return;const order=clockwiseAvailable();if(order.length<2)return;const at=order.indexOf(selected);selected=order[(at<0?0:at+1)%order.length];renderPieces(LEVELS[currentLevel-1])}"
+          new = "function cycleLatchling(){if(animating)return;const order=clockwiseAvailable();if(order.length<2)return;const at=order.indexOf(selected);selected=order[(at<0?0:at+1)%order.length];renderPieces(LEVELS[currentLevel-1]);if(window.LatchlingsSFX)window.LatchlingsSFX.cycleLatchling()}"
+          assert text.count(old) == 1, 'cycleLatchling target changed'
+          text = text.replace(old, new)
+          old = "el.onclick=()=>{if(animating)return;selected=i;renderPieces(lev)};"
+          new = "el.onclick=()=>{if(animating||selected===i)return;selected=i;renderPieces(lev);if(window.LatchlingsSFX)window.LatchlingsSFX.selectLatchling()};"
+          assert text.count(old) == 1, 'renderPieces selection target changed'
+          text = text.replace(old, new)
+          a.write_text(text)
+
+          b = Path('game400-b.js')
+          text = b.read_text()
+          old = "function simulate(pi,d){const lev=LEVELS[currentLevel-1];if(!positions[pi])return null;let [r,c]=positions[pi],piece=lev.pieces[pi],cur=d,moved=false,path=[],reason='edge',localMask=doorMask;const occ=new Set(positions.map((p,i)=>i!==pi&&p?p.join(','):null).filter(Boolean));const maxSteps=lev.size*lev.size*4;let steps=0;while(steps++<maxSteps){const [dr,dc]=DIRV[cur],nr=r+dr,nc=c+dc;if(nr<0||nc<0||nr>=lev.size||nc>=lev.size){reason='edge';break}const key=nr+','+nc;if(findAt(lev.rocks,nr,nc)){reason='rock';break}if(occ.has(key)){reason='piece';break}const door=findAt(lev.doors,nr,nc);if(door&&!(localMask&(1<<door[2]))){reason='door';break}const sg=findAt(lev.suitGates,nr,nc);if(sg&&sg[2]!==piece.suit){reason='suitGate';break}const cg=findAt(lev.colorGates,nr,nc);if(cg&&cg[2]!==piece.color){reason='colorGate';break}const rail=findAt(lev.rails,nr,nc);if(rail&&rail[2]!==cur){reason='rail';break}r=nr;c=nc;moved=true;path.push([r,c]);const nest=lev.nests[pi];if(r===nest[0]&&c===nest[1]){reason='nest';return {r,c,path,reason,mask:localMask,capture:true}}const sw=findAt(lev.switches,r,c);if(sw)localMask^=(1<<sw[2]);if(findAt(lev.anchors,r,c)){reason='anchor';break}const turn=findAt(lev.turners,r,c);if(turn)cur=turn[2]==='CW'?CW[cur]:CCW[cur]}\nreturn moved?{r,c,path,reason,mask:localMask,capture:false}:null}"
+          new = "function simulate(pi,d){const lev=LEVELS[currentLevel-1];if(!positions[pi])return null;let [r,c]=positions[pi],piece=lev.pieces[pi],cur=d,moved=false,path=[],reason='edge',localMask=doorMask,events=[];const occ=new Set(positions.map((p,i)=>i!==pi&&p?p.join(','):null).filter(Boolean));const maxSteps=lev.size*lev.size*4;let steps=0;while(steps++<maxSteps){const [dr,dc]=DIRV[cur],nr=r+dr,nc=c+dc;if(nr<0||nc<0||nr>=lev.size||nc>=lev.size){reason='edge';break}const key=nr+','+nc;if(findAt(lev.rocks,nr,nc)){reason='rock';break}if(occ.has(key)){reason='piece';break}const door=findAt(lev.doors,nr,nc);if(door&&!(localMask&(1<<door[2]))){reason='door';break}const sg=findAt(lev.suitGates,nr,nc);if(sg&&sg[2]!==piece.suit){reason='suitGate';break}const cg=findAt(lev.colorGates,nr,nc);if(cg&&cg[2]!==piece.color){reason='colorGate';break}const rail=findAt(lev.rails,nr,nc);if(rail&&rail[2]!==cur){reason='rail';break}r=nr;c=nc;moved=true;path.push([r,c]);const nest=lev.nests[pi];if(r===nest[0]&&c===nest[1]){reason='nest';return {r,c,path,reason,mask:localMask,capture:true,events}}const sw=findAt(lev.switches,r,c);if(sw){localMask^=(1<<sw[2]);events.push({type:'switch',step:path.length})}if(findAt(lev.anchors,r,c)){reason='anchor';break}const turn=findAt(lev.turners,r,c);if(turn){events.push({type:'turn',step:path.length});cur=turn[2]==='CW'?CW[cur]:CCW[cur]}}\nreturn moved?{r,c,path,reason,mask:localMask,capture:false,events}:null}"
+          assert text.count(old) == 1, 'simulate target changed'
+          text = text.replace(old, new)
+
+          old = "const res=simulate(selected,d);if(!res){shakeSelected();return}animating=true;const pi=selected,from=positions[pi].slice(),el=document.querySelector(`.latchling[data-pi=\"${pi}\"]`);movesUsed++;doorMask=res.mask;await animateMove(el,from,res,lev.size);"
+          new = "const res=simulate(selected,d);if(!res){if(window.LatchlingsSFX)window.LatchlingsSFX.invalidMove();shakeSelected();return}animating=true;const pi=selected,from=positions[pi].slice(),el=document.querySelector(`.latchling[data-pi=\"${pi}\"]`);movesUsed++;doorMask=res.mask;if(window.LatchlingsSFX){window.LatchlingsSFX.startMove(res.path.length);window.LatchlingsSFX.scheduleRouteEvents(res.events,res.path.length)}await animateMove(el,from,res,lev.size);"
+          assert text.count(old) == 1, 'moveSelected target changed'
+          text = text.replace(old, new)
+
+          old = "function animateMove(el,from,res,n){return new Promise(resolve=>{if(!el){resolve();return}"
+          new = "function animateMove(el,from,res,n){return new Promise(resolve=>{if(!el){if(window.LatchlingsSFX)window.LatchlingsSFX.endMove(res.reason,res.capture);resolve();return}"
+          assert text.count(old) == 1, 'animateMove missing-element target changed'
+          text = text.replace(old, new)
+
+          old = "anim.onfinish=()=>{if(res.capture){"
+          new = "anim.onfinish=()=>{if(window.LatchlingsSFX)window.LatchlingsSFX.endMove(res.reason,res.capture);if(res.capture){"
+          assert text.count(old) == 1, 'animateMove finish target changed'
+          text = text.replace(old, new)
+
+          old = "function winLevel(){const lev=LEVELS[currentLevel-1],stars=starsFor(lev);"
+          new = "function winLevel(){if(window.LatchlingsSFX)window.LatchlingsSFX.levelClear();const lev=LEVELS[currentLevel-1],stars=starsFor(lev);"
+          assert text.count(old) == 1, 'winLevel target changed'
+          text = text.replace(old, new)
+
+          old = "document.getElementById('nextLevelBtn').onclick=()=>{closeModal();if(currentLevel===400)screen('complete');else startLevel(currentLevel+1)};"
+          new = "document.getElementById('nextLevelBtn').onclick=()=>{closeModal();if(currentLevel===400){if(window.LatchlingsSFX)window.LatchlingsSFX.campaignComplete();screen('complete')}else startLevel(currentLevel+1)};"
+          assert text.count(old) == 1, 'final campaign action target changed'
+          text = text.replace(old, new)
+
+          old = "function loseLevel(){modal(`"
+          new = "function loseLevel(){if(window.LatchlingsSFX)window.LatchlingsSFX.levelLose();modal(`"
+          assert text.count(old) == 1, 'loseLevel target changed'
+          text = text.replace(old, new)
+
+          old = "function showHint(){const lev=LEVELS[currentLevel-1];"
+          new = "function showHint(){if(window.LatchlingsSFX)window.LatchlingsSFX.hint();const lev=LEVELS[currentLevel-1];"
+          assert text.count(old) == 1, 'showHint target changed'
+          text = text.replace(old, new)
+          b.write_text(text)
+
+          s = Path('sfx400.js')
+          text = s.read_text()
+          old = "if (['confirmReset', 'nextLevelBtn'].includes(id)) return 'uiConfirm';"
+          new = "if (id === 'nextLevelBtn' && button.textContent.trim() === 'Finish') return null;\n    if (['confirmReset', 'nextLevelBtn'].includes(id)) return 'uiConfirm';"
+          assert text.count(old) == 1, 'SFX finish classifier target changed'
+          s.write_text(text.replace(old, new))
+          PY
+
+      - name: Validate JavaScript and non-procedural policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in game400-a.js game400-b.js music400.js sfx400.js; do node --check "$f"; done
+          if grep -E 'createOscillator|OscillatorNode|playbackRate|AudioContext|Math\.random' sfx400.js; then
+            echo 'Procedural or variable-pitch audio code detected in sfx400.js' >&2
+            exit 1
+          fi
+          grep -q "LatchlingsSFX.startMove" game400-b.js
+          grep -q "LatchlingsSFX.endMove" game400-b.js
+          grep -q "type:'switch'" game400-b.js
+          grep -q "type:'turn'" game400-b.js
+          grep -q "LatchlingsSFX.selectLatchling" game400-a.js
+          grep -q "LatchlingsSFX.cycleLatchling" game400-a.js
+
+      - name: Commit semantic hooks and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/wire-sfx.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game400-a.js game400-b.js sfx400.js .github/workflows/wire-sfx.yml
+          git commit -m 'Wire semantic sourced SFX events'
+          git pull --rebase origin main
+          git push origin HEAD:main
