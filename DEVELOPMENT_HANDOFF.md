@@ -31,40 +31,123 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-08-31 — Full licensed sound-effects pass
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
-**User request:** Perform a full audit of Latchlings and implement high-quality real sound effects anywhere meaningful. Explicit examples include button/menu taps, selecting different Latchlings, continuous Latchling movement, and the endpoint/impact at the end of a snap. Zero procedurally generated sounds are allowed. All shipped effects must be sourced audio with licensing suitable for the game, and required attribution/provenance must be preserved.
+**User request:** Perform a full audit of Latchlings and add high-quality real sound effects to meaningful UI/gameplay events, including menu/button taps, Latchling selection, continuous magnetic movement, and endpoint impacts. Zero procedurally generated sounds were allowed.
 
-**Audit / implementation plan:**
+#### Final source / license decision
 
-1. Audit every active interaction and game-state transition in `index.html`, `game400-a.js`, `game400-b.js`, and `music400.js` to define a restrained sonic vocabulary rather than attaching one generic click everywhere.
-2. Search reputable CC/CC0 game-audio sources. Prefer CC0 packs from established creators where the sound quality fits. Reject NC/restrictive licenses and preserve attribution for any CC BY assets.
-3. Build a permanent `SFX_CREDITS.md` containing creator, source pack/page, original filenames where available, license, license URL, and any required attribution text.
-4. Import all chosen source audio into `assets/sfx/` as local repository assets. No runtime hotlinks. No Web Audio oscillators, synthesized beeps, generated tones, procedural variation, or code-generated samples.
-5. Implement a dedicated `sfx400.js` controller with a small preloaded audio pool so rapid UI/board effects may overlap naturally without clipping the music controller. Keep SFX and music preferences separate.
-6. Planned event map, subject to audit refinement:
-   - quiet UI tap / menu navigation;
-   - modal open/close or back/confirm distinction where useful;
-   - direct Latchling selection and center-cycle selection;
-   - valid D-pad press / move launch;
-   - one continuous magnetic travel sound per snap, duration-aligned to the existing fluid movement animation rather than cell-by-cell sounds;
-   - endpoint families for edge/rock/other-Latchling/anchor/closed door/gate/rail stops where audible differentiation improves readability;
-   - invalid/no-movement bump;
-   - nest capture / successful latch;
-   - switch activation and linked door state change;
-   - turner/rail/gate pass cues only if they remain subtle and do not create audio clutter;
-   - reset, hint, pause/resume and progress-reset confirmation as appropriate;
-   - level clear, star/result reveal, out-of-moves, and campaign completion.
-7. Preserve the core rule that movement is one continuous magnetic snap. SFX must reinforce that physical model, never imply cell-by-cell hopping.
-8. Add a Settings SFX On/Off control using localStorage without adding permanent top-bar clutter. Respect first-gesture browser audio restrictions.
-9. Validate JS syntax, every referenced asset, event wiring, no procedural-audio code, reasonable polyphony, no unintended duplicate UI taps, Pages deployment, and live asset availability.
-10. Update this handoff to COMPLETED/PARTIAL/BLOCKED with final sound map, sources/licenses, files, commits, validation, deployment, and remaining risks.
+The entire shipping SFX palette is sourced from **Kenney** game-audio packs released under **Creative Commons CC0 1.0 Universal**. Attribution is not legally required, but permanent provenance is preserved in `SFX_CREDITS.md`, including the official Kenney source pack/pages, exact original filenames, transfer mirrors used for retrieval, CC0 license URL, and optional Kenney credit.
 
-**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, new `SFX_CREDITS.md`, new `assets/sfx/*`, new `sfx400.js`, `index.html`, and targeted event hooks in `game400-a.js` / `game400-b.js` where semantic gameplay events cannot be inferred reliably from DOM clicks alone. Existing `music400.js` should remain conceptually separate except Settings-modal coexistence.
+Source families:
 
-**Validation plan:** repository-backed syntax/reference checks; confirm zero oscillator/procedural sample generation; verify selection, move-start/travel/end, invalid move, capture, switch/door, modal/UI and result events; make sure movement SFX follows one continuous snap; verify SFX toggle persistence; run/inspect GitHub Pages deployment; preserve the known missing `campaign400-3.js` issue as unrelated open work.
+- Kenney **Interface Sounds** for UI, selection, hint, switch, capture and result cues.
+- Kenney **Impact Sounds** for physical snap endpoints.
+- Kenney **Foley Sounds / Woosh** for continuous magnetic travel.
 
-**Deployment:** stage assets and controller first, update active runtime hooks carefully, load `sfx400.js` from `index.html` only after its referenced files exist, then wait for GitHub Pages `completed / success` and verify the published asset/controller paths.
+All 21 shipping files are local in `assets/sfx/`. No runtime hotlinks are used.
+
+#### Final sound map / design rules
+
+The audit intentionally uses a restrained semantic vocabulary instead of making every state noisy.
+
+- Ordinary button/menu action: quiet UI tap.
+- Back/close/resume-style action: back cue.
+- Settings/pause/rules-style modal opening: open cue.
+- Positive UI confirmation: confirmation cue.
+- Direct Latchling selection: dedicated select cue, only when selection actually changes.
+- Center D-pad Latchling cycle: separate light tick cue.
+- Invalid/no-movement D-pad input: error/bump cue.
+- Valid magnetic movement: exactly **one continuous pre-recorded woosh per snap**, never one sound per grid cell.
+  - path length <= 2: `move-short.wav`
+  - path length 3–4: `move-medium.wav`
+  - path length >= 5: `move-long.wav`
+- Movement endpoint is sounded at the instant the primary travel animation reaches its destination, before the secondary bounce/capture flourish:
+  - board edge or another Latchling: `stop-soft.wav`
+  - rock: `stop-rock.wav`
+  - anchor: `stop-anchor.wav`
+  - closed door, mismatched suit/color gate, or wrong-direction rail: `stop-blocked.wav`
+  - matching nest: `capture.wav`
+- Switch activation: subtle `switch.wav` timed to the route step.
+- Turner: subtle `turn.wav` timed to the route bend.
+- Ordinary successful travel through gates/rails is intentionally silent to avoid sonic clutter.
+- Hint: dedicated question/hint cue.
+- Level clear: positive result cue.
+- Out of moves: restrained lose/error cue.
+- Level 400 completion: separate campaign-completion punctuation.
+- Generic UI taps are suppressed for semantic buttons such as D-pad directions, Latchling selection/cycle, and Hint so their specialized sound does not double-stack.
+- Level 400 `Finish` suppresses the generic confirmation cue so it does not stack with campaign completion.
+
+#### Zero-procedural guarantee
+
+`sfx400.js` uses standard HTML `Audio` playback of the checked-in source recordings. The final validator rejects procedural/variable audio code and confirmed that the SFX layer contains none of the following:
+
+- `AudioContext` / `webkitAudioContext`
+- oscillators / `createOscillator` / `OscillatorNode`
+- runtime-generated audio samples
+- `playbackRate` changes
+- pitch/detune changes
+- random sound/pitch variation
+
+The runtime may only choose a recorded file, set its volume, start/stop it, and use a small pool of identical recorded one-shots for safe overlap.
+
+#### Files and runtime changes
+
+- New `SFX_CREDITS.md` with permanent CC0/provenance record.
+- New `assets/sfx/` containing exactly 21 local mono PCM WAV files.
+- New `sfx400.js` controller with separate SFX state key `latchlings_sfx_enabled_v1`.
+- `game400-a.js` now emits semantic direct-selection and center-cycle events.
+- `game400-b.js` now emits invalid move, move start, in-route switch/turner, endpoint/capture, hint, level clear/loss and campaign-completion events.
+- `index.html` loads `sfx400.js` after `music400.js`.
+- Settings now receives a separate `Sound Effects: On / Off` control without adding persistent top-bar clutter. Music and SFX preferences remain independent.
+
+#### Audio processing
+
+Source recordings were transcoded only to normalize the delivery container/format, not to generate or creatively alter the sounds. All shipping SFX are:
+
+- mono
+- 44.1 kHz
+- 16-bit PCM WAV
+
+No pitch, playback-rate, randomization, synthesis, or procedural sample generation is performed.
+
+#### Important commits / workflow runs
+
+- `b381f514cd1bb65a8d73a017a7b1d1900f24699b` — start-of-work handoff recorded by the temporary handoff workflow.
+- `04a90ae53b683e5d4071163051aed61d8674f5f6` — add `SFX_CREDITS.md`.
+- `270c762fb7b52a3ff627f0097df2b7903e50adc0` — add `sfx400.js` sourced-audio controller.
+- `e4809aafe202bed3d604ae6fd984d15651f85b25` — create semantic SFX wiring workflow; workflow run `33441560859` completed successfully and self-removed after applying/validating the gameplay hooks.
+- Initial SFX import workflow run `33441306894` downloaded, converted and file-count-validated all 21 recordings but failed only at the final git push because `main` advanced in a narrow race window. This was not an asset/source failure.
+- `949f49f0b4d9745784faeacfdf9aeb46b7433258` — make SFX importer rebase/push retry-safe.
+- Workflow run `33441700503` — retry import completed successfully.
+- `b81bf270adddb2d7d1680b5fd9b282d7b96f049e` — bot commit adding all 21 final local SFX assets and removing importer.
+- `5cd1aecf4f216edc308633f1a2b52f6fd892950b` — enable `sfx400.js` in live `index.html`.
+- `38a1acb1c9f2482ab4ab66f48ed1ae4de26b4af9` — launch final repository-backed SFX validation.
+- Workflow run `33441908994` — all SFX validation steps completed successfully.
+- `7532721b563f1c43303a1ae5fb6d09bb32fb9e54` — validator cleanup completion commit; tree content matches the validated live runtime.
+- GitHub Pages run `33441927536` for `7532721b563f1c43303a1ae5fb6d09bb32fb9e54` completed successfully.
+
+#### Validation passed
+
+- Active JS syntax check passed for `game400-a.js`, `game400-b.js`, `music400.js`, and `sfx400.js`.
+- Exactly 21 SFX are referenced and exactly 21 WAV files ship; the filename sets match 1:1.
+- Every WAV was parsed and confirmed non-empty, mono, 44.1 kHz, 16-bit PCM.
+- Zero-procedural policy scan passed for oscillators, AudioContext synthesis, playback-rate/pitch/detune and random variation.
+- Semantic engine hook audit passed for direct selection, cycling, invalid input, move start, route events, move end, capture, hint, clear, lose and campaign completion.
+- Loader order check passed: `music400.js` then `sfx400.js`.
+- Fake-media playback harness passed exact semantic routing for selection, cycling, invalid moves, short/medium/long travel, rock/anchor/blocked endpoints and capture.
+- Import workflow and final validator both removed themselves after successful use.
+- Final GitHub Pages deployment completed successfully.
+
+#### Remaining listening/compatibility note
+
+The objective wiring, assets and deployment are validated. The final subjective mix still requires real-device playtesting by ear. Individual cue choice or volume can be adjusted without changing the architecture if a sound feels too sharp, soft, busy, metallic, airy, etc.
+
+An attempted independent HTTP fetch from the local execution environment could not resolve `maloysius-wq.github.io` because that environment had no DNS access, so do not claim that local curl provided a live-browser test. GitHub Pages itself reports the validated deployment as successful.
+
+#### Remaining unrelated critical issue
+
+The pre-existing missing `campaign400-3.js` / Levels 101–150 issue remains open and was explicitly preserved by the SFX validator. This SFX pass does not repair or conceal that campaign-data defect.
 
 ---
 
@@ -233,10 +316,15 @@ Loaded by `index.html`:
 - `game400-a.js`
 - `game400-b.js`
 - `music400.js`
+- `sfx400.js`
 
 **Music / licensing**
 - `assets/music/*.mp3` — nine local soundtrack files
 - `MUSIC_CREDITS.md` — permanent license/provenance record
+
+**Sound effects / licensing**
+- `assets/sfx/*.wav` — 21 local sourced CC0 SFX files
+- `SFX_CREDITS.md` — permanent CC0/provenance record
 
 Legacy 80-level files (`game-a.js`, `game-b.js`, `levels-*`, `style.css`, `enhancements.*`) remain as history and are not active runtime source.
 
@@ -260,6 +348,7 @@ Legacy 80-level files (`game-a.js`, `game-b.js`, `levels-*`, `style.css`, `enhan
 - Keep the UI quiet. Avoid ad/currency/counter clutter.
 - Push approved changes to GitHub so the same Pages URL remains the user's test build.
 - Current music direction: title/menu = highly happy/cutesy; level tracks = chapter-specific, cute, soft, slow, pensive/inquisitive, instrumental. Preserve `MUSIC_CREDITS.md` when swapping tracks.
+- Current SFX direction: sourced recorded audio only, no procedural generation; one continuous travel sound per magnetic snap; restrained semantic endpoint/UI cues. Preserve `SFX_CREDITS.md` when swapping effects.
 
 ---
 
@@ -301,6 +390,7 @@ Any validator must reproduce shipping semantics exactly.
 - 3 stars at `movesUsed <= optimal`; 2 at `<= optimal + 1`; otherwise 1.
 - Progress key: `latchlings_campaign400_progress_v1`.
 - Music preference key: `latchlings_music_enabled_v1`.
+- SFX preference key: `latchlings_sfx_enabled_v1`.
 - Level 400 finishes without looping.
 
 ---
@@ -330,4 +420,5 @@ A successful Pages workflow does not prove JavaScript imports exist or run.
 3. Resume any `IN PROGRESS`, `PARTIAL`, or `BLOCKED` Current Work entry first.
 4. Do not forget the missing `campaign400-3.js` critical issue.
 5. Preserve/update `MUSIC_CREDITS.md` if soundtrack files change.
-6. At task completion, update and commit this handoff again.
+6. Preserve/update `SFX_CREDITS.md` if sound-effect files change; keep SFX sourced-recording-only.
+7. At task completion, update and commit this handoff again.
