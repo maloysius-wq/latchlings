@@ -8,420 +8,211 @@ This repository is the source of truth for **Latchlings**.
 
 - Repository: `maloysius-wq/latchlings`
 - Live build: `https://maloysius-wq.github.io/latchlings/`
-- Current runtime: 400-level themed campaign on `main`
+- Runtime: intended 400-level themed campaign on `main`
 
 Always inspect current `main`, `index.html`, and this handoff before changing anything.
 
----
+## MANDATORY handoff workflow
 
-## MANDATORY handoff maintenance workflow
+For every substantive repository task, in every current or future chat:
 
-This workflow is required for this project in every current or future chat.
+1. Read this file and inspect the current repository.
+2. Before implementation, add/update a `Current Work` entry with the date, user goal, implementation plan, expected files/systems, validation plan, deployment plan, and `IN PROGRESS` status.
+3. Commit that handoff update before implementation begins.
+4. If scope changes materially, update the handoff again while work is underway.
+5. After implementation, update the same entry to `COMPLETED`, `PARTIAL`, or `BLOCKED` and record exactly what changed, important decisions, files changed, validation/test results, deployment status/commit, remaining bugs/risks, and exact next action if incomplete.
+6. Commit the final handoff update after implementation/deployment commits.
 
-### Before any substantive development work
-
-1. Read `DEVELOPMENT_HANDOFF.md` and inspect the current repository state.
-2. Update this file **before implementation begins** with a `Current Work` entry containing:
-   - date
-   - user request / goal
-   - planned implementation
-   - files or systems expected to change
-   - validation/testing plan
-   - deployment plan if applicable
-   - status: `IN PROGRESS`
-3. Commit that handoff update before making the actual implementation changes.
-4. If scope changes materially while working, update the handoff again rather than letting the written plan become stale.
-
-### After implementation
-
-1. Update the same `Current Work` entry to `COMPLETED`, `PARTIAL`, or `BLOCKED`.
-2. Record:
-   - exactly what changed
-   - important behavior decisions
-   - files changed
-   - validation/tests performed and their results
-   - deployment status and commit SHA when relevant
-   - any new bugs, risks, or follow-up work
-3. Commit the final handoff update after the implementation/deployment commits.
-
-### If the chat is interrupted
-
-The handoff must already contain enough information for another chat to resume immediately. Leave the entry as `IN PROGRESS`, `PARTIAL`, or `BLOCKED` and state the exact next action.
-
-### General rule
-
-**Any repository change that affects development state should be reflected in this handoff.** The handoff is a live project journal, not a document that is only refreshed at the end of a chat.
+If a chat is interrupted, the handoff must already contain enough detail to resume immediately. This file is a live project journal, not an end-of-chat summary.
 
 ---
 
 ## Current Work
 
+### 2026-08-31 — Add licensed game music
+
+**Status: IN PROGRESS**
+
+**User request:** Find and implement music for Latchlings. Title/menu music should be extremely happy and cutesy and persist across every non-level screen. Actual levels should use different music for each chapter. Chapter music should be cute, soft, slow, pensive, inquisitive, and instrumental. All music must have a Creative Commons license suitable for use in the game. If attribution is required, preserve the required credit information in the repository.
+
+**Plan:**
+
+1. Search reputable music/asset sources for one title/menu track and eight chapter tracks.
+2. Verify the license for every selected track at the source. Prefer CC0 where a good fit exists; CC BY is acceptable with attribution preserved. Avoid NC licenses because they would unnecessarily constrain future commercial release.
+3. Record title, creator, source page, license, license URL/identifier, and exact attribution language in a repository credit file.
+4. Add the selected audio assets to the repository under a dedicated `audio/` or `assets/music/` path, using browser-friendly compressed formats.
+5. Add a small music controller to the active 400-level engine:
+   - title/menu track loops across Home, Level Select, Rules, Settings, pause/non-level UI, and completion screen without restarting during ordinary navigation;
+   - entering a level crossfades/switches to that level's chapter track;
+   - Chapters 1–8 each have their own loop;
+   - returning from gameplay to a non-level screen resumes the title/menu track;
+   - autoplay restrictions are handled by starting/resuming audio only after the player's first gesture;
+   - avoid overlapping two full-volume tracks;
+   - preserve player-friendly volume and looping behavior.
+6. Add a simple music on/off control if needed for respectful audio UX, without cluttering the interface.
+7. Validate file references, JS syntax, navigation/music state changes, loop behavior, and license documentation.
+8. Deploy to GitHub Pages and verify the Pages workflow plus live asset availability.
+9. Update this handoff with final selections, licenses, implementation details, commits, validation, and any follow-up work.
+
+**Expected files/systems:**
+
+- `DEVELOPMENT_HANDOFF.md`
+- `index.html` if an audio control or loader hook is needed
+- active `game400-*.js` engine files and/or a new dedicated music controller JS file
+- active CSS if an audio control is added
+- new music asset directory/files
+- new `MUSIC_CREDITS.md` or equivalent licensing/attribution file
+
+**Validation plan:**
+
+- Confirm each source/license independently before using the track.
+- Confirm all referenced local audio files exist in the repository.
+- Check JavaScript syntax.
+- Verify title music persists across non-level screen changes.
+- Verify each chapter maps to its own level track.
+- Verify only one intended music context plays at a time.
+- Verify first-gesture/autoplay handling on mobile-style browser behavior.
+- Verify attribution records are complete.
+- Check GitHub Pages deployment succeeds and music assets resolve publicly.
+
+**Deployment:** GitHub Pages from `main` after assets and code are fully present. Update `index.html` last if load-order changes are required.
+
+**Known unrelated critical issue still open:** `index.html` references `campaign400-3.js`, but Chapter 3's payload is missing from the repository. This music pass must not erase or obscure that issue. It still needs repair and a full campaign audit.
+
+---
+
 ### 2026-08-31 — Establish live handoff workflow
 
 **Status: COMPLETED**
 
-**User request:** Make `DEVELOPMENT_HANDOFF.md` a continuously maintained development journal. Before future work, record the plan first; after work, record what was completed so another chat can resume at any point.
-
-**Plan executed:**
-
-- Added the mandatory start-of-work / end-of-work workflow above.
-- Preserved the critical current project state and known issues in this handoff.
-- Committed an `IN PROGRESS` handoff entry before completing the workflow setup.
-- Re-fetched the committed handoff and verified the workflow text was present.
-- Updated this entry to `COMPLETED` after validation.
-
-**Files changed:**
-
-- `DEVELOPMENT_HANDOFF.md`
-
-**Validation/results:**
-
-- Start-of-work handoff commit: `18f988ff874c27e759213c6021ad71241d00e2f9`
-- Verified the committed file contained the mandatory workflow and `IN PROGRESS` entry.
-- Final handoff update committed after validation.
-- No gameplay/runtime files changed.
-- No GitHub Pages deployment required for this documentation-only task.
-
-**Ongoing rule:** From this point forward, every substantive Latchlings development task must begin with a committed handoff plan and end with a committed handoff result. If work is interrupted, the handoff must clearly state the unfinished status and exact next step.
+Added the mandatory start-of-work/end-of-work handoff process. Start commit: `18f988ff874c27e759213c6021ad71241d00e2f9`. Completion commit: `42bbc1771bb34bf1381575f1a55199288cae77d7`.
 
 ---
 
 ## Critical known issue
 
-`index.html` currently references `campaign400-3.js`, but **that file is missing from the repository tree**. GitHub history shows campaign commits for Chapters 1, 2, then 4–8, with no Chapter 3 data commit.
+`index.html` references `campaign400-3.js`, but **that file is missing from the repository tree**. GitHub history contains Chapter 1, Chapter 2, then Chapters 4–8, with no Chapter 3 campaign-data commit.
 
 Affected range:
 
-- Chapter 3: **Magnetic Anchors**
-- Theme: **Lodestone Caverns**
-- Global levels: **101–150**
+- Chapter 3: Magnetic Anchors
+- Theme: Lodestone Caverns
+- Levels 101–150
 
-This is a critical runtime/data-integrity defect. A successful GitHub Pages deployment does not validate missing JavaScript imports.
-
-### Required repair before normal feature development
-
-1. Recover or regenerate Chapter 3 Levels 101–150.
-2. Create `campaign400-3.js` in the same compact format as the other campaign files.
-3. Run the full campaign validator against the actual repository files.
-4. Verify all 400 levels load and replay correctly.
-5. Test Chapter 3 through the live GitHub Pages build.
-
-The original exact Chapter 3 payload is not recoverable from GitHub history, so do not claim it can be restored from a hidden commit.
+Required repair: regenerate/recover Chapter 3, create `campaign400-3.js` in the same compact format, run a full 400-level repository-backed validator, and verify Chapter 3 in the live build. Do not claim the exact missing payload exists in GitHub history.
 
 ---
 
-## Active runtime files
+## Active runtime
 
-### Loaded by `index.html`
+Loaded by `index.html`:
 
-CSS:
-
+**CSS**
 - `style400-ui.css`
 - `style400-game.css`
 - `style400-themes.css`
 
-Campaign data:
+**Campaign**
+- `campaign400-1.js` Levels 1–50
+- `campaign400-2.js` Levels 51–100
+- `campaign400-3.js` MISSING, should be Levels 101–150
+- `campaign400-4.js` Levels 151–200
+- `campaign400-5.js` Levels 201–250
+- `campaign400-6.js` Levels 251–300
+- `campaign400-7.js` Levels 301–350
+- `campaign400-8.js` Levels 351–400
 
-- `campaign400-1.js` — Levels 1–50
-- `campaign400-2.js` — Levels 51–100
-- `campaign400-3.js` — **MISSING; should be Levels 101–150**
-- `campaign400-4.js` — Levels 151–200
-- `campaign400-5.js` — Levels 201–250
-- `campaign400-6.js` — Levels 251–300
-- `campaign400-7.js` — Levels 301–350
-- `campaign400-8.js` — Levels 351–400
-
-Engine:
-
+**Engine**
 - `game400-a.js`
 - `game400-b.js`
 
-### Legacy 80-level files still in the repository
-
-These are retained history/rollback material and are **not active runtime source**:
-
-- `game-a.js`
-- `game-b.js`
-- `levels-a.js`
-- `levels-41-50.js`
-- `levels-51-60.js`
-- `levels-61-70.js`
-- `levels-71-80.js`
-- `style.css`
-- `enhancements.css`
-- `enhancements.js`
-
-Do not patch the legacy files expecting the live game to change.
+Legacy 80-level files (`game-a.js`, `game-b.js`, `levels-*`, `style.css`, `enhancements.*`) remain as history and are not active runtime source.
 
 ---
 
-## Product direction and non-negotiables
+## Product non-negotiables
 
-Latchlings is a mobile-first magnetic sliding puzzle game. It should feel cute, polished, premium, uncluttered, strategic, and increasingly difficult.
-
-Preserve these requirements:
-
-- Mobile-first UI and controls.
-- No emoji in the game UI. Use SVG/CSS/glyphs.
-- Round colorful Latchlings with expressive centered faces.
-- Suit symbols stay black/dark so suit and body color remain distinct clues.
-- Movement is one smooth continuous magnetic snap, never cell-by-cell hopping.
-- Selection persists until changed, except smart selection after capture.
-- Other Latchlings function as movable strategic stoppers.
+- Mobile-first, polished, cute, premium, uncluttered.
+- No emoji in game UI. Use SVG/CSS/glyphs.
+- Round colorful Latchlings, expressive centered faces, dark/black suit symbols.
+- One smooth continuous magnetic snap, never cell-by-cell hopping.
+- Persistent selection; direct tap-to-select remains available.
+- Center D-pad selector cycles clockwise through uncaptured Latchlings.
+- After capture, select the nearest remaining Latchling.
+- Other Latchlings are strategic movable stoppers.
 - Color and suit matter mechanically.
-- Campaign levels are frozen/predetermined, not runtime-randomized.
-- Every published level must be solvable inside its move limit.
-- Difficulty must not reset to trivial at every mechanic introduction.
-- Each chapter needs genuinely hard and expert puzzles.
-- **Nest tiles are exclusive. Nothing else may occupy a nest cell.**
-- Do not place rocks, anchors, gates, rails, turners, switches, doors, or starting Latchlings on nests.
-- Keep the UI quiet. Avoid ad clutter, currencies, decorative counters, or noisy meta systems.
-- Push approved gameplay fixes to GitHub so the user can test the same Pages URL.
+- Frozen/predetermined campaign levels.
+- Every published level must be solvable inside move limit.
+- Difficulty should remain sustained and include expert puzzles in every chapter.
+- Nest cells are exclusive: no rocks, anchors, gates, rails, turners, switches, doors, or starting pieces may overlap nests.
+- Keep the UI quiet. Avoid ad/currency/counter clutter.
+- Push approved changes to GitHub so the same Pages URL remains the user's test build.
 
 ---
 
-## Campaign structure
+## Campaign structure and themes
 
-Intended campaign: **8 chapters × 50 levels = 400 levels**.
+1. Levels 1–50, First Snaps, Sunpetal Meadows
+2. Levels 51–100, Clever Stops, Lanternwood Grove
+3. Levels 101–150, Magnetic Anchors, Lodestone Caverns
+4. Levels 151–200, Suit Gates, Masquerade Keep
+5. Levels 201–250, Color Gates, Prism Gardens
+6. Levels 251–300, Rails and Turns, Copperline Junction
+7. Levels 301–350, Switchworks, Stormswitch Foundry
+8. Levels 351–400, Master Circuit, Aurora Crown
 
-| Chapter | Levels | Focus | Theme |
-|---|---:|---|---|
-| 1. First Snaps | 1–50 | Edges, rocks, core snapping | Sunpetal Meadows |
-| 2. Clever Stops | 51–100 | Latchlings as movable stoppers | Lanternwood Grove |
-| 3. Magnetic Anchors | 101–150 | Anchors plus stopper logic | Lodestone Caverns |
-| 4. Suit Gates | 151–200 | Suit identity gates | Masquerade Keep |
-| 5. Color Gates | 201–250 | Body-color gates plus suit logic | Prism Gardens |
-| 6. Rails and Turns | 251–300 | Direction rails and turners | Copperline Junction |
-| 7. Switchworks | 301–350 | Switches, doors, cumulative routing | Stormswitch Foundry |
-| 8. Master Circuit | 351–400 | Full mechanic combination | Aurora Crown |
-
-Each chapter is displayed in five 10-level ranges.
-
-Difficulty shape per chapter:
-
-1. Very short introduction.
-2. Development with prior mechanics retained.
-3. Sustained medium/hard play.
-4. Expert tail around local Levels 46–50.
-
-Do not return to the original 10-level structure where difficulty repeatedly collapsed.
+Each chapter uses five 10-level ranges. Difficulty should have only a brief introduction, then sustained medium/hard play and an expert tail around local Levels 46–50.
 
 ---
 
-## Core movement semantics
+## Core gameplay semantics
 
-`game400-b.js::simulate()` is the shipping ruleset and is the source of truth for any solver.
+`game400-b.js::simulate()` is the source of truth for movement/solver behavior.
 
-A move continues until stopped or redirected by:
+Blocking: board edge, rock, another Latchling, closed door, mismatched suit gate, mismatched color gate, wrong-direction rail.
 
-- board edge
-- rock
-- another Latchling
-- closed door
-- mismatched suit gate
-- mismatched color gate
-- wrong-direction rail
+Specials: matching nest captures; anchor stops; turner redirects the same snap; switch toggles linked door state.
 
-Special behavior:
-
-- Matching assigned nest captures immediately.
-- Anchor stops on the anchor cell.
-- Turner changes direction during the same continuous snap.
-- Switch toggles its linked door bit while traversed.
-
-Any validator must reproduce these semantics exactly.
+Any validator must reproduce shipping semantics exactly.
 
 ---
 
-## Selection and D-pad behavior
+## Controls, animation, stars, progress
 
-The D-pad is a single continuous physical rocker with invisible directional hit regions.
-
-Center selector button:
-
-- Uses a cycle-arrow / three-dot glyph.
-- Cycles clockwise through remaining Latchlings based on board position.
-- Directly tapping a Latchling remains supported.
-- After a capture, the nearest remaining Latchling to the captured nest is automatically selected.
-
-Important pressed-state fix that must not regress:
-
-```css
-.dpad button.dpad-cycle:active {
-  transform: translate(-50%, calc(-50% + 3px)) scale(.985) !important;
-}
-```
-
-This prevents the center selector from jumping down/right while pressed.
+- D-pad is one continuous physical rocker with invisible directional hit regions.
+- Center cycle button pressed-state fix must preserve centering:
+  `.dpad button.dpad-cycle:active { transform: translate(-50%, calc(-50% + 3px)) scale(.985) !important; }`
+- Latchling blinking must remain asynchronous via per-piece duration/delay.
+- `prefers-reduced-motion` disables nonessential animation.
+- Win popup renders visual stars.
+- 3 stars at `movesUsed <= optimal`; 2 at `<= optimal + 1`; otherwise 1.
+- Progress key: `latchlings_campaign400_progress_v1`.
+- Level 400 finishes without looping.
 
 ---
 
-## Faces and animation
+## Validation rules for level-data changes
 
-Expressions include happy, surprised, angry, smug, sleepy, curious, and determined.
+Validate the entire campaign after any level-data edit: sequential IDs, unique starts/nests, no piece on nest, no nest/object overlap, no unintended special-tile overlap, stored solution replay, within move limit, solver-verified optimal/star thresholds, mechanic use, expert screening, and no chapter-boundary difficulty collapse.
 
-Blinking must remain asynchronous. Latchlings should not all blink at the same time. `style400-game.css` uses per-piece blink duration/delay and idle delay CSS custom properties.
-
-`prefers-reduced-motion` should disable nonessential face/star motion.
-
----
-
-## Stars, progress, and completion
-
-Star thresholds:
-
-- `movesUsed <= lev.optimal` → 3 stars
-- `movesUsed <= lev.optimal + 1` → 2 stars
-- otherwise → 1 star
-
-The win popup must show visual star icons, not text-only star counts.
-
-Progress key:
-
-```text
-latchlings_campaign400_progress_v1
-```
-
-Progress shape:
-
-```js
-{ unlocked: Number, stars: { [levelId]: 1 | 2 | 3 } }
-```
-
-Level 400 finishes on the completion screen and must not loop.
-
----
-
-## Campaign data format
-
-`campaign400-1.js` defines compact lookup tables and `_L(x)`, expands compressed level arrays, initializes `window.LEVELS`, then appends Chapter 1.
-
-Subsequent campaign files append their 50 levels.
-
-Expanded runtime levels contain fields equivalent to:
-
-```js
-{
-  size, pieces, nests, rocks, anchors,
-  suitGates, colorGates, rails, turners,
-  switches, doors, optimal, moveLimit,
-  solution, difficultyScore, id, chapter
-}
-```
-
-Preserve global IDs if regenerating a chapter because saved progress is keyed by level number.
-
----
-
-## Validation invariants
-
-Before publishing any level-data change, validate the **entire campaign**.
-
-Required checks:
-
-1. IDs are unique, sequential, and in the correct chapter.
-2. Starting piece positions are unique.
-3. Nest positions are unique.
-4. No piece starts on a nest.
-5. No nest overlaps a rock, anchor, suit gate, color gate, rail, turner, switch, or door.
-6. No unintended special-tile overlaps.
-7. Stored solution replays through shipping semantics and captures every Latchling.
-8. Stored solution is within `moveLimit`.
-9. `optimal` and star thresholds are solver-verified before publication.
-10. Chapter mechanic is genuinely involved beyond the introduction.
-11. Expert levels are screened against short obvious solutions.
-12. Difficulty does not collapse at chapter boundaries.
-
-Historical note: the retired 80-level campaign contained **28 nest/object overlaps**. The 400-level replacement was explicitly designed to eliminate them.
-
-The generator/validator used during the rebuild is not currently committed. Adding a reproducible `tools/` validator/generator is strongly recommended.
-
----
-
-## Visual themes
-
-- Sunpetal Meadows: bright meadow, flowers, warm stone
-- Lanternwood Grove: dark green woodland, lantern warmth
-- Lodestone Caverns: dark blue cave, cyan/purple crystals
-- Masquerade Keep: purple moonlit castle, gold ornament
-- Prism Gardens: luminous garden, prismatic accents
-- Copperline Junction: warm industrial copper/rail look
-- Stormswitch Foundry: cool steel and electric storm accents
-- Aurora Crown: dark royal blue/purple with aurora glow
-
-Themed decoration must never obscure board readability on a phone.
+Historical note: the retired 80-level campaign had 28 nest/object overlaps. Do not regress.
 
 ---
 
 ## Deployment workflow
 
-GitHub Pages serves `main` from the repository root.
+GitHub Pages serves `main` from the root.
 
-Safe deployment sequence:
+Safe order for large changes: handoff plan commit; upload dependencies/assets; update runtime code; update `index.html` last if necessary; wait for Pages `completed / success`; verify every referenced file actually exists and executes; test live behavior; then make the final handoff completion commit.
 
-1. Inspect current `main` and `index.html`.
-2. Update this handoff with an `IN PROGRESS` plan and commit it.
-3. Upload dependencies before switching `index.html` during large migrations.
-4. Update `index.html` last.
-5. Check the `pages build and deployment` workflow.
-6. Wait for `completed / success`.
-7. Verify referenced files exist and perform runtime/browser checks.
-8. Update this handoff with final status/results and commit it.
-
-A successful Pages workflow proves static deployment succeeded; it does **not** prove imported JavaScript exists or executes.
-
----
-
-## Testing priorities
-
-Pay particular attention to:
-
-- D-pad center selector hitbox and pressed state
-- persistent selection
-- nearest-piece selection after capture
-- continuous animation through turners
-- trails on bent routes
-- switch/door state
-- 50-level chapter range navigation
-- Level 400 completion
-- localStorage progress
-- theme readability on smaller phones
-- asynchronous blinking
-- nest exclusivity
-- difficulty dips near chapter boundaries
-
-When a level is reported impossible, reproduce it using exact shipping simulation. Do not guess.
-
----
-
-## Recent feature history
-
-1. Early-game difficulty tuned upward.
-2. D-pad rebuilt as one continuous rocker.
-3. Center Latchling selector added.
-4. Selector pressed-state jump fixed.
-5. Nearest remaining Latchling auto-selection added.
-6. Visual stars added to win modal.
-7. Expressive face animation added.
-8. Blink timing changed to asynchronous intervals.
-9. Campaign expanded from 80 to intended 400 levels.
-10. Eight chapter visual themes added.
-11. Chapter level select expanded to five 10-level ranges.
-12. Hard nest-exclusivity rule introduced.
-13. Difficulty curve redesigned for sustained hard/expert tails.
+A successful Pages workflow does not prove JavaScript imports exist or run.
 
 ---
 
 ## First actions for a future chat
 
-1. Read this handoff.
-2. Inspect current `main` and `index.html`.
-3. Create/update the `Current Work` section and commit the plan before implementing anything.
-4. Fix the missing `campaign400-3.js` issue if it remains unresolved.
-5. Run a full repository-backed campaign audit.
-6. Verify Chapter 3 and representative expert levels through the live build.
-7. At task completion, update and commit this handoff again.
-
-Suggested continuation prompt:
-
-> Continue development of Latchlings. The repository is `maloysius-wq/latchlings`. Read `DEVELOPMENT_HANDOFF.md` first and use the current repository as the source of truth. Follow the mandatory handoff workflow before making changes.
+1. Read this file and inspect `main` plus `index.html`.
+2. Follow the mandatory handoff workflow before implementation.
+3. Resume any `IN PROGRESS`, `PARTIAL`, or `BLOCKED` Current Work entry first.
+4. Do not forget the missing `campaign400-3.js` critical issue.
+5. At task completion, update and commit this handoff again.
