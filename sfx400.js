@@ -8,6 +8,7 @@
     uiBack: ['ui-back.wav', 0.24, 2],
     uiOpen: ['ui-open.wav', 0.22, 2],
     uiConfirm: ['ui-confirm.wav', 0.28, 2],
+    nextLevel: ['next-level.wav', 0.16, 2],
     hint: ['hint.wav', 0.30, 2],
     selectLatchling: ['select-latchling.wav', 0.30, 3],
     cycleLatchling: ['cycle-latchling.wav', 0.26, 3],
@@ -15,13 +16,10 @@
     boardSwitch: ['switch.wav', 0.27, 2],
     turn: ['turn.wav', 0.20, 2],
     capture: ['capture.wav', 0.34, 3],
-    levelClear: ['level-clear.wav', 0.38, 2],
+    levelClear: ['level-clear.wav', 0.24, 2],
     levelLose: ['level-lose.wav', 0.30, 2],
     campaignComplete: ['campaign-complete.wav', 0.42, 2],
-    stopSoft: ['stop-soft.wav', 0.26, 3],
-    stopRock: ['stop-rock.wav', 0.30, 3],
-    stopAnchor: ['stop-anchor.wav', 0.28, 3],
-    stopBlocked: ['stop-blocked.wav', 0.27, 3]
+    stopSoft: ['stop-soft.wav', 0.26, 3]
   };
   const MOVE_DEFS = {
     short: ['move-short.wav', 0.17],
@@ -142,10 +140,7 @@
       play('capture');
       return;
     }
-    if (reason === 'rock') play('stopRock');
-    else if (reason === 'anchor') play('stopAnchor');
-    else if (reason === 'door' || reason === 'suitGate' || reason === 'colorGate' || reason === 'rail') play('stopBlocked');
-    else play('stopSoft');
+    play('stopSoft');
   }
 
   function stopEverything() {
@@ -197,7 +192,8 @@
     if (['levelsBack', 'rulesClose', 'settingsClose', 'cancelReset', 'resumeBtn'].includes(id)) return 'uiBack';
     if (['settingsBtn', 'pauseBtn'].includes(id) || button.dataset.nav === 'about') return 'uiOpen';
     if (id === 'nextLevelBtn' && button.textContent.trim() === 'Finish') return null;
-    if (['confirmReset', 'nextLevelBtn'].includes(id)) return 'uiConfirm';
+    if (id === 'nextLevelBtn') return 'nextLevel';
+    if (id === 'confirmReset') return 'uiConfirm';
     return 'uiTap';
   }
 

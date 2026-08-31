@@ -33,7 +33,8 @@ The pack is published by Kenney under CC0. Source WAV copies were retrieved from
 | `assets/sfx/switch.wav` | `switch_003.wav` | Board switch activation |
 | `assets/sfx/turn.wav` | `tick_004.wav` | Subtle route-turner punctuation |
 | `assets/sfx/capture.wav` | `confirmation_003.wav` | Successful nest capture |
-| `assets/sfx/level-clear.wav` | `confirmation_004.wav` | Level clear/results |
+| `assets/sfx/level-clear.wav` | `confirmation_002.wav` | Softer level-clear/results cue |
+| `assets/sfx/next-level.wav` | `pluck_001.wav` | Soft cute Continue / Next Level cue |
 | `assets/sfx/level-lose.wav` | `error_004.wav` | Out-of-moves result |
 | `assets/sfx/campaign-complete.wav` | `bong_001.wav` | Campaign completion punctuation |
 
@@ -48,10 +49,10 @@ The pack is published by Kenney under CC0. Source OGG copies were retrieved from
 
 | Latchlings file | Original Kenney file | Purpose |
 | --- | --- | --- |
-| `assets/sfx/stop-soft.wav` | `impact_soft_medium_001.ogg` | Soft edge / Latchling endpoint |
-| `assets/sfx/stop-rock.wav` | `impact_mining_001.ogg` | Rock/stone endpoint |
-| `assets/sfx/stop-anchor.wav` | `impact_metal_light_001.ogg` | Magnetic anchor endpoint |
-| `assets/sfx/stop-blocked.wav` | `impact_generic_light_001.ogg` | Door/gate/rail blocked endpoint |
+| `assets/sfx/stop-soft.wav` | `impact_soft_medium_001.ogg` | All ordinary non-capture movement endpoints |
+| `assets/sfx/stop-rock.wav` | `impact_mining_001.ogg` | Retained legacy source; inactive after unified-stop tuning |
+| `assets/sfx/stop-anchor.wav` | `impact_metal_light_001.ogg` | Retained legacy source; inactive after unified-stop tuning |
+| `assets/sfx/stop-blocked.wav` | `impact_generic_light_001.ogg` | Retained legacy source; inactive after unified-stop tuning |
 
 Transfer mirror used for the exact source files:
 https://github.com/Boyquotes/kenney-impact-sounds-for-godot
@@ -68,9 +69,9 @@ https://gamesounds.xyz/?dir=Kenney%27s%20Sound%20Pack/Foley%20Sounds/Woosh
 
 | Latchlings file | Original Kenney file | Purpose |
 | --- | --- | --- |
-| `assets/sfx/move-short.wav` | `woosh2.ogg` | Short magnetic snap travel |
-| `assets/sfx/move-medium.wav` | `woosh5.ogg` | Medium magnetic snap travel |
-| `assets/sfx/move-long.wav` | `woosh8.ogg` | Long magnetic snap travel |
+| `assets/sfx/move-short.wav` | `woosh2.ogg` | Short magnetic snap travel; 215 ms low-level lead-in trimmed |
+| `assets/sfx/move-medium.wav` | `woosh5.ogg` | Medium magnetic snap travel; 107 ms low-level lead-in trimmed |
+| `assets/sfx/move-long.wav` | `woosh8.ogg` | Long magnetic snap travel; 76 ms low-level lead-in trimmed |
 
 ## Runtime sound-design rules
 
@@ -80,6 +81,8 @@ https://gamesounds.xyz/?dir=Kenney%27s%20Sound%20Pack/Foley%20Sounds/Woosh
 - The runtime does **not** modify `playbackRate` or pitch.
 - The runtime does **not** randomly alter sounds.
 - Magnetic movement is represented by one continuous recorded travel sound per snap, never a sound on each grid cell.
+- The movement recordings have only their measured leading low-level padding trimmed; no playback speed, pitch, or time-stretch processing is used. Their strong attack now begins about 10 ms after playback starts.
+- Every ordinary non-capture movement endpoint uses `stop-soft.wav`, regardless of whether the blocker is an edge, another Latchling, rock, anchor, door, gate, or rail.
 - Ordinary traversal through a valid suit gate, color gate, or rail is intentionally silent to avoid clutter.
 - Switches and turners may receive a restrained cue because they materially alter route/board behavior.
 
