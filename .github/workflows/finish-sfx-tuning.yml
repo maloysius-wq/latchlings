@@ -1,0 +1,72 @@
+name: Finish SFX Tuning Handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finish-sfx-tuning.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete handoff entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          title='### 2026-08-31 — SFX timing and softness tuning'
+          start=text.index(title)
+          end=text.index('\n---\n', start)
+          section=text[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          completion='''
+
+#### Completion summary
+
+The user's three audio concerns were implemented without any procedural generation, pitch shifting, playback-rate changes, or time stretching.
+
+**Whoosh timing:** A repository-backed waveform audit proved the perceived delay was real leading low-level material in the recordings, not imagination or browser latency. Before trimming, the first sample above -40 dBFS occurred at approximately 225 ms (`move-short.wav`), 117 ms (`move-medium.wav`), and 86 ms (`move-long.wav`). A one-cell snap is only about 161 ms, so the short whoosh could be stopped before its main attack became audible. The checked-in PCM WAVs were trimmed only at the front, leaving roughly 10 ms of preroll before the measured -40 dBFS attack. Final strong-attack onset is approximately 10 ms for all three files. Final durations are about 0.328 s short, 0.299 s medium, and 0.494 s long. The sound content after the trim point is unchanged.
+
+**Unified movement endpoint:** `sfx400.js::endMove()` now routes every ordinary non-capture stop to the user's preferred `stop-soft.wav`, including board edge, another Latchling, rock, anchor, closed door, suit gate, color gate, and wrong-direction rail. Matching-nest capture intentionally remains the separate positive `capture.wav`. The old `stop-rock.wav`, `stop-anchor.wav`, and `stop-blocked.wav` source files remain in `assets/sfx/` for provenance/history but are not referenced by active runtime code.
+
+**Softer level flow:** The previous level-clear `confirmation_004.wav` was replaced by Kenney `confirmation_002.wav` (CC0), a longer/lower-energy confirmation. Controller volume was reduced from 0.38 to 0.24. Continue/Next Level no longer uses the generic `ui-confirm.wav`; it now has a dedicated `next-level.wav` sourced from Kenney `pluck_001.wav` (CC0), converted to mono 44.1 kHz 16-bit PCM and played at volume 0.16. Reset-progress confirmation still uses the original generic confirmation, so the Next Level change is isolated.
+
+`SFX_CREDITS.md` now records both new original filenames, the whoosh leading-trim amounts, the unified-stop rule, and the fact that the three specialized impact files are inactive legacy sources.
+
+#### Validation / deployment
+
+- Start-of-work handoff commit: `2ec78a4c2dfb0703f483a26daf5702d19f57759c`.
+- Timing/candidate audit workflow run `33443079744` completed successfully; cleanup commit `110704c` removed the temporary audit workflow.
+- Asset-tuning workflow run `33443162541` completed successfully; bot commit `91b4f71` trimmed the three whooshes, replaced `level-clear.wav`, added `next-level.wav`, and removed the temporary asset workflow.
+- Runtime/provenance wiring workflow run `33443235379` completed successfully; bot commit `32cd0d11561df678d25e45bba0c12c21ddbf6e01` updated `sfx400.js` and `SFX_CREDITS.md` and removed the temporary wiring workflow.
+- Runtime validation passed: Node syntax, required mappings, unified `stopSoft` routing, absence of active specialized impact calls, zero forbidden procedural/pitch/playbackRate/randomization APIs, mono 44.1 kHz 16-bit PCM format for tuned files, and <=12 ms -40 dBFS attack onset for all three whooshes.
+- GitHub Pages run `33443251025` for commit `32cd0d11561df678d25e45bba0c12c21ddbf6e01` completed successfully.
+
+**Remaining test:** subjective real-device listening. The objective timing/routing/deployment is validated; if the new win or pluck cue still feels too bright/soft on the user's phone, swap the source recording or volume without changing the architecture.
+'''
+          if '#### Completion summary' not in section:
+              section += completion
+          text=text[:start]+section+text[end:]
+          p.write_text(text)
+          PY
+          rm -f .github/workflows/finish-sfx-tuning.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/finish-sfx-tuning.yml
+          git commit -m 'Complete SFX timing and softness handoff'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt*2))
+          done
+          exit 1
