@@ -1,0 +1,90 @@
+name: Apply SFX Softness
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-sfx-softness.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Trim whoosh lead-in and import softer Kenney cues
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds'
+          curl --retry 3 --retry-delay 1 -fL "$base/confirmation_002.wav" -o /tmp/confirmation_002.wav
+          curl --retry 3 --retry-delay 1 -fL "$base/pluck_001.wav" -o /tmp/pluck_001.wav
+          python3 - <<'PY'
+          import wave, audioop, pathlib, math
+
+          def trim_pcm(path, seconds):
+              path=pathlib.Path(path)
+              with wave.open(str(path),'rb') as w:
+                  params=w.getparams(); rate=w.getframerate(); n=w.getnframes(); raw=w.readframes(n)
+              cut=min(n, max(0, round(seconds*rate)))
+              frame_bytes=params.sampwidth*params.nchannels
+              raw=raw[cut*frame_bytes:]
+              with wave.open(str(path),'wb') as w:
+                  w.setparams((params.nchannels, params.sampwidth, params.framerate, len(raw)//frame_bytes, params.comptype, params.compname))
+                  w.writeframes(raw)
+
+          # Leave roughly 10 ms before the previously measured -40 dBFS attack.
+          trim_pcm('assets/sfx/move-short.wav', 0.215)
+          trim_pcm('assets/sfx/move-medium.wav', 0.107)
+          trim_pcm('assets/sfx/move-long.wav', 0.076)
+
+          def convert_to_mono_44100(src, dst):
+              with wave.open(src,'rb') as w:
+                  ch=w.getnchannels(); sw=w.getsampwidth(); rate=w.getframerate(); n=w.getnframes(); raw=w.readframes(n)
+              if sw != 2:
+                  raise RuntimeError(f'{src}: expected 16-bit PCM')
+              if ch == 2:
+                  raw=audioop.tomono(raw,2,0.5,0.5)
+              elif ch != 1:
+                  raise RuntimeError(f'{src}: unsupported channels {ch}')
+              if rate != 44100:
+                  raw,_=audioop.ratecv(raw,2,1,rate,44100,None)
+                  rate=44100
+              with wave.open(dst,'wb') as w:
+                  w.setnchannels(1); w.setsampwidth(2); w.setframerate(rate); w.writeframes(raw)
+
+          convert_to_mono_44100('/tmp/confirmation_002.wav','assets/sfx/level-clear.wav')
+          convert_to_mono_44100('/tmp/pluck_001.wav','assets/sfx/next-level.wav')
+
+          def inspect(path):
+              with wave.open(str(path),'rb') as w:
+                  n=w.getnframes(); rate=w.getframerate(); raw=w.readframes(n)
+              vals=[abs(int.from_bytes(raw[i:i+2],'little',signed=True)) for i in range(0,len(raw),2)]
+              peak=max(vals) if vals else 0
+              threshold=32767*(10**(-40/20))
+              first=next((i/rate for i,v in enumerate(vals) if v>=threshold),None)
+              rms=audioop.rms(raw,2) if raw else 0
+              print(f'{path}: dur={n/rate:.4f}s first>-40={first} peak={20*math.log10(max(1,peak)/32767):.1f}dBFS rms={20*math.log10(max(1,rms)/32767):.1f}dBFS')
+
+          for name in ['move-short.wav','move-medium.wav','move-long.wav','level-clear.wav','next-level.wav']:
+              inspect(pathlib.Path('assets/sfx')/name)
+          PY
+      - name: Commit audio assets and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/apply-sfx-softness.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/sfx .github/workflows/apply-sfx-softness.yml
+          git commit -m 'Tune whoosh attacks and add softer result cues'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt*2))
+          done
+          exit 1
