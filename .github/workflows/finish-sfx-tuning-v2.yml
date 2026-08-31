@@ -1,0 +1,52 @@
+name: Finish SFX Tuning Handoff V2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finish-sfx-tuning-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Finalize handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('DEVELOPMENT_HANDOFF.md')
+          text = p.read_text()
+          title = '### 2026-08-31 — SFX timing and softness tuning'
+          start = text.index(title)
+          end = text.index('\n---\n', start)
+          section = text[start:end]
+          section = section.replace('**Status: IN PROGRESS**', '**Status: COMPLETED**', 1)
+          if '#### Completion summary' not in section:
+              summary = (
+                  '\n\n#### Completion summary\n\n'
+                  '- Waveform audit confirmed real leading low-level padding in the three whooshes. The -40 dBFS attack originally began at about 225 ms / 117 ms / 86 ms for short / medium / long. Front-only trims of 215 ms / 107 ms / 76 ms now put the strong attack at about 10 ms without pitch, speed, time-stretch, synthesis, or randomization. Final durations are about 0.328 s / 0.299 s / 0.494 s.\n'
+                  '- Every ordinary non-capture stop now uses `stop-soft.wav`, including edge, another Latchling, rock, anchor, closed door, gate, and rail. Nest capture remains `capture.wav`. The old specialized impact files remain only as inactive provenance/history assets.\n'
+                  '- Level clear now uses Kenney CC0 `confirmation_002.wav` at controller volume 0.24 instead of the sharper `confirmation_004.wav`. Continue/Next Level now uses a dedicated Kenney CC0 `pluck_001.wav` as `next-level.wav` at volume 0.16 instead of generic `ui-confirm.wav`.\n'
+                  '- `SFX_CREDITS.md` records the new source files, trim amounts, and unified-stop rule.\n'
+                  '- Validation passed for JavaScript syntax, mappings, unified stop routing, WAV format, <=12 ms movement attack onset, and zero forbidden procedural/pitch/playbackRate/randomization code.\n'
+                  '- Key commits/runs: start handoff `2ec78a4c2dfb0703f483a26daf5702d19f57759c`; timing audit run `33443079744`; asset tuning run `33443162541` / commit `91b4f71`; runtime/provenance run `33443235379` / commit `32cd0d11561df678d25e45bba0c12c21ddbf6e01`; GitHub Pages run `33443251025` completed successfully.\n'
+                  '- Remaining test is subjective real-device listening only.\n'
+              )
+              section += summary
+          text = text[:start] + section + text[end:]
+          p.write_text(text)
+          PY
+          rm -f .github/workflows/finish-sfx-tuning.yml .github/workflows/finish-sfx-tuning-v2.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/finish-sfx-tuning.yml .github/workflows/finish-sfx-tuning-v2.yml
+          git commit -m 'Complete SFX timing and softness handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
