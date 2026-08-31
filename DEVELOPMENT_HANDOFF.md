@@ -58,27 +58,31 @@ The handoff must already contain enough information for another chat to resume i
 
 ### 2026-08-31 — Establish live handoff workflow
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User request:** Make `DEVELOPMENT_HANDOFF.md` a continuously maintained development journal. Before future work, record the plan first; after work, record what was completed so another chat can resume at any point.
 
-**Plan:**
+**Plan executed:**
 
-- Add the mandatory start-of-work / end-of-work workflow above.
-- Preserve the critical current project state and known issues in this handoff.
-- Commit this plan before marking the workflow setup complete.
-- Then make a second handoff commit marking this task complete and documenting the resulting workflow.
+- Added the mandatory start-of-work / end-of-work workflow above.
+- Preserved the critical current project state and known issues in this handoff.
+- Committed an `IN PROGRESS` handoff entry before completing the workflow setup.
+- Re-fetched the committed handoff and verified the workflow text was present.
+- Updated this entry to `COMPLETED` after validation.
 
-**Files expected to change:**
+**Files changed:**
 
 - `DEVELOPMENT_HANDOFF.md`
 
-**Validation:**
+**Validation/results:**
 
-- Re-fetch the handoff after the first commit and verify the workflow text is present.
-- Make the completion update using the new blob SHA.
+- Start-of-work handoff commit: `18f988ff874c27e759213c6021ad71241d00e2f9`
+- Verified the committed file contained the mandatory workflow and `IN PROGRESS` entry.
+- Final handoff update committed after validation.
+- No gameplay/runtime files changed.
+- No GitHub Pages deployment required for this documentation-only task.
 
-**Deployment:** None. Documentation-only change; GitHub Pages gameplay files are not being altered.
+**Ongoing rule:** From this point forward, every substantive Latchlings development task must begin with a committed handoff plan and end with a committed handoff result. If work is interrupted, the handoff must clearly state the unfinished status and exact next step.
 
 ---
 
