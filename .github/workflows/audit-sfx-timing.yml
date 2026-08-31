@@ -1,0 +1,75 @@
+name: Audit SFX Timing
+
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-sfx-timing.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download gentle CC0 candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds'
+          mkdir -p /tmp/candidates
+          for f in confirmation_002.wav pluck_001.wav pluck_002.wav select_005.wav select_007.wav maximize_004.wav maximize_005.wav; do
+            curl --retry 3 --retry-delay 1 -fL "$base/$f" -o "/tmp/candidates/$f"
+          done
+      - name: Measure movement attacks and candidate dynamics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import wave, math, pathlib, audioop
+
+          def inspect(path):
+              with wave.open(str(path),'rb') as w:
+                  n=w.getnframes(); rate=w.getframerate(); sw=w.getsampwidth(); ch=w.getnchannels()
+                  raw=w.readframes(n)
+              if ch != 1 or sw != 2:
+                  print(path.name, 'unsupported', ch, sw); return
+              vals=[]
+              for i in range(0,len(raw),2):
+                  v=int.from_bytes(raw[i:i+2], 'little', signed=True)
+                  vals.append(abs(v))
+              peak=max(vals) if vals else 0
+              rms=audioop.rms(raw,2) if raw else 0
+              dur=n/rate
+              def first_over(db):
+                  threshold=32767*(10**(db/20))
+                  for idx,v in enumerate(vals):
+                      if v>=threshold:
+                          return idx/rate
+                  return None
+              print(f'{path.name:24s} dur={dur:.4f}s peak={20*math.log10(max(1,peak)/32767):6.1f}dBFS rms={20*math.log10(max(1,rms)/32767):6.1f}dBFS first>-50={first_over(-50)} first>-45={first_over(-45)} first>-40={first_over(-40)} first>-35={first_over(-35)}')
+
+          print('CURRENT MOVEMENT FILES')
+          for name in ['move-short.wav','move-medium.wav','move-long.wav']:
+              inspect(pathlib.Path('assets/sfx')/name)
+          print('CURRENT WIN / CONTINUE')
+          for name in ['level-clear.wav','ui-confirm.wav']:
+              inspect(pathlib.Path('assets/sfx')/name)
+          print('CANDIDATES')
+          for p in sorted(pathlib.Path('/tmp/candidates').glob('*.wav')):
+              inspect(p)
+          PY
+      - name: Remove temporary audit workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/audit-sfx-timing.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/audit-sfx-timing.yml
+          git commit -m 'Complete SFX timing audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
