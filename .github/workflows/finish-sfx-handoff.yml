@@ -1,0 +1,169 @@
+name: Finalize SFX Handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finish-sfx-handoff.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record completed SFX pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          start=text.index('### 2026-08-31 — Full licensed sound-effects pass')
+          end=text.index('\n---\n', start)
+          completed='''### 2026-08-31 — Full licensed sound-effects pass
+
+**Status: COMPLETED**
+
+**User request:** Perform a full audit of Latchlings and add high-quality real sound effects to meaningful UI/gameplay events, including menu/button taps, Latchling selection, continuous magnetic movement, and endpoint impacts. Zero procedurally generated sounds were allowed.
+
+#### Final source / license decision
+
+The entire shipping SFX palette is sourced from **Kenney** game-audio packs released under **Creative Commons CC0 1.0 Universal**. Attribution is not legally required, but permanent provenance is preserved in `SFX_CREDITS.md`, including the official Kenney source pack/pages, exact original filenames, transfer mirrors used for retrieval, CC0 license URL, and optional Kenney credit.
+
+Source families:
+
+- Kenney **Interface Sounds** for UI, selection, hint, switch, capture and result cues.
+- Kenney **Impact Sounds** for physical snap endpoints.
+- Kenney **Foley Sounds / Woosh** for continuous magnetic travel.
+
+All 21 shipping files are local in `assets/sfx/`. No runtime hotlinks are used.
+
+#### Final sound map / design rules
+
+The audit intentionally uses a restrained semantic vocabulary instead of making every state noisy.
+
+- Ordinary button/menu action: quiet UI tap.
+- Back/close/resume-style action: back cue.
+- Settings/pause/rules-style modal opening: open cue.
+- Positive UI confirmation: confirmation cue.
+- Direct Latchling selection: dedicated select cue, only when selection actually changes.
+- Center D-pad Latchling cycle: separate light tick cue.
+- Invalid/no-movement D-pad input: error/bump cue.
+- Valid magnetic movement: exactly **one continuous pre-recorded woosh per snap**, never one sound per grid cell.
+  - path length <= 2: `move-short.wav`
+  - path length 3–4: `move-medium.wav`
+  - path length >= 5: `move-long.wav`
+- Movement endpoint is sounded at the instant the primary travel animation reaches its destination, before the secondary bounce/capture flourish:
+  - board edge or another Latchling: `stop-soft.wav`
+  - rock: `stop-rock.wav`
+  - anchor: `stop-anchor.wav`
+  - closed door, mismatched suit/color gate, or wrong-direction rail: `stop-blocked.wav`
+  - matching nest: `capture.wav`
+- Switch activation: subtle `switch.wav` timed to the route step.
+- Turner: subtle `turn.wav` timed to the route bend.
+- Ordinary successful travel through gates/rails is intentionally silent to avoid sonic clutter.
+- Hint: dedicated question/hint cue.
+- Level clear: positive result cue.
+- Out of moves: restrained lose/error cue.
+- Level 400 completion: separate campaign-completion punctuation.
+- Generic UI taps are suppressed for semantic buttons such as D-pad directions, Latchling selection/cycle, and Hint so their specialized sound does not double-stack.
+- Level 400 `Finish` suppresses the generic confirmation cue so it does not stack with campaign completion.
+
+#### Zero-procedural guarantee
+
+`sfx400.js` uses standard HTML `Audio` playback of the checked-in source recordings. The final validator rejects procedural/variable audio code and confirmed that the SFX layer contains none of the following:
+
+- `AudioContext` / `webkitAudioContext`
+- oscillators / `createOscillator` / `OscillatorNode`
+- runtime-generated audio samples
+- `playbackRate` changes
+- pitch/detune changes
+- random sound/pitch variation
+
+The runtime may only choose a recorded file, set its volume, start/stop it, and use a small pool of identical recorded one-shots for safe overlap.
+
+#### Files and runtime changes
+
+- New `SFX_CREDITS.md` with permanent CC0/provenance record.
+- New `assets/sfx/` containing exactly 21 local mono PCM WAV files.
+- New `sfx400.js` controller with separate SFX state key `latchlings_sfx_enabled_v1`.
+- `game400-a.js` now emits semantic direct-selection and center-cycle events.
+- `game400-b.js` now emits invalid move, move start, in-route switch/turner, endpoint/capture, hint, level clear/loss and campaign-completion events.
+- `index.html` loads `sfx400.js` after `music400.js`.
+- Settings now receives a separate `Sound Effects: On / Off` control without adding persistent top-bar clutter. Music and SFX preferences remain independent.
+
+#### Audio processing
+
+Source recordings were transcoded only to normalize the delivery container/format, not to generate or creatively alter the sounds. All shipping SFX are:
+
+- mono
+- 44.1 kHz
+- 16-bit PCM WAV
+
+No pitch, playback-rate, randomization, synthesis, or procedural sample generation is performed.
+
+#### Important commits / workflow runs
+
+- `b381f514cd1bb65a8d73a017a7b1d1900f24699b` — start-of-work handoff recorded by the temporary handoff workflow.
+- `04a90ae53b683e5d4071163051aed61d8674f5f6` — add `SFX_CREDITS.md`.
+- `270c762fb7b52a3ff627f0097df2b7903e50adc0` — add `sfx400.js` sourced-audio controller.
+- `e4809aafe202bed3d604ae6fd984d15651f85b25` — create semantic SFX wiring workflow; workflow run `33441560859` completed successfully and self-removed after applying/validating the gameplay hooks.
+- Initial SFX import workflow run `33441306894` downloaded, converted and file-count-validated all 21 recordings but failed only at the final git push because `main` advanced in a narrow race window. This was not an asset/source failure.
+- `949f49f0b4d9745784faeacfdf9aeb46b7433258` — make SFX importer rebase/push retry-safe.
+- Workflow run `33441700503` — retry import completed successfully.
+- `b81bf270adddb2d7d1680b5fd9b282d7b96f049e` — bot commit adding all 21 final local SFX assets and removing importer.
+- `5cd1aecf4f216edc308633f1a2b52f6fd892950b` — enable `sfx400.js` in live `index.html`.
+- `38a1acb1c9f2482ab4ab66f48ed1ae4de26b4af9` — launch final repository-backed SFX validation.
+- Workflow run `33441908994` — all SFX validation steps completed successfully.
+- `7532721b563f1c43303a1ae5fb6d09bb32fb9e54` — validator cleanup completion commit; tree content matches the validated live runtime.
+- GitHub Pages run `33441927536` for `7532721b563f1c43303a1ae5fb6d09bb32fb9e54` completed successfully.
+
+#### Validation passed
+
+- Active JS syntax check passed for `game400-a.js`, `game400-b.js`, `music400.js`, and `sfx400.js`.
+- Exactly 21 SFX are referenced and exactly 21 WAV files ship; the filename sets match 1:1.
+- Every WAV was parsed and confirmed non-empty, mono, 44.1 kHz, 16-bit PCM.
+- Zero-procedural policy scan passed for oscillators, AudioContext synthesis, playback-rate/pitch/detune and random variation.
+- Semantic engine hook audit passed for direct selection, cycling, invalid input, move start, route events, move end, capture, hint, clear, lose and campaign completion.
+- Loader order check passed: `music400.js` then `sfx400.js`.
+- Fake-media playback harness passed exact semantic routing for selection, cycling, invalid moves, short/medium/long travel, rock/anchor/blocked endpoints and capture.
+- Import workflow and final validator both removed themselves after successful use.
+- Final GitHub Pages deployment completed successfully.
+
+#### Remaining listening/compatibility note
+
+The objective wiring, assets and deployment are validated. The final subjective mix still requires real-device playtesting by ear. Individual cue choice or volume can be adjusted without changing the architecture if a sound feels too sharp, soft, busy, metallic, airy, etc.
+
+An attempted independent HTTP fetch from the local execution environment could not resolve `maloysius-wq.github.io` because that environment had no DNS access, so do not claim that local curl provided a live-browser test. GitHub Pages itself reports the validated deployment as successful.
+
+#### Remaining unrelated critical issue
+
+The pre-existing missing `campaign400-3.js` / Levels 101–150 issue remains open and was explicitly preserved by the SFX validator. This SFX pass does not repair or conceal that campaign-data defect.
+'''
+          text=text[:start]+completed+text[end:]
+          text=text.replace('- `music400.js`\n\n**Music / licensing**', '- `music400.js`\n- `sfx400.js`\n\n**Music / licensing**', 1)
+          text=text.replace('- `MUSIC_CREDITS.md` — permanent license/provenance record\n', '- `MUSIC_CREDITS.md` — permanent license/provenance record\n\n**Sound effects / licensing**\n- `assets/sfx/*.wav` — 21 local sourced CC0 SFX files\n- `SFX_CREDITS.md` — permanent CC0/provenance record\n', 1)
+          needle='- Current music direction: title/menu = highly happy/cutesy; level tracks = chapter-specific, cute, soft, slow, pensive/inquisitive, instrumental. Preserve `MUSIC_CREDITS.md` when swapping tracks.\n'
+          repl=needle+'- Current SFX direction: sourced recorded audio only, no procedural generation; one continuous travel sound per magnetic snap; restrained semantic endpoint/UI cues. Preserve `SFX_CREDITS.md` when swapping effects.\n'
+          if needle in text and 'Current SFX direction:' not in text:
+              text=text.replace(needle,repl,1)
+          p.write_text(text)
+          PY
+
+      - name: Commit final handoff and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/finish-sfx-handoff.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/finish-sfx-handoff.yml
+          git commit -m 'Complete licensed SFX development handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
