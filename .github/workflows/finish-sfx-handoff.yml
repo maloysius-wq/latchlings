@@ -15,147 +15,35 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Record completed SFX pass
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import base64
           from pathlib import Path
-          p=Path('DEVELOPMENT_HANDOFF.md')
-          text=p.read_text()
-          start=text.index('### 2026-08-31 — Full licensed sound-effects pass')
-          end=text.index('\n---\n', start)
-          completed='''### 2026-08-31 — Full licensed sound-effects pass
-
-**Status: COMPLETED**
-
-**User request:** Perform a full audit of Latchlings and add high-quality real sound effects to meaningful UI/gameplay events, including menu/button taps, Latchling selection, continuous magnetic movement, and endpoint impacts. Zero procedurally generated sounds were allowed.
-
-#### Final source / license decision
-
-The entire shipping SFX palette is sourced from **Kenney** game-audio packs released under **Creative Commons CC0 1.0 Universal**. Attribution is not legally required, but permanent provenance is preserved in `SFX_CREDITS.md`, including the official Kenney source pack/pages, exact original filenames, transfer mirrors used for retrieval, CC0 license URL, and optional Kenney credit.
-
-Source families:
-
-- Kenney **Interface Sounds** for UI, selection, hint, switch, capture and result cues.
-- Kenney **Impact Sounds** for physical snap endpoints.
-- Kenney **Foley Sounds / Woosh** for continuous magnetic travel.
-
-All 21 shipping files are local in `assets/sfx/`. No runtime hotlinks are used.
-
-#### Final sound map / design rules
-
-The audit intentionally uses a restrained semantic vocabulary instead of making every state noisy.
-
-- Ordinary button/menu action: quiet UI tap.
-- Back/close/resume-style action: back cue.
-- Settings/pause/rules-style modal opening: open cue.
-- Positive UI confirmation: confirmation cue.
-- Direct Latchling selection: dedicated select cue, only when selection actually changes.
-- Center D-pad Latchling cycle: separate light tick cue.
-- Invalid/no-movement D-pad input: error/bump cue.
-- Valid magnetic movement: exactly **one continuous pre-recorded woosh per snap**, never one sound per grid cell.
-  - path length <= 2: `move-short.wav`
-  - path length 3–4: `move-medium.wav`
-  - path length >= 5: `move-long.wav`
-- Movement endpoint is sounded at the instant the primary travel animation reaches its destination, before the secondary bounce/capture flourish:
-  - board edge or another Latchling: `stop-soft.wav`
-  - rock: `stop-rock.wav`
-  - anchor: `stop-anchor.wav`
-  - closed door, mismatched suit/color gate, or wrong-direction rail: `stop-blocked.wav`
-  - matching nest: `capture.wav`
-- Switch activation: subtle `switch.wav` timed to the route step.
-- Turner: subtle `turn.wav` timed to the route bend.
-- Ordinary successful travel through gates/rails is intentionally silent to avoid sonic clutter.
-- Hint: dedicated question/hint cue.
-- Level clear: positive result cue.
-- Out of moves: restrained lose/error cue.
-- Level 400 completion: separate campaign-completion punctuation.
-- Generic UI taps are suppressed for semantic buttons such as D-pad directions, Latchling selection/cycle, and Hint so their specialized sound does not double-stack.
-- Level 400 `Finish` suppresses the generic confirmation cue so it does not stack with campaign completion.
-
-#### Zero-procedural guarantee
-
-`sfx400.js` uses standard HTML `Audio` playback of the checked-in source recordings. The final validator rejects procedural/variable audio code and confirmed that the SFX layer contains none of the following:
-
-- `AudioContext` / `webkitAudioContext`
-- oscillators / `createOscillator` / `OscillatorNode`
-- runtime-generated audio samples
-- `playbackRate` changes
-- pitch/detune changes
-- random sound/pitch variation
-
-The runtime may only choose a recorded file, set its volume, start/stop it, and use a small pool of identical recorded one-shots for safe overlap.
-
-#### Files and runtime changes
-
-- New `SFX_CREDITS.md` with permanent CC0/provenance record.
-- New `assets/sfx/` containing exactly 21 local mono PCM WAV files.
-- New `sfx400.js` controller with separate SFX state key `latchlings_sfx_enabled_v1`.
-- `game400-a.js` now emits semantic direct-selection and center-cycle events.
-- `game400-b.js` now emits invalid move, move start, in-route switch/turner, endpoint/capture, hint, level clear/loss and campaign-completion events.
-- `index.html` loads `sfx400.js` after `music400.js`.
-- Settings now receives a separate `Sound Effects: On / Off` control without adding persistent top-bar clutter. Music and SFX preferences remain independent.
-
-#### Audio processing
-
-Source recordings were transcoded only to normalize the delivery container/format, not to generate or creatively alter the sounds. All shipping SFX are:
-
-- mono
-- 44.1 kHz
-- 16-bit PCM WAV
-
-No pitch, playback-rate, randomization, synthesis, or procedural sample generation is performed.
-
-#### Important commits / workflow runs
-
-- `b381f514cd1bb65a8d73a017a7b1d1900f24699b` — start-of-work handoff recorded by the temporary handoff workflow.
-- `04a90ae53b683e5d4071163051aed61d8674f5f6` — add `SFX_CREDITS.md`.
-- `270c762fb7b52a3ff627f0097df2b7903e50adc0` — add `sfx400.js` sourced-audio controller.
-- `e4809aafe202bed3d604ae6fd984d15651f85b25` — create semantic SFX wiring workflow; workflow run `33441560859` completed successfully and self-removed after applying/validating the gameplay hooks.
-- Initial SFX import workflow run `33441306894` downloaded, converted and file-count-validated all 21 recordings but failed only at the final git push because `main` advanced in a narrow race window. This was not an asset/source failure.
-- `949f49f0b4d9745784faeacfdf9aeb46b7433258` — make SFX importer rebase/push retry-safe.
-- Workflow run `33441700503` — retry import completed successfully.
-- `b81bf270adddb2d7d1680b5fd9b282d7b96f049e` — bot commit adding all 21 final local SFX assets and removing importer.
-- `5cd1aecf4f216edc308633f1a2b52f6fd892950b` — enable `sfx400.js` in live `index.html`.
-- `38a1acb1c9f2482ab4ab66f48ed1ae4de26b4af9` — launch final repository-backed SFX validation.
-- Workflow run `33441908994` — all SFX validation steps completed successfully.
-- `7532721b563f1c43303a1ae5fb6d09bb32fb9e54` — validator cleanup completion commit; tree content matches the validated live runtime.
-- GitHub Pages run `33441927536` for `7532721b563f1c43303a1ae5fb6d09bb32fb9e54` completed successfully.
-
-#### Validation passed
-
-- Active JS syntax check passed for `game400-a.js`, `game400-b.js`, `music400.js`, and `sfx400.js`.
-- Exactly 21 SFX are referenced and exactly 21 WAV files ship; the filename sets match 1:1.
-- Every WAV was parsed and confirmed non-empty, mono, 44.1 kHz, 16-bit PCM.
-- Zero-procedural policy scan passed for oscillators, AudioContext synthesis, playback-rate/pitch/detune and random variation.
-- Semantic engine hook audit passed for direct selection, cycling, invalid input, move start, route events, move end, capture, hint, clear, lose and campaign completion.
-- Loader order check passed: `music400.js` then `sfx400.js`.
-- Fake-media playback harness passed exact semantic routing for selection, cycling, invalid moves, short/medium/long travel, rock/anchor/blocked endpoints and capture.
-- Import workflow and final validator both removed themselves after successful use.
-- Final GitHub Pages deployment completed successfully.
-
-#### Remaining listening/compatibility note
-
-The objective wiring, assets and deployment are validated. The final subjective mix still requires real-device playtesting by ear. Individual cue choice or volume can be adjusted without changing the architecture if a sound feels too sharp, soft, busy, metallic, airy, etc.
-
-An attempted independent HTTP fetch from the local execution environment could not resolve `maloysius-wq.github.io` because that environment had no DNS access, so do not claim that local curl provided a live-browser test. GitHub Pages itself reports the validated deployment as successful.
-
-#### Remaining unrelated critical issue
-
-The pre-existing missing `campaign400-3.js` / Levels 101–150 issue remains open and was explicitly preserved by the SFX validator. This SFX pass does not repair or conceal that campaign-data defect.
-'''
-          text=text[:start]+completed+text[end:]
-          text=text.replace('- `music400.js`\n\n**Music / licensing**', '- `music400.js`\n- `sfx400.js`\n\n**Music / licensing**', 1)
-          text=text.replace('- `MUSIC_CREDITS.md` — permanent license/provenance record\n', '- `MUSIC_CREDITS.md` — permanent license/provenance record\n\n**Sound effects / licensing**\n- `assets/sfx/*.wav` — 21 local sourced CC0 SFX files\n- `SFX_CREDITS.md` — permanent CC0/provenance record\n', 1)
-          needle='- Current music direction: title/menu = highly happy/cutesy; level tracks = chapter-specific, cute, soft, slow, pensive/inquisitive, instrumental. Preserve `MUSIC_CREDITS.md` when swapping tracks.\n'
-          repl=needle+'- Current SFX direction: sourced recorded audio only, no procedural generation; one continuous travel sound per magnetic snap; restrained semantic endpoint/UI cues. Preserve `SFX_CREDITS.md` when swapping effects.\n'
-          if needle in text and 'Current SFX direction:' not in text:
-              text=text.replace(needle,repl,1)
+          p = Path('DEVELOPMENT_HANDOFF.md')
+          text = p.read_text()
+          payload = 'IyMjIDIwMjYtMDgtMzEg4oCUIEZ1bGwgbGljZW5zZWQgc291bmQtZWZmZWN0cyBwYXNzCgoqKlN0YXR1czogQ09NUExFVEVEKioKCioqVXNlciByZXF1ZXN0OioqIFBlcmZvcm0gYSBmdWxsIGF1ZGl0IG9mIExhdGNobGluZ3MgYW5kIGFkZCBoaWdoLXF1YWxpdHkgcmVhbCBzb3VuZCBlZmZlY3RzIHRvIG1lYW5pbmdmdWwgVUkvZ2FtZXBsYXkgZXZlbnRzLCBpbmNsdWRpbmcgbWVudS9idXR0b24gdGFwcywgTGF0Y2hsaW5nIHNlbGVjdGlvbiwgY29udGludW91cyBtYWduZXRpYyBtb3ZlbWVudCwgYW5kIGVuZHBvaW50IGltcGFjdHMuIFplcm8gcHJvY2VkdXJhbGx5IGdlbmVyYXRlZCBzb3VuZHMgd2VyZSBhbGxvd2VkLgoKIyMjIyBGaW5hbCBzb3VyY2UgLyBsaWNlbnNlIGRlY2lzaW9uCgpUaGUgZW50aXJlIHNoaXBwaW5nIFNGWCBwYWxldHRlIGlzIHNvdXJjZWQgZnJvbSAqKktlbm5leSoqIGdhbWUtYXVkaW8gcGFja3MgcmVsZWFzZWQgdW5kZXIgKipDcmVhdGl2ZSBDb21tb25zIENDMCAxLjAgVW5pdmVyc2FsKiouIEF0dHJpYnV0aW9uIGlzIG5vdCBsZWdhbGx5IHJlcXVpcmVkLCBidXQgcGVybWFuZW50IHByb3ZlbmFuY2UgaXMgcHJlc2VydmVkIGluIGBTRlhfQ1JFRElUUy5tZGAsIGluY2x1ZGluZyB0aGUgb2ZmaWNpYWwgS2VubmV5IHNvdXJjZSBwYWNrL3BhZ2VzLCBleGFjdCBvcmlnaW5hbCBmaWxlbmFtZXMsIHRyYW5zZmVyIG1pcnJvcnMgdXNlZCBmb3IgcmV0cmlldmFsLCBDQzAgbGljZW5zZSBVUkwsIGFuZCBvcHRpb25hbCBLZW5uZXkgY3JlZGl0LgoKU291cmNlIGZhbWlsaWVzOgoKLSBLZW5uZXkgKipJbnRlcmZhY2UgU291bmRzKiogZm9yIFVJLCBzZWxlY3Rpb24sIGhpbnQsIHN3aXRjaCwgY2FwdHVyZSBhbmQgcmVzdWx0IGN1ZXMuCi0gS2VubmV5ICoqSW1wYWN0IFNvdW5kcyoqIGZvciBwaHlzaWNhbCBzbmFwIGVuZHBvaW50cy4KLSBLZW5uZXkgKipGb2xleSBTb3VuZHMgLyBXb29zaCoqIGZvciBjb250aW51b3VzIG1hZ25ldGljIHRyYXZlbC4KCkFsbCAyMSBzaGlwcGluZyBmaWxlcyBhcmUgbG9jYWwgaW4gYGFzc2V0cy9zZngvYC4gTm8gcnVudGltZSBob3RsaW5rcyBhcmUgdXNlZC4KCiMjIyMgRmluYWwgc291bmQgbWFwIC8gZGVzaWduIHJ1bGVzCgpUaGUgYXVkaXQgaW50ZW50aW9uYWxseSB1c2VzIGEgcmVzdHJhaW5lZCBzZW1hbnRpYyB2b2NhYnVsYXJ5IGluc3RlYWQgb2YgbWFraW5nIGV2ZXJ5IHN0YXRlIG5vaXN5LgoKLSBPcmRpbmFyeSBidXR0b24vbWVudSBhY3Rpb246IHF1aWV0IFVJIHRhcC4KLSBCYWNrL2Nsb3NlL3Jlc3VtZS1zdHlsZSBhY3Rpb246IGJhY2sgY3VlLgotIFNldHRpbmdzL3BhdXNlL3J1bGVzLXN0eWxlIG1vZGFsIG9wZW5pbmc6IG9wZW4gY3VlLgotIFBvc2l0aXZlIFVJIGNvbmZpcm1hdGlvbjogY29uZmlybWF0aW9uIGN1ZS4KLSBEaXJlY3QgTGF0Y2hsaW5nIHNlbGVjdGlvbjogZGVkaWNhdGVkIHNlbGVjdCBjdWUsIG9ubHkgd2hlbiBzZWxlY3Rpb24gYWN0dWFsbHkgY2hhbmdlcy4KLSBDZW50ZXIgRC1wYWQgTGF0Y2hsaW5nIGN5Y2xlOiBzZXBhcmF0ZSBsaWdodCB0aWNrIGN1ZS4KLSBJbnZhbGlkL25vLW1vdmVtZW50IEQtcGFkIGlucHV0OiBlcnJvci9idW1wIGN1ZS4KLSBWYWxpZCBtYWduZXRpYyBtb3ZlbWVudDogZXhhY3RseSAqKm9uZSBjb250aW51b3VzIHByZS1yZWNvcmRlZCB3b29zaCBwZXIgc25hcCoqLCBuZXZlciBvbmUgc291bmQgcGVyIGdyaWQgY2VsbC4KICAtIHBhdGggbGVuZ3RoIDw9IDI6IGBtb3ZlLXNob3J0LndhdmAKICAtIHBhdGggbGVuZ3RoIDPigJM0OiBgbW92ZS1tZWRpdW0ud2F2YAogIC0gcGF0aCBsZW5ndGggPj0gNTogYG1vdmUtbG9uZy53YXZgCi0gTW92ZW1lbnQgZW5kcG9pbnQgaXMgc291bmRlZCBhdCB0aGUgaW5zdGFudCB0aGUgcHJpbWFyeSB0cmF2ZWwgYW5pbWF0aW9uIHJlYWNoZXMgaXRzIGRlc3RpbmF0aW9uLCBiZWZvcmUgdGhlIHNlY29uZGFyeSBib3VuY2UvY2FwdHVyZSBmbG91cmlzaDoKICAtIGJvYXJkIGVkZ2Ugb3IgYW5vdGhlciBMYXRjaGxpbmc6IGBzdG9wLXNvZnQud2F2YAogIC0gcm9jazogYHN0b3Atcm9jay53YXZgCiAgLSBhbmNob3I6IGBzdG9wLWFuY2hvci53YXZgCiAgLSBjbG9zZWQgZG9vciwgbWlzbWF0Y2hlZCBzdWl0L2NvbG9yIGdhdGUsIG9yIHdyb25nLWRpcmVjdGlvbiByYWlsOiBgc3RvcC1ibG9ja2VkLndhdmAKICAtIG1hdGNoaW5nIG5lc3Q6IGBjYXB0dXJlLndhdmAKLSBTd2l0Y2ggYWN0aXZhdGlvbjogc3VidGxlIGBzd2l0Y2gud2F2YCB0aW1lZCB0byB0aGUgcm91dGUgc3RlcC4KLSBUdXJuZXI6IHN1YnRsZSBgdHVybi53YXZgIHRpbWVkIHRvIHRoZSByb3V0ZSBiZW5kLgotIE9yZGluYXJ5IHN1Y2Nlc3NmdWwgdHJhdmVsIHRocm91Z2ggZ2F0ZXMvcmFpbHMgaXMgaW50ZW50aW9uYWxseSBzaWxlbnQgdG8gYXZvaWQgc29uaWMgY2x1dHRlci4KLSBIaW50OiBkZWRpY2F0ZWQgcXVlc3Rpb24vaGludCBjdWUuCi0gTGV2ZWwgY2xlYXI6IHBvc2l0aXZlIHJlc3VsdCBjdWUuCi0gT3V0IG9mIG1vdmVzOiByZXN0cmFpbmVkIGxvc2UvZXJyb3IgY3VlLgotIExldmVsIDQwMCBjb21wbGV0aW9uOiBzZXBhcmF0ZSBjYW1wYWlnbi1jb21wbGV0aW9uIHB1bmN0dWF0aW9uLgotIEdlbmVyaWMgVUkgdGFwcyBhcmUgc3VwcHJlc3NlZCBmb3Igc2VtYW50aWMgYnV0dG9ucyBzdWNoIGFzIEQtcGFkIGRpcmVjdGlvbnMsIExhdGNobGluZyBzZWxlY3Rpb24vY3ljbGUsIGFuZCBIaW50IHNvIHRoZWlyIHNwZWNpYWxpemVkIHNvdW5kIGRvZXMgbm90IGRvdWJsZS1zdGFjay4KLSBMZXZlbCA0MDAgYEZpbmlzaGAgc3VwcHJlc3NlcyB0aGUgZ2VuZXJpYyBjb25maXJtYXRpb24gY3VlIHNvIGl0IGRvZXMgbm90IHN0YWNrIHdpdGggY2FtcGFpZ24gY29tcGxldGlvbi4KCiMjIyMgWmVyby1wcm9jZWR1cmFsIGd1YXJhbnRlZQoKYHNmeDQwMC5qc2AgdXNlcyBzdGFuZGFyZCBIVE1MIGBBdWRpb2AgcGxheWJhY2sgb2YgdGhlIGNoZWNrZWQtaW4gc291cmNlIHJlY29yZGluZ3MuIFRoZSBmaW5hbCB2YWxpZGF0b3IgcmVqZWN0cyBwcm9jZWR1cmFsL3ZhcmlhYmxlIGF1ZGlvIGNvZGUgYW5kIGNvbmZpcm1lZCB0aGF0IHRoZSBTRlggbGF5ZXIgY29udGFpbnMgbm9uZSBvZiB0aGUgZm9sbG93aW5nOgoKLSBgQXVkaW9Db250ZXh0YCAvIGB3ZWJraXRBdWRpb0NvbnRleHRgCi0gb3NjaWxsYXRvcnMgLyBgY3JlYXRlT3NjaWxsYXRvcmAgLyBgT3NjaWxsYXRvck5vZGVgCi0gcnVudGltZS1nZW5lcmF0ZWQgYXVkaW8gc2FtcGxlcwotIGBwbGF5YmFja1JhdGVgIGNoYW5nZXMKLSBwaXRjaC9kZXR1bmUgY2hhbmdlcwotIHJhbmRvbSBzb3VuZC9waXRjaCB2YXJpYXRpb24KClRoZSBydW50aW1lIG1heSBvbmx5IGNob29zZSBhIHJlY29yZGVkIGZpbGUsIHNldCBpdHMgdm9sdW1lLCBzdGFydC9zdG9wIGl0LCBhbmQgdXNlIGEgc21hbGwgcG9vbCBvZiBpZGVudGljYWwgcmVjb3JkZWQgb25lLXNob3RzIGZvciBzYWZlIG92ZXJsYXAuCgojIyMjIEZpbGVzIGFuZCBydW50aW1lIGNoYW5nZXMKCi0gTmV3IGBTRlhfQ1JFRElUUy5tZGAgd2l0aCBwZXJtYW5lbnQgQ0MwL3Byb3ZlbmFuY2UgcmVjb3JkLgotIE5ldyBgYXNzZXRzL3NmeC9gIGNvbnRhaW5pbmcgZXhhY3RseSAyMSBsb2NhbCBtb25vIFBDTSBXQVYgZmlsZXMuCi0gTmV3IGBzZng0MDAuanNgIGNvbnRyb2xsZXIgd2l0aCBzZXBhcmF0ZSBTRlggc3RhdGUga2V5IGBsYXRjaGxpbmdzX3NmeF9lbmFibGVkX3YxYC4KLSBgZ2FtZTQwMC1hLmpzYCBub3cgZW1pdHMgc2VtYW50aWMgZGlyZWN0LXNlbGVjdGlvbiBhbmQgY2VudGVyLWN5Y2xlIGV2ZW50cy4KLSBgZ2FtZTQwMC1iLmpzYCBub3cgZW1pdHMgaW52YWxpZCBtb3ZlLCBtb3ZlIHN0YXJ0LCBpbi1yb3V0ZSBzd2l0Y2gvdHVybmVyLCBlbmRwb2ludC9jYXB0dXJlLCBoaW50LCBsZXZlbCBjbGVhci9sb3NzIGFuZCBjYW1wYWlnbi1jb21wbGV0aW9uIGV2ZW50cy4KLSBgaW5kZXguaHRtbGAgbG9hZHMgYHNmeDQwMC5qc2AgYWZ0ZXIgYG11c2ljNDAwLmpzYC4KLSBTZXR0aW5ncyBub3cgcmVjZWl2ZXMgYSBzZXBhcmF0ZSBgU291bmQgRWZmZWN0czogT24gLyBPZmZgIGNvbnRyb2wgd2l0aG91dCBhZGRpbmcgcGVyc2lzdGVudCB0b3AtYmFyIGNsdXR0ZXIuIE11c2ljIGFuZCBTRlggcHJlZmVyZW5jZXMgcmVtYWluIGluZGVwZW5kZW50LgoKIyMjIyBBdWRpbyBwcm9jZXNzaW5nCgpTb3VyY2UgcmVjb3JkaW5ncyB3ZXJlIHRyYW5zY29kZWQgb25seSB0byBub3JtYWxpemUgdGhlIGRlbGl2ZXJ5IGNvbnRhaW5lci9mb3JtYXQsIG5vdCB0byBnZW5lcmF0ZSBvciBjcmVhdGl2ZWx5IGFsdGVyIHRoZSBzb3VuZHMuIEFsbCBzaGlwcGluZyBTRlggYXJlOgoKLSBtb25vCi0gNDQuMSBrSHoKLSAxNi1iaXQgUENNIFdBVgoKTm8gcGl0Y2gsIHBsYXliYWNrLXJhdGUsIHJhbmRvbWl6YXRpb24sIHN5bnRoZXNpcywgb3IgcHJvY2VkdXJhbCBzYW1wbGUgZ2VuZXJhdGlvbiBpcyBwZXJmb3JtZWQuCgojIyMjIEltcG9ydGFudCBjb21taXRzIC8gd29ya2Zsb3cgcnVucwoKLSBgYjM4MWY1MTRjZDFiYjY1YThkNzNhMDE3YTdiMWQxOTAwZjI0Njk5YmAg4oCUIHN0YXJ0LW9mLXdvcmsgaGFuZG9mZiByZWNvcmRlZCBieSB0aGUgdGVtcG9yYXJ5IGhhbmRvZmYgd29ya2Zsb3cuCi0gYDA0YTkwYWU1M2I2ODNlNWQ0MDcxMTYzMDUxYWVkNjFkODY3NGY1ZjZgIOKAlCBhZGQgYFNGWF9DUkVESVRTLm1kYC4KLSBgMjcwYzc2MmZiN2I1MmEzZmY2MjdmMDA5N2RmMmI3OTAzZTUwYWRjMGAg4oCUIGFkZCBgc2Z4NDAwLmpzYCBzb3VyY2VkLWF1ZGlvIGNvbnRyb2xsZXIuCi0gYGU0ODA5YWFmZTIwMmJlZDNkNjA0YWU2ZmQ5ODRkMTU2NTFmODViMjVgIOKAlCBjcmVhdGUgc2VtYW50aWMgU0ZYIHdpcmluZyB3b3JrZmxvdzsgd29ya2Zsb3cgcnVuIGAzMzQ0MTU2MDg1OWAgY29tcGxldGVkIHN1Y2Nlc3NmdWxseSBhbmQgc2VsZi1yZW1vdmVkIGFmdGVyIGFwcGx5aW5nL3ZhbGlkYXRpbmcgdGhlIGdhbWVwbGF5IGhvb2tzLgotIEluaXRpYWwgU0ZYIGltcG9ydCB3b3JrZmxvdyBydW4gYDMzNDQxMzA2ODk0YCBkb3dubG9hZGVkLCBjb252ZXJ0ZWQgYW5kIGZpbGUtY291bnQtdmFsaWRhdGVkIGFsbCAyMSByZWNvcmRpbmdzIGJ1dCBmYWlsZWQgb25seSBhdCB0aGUgZmluYWwgZ2l0IHB1c2ggYmVjYXVzZSBgbWFpbmAgYWR2YW5jZWQgaW4gYSBuYXJyb3cgcmFjZSB3aW5kb3cuIFRoaXMgd2FzIG5vdCBhbiBhc3NldC9zb3VyY2UgZmFpbHVyZS4KLSBgOTQ5ZjQ5ZjBiNGQ5NzQ1Nzg0ZmFlYWNmZGY5YWViNDZiNzQzMzI1OGAg4oCUIG1ha2UgU0ZYIGltcG9ydGVyIHJlYmFzZS9wdXNoIHJldHJ5LXNhZmUuCi0gV29ya2Zsb3cgcnVuIGAzMzQ0MTcwMDUwM2Ag4oCUIHJldHJ5IGltcG9ydCBjb21wbGV0ZWQgc3VjY2Vzc2Z1bGx5LgotIGBiODFiZjI3MGFkZGRiMmQ3ZDE2ODBiNWZkOWIyODJkN2I5NmYwNDllYCDigJQgYm90IGNvbW1pdCBhZGRpbmcgYWxsIDIxIGZpbmFsIGxvY2FsIFNGWCBhc3NldHMgYW5kIHJlbW92aW5nIGltcG9ydGVyLgotIGA1Y2QxYWVjZjRmMjE2ZWRjMzA4NjMzZjFhMmI1MmY2ZmQ4OTI5NTBiYCDigJQgZW5hYmxlIGBzZng0MDAuanNgIGluIGxpdmUgYGluZGV4Lmh0bWxgLgotIGAzOGExYWNiMWM5ZjI0ODJhYjRhYjY2ZjQ4ZWQxYWU0ZGUyNmI0YWY5YCDigJQgbGF1bmNoIGZpbmFsIHJlcG9zaXRvcnktYmFja2VkIFNGWCB2YWxpZGF0aW9uLgotIFdvcmtmbG93IHJ1biBgMzM0NDE5MDg5OTRgIOKAlCBhbGwgU0ZYIHZhbGlkYXRpb24gc3RlcHMgY29tcGxldGVkIHN1Y2Nlc3NmdWxseS4KLSBgNzUzMjcyMWI1NjNmMWM0MzMwM2ExYWU1ZmI2ZDA5YmIzMmZiOWU1NGAg4oCUIHZhbGlkYXRvciBjbGVhbnVwIGNvbXBsZXRpb24gY29tbWl0OyB0cmVlIGNvbnRlbnQgbWF0Y2hlcyB0aGUgdmFsaWRhdGVkIGxpdmUgcnVudGltZS4KLSBHaXRIdWIgUGFnZXMgcnVuIGAzMzQ0MTkyNzUzNmAgZm9yIGA3NTMyNzIxYjU2M2YxYzQzMzAzYTFhZTVmYjZkMDliYjMyZmI5ZTU0YCBjb21wbGV0ZWQgc3VjY2Vzc2Z1bGx5LgoKIyMjIyBWYWxpZGF0aW9uIHBhc3NlZAoKLSBBY3RpdmUgSlMgc3ludGF4IGNoZWNrIHBhc3NlZCBmb3IgYGdhbWU0MDAtYS5qc2AsIGBnYW1lNDAwLWIuanNgLCBgbXVzaWM0MDAuanNgLCBhbmQgYHNmeDQwMC5qc2AuCi0gRXhhY3RseSAyMSBTRlggYXJlIHJlZmVyZW5jZWQgYW5kIGV4YWN0bHkgMjEgV0FWIGZpbGVzIHNoaXA7IHRoZSBmaWxlbmFtZSBzZXRzIG1hdGNoIDE6MS4KLSBFdmVyeSBXQVYgd2FzIHBhcnNlZCBhbmQgY29uZmlybWVkIG5vbi1lbXB0eSwgbW9ubywgNDQuMSBrSHosIDE2LWJpdCBQQ00uCi0gWmVyby1wcm9jZWR1cmFsIHBvbGljeSBzY2FuIHBhc3NlZCBmb3Igb3NjaWxsYXRvcnMsIEF1ZGlvQ29udGV4dCBzeW50aGVzaXMsIHBsYXliYWNrLXJhdGUvcGl0Y2gvZGV0dW5lIGFuZCByYW5kb20gdmFyaWF0aW9uLgotIFNlbWFudGljIGVuZ2luZSBob29rIGF1ZGl0IHBhc3NlZCBmb3IgZGlyZWN0IHNlbGVjdGlvbiwgY3ljbGluZywgaW52YWxpZCBpbnB1dCwgbW92ZSBzdGFydCwgcm91dGUgZXZlbnRzLCBtb3ZlIGVuZCwgY2FwdHVyZSwgaGludCwgY2xlYXIsIGxvc2UgYW5kIGNhbXBhaWduIGNvbXBsZXRpb24uCi0gTG9hZGVyIG9yZGVyIGNoZWNrIHBhc3NlZDogYG11c2ljNDAwLmpzYCB0aGVuIGBzZng0MDAuanNgLgotIEZha2UtbWVkaWEgcGxheWJhY2sgaGFybmVzcyBwYXNzZWQgZXhhY3Qgc2VtYW50aWMgcm91dGluZyBmb3Igc2VsZWN0aW9uLCBjeWNsaW5nLCBpbnZhbGlkIG1vdmVzLCBzaG9ydC9tZWRpdW0vbG9uZyB0cmF2ZWwsIHJvY2svYW5jaG9yL2Jsb2NrZWQgZW5kcG9pbnRzIGFuZCBjYXB0dXJlLgotIEltcG9ydCB3b3JrZmxvdyBhbmQgZmluYWwgdmFsaWRhdG9yIGJvdGggcmVtb3ZlZCB0aGVtc2VsdmVzIGFmdGVyIHN1Y2Nlc3NmdWwgdXNlLgotIEZpbmFsIEdpdEh1YiBQYWdlcyBkZXBsb3ltZW50IGNvbXBsZXRlZCBzdWNjZXNzZnVsbHkuCgojIyMjIFJlbWFpbmluZyBsaXN0ZW5pbmcvY29tcGF0aWJpbGl0eSBub3RlCgpUaGUgb2JqZWN0aXZlIHdpcmluZywgYXNzZXRzIGFuZCBkZXBsb3ltZW50IGFyZSB2YWxpZGF0ZWQuIFRoZSBmaW5hbCBzdWJqZWN0aXZlIG1peCBzdGlsbCByZXF1aXJlcyByZWFsLWRldmljZSBwbGF5dGVzdGluZyBieSBlYXIuIEluZGl2aWR1YWwgY3VlIGNob2ljZSBvciB2b2x1bWUgY2FuIGJlIGFkanVzdGVkIHdpdGhvdXQgY2hhbmdpbmcgdGhlIGFyY2hpdGVjdHVyZSBpZiBhIHNvdW5kIGZlZWxzIHRvbyBzaGFycCwgc29mdCwgYnVzeSwgbWV0YWxsaWMsIGFpcnksIGV0Yy4KCkFuIGF0dGVtcHRlZCBpbmRlcGVuZGVudCBIVFRQIGZldGNoIGZyb20gdGhlIGxvY2FsIGV4ZWN1dGlvbiBlbnZpcm9ubWVudCBjb3VsZCBub3QgcmVzb2x2ZSBgbWFsb3lzaXVzLXdxLmdpdGh1Yi5pb2AgYmVjYXVzZSB0aGF0IGVudmlyb25tZW50IGhhZCBubyBETlMgYWNjZXNzLCBzbyBkbyBub3QgY2xhaW0gdGhhdCBsb2NhbCBjdXJsIHByb3ZpZGVkIGEgbGl2ZS1icm93c2VyIHRlc3QuIEdpdEh1YiBQYWdlcyBpdHNlbGYgcmVwb3J0cyB0aGUgdmFsaWRhdGVkIGRlcGxveW1lbnQgYXMgc3VjY2Vzc2Z1bC4KCiMjIyMgUmVtYWluaW5nIHVucmVsYXRlZCBjcml0aWNhbCBpc3N1ZQoKVGhlIHByZS1leGlzdGluZyBtaXNzaW5nIGBjYW1wYWlnbjQwMC0zLmpzYCAvIExldmVscyAxMDHigJMxNTAgaXNzdWUgcmVtYWlucyBvcGVuIGFuZCB3YXMgZXhwbGljaXRseSBwcmVzZXJ2ZWQgYnkgdGhlIFNGWCB2YWxpZGF0b3IuIFRoaXMgU0ZYIHBhc3MgZG9lcyBub3QgcmVwYWlyIG9yIGNvbmNlYWwgdGhhdCBjYW1wYWlnbi1kYXRhIGRlZmVjdC4K'
+          completed = base64.b64decode(payload).decode('utf-8')
+          start = text.index('### 2026-08-31 — Full licensed sound-effects pass')
+          end = text.index('\n---\n', start)
+          text = text[:start] + completed + text[end:]
+          old = '- `music400.js`\n\n**Music / licensing**'
+          new = '- `music400.js`\n- `sfx400.js`\n\n**Music / licensing**'
+          if old in text:
+              text = text.replace(old, new, 1)
+          old = '- `MUSIC_CREDITS.md` — permanent license/provenance record\n'
+          new = old + '\n**Sound effects / licensing**\n- `assets/sfx/*.wav` — 21 local sourced CC0 SFX files\n- `SFX_CREDITS.md` — permanent CC0/provenance record\n'
+          if '**Sound effects / licensing**' not in text:
+              text = text.replace(old, new, 1)
+          needle = '- Current music direction: title/menu = highly happy/cutesy; level tracks = chapter-specific, cute, soft, slow, pensive/inquisitive, instrumental. Preserve `MUSIC_CREDITS.md` when swapping tracks.\n'
+          if 'Current SFX direction:' not in text:
+              text = text.replace(needle, needle + '- Current SFX direction: sourced recorded audio only, no procedural generation; one continuous travel sound per magnetic snap; restrained semantic endpoint/UI cues. Preserve `SFX_CREDITS.md` when swapping effects.\n', 1)
+          text = text.replace('- Music preference key: `latchlings_music_enabled_v1`.\n', '- Music preference key: `latchlings_music_enabled_v1`.\n- SFX preference key: `latchlings_sfx_enabled_v1`.\n', 1)
+          text = text.replace('5. Preserve/update `MUSIC_CREDITS.md` if soundtrack files change.\n6. At task completion, update and commit this handoff again.', '5. Preserve/update `MUSIC_CREDITS.md` if soundtrack files change.\n6. Preserve/update `SFX_CREDITS.md` if sound-effect files change; keep SFX sourced-recording-only.\n7. At task completion, update and commit this handoff again.')
           p.write_text(text)
           PY
-
       - name: Commit final handoff and remove workflow
         shell: bash
         run: |
