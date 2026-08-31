@@ -1,0 +1,138 @@
+name: Validate Sourced SFX
+
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-sfx.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate active JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in game400-a.js game400-b.js music400.js sfx400.js; do node --check "$f"; done
+
+      - name: Validate SFX references and audio files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, wave
+
+          js = Path('sfx400.js').read_text()
+          refs = sorted(set(re.findall(r"['\"]([a-z0-9-]+\.wav)['\"]", js)))
+          files = sorted(p.name for p in Path('assets/sfx').glob('*.wav'))
+          assert len(refs) == 21, f'Expected 21 referenced SFX, got {len(refs)}: {refs}'
+          assert len(files) == 21, f'Expected 21 shipped SFX, got {len(files)}: {files}'
+          assert refs == files, f'Reference mismatch. refs={refs}, files={files}'
+          for name in files:
+              path = Path('assets/sfx') / name
+              with wave.open(str(path), 'rb') as wav:
+                  assert wav.getnchannels() == 1, f'{name}: expected mono'
+                  assert wav.getframerate() == 44100, f'{name}: expected 44.1 kHz'
+                  assert wav.getnframes() > 0, f'{name}: empty audio'
+                  assert wav.getsampwidth() == 2, f'{name}: expected 16-bit PCM'
+          print('Validated 21/21 referenced mono 44.1kHz PCM WAV assets.')
+          PY
+
+      - name: Enforce zero procedural SFX generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -E 'createOscillator|OscillatorNode|AudioContext|webkitAudioContext|playbackRate|detune|Math\.random' sfx400.js; then
+            echo 'Procedural/generated/variable-pitch SFX code detected.' >&2
+            exit 1
+          fi
+          echo 'No oscillator, AudioContext synthesis, playback-rate, detune, or random SFX code detected.'
+
+      - name: Validate semantic event wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'LatchlingsSFX.selectLatchling' game400-a.js
+          grep -q 'LatchlingsSFX.cycleLatchling' game400-a.js
+          grep -q 'LatchlingsSFX.invalidMove' game400-b.js
+          grep -q 'LatchlingsSFX.startMove' game400-b.js
+          grep -q 'LatchlingsSFX.scheduleRouteEvents' game400-b.js
+          grep -q 'LatchlingsSFX.endMove' game400-b.js
+          grep -q "type:'switch'" game400-b.js
+          grep -q "type:'turn'" game400-b.js
+          grep -q 'LatchlingsSFX.levelClear' game400-b.js
+          grep -q 'LatchlingsSFX.levelLose' game400-b.js
+          grep -q 'LatchlingsSFX.hint' game400-b.js
+          grep -q 'LatchlingsSFX.campaignComplete' game400-b.js
+          grep -q '<script src="music400.js"></script>' index.html
+          grep -q '<script src="sfx400.js"></script>' index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('index.html').read_text()
+          assert html.index('music400.js') < html.index('sfx400.js'), 'Expected SFX loader after music loader'
+          # This is a known unrelated pre-existing issue and is intentionally not hidden by this SFX validation.
+          assert 'campaign400-3.js' in html
+          assert not Path('campaign400-3.js').exists(), 'Chapter 3 unexpectedly appeared; run full campaign audit before changing handoff issue state.'
+          print('Semantic hooks and loader order validated. Known missing campaign400-3.js remains explicitly detected.')
+          PY
+
+      - name: Exercise SFX controller with fake media elements
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'JS'
+          const plays=[];
+          global.localStorage={getItem(){return null},setItem(){}};
+          global.Audio=class FakeAudio{
+            constructor(src=''){this.src=src;this.volume=1;this.currentTime=0;this.paused=true;}
+            play(){this.paused=false;plays.push(this.src);return Promise.resolve();}
+            pause(){this.paused=true;}
+          };
+          global.document={
+            addEventListener(){},
+            getElementById(){return null;}
+          };
+          global.MutationObserver=class {observe(){}};
+          global.window=global;
+          require('./sfx400.js');
+          LatchlingsSFX.selectLatchling();
+          LatchlingsSFX.cycleLatchling();
+          LatchlingsSFX.invalidMove();
+          LatchlingsSFX.startMove(1); LatchlingsSFX.endMove('rock',false);
+          LatchlingsSFX.startMove(3); LatchlingsSFX.endMove('anchor',false);
+          LatchlingsSFX.startMove(6); LatchlingsSFX.endMove('door',false);
+          LatchlingsSFX.startMove(2); LatchlingsSFX.endMove('nest',true);
+          const expected=[
+            'assets/sfx/select-latchling.wav',
+            'assets/sfx/cycle-latchling.wav',
+            'assets/sfx/invalid.wav',
+            'assets/sfx/move-short.wav','assets/sfx/stop-rock.wav',
+            'assets/sfx/move-medium.wav','assets/sfx/stop-anchor.wav',
+            'assets/sfx/move-long.wav','assets/sfx/stop-blocked.wav',
+            'assets/sfx/move-short.wav','assets/sfx/capture.wav'
+          ];
+          if(JSON.stringify(plays)!==JSON.stringify(expected)){
+            console.error({plays,expected}); process.exit(1);
+          }
+          console.log('SFX semantic playback mapping harness passed.');
+          JS
+
+      - name: Remove temporary validator after success
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/validate-sfx.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/validate-sfx.yml
+          git commit -m 'Complete sourced SFX validation'
+          git pull --rebase origin main
+          git push origin HEAD:main
