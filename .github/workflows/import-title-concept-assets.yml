@@ -1,0 +1,57 @@
+name: Import Title Concept CC0 Assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-title-concept-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download selected Kenney CC0 accents
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/background-elements-remastered/PNG/Default'
+          mkdir -p title-concepts/assets/kenney
+          for f in cloud1.png cloud4.png tree.png castleSmallAlt.png bush3.png; do
+            curl --retry 3 --retry-delay 1 -fL "$base/$f" -o "title-concepts/assets/kenney/$f"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          expected={'cloud1.png','cloud4.png','tree.png','castleSmallAlt.png','bush3.png'}
+          root=Path('title-concepts/assets/kenney')
+          found={p.name for p in root.glob('*.png')}
+          assert found == expected, (found,expected)
+          for p in root.glob('*.png'):
+              data=p.read_bytes()
+              assert len(data)>100, (p,len(data))
+              assert data[:8] == b'\x89PNG\r\n\x1a\n', p
+              w,h=struct.unpack('>II',data[16:24])
+              assert w>0 and h>0, (p,w,h)
+              print(p,w,h,len(data))
+          PY
+      - name: Commit assets and remove importer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/import-title-concept-assets.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-concepts/assets/kenney .github/workflows/import-title-concept-assets.yml
+          git commit -m 'Add CC0 Kenney title concept accents'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt*2))
+          done
+          exit 1
