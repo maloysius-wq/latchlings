@@ -1,0 +1,63 @@
+name: Import CC0 Title V2 Assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-cc0-title-v2-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Clone curated CC0 asset library
+        run: git clone --depth 1 https://github.com/Tiddybub/2d-assets.git /tmp/cc0-assets
+      - name: Copy selected source art and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest='title-concepts-cc0-v2/assets'
+          srcdest='title-concepts-cc0-v2/sources'
+          mkdir -p "$dest" "$srcdest"
+          copy_pack() {
+            pack="$1"
+            slug="$2"
+            if [ -f "/tmp/cc0-assets/$pack/Sample.png" ]; then
+              cp "/tmp/cc0-assets/$pack/Sample.png" "$dest/${slug}-sample.png"
+            else
+              cp "/tmp/cc0-assets/$pack/Preview.png" "$dest/${slug}-sample.png"
+            fi
+            cp "/tmp/cc0-assets/$pack/Preview.png" "$dest/${slug}-preview.png"
+            cp "/tmp/cc0-assets/$pack/SOURCE.md" "$srcdest/${slug}-SOURCE.md"
+            cp "/tmp/cc0-assets/$pack/License.txt" "$srcdest/${slug}-LICENSE.txt" 2>/dev/null || true
+          }
+          copy_pack 'tiles-terrain/background-elements-remastered' 'background'
+          copy_pack 'fantasy/sketch-town' 'sketch-town'
+          copy_pack 'misc/shape-characters' 'shape-characters'
+          copy_pack 'characters/animal-pack' 'animal-pack'
+          copy_pack 'effects/foliage-sprites' 'foliage'
+          copy_pack 'ui/ui-pack-adventure' 'ui-adventure'
+          find "$dest" -type f -maxdepth 1 -print
+      - name: Validate imported artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find title-concepts-cc0-v2/assets -maxdepth 1 -type f -name '*.png' | wc -l)" -eq 12
+          test "$(find title-concepts-cc0-v2/sources -maxdepth 1 -type f -name '*SOURCE.md' | wc -l)" -eq 6
+          file title-concepts-cc0-v2/assets/*.png | grep -q 'PNG image data'
+      - name: Commit assets and remove importer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/import-cc0-title-v2-assets.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add CC0 source artwork for title concepts v2'
+          git pull --rebase origin main
+          git push origin HEAD:main
