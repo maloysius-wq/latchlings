@@ -1,22 +1,38 @@
 # Latchlings second title concept gallery — CC0 asset provenance
 
-This preview intentionally avoids procedurally drawn decorative scenery. The Latchlings themselves remain custom HTML/SVG characters so they can animate, but the non-Latchling hero artwork is composed from CC0 art sourced from Kenney asset packs/previews.
+This preview intentionally avoids procedurally drawn decorative scenery. The Latchlings themselves remain custom HTML/SVG characters so they can animate, but the non-Latchling illustrative artwork is composed from locally hosted CC0 source art.
 
-## CC0 sources used in the concept pass
+## Asset source and import method
 
-- **Background Elements Remastered** — Kenney — Creative Commons CC0 — https://kenney.nl/assets/background-elements-remastered
-- **Foliage Pack / Foliage Sprites** — Kenney — Creative Commons CC0 — https://kenney.nl/assets/foliage-sprites
-- **UI Pack - Adventure** — Kenney — Creative Commons CC0 — https://opengameart.org/content/ui-pack-adventure
-- **Fantasy Town Kit** — Kenney — CC0, located through Kenney's official asset preview index — https://kenney.nl/data/itch/preview/
-- **Sketch Town** — Kenney — CC0, located through Kenney's official asset preview index — https://kenney.nl/data/itch/preview/
-- **Cube Pets** — Kenney — CC0, located through Kenney's official asset preview index — https://kenney.nl/data/itch/preview/
-- **Shape Characters** — Kenney — CC0, located through Kenney's official asset preview index — https://kenney.nl/data/itch/preview/
-- **Animal Pack** — Kenney — CC0, located through Kenney's official asset preview index — https://kenney.nl/data/itch/preview/
+The selected artwork was imported into this repository from the public `Tiddybub/2d-assets` archive, a curated CC0 2D game-asset library. For each pack used here, the import also preserved that archive's `SOURCE.md` and available license file under `title-concepts-cc0-v2/sources/`.
 
-Kenney's asset pages state CC0 licensing and do not require attribution. Credit is preserved here anyway for provenance.
+There are no runtime hotlinks to the archive or to Kenney. The gallery loads only files committed locally under `title-concepts-cc0-v2/assets/`.
 
-## Hosted-preview packaging
+## CC0 packs used
 
-The GitHub Pages preview embeds optimized WebP versions of the selected CC0 preview artwork directly inside `index.html` as data URIs. This is deliberate: it makes the page self-contained on mobile and prevents the missing-sibling-asset failure that occurred when the local HTML was opened by itself.
+- **Background Elements Remastered** — Kenney — CC0-1.0
+  - Original source: https://kenney.nl/assets/background-elements-remastered
+  - Local provenance: `sources/background-SOURCE.md`
+- **Sketch Town** — Kenney — CC0-1.0
+  - Original source: https://kenney.nl/assets/sketch-town
+  - Local provenance: `sources/sketch-town-SOURCE.md`
+- **Shape Characters** — Kenney — CC0-1.0
+  - Original source: https://kenney.nl/assets/shape-characters
+  - Local provenance: `sources/shape-characters-SOURCE.md`
+- **Animal Pack** — Kenney — CC0-1.0
+  - Original source: https://kenney.nl/assets/animal-pack
+  - Local provenance: `sources/animal-pack-SOURCE.md`
+- **Foliage Sprites** — Kenney — CC0-1.0
+  - Original source: https://kenney.nl/assets/foliage-sprites
+  - Local provenance: `sources/foliage-SOURCE.md`
+- **UI Pack - Adventure** — Kenney — CC0-1.0
+  - Original source: https://kenney.nl/assets/ui-pack-adventure
+  - Local provenance: `sources/ui-adventure-SOURCE.md`
 
-The embedded preview artwork is for design-direction evaluation. If one concept is chosen for production, replace preview composites with clean individual source sprites from the underlying CC0 pack where appropriate before final integration.
+CC0 permits copying, modification, distribution, and commercial use without required attribution. Credit is preserved here anyway for provenance and maintainability.
+
+## Files used by the preview
+
+The gallery uses local `Preview.png` / `Sample.png` derivatives imported from those packs and renamed consistently under `assets/`, for example `background-sample.png`, `foliage-sample.png`, `sketch-town-preview.png`, and `ui-adventure-sample.png`.
+
+These composites are being used to explore title-screen art direction. If one direction is selected for the production title page, the next production pass should prefer clean individual source sprites from the corresponding CC0 pack where useful, rather than treating an entire preview composition as a final shipping illustration.
