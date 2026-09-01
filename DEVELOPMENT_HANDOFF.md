@@ -29,6 +29,30 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-08-31 — Ten browser-rendered title-page concepts
+
+**Status: IN PROGRESS**
+
+**User goal:** Replace the current title page direction with something dramatically cuter, more characterful, animated, handcrafted, and less template/AI-looking. Produce **10 genuinely different title-page concepts as real HTML/CSS/JS that can actually run in the browser**, not generated concept art. Latchlings on the title page must have expressive eyes/faces and animation. Zero emoji. Research and use appropriate CC0 assets from the internet where they materially improve the designs.
+
+**Implementation plan:**
+
+1. Inspect the current home/title markup and active 400-level visual language so concepts remain plausible within the actual game.
+2. Research CC0 UI/environment/decorative asset packs suitable for a cute sky-island puzzle game, with source/license provenance saved alongside the concepts.
+3. Build a standalone `title-concepts/` preview area containing ten distinct, mobile-first HTML concepts rather than ten palette swaps. Each concept will preserve the core product actions (Play, Daily Puzzle, Level Select, settings/progress context) but explore different composition, ornament, character staging, motion, typography treatment, panels, and environmental framing.
+4. Latchlings will be real HTML/CSS/SVG creatures with eyes, mouths, black suit marks, individual expressions, asynchronous blinks, idle motion, and different poses. No emoji or generated raster character art.
+5. Where CC0 assets are used, vendor them locally or use a safe build/import step and record exact source/license details in `title-concepts/ASSET_CREDITS.md`. Prefer Kenney/OpenGameArt CC0 sources and avoid attribution-required assets unless clearly documented.
+6. Render all ten concepts in a phone-size headless browser, inspect screenshots for clipping/readability/uncanny faces, and fix obvious defects before deployment.
+7. Deploy the preview gallery under the existing GitHub Pages site without replacing the live game title page. The user will choose a direction first; production integration happens only after selection.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, new `title-concepts/` HTML/CSS/JS preview files, locally vendored CC0 decorative assets where useful, `title-concepts/ASSET_CREDITS.md`, and temporary self-removing workflows only if needed for binary asset import/render validation. Existing live `index.html` home screen remains unchanged during concept exploration.
+
+**Validation plan:** zero emoji scan; HTML/CSS/JS syntax/sanity checks; ten distinct concept entries; mobile-size headless rendering/screenshots; no external runtime hotlinks for selected assets; provenance/license audit for all third-party assets.
+
+**Deployment plan:** add the preview gallery and assets under `title-concepts/`, verify Pages deployment, then mark this entry COMPLETED with concept descriptions, source assets, screenshots/render results, preview URL, commits, and next action.
+
+---
+
 ### 2026-08-31 — SFX timing and softness tuning
 
 **Status: COMPLETED**
