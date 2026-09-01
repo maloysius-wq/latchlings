@@ -1,0 +1,112 @@
+name: Finalize Title Concepts
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-title-concepts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify final Nursery viewport fit
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+          python3 -m http.server 8000 >/tmp/title-final-server.log 2>&1 &
+          server=$!
+          trap 'kill $server 2>/dev/null || true' EXIT
+          sleep 1
+          node <<'NODE'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const b=await chromium.launch({headless:true});
+            const p=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+            const errors=[];
+            p.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+            p.on('pageerror',e=>errors.push(String(e)));
+            await p.goto('http://127.0.0.1:8000/title-concepts/concept.html?c=2&clean=1',{waitUntil:'networkidle'});
+            const m=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,sh:document.documentElement.scrollHeight,iw:innerWidth,ih:innerHeight}));
+            console.log(m);
+            if(m.sw>m.iw+2 || m.sh>m.ih+2) throw new Error(`Nursery overflow remains: ${JSON.stringify(m)}`);
+            if(errors.length) throw new Error(errors.join(' | '));
+            await b.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Complete development handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          title='### 2026-08-31 — Ten browser-rendered title-page concepts'
+          start=text.index(title)
+          end=text.index('\n---\n',start)
+          section=text[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          completion='''
+
+#### Completion summary
+
+Ten genuinely different browser-feasible title-page directions were built under `title-concepts/` without modifying the production `index.html` title page. The live preview gallery is intended for design selection before any production integration.
+
+**Concepts:**
+1. Storybook Skyway — warm floating-island storybook composition.
+2. Nest Nursery — giant living tree with multiple nest/perch characters.
+3. Skyway Journal — paper travel-journal/map direction.
+4. Toybox Diorama — chunky tabletop/toy-stage direction.
+5. Cloud Carousel — circular/orbiting cloud composition.
+6. Cottage Window — cozy windowsill looking into the skyway.
+7. Garden Gate — flower/hedge entrance with peeking characters.
+8. Lantern Constellations — soft twilight moon/lantern direction.
+9. Patchwork Story — felt/stitch/applique handmade direction.
+10. Little Music Box — tiny clockwork stage/music-box direction.
+
+**Character/art system:** Latchlings are original HTML/CSS/inline-SVG, not generated raster art. They have white eyes/pupils, mouths, blush, wings/feet, black suit marks, multiple expressions, individual deterministic blink intervals, and distinct idle/pose animations. The preview contains zero emoji and respects `prefers-reduced-motion`.
+
+**Product/UI decision:** Fake currency/energy bars from earlier concept imagery were deliberately rejected. Every concept uses product-relevant context only: star progress, settings, Play, Daily Puzzle, and Level Select.
+
+**CC0 assets:** Five local accents from Kenney `Background Elements Remastered` are vendored in `title-concepts/assets/kenney/`: `cloud1.png`, `cloud4.png`, `tree.png`, `castleSmallAlt.png`, and `bush3.png`. Full provenance and CC0 1.0 licensing are recorded in `title-concepts/ASSET_CREDITS.md`. Additional researched production candidates are Kenney UI Pack - Adventure, Fantasy UI Borders, Foliage Sprites, and the CC0 Wenrexa flower/nature UI kit, but the preview intentionally avoids becoming an off-the-shelf asset-pack collage.
+
+**Files added:** `title-concepts/index.html`, `concept.html`, `shared.css`, `themes-a.css`, `themes-b.css`, `preview-fixes.css`, `concepts.js`, `ASSET_CREDITS.md`, plus the five vendored PNG accents.
+
+**Validation:** static validation passed for JS syntax, presence of all ten templates, exact CC0 asset set, zero emoji, and no external runtime hotlinks in the concept renderer. GitHub Actions run `33471050823` rendered all ten concepts in Chromium at a 390x844 mobile viewport with no console/page errors, failed requests, broken images, or horizontal overflow and uploaded screenshot artifact `9786540353`. Screenshots were downloaded and visually inspected. The first pass found only a 14px vertical overflow on Nest Nursery; `preview-fixes.css` reduced its scene height, and the final browser gate confirmed it fits within 390x844 with no overflow.
+
+**Implementation head before handoff close:** `4d8f7df964c201190237b16f778ed2476ce21ed9`.
+
+**Preview URL:** `https://maloysius-wq.github.io/latchlings/title-concepts/`
+
+**Next action:** user reviews the ten live animated HTML concepts and chooses a direction or asks to combine specific elements. Do not replace the production title page until the user explicitly selects/approves a direction.
+'''
+          if '#### Completion summary' not in section:
+              section += completion
+          text=text[:start]+section+text[end:]
+          p.write_text(text)
+          PY
+      - name: Commit handoff and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/finalize-title-concepts.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/finalize-title-concepts.yml
+          git commit -m 'Complete title page concept handoff'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt*2))
+          done
+          exit 1
