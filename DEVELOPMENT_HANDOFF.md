@@ -31,7 +31,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-08-31 — Ten browser-rendered title-page concepts
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Replace the current title page direction with something dramatically cuter, more characterful, animated, handcrafted, and less template/AI-looking. Produce **10 genuinely different title-page concepts as real HTML/CSS/JS that can actually run in the browser**, not generated concept art. Latchlings on the title page must have expressive eyes/faces and animation. Zero emoji. Research and use appropriate CC0 assets from the internet where they materially improve the designs.
 
@@ -50,6 +50,38 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** zero emoji scan; HTML/CSS/JS syntax/sanity checks; ten distinct concept entries; mobile-size headless rendering/screenshots; no external runtime hotlinks for selected assets; provenance/license audit for all third-party assets.
 
 **Deployment plan:** add the preview gallery and assets under `title-concepts/`, verify Pages deployment, then mark this entry COMPLETED with concept descriptions, source assets, screenshots/render results, preview URL, commits, and next action.
+
+#### Completion summary
+
+Ten genuinely different browser-feasible title-page directions were built under `title-concepts/` without modifying the production `index.html` title page. The live preview gallery is intended for design selection before any production integration.
+
+**Concepts:**
+1. Storybook Skyway — warm floating-island storybook composition.
+2. Nest Nursery — giant living tree with multiple nest/perch characters.
+3. Skyway Journal — paper travel-journal/map direction.
+4. Toybox Diorama — chunky tabletop/toy-stage direction.
+5. Cloud Carousel — circular/orbiting cloud composition.
+6. Cottage Window — cozy windowsill looking into the skyway.
+7. Garden Gate — flower/hedge entrance with peeking characters.
+8. Lantern Constellations — soft twilight moon/lantern direction.
+9. Patchwork Story — felt/stitch/applique handmade direction.
+10. Little Music Box — tiny clockwork stage/music-box direction.
+
+**Character/art system:** Latchlings are original HTML/CSS/inline-SVG, not generated raster art. They have white eyes/pupils, mouths, blush, wings/feet, black suit marks, multiple expressions, individual deterministic blink intervals, and distinct idle/pose animations. The preview contains zero emoji and respects `prefers-reduced-motion`.
+
+**Product/UI decision:** Fake currency/energy bars from earlier concept imagery were deliberately rejected. Every concept uses product-relevant context only: star progress, settings, Play, Daily Puzzle, and Level Select.
+
+**CC0 assets:** Five local accents from Kenney `Background Elements Remastered` are vendored in `title-concepts/assets/kenney/`: `cloud1.png`, `cloud4.png`, `tree.png`, `castleSmallAlt.png`, and `bush3.png`. Full provenance and CC0 1.0 licensing are recorded in `title-concepts/ASSET_CREDITS.md`. Additional researched production candidates are Kenney UI Pack - Adventure, Fantasy UI Borders, Foliage Sprites, and the CC0 Wenrexa flower/nature UI kit, but the preview intentionally avoids becoming an off-the-shelf asset-pack collage.
+
+**Files added:** `title-concepts/index.html`, `concept.html`, `shared.css`, `themes-a.css`, `themes-b.css`, `preview-fixes.css`, `concepts.js`, `ASSET_CREDITS.md`, plus the five vendored PNG accents.
+
+**Validation:** static validation passed for JS syntax, presence of all ten templates, exact CC0 asset set, zero emoji, and no external runtime hotlinks in the concept renderer. GitHub Actions run `33471050823` rendered all ten concepts in Chromium at a 390x844 mobile viewport with no console/page errors, failed requests, broken images, or horizontal overflow and uploaded screenshot artifact `9786540353`. Screenshots were downloaded and visually inspected. The first pass found only a 14px vertical overflow on Nest Nursery; `preview-fixes.css` reduced its scene height, and the final browser gate confirmed it fits within 390x844 with no overflow.
+
+**Implementation head before handoff close:** `4d8f7df964c201190237b16f778ed2476ce21ed9`.
+
+**Preview URL:** `https://maloysius-wq.github.io/latchlings/title-concepts/`
+
+**Next action:** user reviews the ten live animated HTML concepts and chooses a direction or asks to combine specific elements. Do not replace the production title page until the user explicitly selects/approves a direction.
 
 ---
 
