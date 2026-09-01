@@ -1,0 +1,20 @@
+{
+  "name": "latchlings",
+  "version": "1.0.0",
+  "description": "",
+  "main": "campaign400-1.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maloysius-wq/latchlings.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maloysius-wq/latchlings/issues"
+  },
+  "homepage": "https://github.com/maloysius-wq/latchlings#readme"
+}
