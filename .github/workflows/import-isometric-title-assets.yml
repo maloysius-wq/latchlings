@@ -1,0 +1,64 @@
+name: Import Coherent Isometric Title Assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-isometric-title-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import CC0 isometric bases and props
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p title-island-concepts/assets/isometric title-island-concepts/sources/isometric-miniature-bases title-island-concepts/sources/isometric-miniature-farm
+
+          BASE='https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/isometric-miniature-bases/Isometric'
+          for f in base_grass_high_detail_S.png base_grass_high_S.png base_grass_flat_S.png base_grass_detail_S.png base_dirt_float_S.png; do
+            curl -fsSL "$BASE/$f" -o "title-island-concepts/assets/isometric/$f"
+          done
+          curl -fsSL 'https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/isometric-miniature-bases/SOURCE.md' -o title-island-concepts/sources/isometric-miniature-bases/SOURCE.md
+          curl -fsSL 'https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/isometric-miniature-bases/License.txt' -o title-island-concepts/sources/isometric-miniature-bases/License.txt
+
+          FARM='https://raw.githubusercontent.com/Tiddybub/2d-assets/main/nature/isometric-miniature-farm/Isometric'
+          for f in fenceLow_S.png hay_S.png hayBales_S.png sacksCrate_S.png ladderStand_S.png cornYoungDouble_S.png; do
+            curl -fsSL "$FARM/$f" -o "title-island-concepts/assets/isometric/$f"
+          done
+          curl -fsSL 'https://raw.githubusercontent.com/Tiddybub/2d-assets/main/nature/isometric-miniature-farm/SOURCE.md' -o title-island-concepts/sources/isometric-miniature-farm/SOURCE.md
+          curl -fsSL 'https://raw.githubusercontent.com/Tiddybub/2d-assets/main/nature/isometric-miniature-farm/License.txt' -o title-island-concepts/sources/isometric-miniature-farm/License.txt
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          files=sorted(Path('title-island-concepts/assets/isometric').glob('*.png'))
+          if len(files) != 11:
+              raise SystemExit(f'Expected 11 imported isometric PNGs, got {len(files)}')
+          for p in files:
+              b=p.read_bytes()
+              if not b.startswith(b'\x89PNG\r\n\x1a\n'):
+                  raise SystemExit(f'Not PNG: {p}')
+              w,h=struct.unpack('>II',b[16:24])
+              print(p.name,w,h)
+          PY
+      - name: Commit imports and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/import-isometric-title-assets.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts .github/workflows/import-isometric-title-assets.yml
+          git commit -m 'Add coherent CC0 isometric island assets'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((attempt*2))
+          done
+          exit 1
