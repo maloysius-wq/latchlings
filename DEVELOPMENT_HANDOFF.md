@@ -33,6 +33,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Harden GitHub-plugin-first repository access preflight
+
+**Status: IN PROGRESS**
+
+**User goal:** Stop repeated failures where repository work incorrectly concludes that GitHub is unavailable after a local clone, container DNS, or ordinary web fetch fails, even though the connected GitHub plugin is installed and usable. Make the GitHub-plugin-first rule as durable and mechanically guarded as this repository can support so the user does not have to keep repeating it.
+
+**Implementation plan:** Strengthen the repository access rule from prose guidance into a hard preflight contract. Add a root `AGENTS.md` for agent-entry instructions, add `.github/REPOSITORY_ACCESS_PREFLIGHT.md` with an explicit decision tree and a strict failure criterion for when GitHub may be called unavailable, strengthen the top of this handoff with a hard-gate pointer, and add a lightweight CI guard that fails if required sentinel instructions are removed. The preflight will require GitHub connector discovery before container/web fallback and require immediate recovery through the plugin if a wrong route is attempted.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, new root `AGENTS.md`, new `.github/REPOSITORY_ACCESS_PREFLIGHT.md`, new `.github/workflows/validate-repository-access-guard.yml`, plus temporary self-removing workflow files used to make atomic handoff edits. No production game/title/campaign files should change.
+
+**Validation plan:** Verify the three durable instruction surfaces contain the same GitHub-first invariants; verify CI guard passes; verify production/game/campaign/title files are unchanged; verify the GitHub plugin itself can still read the current repository after hardening. The completion note must explicitly distinguish what is fixed at the repository/agent-process layer from what cannot be changed from a chat (base model weights/tool router).
+
+**Deployment plan:** No product deployment is required because this is repository-process hardening only. Commit the durable guard files and handoff changes to `main`, run the guard workflow successfully, then close this entry as COMPLETED with exact commit/run details and remaining limitation.
+
+---
+
 ### 2026-09-02 — Add randomized rest periods to Little Home adults
 
 **Status: COMPLETED**
