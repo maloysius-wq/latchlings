@@ -29,6 +29,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Refine Little Home procedural tree
+
+**Status: IN PROGRESS**
+
+**User goal:** Improve only Concept 2 / Little Home's tree. The current three-circle canopy looks too simplistic. Replace it with a more convincing procedural tree and texture it while preserving the selected island, six-resident household choreography, and production runtime.
+
+**Implementation plan:** Keep Concepts 1 and 3 unchanged. Rebuild Concept 2's tree with a tapered locally textured trunk, visible forked branches, root flare/contact shadow, and an asymmetrical layered canopy made from several irregular procedural leaf masses rather than three circles. Reuse the already-vendored CC0 `textures/wood.jpg` for bark and `textures/grass.jpg` as subtle foliage grain so no new third-party dependency is needed. Add layered highlights/underside shading and a cleaner organic silhouette sized to the existing island. Do not modify production `index.html`.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transformer/browser-validation workflow files if needed. Existing local CC0 textures are reused; no campaign/game runtime files should change.
+
+**Validation plan:** Static checks require Concept 2 to use the new dedicated tree markup/classes, at least seven irregular foliage clusters, visible branch/root elements, local wood/grass texture references, and no new image elements/hotlinks. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, or tree overlap with the title/cottage/primary controls. Capture the tree at multiple household animation phases and visually inspect silhouette, texture readability, resident clearance, and overall island balance. Sanity-check Concepts 1 and 3 remain unchanged.
+
+**Deployment plan:** Commit the validated Concept 2 tree refinement to `main`, deploy through existing GitHub Pages, visually inspect screenshots, then close this same handoff entry with implementation SHA, validation/deployment runs, remaining risks, and exact next action.
+
+---
+
 ### 2026-09-02 — Refine selected Little Home concept with a living six-Latchling household
 
 **Status: COMPLETED**
