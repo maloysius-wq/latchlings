@@ -35,7 +35,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Add randomized rest periods to Little Home adults
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** The three adult Latchlings in selected Concept 2 / Little Home move too continuously. Keep them alive and active, but introduce randomized movement timing so adults spend meaningful periods standing still between outings instead of constantly looping around the island.
 
@@ -46,6 +46,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks require exactly five Concept 2 residents split 3 adults / 2 children, adult route animations no longer infinite, a randomized adult scheduler with independent initial/idle timing, children retaining their continuous 6.1s play animations, and all current scene polish intact. Chromium at 390x844 will observe adult `data-motion-state` transitions over time and require every adult to enter both moving and idle states, every adult to complete at least one outing, meaningful idle intervals to occur, face/blink animation to remain active while an adult is idle, and no console/page/request errors or overflow. Capture several animation phases and sanity-check Concepts 1 and 3.
 
 **Deployment plan:** Commit the validated preview change to `main`, deploy through GitHub Pages, inspect screenshots, then close this same handoff entry with implementation SHA, validation/deployment results, and next action.
+
+
+#### Completion summary
+
+**Implementation:** Updated only selected Concept 2 / Little Home in `title-island-concepts/index.html`. The three adult route classes (`life-garden`, `life-parcel`, `life-tree`) no longer run perpetual CSS loops. They now animate only while an `adult-outing` class is present, with a small JavaScript scheduler independently starting each adult after a randomized initial stagger. Each outing lasts a randomized 4.4–6.0 seconds, then the adult returns to its resting position and idles for a randomized 4.2–8.8 seconds; 20% of rests are longer 9–13 second pauses. The adults therefore spend substantial time stationary instead of constantly circling. Their child face/eye animations (`faceFloat` / `blinkCycle`) continue during idle periods because only locomotion is gated. The two children retain their existing continuous 6.1-second play/chase animations. Reduced-motion users keep adults stationary.
+
+**Files changed:** Permanent implementation changed only `title-island-concepts/index.html`; this handoff was updated for process tracking. Temporary transformer/browser-validator/workflow files self-removed after the implementation commit. No production runtime, campaign, asset, or game files changed.
+
+**Validation:** GitHub Actions run `33680651900` passed static and Chromium validation. Static checks confirmed the five-resident 3-adult / 2-child household, removal of all legacy infinite adult route rules, one-shot `adult-outing` route rules, randomized scheduler constants/state transitions, unchanged child animations, three flowers, four clouds, zero Concept 2 deck/fence elements, and no production/campaign/game-file changes. Chromium at 390×844 observed every adult entering both `idle` and `moving` states and completing at least one scheduled outing. Sampled idle adults still reported active `faceFloat` and `blinkCycle` animations. In the validation run, initial adult waits were independently staggered around 1.9s, 1.9s, and 2.9s; later standard rests sampled around 5.3–6.6s, demonstrating that movement is no longer continuous or synchronized. No console/page/request errors or horizontal overflow occurred, and Concepts 1 and 3 passed sanity renders. Screenshot artifact `9866126448` contains three timing phases and was downloaded and visually inspected; the island reads calmer while retaining intermittent adult activity and continuous child play.
+
+**Implementation commit:** `d1f18519ecb545fcb5ce3c70fb0e29330229cca5` (`Give Little Home adults randomized rest periods`).
+
+**Deployment:** GitHub Pages run `33680749805` completed successfully for implementation commit `d1f18519ecb545fcb5ce3c70fb0e29330229cca5`. The live preview remains `title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This timing pass is complete in the design-selection preview. Production remains intentionally unchanged. Next action is user review of the calmer adult cadence; timer ranges can be tuned further if the adults should rest even longer or move less often.
 
 ---
 
