@@ -17,50 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Apply stone, platform, and cloud polish
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p=Path('title-island-concepts/index.html')
-          t=p.read_text()
-
-          old='#c2 .rock.r1{left:43px;top:159px}'
-          new='#c2 .rock.r1{left:58px;top:159px}'
-          if old not in t and new not in t:
-              raise SystemExit('Concept 2 rock placement token not found')
-          t=t.replace(old,new,1)
-
-          # Remove Concept 2's brown deck/platform from both placement CSS and markup only.
-          t=t.replace('#c2 .deck{left:102px;top:137px;width:77px}','',1)
-          c2_start=t.index('<section class="concept" id="c2"')
-          c3_start=t.index('<section class="concept" id="c3"')
-          before=t[:c2_start]
-          c2=t[c2_start:c3_start]
-          after=t[c3_start:]
-          c2, n = re.subn(r'<div class="deck(?: [^"]*)?"></div>\s*', '', c2, count=1)
-          if n != 1 and 'class="deck' in c2:
-              raise SystemExit('Could not remove Concept 2 deck/platform cleanly')
-          t=before+c2+after
-
-          cloud_css='''
-/* Selected Little Home: soft, asymmetric drifting cloud field */
-#c2 .cloud{width:112px;height:30px;border-radius:54% 46% 51% 49%/72% 68% 43% 46%;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(247,252,255,.52));box-shadow:inset 0 3px 7px rgba(255,255,255,.28),inset 0 -6px 10px rgba(120,153,181,.08);filter:drop-shadow(0 10px 17px rgba(67,98,125,.08));opacity:.74;animation:littleHomeCloudDrift var(--cloud-speed,40s) ease-in-out infinite;animation-delay:var(--cloud-delay,0s);will-change:translate;pointer-events:none}
-#c2 .cloud:before{width:51px;height:47px;left:12px;bottom:5px;border-radius:61% 39% 50% 50%/54% 48% 52% 46%;background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(243,250,254,.58));box-shadow:34px 7px 0 -6px rgba(255,255,255,.62)}
-#c2 .cloud:after{width:61px;height:55px;right:7px;bottom:0;border-radius:44% 56% 47% 53%/59% 45% 55% 41%;background:linear-gradient(155deg,rgba(255,255,255,.88),rgba(241,249,253,.54))}
-#c2 .cloud.a{left:-40px;top:184px;transform:scale(.9);--cloud-speed:38s;--cloud-delay:-11s;--cloud-start:-14px;--cloud-end:25px;--cloud-lift:-3px;opacity:.70}
-#c2 .cloud.b{right:-34px;top:234px;transform:scale(.73);--cloud-speed:46s;--cloud-delay:-27s;--cloud-start:18px;--cloud-end:-24px;--cloud-lift:2px;opacity:.62}
-#c2 .cloud.c{left:16px;top:405px;transform:scale(.58);--cloud-speed:53s;--cloud-delay:-34s;--cloud-start:-9px;--cloud-end:31px;--cloud-lift:-2px;opacity:.48}
-#c2 .cloud.d{right:12px;top:374px;transform:scale(.51);--cloud-speed:42s;--cloud-delay:-19s;--cloud-start:17px;--cloud-end:-22px;--cloud-lift:3px;opacity:.44}
-@keyframes littleHomeCloudDrift{0%,100%{translate:var(--cloud-start,-14px) 0}50%{translate:var(--cloud-end,24px) var(--cloud-lift,-2px)}}
-'''
-          if '/* Selected Little Home: soft, asymmetric drifting cloud field */' not in t:
-              marker='#c2 .path{'
-              idx=t.index(marker)
-              t=t[:idx]+cloud_css+t[idx:]
-          p.write_text(t)
-          PY
+        run: python3 .github/scripts/refine_little_home_clouds.py
 
       - name: Static validation
         shell: bash
@@ -78,14 +35,15 @@ jobs:
           roles=re.findall(r'data-role="(adult|child)"',c2)
           if len(roles)!=6 or roles.count('adult')!=4 or roles.count('child')!=2:
               raise SystemExit(f'Household changed unexpectedly: {roles}')
-          if c2.count('class="cloud ') != 4:
-              raise SystemExit(f'Expected four clouds, got {c2.count("class=\"cloud ")}')
+          cloud_count=c2.count('class="cloud ')
+          if cloud_count != 4:
+              raise SystemExit(f'Expected four clouds, got {cloud_count}')
           for token in ['soft, asymmetric drifting cloud field','littleHomeCloudDrift','--cloud-speed','--cloud-delay','--cloud-start','--cloud-end']:
               if token not in t:
                   raise SystemExit(f'Missing cloud polish token {token}')
           if '<img' in t.lower() or 'https://' in c2 or 'http://' in c2:
               raise SystemExit('Unexpected image element/runtime hotlink')
-          print('CLOUD_STATIC_OK', {'rock_left':58,'deck':0,'clouds':4,'residents':len(roles)})
+          print('CLOUD_STATIC_OK', {'rock_left':58,'deck':0,'clouds':cloud_count,'residents':len(roles)})
           PY
           git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-a.js game400-b.js style400-game.css
 
@@ -109,56 +67,8 @@ jobs:
           python3 -m http.server 8126 >/tmp/little-home-cloud-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
-          cat > "$CLOUD_NODE/validate-clouds.mjs" <<'JS'
-          import { chromium } from 'playwright';
-          const browser=await chromium.launch({headless:true});
-          const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
-          const errors=[];
-          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
-          page.on('pageerror',e=>errors.push('pageerror:'+e.message));
-          page.on('requestfailed',r=>errors.push('request:'+r.url()));
-          const res=await page.goto('http://127.0.0.1:8126/title-island-concepts/?c=2',{waitUntil:'networkidle'});
-          if(!res?.ok())throw new Error('Little Home response failed');
-          await page.waitForTimeout(650);
-          const sample=async()=>page.evaluate(()=>{
-            const a=document.querySelector('#c2.active');
-            const box=s=>{const r=a.querySelector(s).getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,w:r.width,h:r.height}};
-            const clouds=[...a.querySelectorAll('.cloud')].map(el=>({box:(()=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}})(),translate:getComputedStyle(el).translate,animation:getComputedStyle(el).animationName}));
-            return {bodyWidth:document.body.scrollWidth,viewport:innerWidth,phone:box('.phone'),island:box('.island-top'),rock:box('.rock.r1'),play:box('.play'),secondary:box('.secondary'),clouds,deck:a.querySelectorAll('.deck').length,residents:a.querySelectorAll('.resident').length,children:a.querySelectorAll('.resident.child').length,imgs:a.querySelectorAll('img').length};
-          });
-          const s0=await sample();
-          await page.screenshot({path:`${process.env.GITHUB_WORKSPACE}/cloud-renders/little-home-clouds-phase-1.png`,fullPage:true});
-          await page.waitForTimeout(1700);
-          const s1=await sample();
-          await page.screenshot({path:`${process.env.GITHUB_WORKSPACE}/cloud-renders/little-home-clouds-phase-2.png`,fullPage:true});
-          await page.waitForTimeout(1700);
-          const s2=await sample();
-          await page.screenshot({path:`${process.env.GITHUB_WORKSPACE}/cloud-renders/little-home-clouds-phase-3.png`,fullPage:true});
-          if(s0.bodyWidth>s0.viewport+1)throw new Error(`Horizontal overflow ${s0.bodyWidth}/${s0.viewport}`);
-          if(s0.phone.left<-1||s0.phone.right>s0.viewport+1||s0.secondary.bottom>s0.phone.bottom+1)throw new Error('Phone/UI bounds failed');
-          if(s0.deck!==0||s0.residents!==6||s0.children!==2||s0.clouds.length!==4||s0.imgs!==0)throw new Error('Structure mismatch '+JSON.stringify(s0));
-          if(s0.rock.left < s0.island.left+30 || s0.rock.right > s0.island.right-25)throw new Error(`Rock still crowds island edge: ${JSON.stringify({rock:s0.rock,island:s0.island})}`);
-          for(let i=0;i<4;i++){
-            if(!s0.clouds[i].animation.includes('littleHomeCloudDrift'))throw new Error(`Cloud ${i} lacks drift animation`);
-            const vals=[s0.clouds[i].translate,s1.clouds[i].translate,s2.clouds[i].translate];
-            if(vals.every(v=>v===vals[0]))throw new Error(`Cloud ${i} did not visibly animate: ${JSON.stringify(vals)}`);
-          }
-          if(errors.length)throw new Error(errors.join(' | '));
-          console.log('CLOUD_BROWSER_OK',JSON.stringify({rock:s0.rock,island:s0.island,clouds:s0.clouds.map(c=>c.translate),cloudsLater:s2.clouds.map(c=>c.translate)}));
-          for(const id of [1,3]){
-            const p=await browser.newPage({viewport:{width:390,height:844}});
-            const localErrors=[];
-            p.on('pageerror',e=>localErrors.push(e.message));
-            p.on('requestfailed',r=>localErrors.push(r.url()));
-            await p.goto(`http://127.0.0.1:8126/title-island-concepts/?c=${id}`,{waitUntil:'networkidle'});
-            const sanity=await p.evaluate(()=>({active:document.querySelector('.concept.active')?.id,count:document.querySelector('.concept.active')?.querySelectorAll('.latchling').length,overflow:document.body.scrollWidth-innerWidth}));
-            const expected=id===1?6:7;
-            if(sanity.active!==`c${id}`||sanity.count!==expected||sanity.overflow>1||localErrors.length)throw new Error(`Concept ${id} sanity failed ${JSON.stringify({sanity,localErrors})}`);
-            await p.close();
-          }
-          await browser.close();
-          JS
-          node "$CLOUD_NODE/validate-clouds.mjs"
+          cp .github/scripts/validate_little_home_clouds.mjs "$CLOUD_NODE/validate_little_home_clouds.mjs"
+          node "$CLOUD_NODE/validate_little_home_clouds.mjs"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -171,10 +81,10 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf cloud-renders
-          rm -f .github/workflows/refine-little-home-clouds.yml
+          rm -f .github/workflows/refine-little-home-clouds.yml .github/scripts/refine_little_home_clouds.py .github/scripts/validate_little_home_clouds.mjs
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add title-island-concepts/index.html .github/workflows/refine-little-home-clouds.yml
+          git add title-island-concepts/index.html .github/workflows/refine-little-home-clouds.yml .github/scripts/refine_little_home_clouds.py .github/scripts/validate_little_home_clouds.mjs
           git commit -m 'Polish the Little Home island and clouds'
           git pull --rebase origin main
           git push origin HEAD:main
