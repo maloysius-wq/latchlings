@@ -65,7 +65,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Three focused floating-island title concepts
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Create three real browser-rendered HTML title-screen examples based on the newly clarified direction: one large floating island centered on the screen, with Latchlings going about their daily life. These must not be image-generation mockups. The Latchlings also need to pull back from bird anatomy and remain visually consistent with the actual game: round magnetic creatures with expressive eyes/faces and black suit marks, but no beaks, feathers, tails, or overt bird body language.
 
@@ -89,6 +89,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** JavaScript syntax; zero-emoji scan; check that character markup contains no bird-specific anatomy classes/labels; exactly three distinct concepts; Chromium render at 390x844; no console/page errors, broken images, horizontal overflow, or clipped primary UI; screenshot artifact for visual inspection.
 
 **Deployment plan:** commit the preview under `title-island-concepts/`, render/validate all three in GitHub Actions, deploy through existing Pages, visually inspect screenshots, then update this entry to `COMPLETED` with the hosted URL, commits, render results, and next action.
+
+
+#### Completion summary
+
+**Implementation:** Completed all three browser-rendered concepts under `title-island-concepts/` while leaving production `index.html` unchanged. The live Latchlings and mobile title UI were retained. Old mismatched island pieces were replaced with coherent individually exported Kenney CC0 isometric bases and farm props. Concept 1 is a quiet grassy supply/rest nook, Concept 2 adds an assembled tiny cottage and yard, and Concept 3 is a busier playful island-life scene. Asset credits were updated.
+
+**Files changed:** `title-island-concepts/index.html`, `title-island-concepts/ASSET_CREDITS.md`.
+
+**Validation:** Static checks confirmed exactly three concepts, no emoji, no bird-anatomy runtime terms, all image references local/present, 29 total local image references and 17 isometric references. Chromium at 390x844 passed all three with no broken images, console/page/request errors, horizontal overflow, or clipped primary UI. Render counts were 6 Latchlings / 4 isometric assets, 6 / 7, and 7 / 6. Screenshots were uploaded and visually inspected. GitHub Actions run `33648157837` succeeded.
+
+**Implementation commit:** `b5d649b5fedb277254fd762bef65e928fe843dbb`.
+
+**Deployment:** GitHub Pages run `33648292031` succeeded for the implementation commit. The preview remains under `title-island-concepts/`, with query values `c=1`, `c=2`, and `c=3` selecting the concepts.
+
+**Next action:** Do not change the production title screen until the user chooses one concept or asks for a hybrid/refinement.
 
 ---
 ### 2026-09-01 — Host second CC0 asset-based title concept gallery
