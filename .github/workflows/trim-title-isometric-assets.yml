@@ -22,7 +22,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq imagemagick >/dev/null
           for f in title-island-concepts/assets/isometric/*.png; do
-            magick "$f" -trim +repage "$f"
+            convert "$f" -trim +repage "$f"
             identify -format '%f %wx%h\n' "$f"
           done
       - name: Commit trimmed copies and remove workflow
