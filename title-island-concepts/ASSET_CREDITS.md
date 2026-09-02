@@ -1,60 +1,31 @@
-# Latchlings Floating-Island Concept Asset Credits
+# Latchlings Procedural Floating-Island Concept Credits
 
-This directory is a design-selection prototype. The production title screen has not been replaced.
+This directory is a design-selection prototype. The production `index.html` title screen remains unchanged.
 
-## Character artwork
+## Procedural environment
 
-The Latchlings in `index.html` are custom HTML/CSS/SVG renderings based on the shipping game's established creature language: round magnetic bodies, expressive faces, and dark suit symbols. They are not third-party assets and intentionally avoid bird-specific anatomy.
+All visible environmental forms in the focused `title-island-concepts/index.html` preview are built in-browser from HTML/CSS geometry: the floating island, earth sides, grassy top, clouds, path, rocks, trees, cottage, fence, deck, bridge and flowers. No premade environment sprite or model is referenced by the active preview.
 
-## Kenney — Background Elements Remastered
+## Latchlings
 
-License: **Creative Commons CC0 1.0 Universal**. Attribution is not required.
+The preview Latchlings are live HTML/CSS/SVG and copy the shipping game's current visual language from `style400-game.css` and `game400-a.js`: the exact coral/blue/mint/gold/lavender palette values, body gradient treatment, 29% crown suit mark, shipping suit SVG paths, eye proportions, seven shipping expressions, and asynchronous face/blink timing. They are project artwork, not third-party assets.
 
-Source: https://kenney.nl/assets/background-elements-remastered
+## ambientCG material textures
 
-Individual PNGs reused from the project's previously vendored `title-concepts/assets/kenney/` set:
+The procedural geometry uses three locally vendored **color/albedo maps only** from ambientCG. ambientCG releases its assets under **Creative Commons CC0 1.0 Universal**, allowing commercial use, modification and redistribution without attribution.
 
-- `cloud1.png`
-- `cloud4.png`
-- `tree.png`
-- `bush3.png`
-- `home.png` — copied from the previously vendored `castleSmallAlt.png` accent for concept use
+- `textures/grass.jpg` — ambientCG **Grass005** (`Grass005_1K-JPG_Color.jpg`), used as the grass material surface.
+- `textures/earth.jpg` — ambientCG **Ground085** (`Ground085_1K-JPG_Color.jpg`), used as the floating-island earth/rock material surface.
+- `textures/wood.jpg` — ambientCG **Wood093** (`Wood093_1K-JPG_Color.jpg`), used on procedural wood planes and props.
 
-These are individual source sprites, not preview/spritesheet composites.
+Source pages / downloads:
+- https://ambientcg.com/get?file=Grass005_1K-JPG.zip
+- https://ambientcg.com/get?file=Ground085_1K-JPG.zip
+- https://ambientcg.com/get?file=Wood093_1K-JPG.zip
+- https://ambientcg.com/
 
-## Kenney — Platformer Art Deluxe
+For this mobile prototype the 1K source color maps are downscaled to 512×512 JPEGs. No normal, roughness, displacement, preview, model, spritesheet or catalog image is shipped in the focused preview.
 
-License: **Creative Commons CC0 1.0 Universal**. Attribution is not required.
+## Archived prior experiments
 
-Archived source used for retrieval: `Tiddybub/2d-assets`, pack path `tiles-terrain/platformer-art-deluxe/`.
-
-The original source/provenance note and license text from that archive are preserved in:
-
-- `sources/platformer-art-deluxe/SOURCE.md`
-- `sources/platformer-art-deluxe/license.txt`
-
-Individual PNGs imported from `Base pack/Tiles/`:
-
-- `grassCenter_rounded.png`
-- `grassCliffLeft.png`
-- `grassCliffRight.png`
-- `grassHalfMid.png`
-- `grassMid.png`
-- `hill_large.png`
-- `hill_small.png`
-- `fence.png`
-- `sign.png`
-- `bridgeLogs.png`
-- `ropeAttached.png`
-- `ladder_top.png`
-- `ladder_mid.png`
-
-No `preview.png`, `sample.png`, spritesheet, tilesheet, or other multi-asset catalog image is used by the title concepts.
-
-## Production guidance
-
-If one of these concepts is selected for the shipping title screen, keep the same rule: compose the environment from individual licensed source pieces. Do not replace the scene with a preview sheet or generated static illustration. The Latchlings should remain live HTML/CSS/SVG characters so their expressions and idle behaviors can remain animated.
-
-## Isometric island revision
-
-The focused three-concept gallery now uses individually exported pieces from **Kenney Isometric Miniature Bases** and **Kenney Isometric Miniature Farm** for the island bases, cottage parts, fence, ladder, crops, hay, planks, and supply props. These Kenney packs are released under **CC0 1.0 Universal**. The Latchlings themselves remain custom live HTML/CSS/SVG artwork.
+Older Kenney/platformer/isometric files may remain in the repository as design-history artifacts, but the active focused preview does not reference them. If this procedural direction is selected for production, unused experimental art can be removed in a separate cleanup pass.
