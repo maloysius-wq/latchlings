@@ -35,7 +35,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Polish Little Home stone, play area, and animated clouds
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Continue polishing selected Concept 2 / Little Home. Move the stone right so it no longer overlaps the island edge, remove the brown platform beneath the tree where the children are playing, and replace the simplistic background clouds with better-looking animated procedural clouds.
 
@@ -46,6 +46,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks require Concept 2's rock position to move right, zero Concept 2 deck/platform elements, exactly six residents with 4 adults / 2 children intact, four cloud elements with dedicated Little Home cloud styling/animation, no image elements or runtime hotlinks, and no production/campaign/game-file changes. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, stone edge overlap, or cloud/title/island/control collisions. Sample cloud transforms at multiple timestamps to prove animation and capture screenshots for visual inspection. Sanity-check Concepts 1 and 3 remain functional.
 
 **Deployment plan:** Commit the validated Concept 2 polish to `main`, deploy through existing GitHub Pages, visually inspect captured renders, then close this entry with implementation SHA, validation/deployment runs, and next action.
+
+
+#### Completion summary
+
+**Implementation:** Polished selected Concept 2 / Little Home only in `title-island-concepts/index.html`. Moved the left-side rock inward/right from `left:43px` to `left:58px` so it no longer sits on the island rim. Removed Concept 2's brown deck/platform beneath the tree while preserving all six moving residents and the children's chase/play routine. Rebuilt the four Little Home background clouds as softer asymmetric multi-lobed procedural CSS forms with highlight/underside shading and independent slow drift cycles (38s, 46s, 53s, and 42s with offset phases). No new third-party assets were added. Production `index.html` and campaign/game runtime files were not changed.
+
+**Repository access hardening:** Added a permanent `Repository access invariant` near the top of this handoff: GitHub-plugin/connector access is canonical for repository work; local clone/container DNS/web-fetch failure is never sufficient evidence that GitHub is unavailable. Before claiming access is unavailable, future sessions must explicitly load/discover the GitHub connector and attempt a plugin repository read.
+
+**Files changed:** Permanent implementation changed only `title-island-concepts/index.html`; `DEVELOPMENT_HANDOFF.md` was updated for process/current-work tracking. Temporary cloud transformer/browser-validator/workflow files self-removed after the implementation commit.
+
+**Validation:** GitHub Actions run `33669562379` passed static and Chromium validation after an earlier temporary workflow YAML-formatting attempt (`33669461616`) was corrected. Static checks confirmed rock `left:58px`, zero Concept 2 deck/platform elements, exactly four clouds, exactly six residents split 4 adults / 2 children, no image elements/runtime hotlinks, and no production/campaign/game-file changes. Chromium at 390×844 passed with no console/page/request errors, no horizontal overflow or clipped UI, rock bounds safely inset from the island (`rock left/right 78/112`, island left/right `38/352`), and all four cloud `translate` values changing across sampled timestamps. Concepts 1 and 3 also passed sanity renders. Screenshot artifact `9861960868` contains three animation phases and was downloaded and visually inspected; the stone is visibly inset, the brown platform is gone, and the clouds read softer/more dimensional while drifting independently.
+
+**Implementation commit:** `007210337d4acc72e027338d68e2dceb0ce6fb2b` (`Polish the Little Home island and clouds`).
+
+**Deployment:** GitHub Pages run `33669670099` completed successfully for implementation commit `007210337d4acc72e027338d68e2dceb0ce6fb2b`. The refined preview remains `title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This polish pass is complete in the design-selection preview. Production remains intentionally unchanged. Next action is user review of the live Little Home and any further requested polish or explicit promotion to production.
 
 ---
 
