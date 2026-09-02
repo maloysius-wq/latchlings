@@ -1,0 +1,33 @@
+name: Export Isometric Title Assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/export-isometric-title-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isometric-title-assets
+          path: title-island-concepts/assets/isometric/*.png
+          if-no-files-found: error
+      - name: Remove exporter
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/export-isometric-title-assets.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/export-isometric-title-assets.yml
+          git commit -m 'Remove isometric asset exporter'
+          git pull --rebase origin main
+          git push origin HEAD:main
