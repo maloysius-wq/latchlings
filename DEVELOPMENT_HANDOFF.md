@@ -29,6 +29,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Rebuild floating-island title concepts with procedural models + CC0 textures
+
+**Status: IN PROGRESS**
+
+**User goal:** Move away from prebuilt environmental asset sprites. Rebuild the focused floating-island title concepts around procedural browser-rendered models, using carefully selected CC0 textures as surface material only. Latchlings must match the shipping game itself, not the looser concept-gallery interpretation.
+
+**Implementation plan:** Preserve the existing three-concept selection structure and keep production `index.html` untouched. Replace Kenney isometric environment sprites with procedural HTML/CSS/SVG geometry for the floating landmass and small lived-in props. Research and locally vendor a minimal CC0 texture set for grass/soil, stone, and wood or comparable materials, with exact source/license provenance. Rebuild preview Latchlings from the shipping `style400-game.css` and `game400-a.js` design language: exact five body palettes, radial/linear body shading, 29% crown suit mark, large white eyes with game-style pupils/highlights, the shipping expression vocabulary, and asynchronous blink/idle timing.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, `title-island-concepts/ASSET_CREDITS.md`, a small new `title-island-concepts/textures/` directory, and temporary self-removing import/browser-validation workflows if needed. Existing isometric source assets may remain archived but must no longer be referenced by the rebuilt runtime preview. Production game runtime files remain unchanged.
+
+**Validation plan:** Verify no active isometric/environment sprite references in the focused preview; all third-party runtime raster files are texture/material maps with CC0 provenance; preview Latchling CSS/markup mirrors shipping palette/proportions/expression rules; exactly three concepts; zero emoji; no external runtime hotlinks; Chromium render at 390x844 with no console/page/request errors, broken images, horizontal overflow, or clipped primary UI; capture and visually inspect all three screenshots.
+
+**Deployment plan:** Commit the procedural/textured preview only after texture provenance and browser validation pass, deploy through existing GitHub Pages, visually inspect the validated renders, then close this same handoff entry with exact files, sources, commit/run IDs, deployment result, and remaining next action.
+
+---
+
 ### 2026-09-02 — Repair Level 269 campaign integrity defect
 
 **Status: COMPLETED**
