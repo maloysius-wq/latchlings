@@ -100,6 +100,20 @@ button,a{font:inherit}
 /* Concept 3 */
 #c3 .tree{width:83px;left:229px;top:49px}#c3 .bridge{width:92px;left:28px;top:145px}#c3 .rope{width:56px;left:49px;top:97px}#c3 .hilla{width:91px;left:121px;top:112px}#c3 .hillb{width:73px;left:198px;top:151px}#c3 .sign{width:39px;left:288px;top:187px}#c3 .fence{width:59px;left:123px;top:203px}#c3 .bush{width:68px;left:234px;top:188px}
 #c3 .l1{left:49px;top:111px}#c3 .l2{left:128px;top:82px}#c3 .l3{left:223px;top:96px}#c3 .l4{left:272px;top:150px}#c3 .l5{left:147px;top:169px}#c3 .l6{left:69px;top:205px}#c3 .l7{left:238px;top:208px}
+
+/* Coherent isometric island system */
+.island.iso{left:50%;top:25px;width:360px;height:345px;transform:translateX(-50%);filter:drop-shadow(0 20px 22px rgba(42,60,75,.18))}
+.island.iso .asset{position:absolute;display:block;object-fit:contain;user-select:none;pointer-events:none}
+.iso-base{z-index:2;left:50%;transform:translateX(-50%);width:315px;top:72px}
+.iso-prop{z-index:7;filter:drop-shadow(0 7px 8px rgba(48,59,70,.10))}.iso-back{z-index:5}.iso-front{z-index:11}
+.iso-home{position:absolute;left:190px;top:42px;width:116px;height:138px;z-index:8}
+.iso-home .wall-door{position:absolute;width:73px;left:0;top:47px;z-index:2}.iso-home .wall-window{position:absolute;width:69px;left:45px;top:48px;z-index:1}.iso-home .roof{position:absolute;width:120px;left:-5px;top:0;z-index:4}
+#c1 .iso-base{top:72px;width:316px}#c1 .hay{width:58px;left:72px;top:139px}#c1 .sacks{width:62px;left:239px;top:135px}#c1 .fenceiso{width:72px;left:213px;top:190px}
+#c1 .l1{left:126px;top:119px}#c1 .l2{left:232px;top:105px}#c1 .l3{left:57px;top:159px}#c1 .l4{left:202px;top:172px}#c1 .l5{left:112px;top:208px}#c1 .l6{left:267px;top:194px}
+#c2 .iso-base{top:70px;width:318px}#c2 .planks{width:72px;left:66px;top:185px}#c2 .fenceiso{width:72px;left:238px;top:191px}#c2 .ladderiso{width:48px;left:247px;top:224px}
+#c2 .l1{left:137px;top:130px}#c2 .l2{left:240px;top:117px}#c2 .l3{left:62px;top:128px}#c2 .l4{left:91px;top:181px}#c2 .l5{left:242px;top:176px}#c2 .l6{left:168px;top:214px}
+#c3 .iso-base{top:75px;width:320px}#c3 .corn{width:55px;left:224px;top:114px}#c3 .bales{width:65px;left:57px;top:154px}#c3 .planks{width:73px;left:141px;top:187px}#c3 .fenceiso{width:68px;left:247px;top:192px}#c3 .ladderiso{width:45px;left:59px;top:218px}
+#c3 .l1{left:50px;top:116px}#c3 .l2{left:130px;top:92px}#c3 .l3{left:218px;top:105px}#c3 .l4{left:270px;top:154px}#c3 .l5{left:145px;top:171px}#c3 .l6{left:75px;top:205px}#c3 .l7{left:235px;top:211px}
 @media(max-width:430px){.page{padding:10px 8px 24px}.intro{display:none}.switcher{position:sticky;top:0;z-index:50;margin:0 0 8px;padding:7px 0;background:linear-gradient(180deg,rgba(239,245,248,.98),rgba(239,245,248,.88),transparent)}.switcher button{padding:8px 11px;font-size:11px}.label{padding-bottom:6px}.label span{display:none}.phone{border-radius:24px}}
 @media(prefers-reduced-motion:reduce){.latchling,.eye{animation:none!important}}
 </style>
@@ -117,16 +131,14 @@ button,a{font:inherit}
   </nav>
   <main class="viewer">
     <section class="concept active" id="c1" data-concept="1">
-      <div class="label"><strong>1 · Cozy Nest Island</strong><span>The calmest version. A simple home nook, one tree, a path, and quiet little routines.</span></div>
+      <div class="label"><strong>1 · Cozy Nest Island</strong><span>The calmest version. A grassy little islet with a rest nook, supplies, and quiet routines.</span></div>
       <div class="phone">
         <div class="skywash"></div>
         <img class="cloud c1" src="assets/cloud1.png" alt=""><img class="cloud c2" src="assets/cloud4.png" alt=""><img class="cloud c3" src="assets/cloud4.png" alt=""><img class="cloud c4" src="assets/cloud1.png" alt="">
         <div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div>
         <div class="brand"><h2>Latchlings</h2><p>Little lives · clever routes</p><div class="brand-rule"><span></span><i></i><span></span></div></div>
-        <div class="scene"><div class="island-glow"></div><div class="island">
-          <img class="asset terrain-top t0" src="assets/grassCliffLeft.png" alt=""><img class="asset terrain-top t1" src="assets/grassCenter_rounded.png" alt=""><img class="asset terrain-top t2" src="assets/grassCenter_rounded.png" alt=""><img class="asset terrain-top t3" src="assets/grassCliffRight.png" alt="">
-          <img class="asset terrain-low t4" src="assets/grassMid.png" alt=""><img class="asset terrain-low t5" src="assets/grassMid.png" alt=""><img class="asset terrain-low t6" src="assets/grassMid.png" alt=""><img class="asset terrain-low t7" src="assets/grassHalfMid.png" alt=""><img class="asset terrain-low t8" src="assets/grassHalfMid.png" alt="">
-          <img class="asset backprop hill" src="assets/hill_small.png" alt=""><img class="asset backprop bush" src="assets/bush3.png" alt=""><img class="asset prop restlogs" src="assets/bridgeLogs.png" alt=""><img class="asset prop sign" src="assets/sign.png" alt=""><img class="asset prop tree" src="assets/tree.png" alt="">
+        <div class="scene"><div class="island-glow"></div><div class="island iso">
+          <img class="asset iso-base" src="assets/isometric/base_grass_high_detail_S.png" alt=""><img class="asset iso-prop iso-back hay" src="assets/isometric/hay_S.png" alt=""><img class="asset iso-prop iso-front sacks" src="assets/isometric/sacksCrate_S.png" alt=""><img class="asset iso-prop iso-front fenceiso" src="assets/isometric/fenceLow_S.png" alt="">
           <div class="latchling large sleepy l1" data-suit="heart" style="--body1:#c3a0ef;--body2:#a980db;--blink:5.8s;--delay:-2.1s;--idle:5.1s"></div>
           <div class="latchling peek l2" data-suit="club" style="--body1:#8bd9a0;--body2:#65bd83;--blink:4.7s;--delay:-.8s;--idle:4.6s"></div>
           <div class="latchling look small l3" data-suit="spade" style="--body1:#7faef1;--body2:#628fd4;--blink:6.2s;--delay:-3.2s;--idle:4.2s"></div>
@@ -137,20 +149,18 @@ button,a{font:inherit}
         <button class="play">Play<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button>
         <div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div>
       </div>
-      <p class="variant-note"><b>Daily-life read:</b> one Latchling naps on the log nook, one peeks around the tree, one studies the sign, one bounces along the island, one lingers near the path, and one gently levitates at the edge.</p>
+      <p class="variant-note"><b>Daily-life read:</b> one Latchling rests by the hay nook, one peeks around the supply stack, two wander the grass, one lingers by the fence, and one gently levitates at the edge.</p>
     </section>
 
     <section class="concept" id="c2" data-concept="2">
-      <div class="label"><strong>2 · Cozy Home Island</strong><span>Same calm composition, with a tiny home, fence, ladder, sign, and slightly richer daily routines.</span></div>
+      <div class="label"><strong>2 · Cozy Home Island</strong><span>Same calm composition, now with a tiny assembled cottage, fence, ladder, and slightly richer daily routines.</span></div>
       <div class="phone">
         <div class="skywash"></div>
         <img class="cloud c1" src="assets/cloud4.png" alt=""><img class="cloud c2" src="assets/cloud1.png" alt=""><img class="cloud c3" src="assets/cloud1.png" alt=""><img class="cloud c4" src="assets/cloud4.png" alt="">
         <div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div>
         <div class="brand"><h2>Latchlings</h2><p>Home is where you latch</p><div class="brand-rule"><span></span><i></i><span></span></div></div>
-        <div class="scene"><div class="island-glow"></div><div class="island">
-          <img class="asset terrain-top t0" src="assets/grassCliffLeft.png" alt=""><img class="asset terrain-top t1" src="assets/grassCenter_rounded.png" alt=""><img class="asset terrain-top t2" src="assets/grassCenter_rounded.png" alt=""><img class="asset terrain-top t3" src="assets/grassCliffRight.png" alt="">
-          <img class="asset terrain-low t4" src="assets/grassMid.png" alt=""><img class="asset terrain-low t5" src="assets/grassMid.png" alt=""><img class="asset terrain-low t6" src="assets/grassMid.png" alt=""><img class="asset terrain-low t7" src="assets/grassHalfMid.png" alt=""><img class="asset terrain-low t8" src="assets/grassHalfMid.png" alt="">
-          <img class="asset backprop tree" src="assets/tree.png" alt=""><img class="asset backprop bush" src="assets/bush3.png" alt=""><img class="asset prop home" src="assets/home.png" alt=""><img class="asset prop fence" src="assets/fence.png" alt=""><img class="asset prop restlogs" src="assets/bridgeLogs.png" alt=""><img class="asset frontprop sign" src="assets/sign.png" alt=""><img class="asset frontprop laddertop" src="assets/ladder_top.png" alt=""><img class="asset frontprop laddermid" src="assets/ladder_mid.png" alt="">
+        <div class="scene"><div class="island-glow"></div><div class="island iso">
+          <img class="asset iso-base" src="assets/isometric/base_grass_high_S.png" alt=""><div class="iso-home"><img class="wall-door" src="assets/isometric/woodWallDoorClosed_S.png" alt=""><img class="wall-window" src="assets/isometric/woodWallWindow_S.png" alt=""><img class="roof" src="assets/isometric/roofSingle_S.png" alt=""></div><img class="asset iso-prop iso-front planks" src="assets/isometric/planks_S.png" alt=""><img class="asset iso-prop iso-front fenceiso" src="assets/isometric/fenceLow_S.png" alt=""><img class="asset iso-prop iso-front ladderiso" src="assets/isometric/ladderStand_S.png" alt="">
           <div class="latchling sleepy l1" data-suit="club" style="--body1:#c1a0ec;--body2:#9b79d2;--blink:5.9s;--delay:-1.4s;--idle:5s"></div>
           <div class="latchling peek small l2" data-suit="diamond" style="--body1:#f38a80;--body2:#df6b65;--blink:5.3s;--delay:-3s;--idle:4.6s"></div>
           <div class="latchling sway small l3" data-suit="heart" style="--body1:#86d89d;--body2:#67bb82;--blink:4.6s;--delay:-.5s;--idle:4.2s"></div>
@@ -161,7 +171,7 @@ button,a{font:inherit}
         <button class="play">Play<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button>
         <div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div>
       </div>
-      <p class="variant-note"><b>Daily-life read:</b> the home is more explicit here. One rests at the log nook, one peeks from home, one hangs near the tree, one checks the sign, one bounces by the fence, and another drifts near the ladder edge.</p>
+      <p class="variant-note"><b>Daily-life read:</b> the home is explicit here. One rests near the cottage, one peeks from the doorway, one hangs around the yard, one checks the planks, one bounces by the fence, and another drifts near the ladder edge.</p>
     </section>
 
     <section class="concept" id="c3" data-concept="3">
@@ -171,10 +181,8 @@ button,a{font:inherit}
         <img class="cloud c1" src="assets/cloud1.png" alt=""><img class="cloud c2" src="assets/cloud4.png" alt=""><img class="cloud c3" src="assets/cloud4.png" alt=""><img class="cloud c4" src="assets/cloud1.png" alt="">
         <div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div>
         <div class="brand"><h2>Latchlings</h2><p>A tiny world in motion</p><div class="brand-rule"><span></span><i></i><span></span></div></div>
-        <div class="scene"><div class="island-glow"></div><div class="island">
-          <img class="asset terrain-top t0" src="assets/grassCliffLeft.png" alt=""><img class="asset terrain-top t1" src="assets/grassCenter_rounded.png" alt=""><img class="asset terrain-top t2" src="assets/grassCenter_rounded.png" alt=""><img class="asset terrain-top t3" src="assets/grassCliffRight.png" alt="">
-          <img class="asset terrain-low t4" src="assets/grassMid.png" alt=""><img class="asset terrain-low t5" src="assets/grassMid.png" alt=""><img class="asset terrain-low t6" src="assets/grassMid.png" alt=""><img class="asset terrain-low t7" src="assets/grassHalfMid.png" alt=""><img class="asset terrain-low t8" src="assets/grassHalfMid.png" alt="">
-          <img class="asset backprop tree" src="assets/tree.png" alt=""><img class="asset backprop hilla" src="assets/hill_large.png" alt=""><img class="asset backprop hillb" src="assets/hill_small.png" alt=""><img class="asset prop bridge" src="assets/bridgeLogs.png" alt=""><img class="asset prop rope" src="assets/ropeAttached.png" alt=""><img class="asset prop fence" src="assets/fence.png" alt=""><img class="asset prop sign" src="assets/sign.png" alt=""><img class="asset frontprop bush" src="assets/bush3.png" alt="">
+        <div class="scene"><div class="island-glow"></div><div class="island iso">
+          <img class="asset iso-base" src="assets/isometric/base_grass_detail_S.png" alt=""><img class="asset iso-prop iso-back corn" src="assets/isometric/cornYoungDouble_S.png" alt=""><img class="asset iso-prop iso-back bales" src="assets/isometric/hayBales_S.png" alt=""><img class="asset iso-prop iso-front planks" src="assets/isometric/planks_S.png" alt=""><img class="asset iso-prop iso-front fenceiso" src="assets/isometric/fenceLow_S.png" alt=""><img class="asset iso-prop iso-front ladderiso" src="assets/isometric/ladderStand_S.png" alt="">
           <div class="latchling sway small l1" data-suit="heart" style="--body1:#ef9ac5;--body2:#d57eac;--blink:5.6s;--delay:-1.7s;--idle:4.3s"></div>
           <div class="latchling hover l2" data-suit="star" style="--body1:#f0ce70;--body2:#d9b152;--blink:4.8s;--delay:-.4s;--idle:3.6s"></div>
           <div class="latchling hop l3" data-suit="diamond" style="--body1:#f38980;--body2:#df6a64;--blink:5.3s;--delay:-3.1s;--idle:3.8s"></div>
@@ -186,7 +194,7 @@ button,a{font:inherit}
         <button class="play">Play<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button>
         <div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div>
       </div>
-      <p class="variant-note"><b>Daily-life read:</b> one balances near the rope, one levitates above the hill, two bounce along different parts of the island, one peeks from the tree line, one watches the others, and one has had enough and quietly rests by the bush.</p>
+      <p class="variant-note"><b>Daily-life read:</b> one explores the ladder, one levitates over the crops, two bounce along different parts of the island, one peeks by the hay bales, one watches the others, and one quietly rests near the fence.</p>
     </section>
   </main>
 </div>

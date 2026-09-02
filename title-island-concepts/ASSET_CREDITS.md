@@ -54,3 +54,7 @@ No `preview.png`, `sample.png`, spritesheet, tilesheet, or other multi-asset cat
 ## Production guidance
 
 If one of these concepts is selected for the shipping title screen, keep the same rule: compose the environment from individual licensed source pieces. Do not replace the scene with a preview sheet or generated static illustration. The Latchlings should remain live HTML/CSS/SVG characters so their expressions and idle behaviors can remain animated.
+
+## Isometric island revision
+
+The focused three-concept gallery now uses individually exported pieces from **Kenney Isometric Miniature Bases** and **Kenney Isometric Miniature Farm** for the island bases, cottage parts, fence, ladder, crops, hay, planks, and supply props. These Kenney packs are released under **CC0 1.0 Universal**. The Latchlings themselves remain custom live HTML/CSS/SVG artwork.
