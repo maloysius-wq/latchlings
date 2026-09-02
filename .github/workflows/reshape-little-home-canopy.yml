@@ -1,0 +1,106 @@
+name: Reshape Little Home Canopy
+
+on:
+  push:
+    paths:
+      - '.github/workflows/reshape-little-home-canopy.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reshape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply unified canopy refinement
+        run: python3 .github/scripts/reshape_little_home_canopy.py
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('title-island-concepts/index.html').read_text()
+          c2=t.split('<section class="concept" id="c2"',1)[1].split('<section class="concept" id="c3"',1)[0]
+          if 'little-home-tree' not in c2 or c2.count('leaf-cluster')!=7:
+              raise SystemExit('Organic tree structure missing')
+          if '#c2 .little-home-tree .foliage:before' not in t or 'clip-path:polygon(5% 50%' not in t:
+              raise SystemExit('Unified irregular canopy silhouette missing')
+          if 'border-radius:58% 42%' in t[t.find('#c2 .little-home-tree .foliage{'):t.find('@keyframes littleHomeCanopy')]:
+              raise SystemExit('Old rounded canopy cluster styling remains')
+          if "url('textures/grass.jpg')" not in t or "url('textures/wood.jpg')" not in t:
+              raise SystemExit('Local tree texture mapping missing')
+          if 'class="fence"' in c2 or '<img' in t.lower():
+              raise SystemExit('Household/environment regression')
+          print('CANOPY_STATIC_OK')
+          PY
+          git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-a.js game400-b.js style400-game.css
+      - name: Install Playwright outside repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE_DIR="$RUNNER_TEMP/canopy-node"
+          mkdir -p "$NODE_DIR"
+          cd "$NODE_DIR"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Browser validation and screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE_DIR="$RUNNER_TEMP/canopy-node"
+          mkdir -p canopy-renders
+          python3 -m http.server 8126 >/tmp/canopy-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cat > "$NODE_DIR/validate-canopy.mjs" <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844}});
+          const errors=[];
+          page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+          page.on('pageerror',e=>errors.push(e.message));
+          page.on('requestfailed',r=>errors.push(r.url()));
+          const res=await page.goto('http://127.0.0.1:8126/title-island-concepts/?c=2',{waitUntil:'networkidle'});
+          if(!res?.ok())throw new Error('Preview failed');
+          await page.waitForTimeout(700);
+          const data=await page.evaluate(()=>{
+            const a=document.querySelector('#c2.active');
+            const q=s=>a.querySelector(s);
+            const box=s=>{const r=q(s).getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,w:r.width,h:r.height}};
+            const foliage=q('.little-home-tree .foliage');
+            return {tree:box('.little-home-tree'),cottage:box('.cottage'),brand:box('.brand'),play:box('.play'),phone:box('.phone'),secondary:box('.secondary'),leaves:a.querySelectorAll('.leaf-cluster').length,residents:a.querySelectorAll('.resident').length,children:a.querySelectorAll('.resident.child').length,branches:a.querySelectorAll('.little-home-tree .branch').length,roots:a.querySelectorAll('.little-home-tree .root').length,imgs:a.querySelectorAll('img').length,fences:a.querySelectorAll('.fence').length,overflow:document.body.scrollWidth-innerWidth,beforeContent:getComputedStyle(foliage,'::before').content,beforeClip:getComputedStyle(foliage,'::before').clipPath};
+          });
+          if(data.leaves!==7||data.residents!==6||data.children!==2||data.branches!==3||data.roots!==3||data.imgs!==0||data.fences!==0)throw new Error('Structure regression '+JSON.stringify(data));
+          if(data.overflow>1||data.secondary.bottom>data.phone.bottom+1)throw new Error('UI overflow/clipping');
+          if(data.tree.top<data.brand.bottom+20||data.tree.right>data.cottage.left-18||data.tree.bottom>data.play.top-95)throw new Error('Tree placement collision '+JSON.stringify(data));
+          if(data.beforeContent==='none'||!data.beforeClip||data.beforeClip==='none')throw new Error('Unified canopy pseudo silhouette not rendered');
+          if(errors.length)throw new Error(errors.join(' | '));
+          await page.screenshot({path:`${process.env.GITHUB_WORKSPACE}/canopy-renders/canopy-phase-1.png`,fullPage:true});
+          await page.waitForTimeout(2200);
+          await page.screenshot({path:`${process.env.GITHUB_WORKSPACE}/canopy-renders/canopy-phase-2.png`,fullPage:true});
+          console.log('CANOPY_BROWSER_OK',JSON.stringify(data));
+          await browser.close();
+          JS
+          node "$NODE_DIR/validate-canopy.mjs"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-canopy-renders
+          path: canopy-renders/*.png
+          if-no-files-found: error
+      - name: Commit validated canopy and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf canopy-renders
+          rm -f .github/workflows/reshape-little-home-canopy.yml .github/scripts/reshape_little_home_canopy.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/reshape-little-home-canopy.yml .github/scripts/reshape_little_home_canopy.py
+          git commit -m 'Unify the Little Home tree canopy'
+          git pull --rebase origin main
+          git push origin HEAD:main
