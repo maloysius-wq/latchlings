@@ -31,7 +31,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Refine selected Little Home concept with a living six-Latchling household
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Refine selected procedural title concept #2 / Little Home. Remove its fence, shrink the residents so their scale makes sense relative to the cottage, and show exactly six Latchlings: four adults and two smaller children. All six should visibly move through daily-life routines, with the children playing and the adults doing varied household/island activities.
 
@@ -42,6 +42,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks require Concept 2 to contain zero fence elements, exactly six residents, exactly four `.adult` and two `.child` residents, adult/child scale rules, distinct daily-life animation classes, no environment image sprites/hotlinks, and unchanged shipping Latchling palette/suit structure. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, or residents leaving the island/covering the primary controls. Sample resident bounding boxes at multiple timestamps to prove all six have locomotion, verify child bodies are smaller than adults, and capture multiple animation-phase screenshots for visual inspection. Quick sanity-render Concepts 1 and 3.
 
 **Deployment plan:** Commit the validated Concept 2 refinement to `main`, deploy through existing GitHub Pages, visually inspect the animation-phase screenshots, then close this same handoff entry with implementation SHA, validation/deployment runs, remaining risks, and exact next action.
+
+
+#### Completion summary
+
+**Implementation:** Refined only Concept 2 / Little Home in `title-island-concepts/index.html`. Removed its fence and rescaled the six residents so they read as occupants of the cottage rather than nearly house-sized characters. The household is exactly four 34 px adults and two 25 px children. Adults now have separate looping routines for gardening, carrying a parcel between home and yard, tending the tree/yard, and making a broader home/center circuit. The two smaller children play/chase through the yard around a tiny animated procedural ball. Small procedural chore props distinguish the adult routines. Shipping-faithful face, suit, palette, blink, and idle behavior remains layered inside each moving resident. Concepts 1 and 3 remain intact for comparison, and production `index.html` was not changed.
+
+**Files changed:** `title-island-concepts/index.html`. Temporary transformer/validator/finalizer files self-removed after the permanent implementation commit.
+
+**Validation:** GitHub Actions run `33655194619` passed the substantive static and Chromium checks before its first push-cleanup step encountered a tracked `package.json` housekeeping issue. Static validation proved zero Concept 2 fence elements, exactly six residents split 4 adults / 2 children, all six distinct routine classes, the 34 px / 25 px size rules, the animated play prop, preserved shipping palette values, zero image elements/runtime hotlinks, and no production/campaign/game-file changes. Chromium at 390x844 passed with no console/page/request errors, no horizontal overflow or clipped primary UI, all six residents remaining on the island, and all six showing measurable locomotion across three sampled timestamps. Concepts 1 and 3 also passed sanity renders. Screenshot artifact `9856427867` contains three animation phases and was downloaded and visually inspected; the smaller scale, open fence-free yard, adult activity spread, and child play read cleanly in all three phases. The validated transformation was then reproduced and permanently pushed by successful finalizer run `33655345022`.
+
+**Implementation commit:** `5a7ec019f9df64e2c02a6675280a5aca30be934c` (`Animate the Little Home household`).
+
+**Deployment:** GitHub Pages run `33655361488` completed successfully for implementation commit `5a7ec019f9df64e2c02a6675280a5aca30be934c`. The refined preview is `title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This refinement is complete as a design-selection preview. Production `index.html` remains intentionally unchanged. The next action is user review of the live animated Little Home; only promote or adapt it into the production title screen when the user explicitly asks to do so.
 
 ---
 
