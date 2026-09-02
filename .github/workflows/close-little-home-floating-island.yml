@@ -1,0 +1,42 @@
+name: Close Little Home Floating Island
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-little-home-floating-island.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete floating island handoff entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          title='### 2026-09-02 — Add Little Home island bob and floating earth pebbles'
+          start=t.index(title)
+          end=t.index('\n---\n', start)
+          section=t[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          if '#### Completion summary' not in section:
+              section += '''\n\n#### Completion summary\n\n**Cloud answer:** Yes. Concept 2 already had animated clouds before this task. The four procedural clouds still use independent `littleHomeCloudDrift` cycles of 38s, 46s, 53s, and 42s; those rules were preserved unchanged.\n\n**Implementation:** Refined only selected Concept 2 / Little Home in `title-island-concepts/index.html`. Added a 7.6-second `littleHomeIslandFloat` cycle to the whole `.island-model`, preserving its horizontal centering while lifting the island only 5px at the top of the cycle for a gentle floating read. Added a matching `littleHomeShadowAnchor` counter-animation to the existing island shadow: as the island rises, the shadow translates downward relative to the moving island so it remains visually anchored while shrinking slightly and fading. Added six small irregular procedural `float-pebble` elements around the outside of the lower brown dirt mass. The pebbles reuse local `textures/earth.jpg`, all share the same 7.6-second cadence as the island, and use unique negative delays, sizes, rotations, positions, and lift amplitudes so they bob out of phase. Reduced-motion mode disables the new island/shadow/pebble animation. The five-resident household, tree, cottage, flowers, stone, children, adult rest scheduler, Play UI, and clouds remain intact.\n\n**Files changed:** Permanent product diff from the IN PROGRESS handoff commit `3b0853eee098ad73188c7b738c8311eda41f356d` to the implementation commit contains only `title-island-concepts/index.html` (17 additions, 2 deletions). Temporary transformer/browser-validator/workflow files self-removed. Production `index.html`, campaigns, game runtime, textures, and other product files were not changed.\n\n**Validation:** GitHub Actions run `33684540269` passed static and Chromium validation. Static checks confirmed all four pre-existing cloud drift durations/rules, the Concept 2-only island bob, shadow counter-animation, exactly six earth-textured pebbles with unique stagger delays, the 5-resident 3-adult / 2-child household, current scene polish, reduced-motion override, and no production/campaign/game-file changes. Chromium at 390×844 sampled three timing phases: island top positions `271.07`, `267.22`, and `268.58` px for a measured 3.85px sampled vertical range; the shadow varied by only 0.72px while the island moved; all six pebbles had distinct phase positions at the initial sample and changed across time; all four clouds also changed position across the sampled interval. No console/page/request errors, clipping, or horizontal overflow occurred, and Concepts 1 and 3 passed sanity checks with no new island bob or pebble elements. Screenshot artifact `9867566769` contains three timing phases and was downloaded and visually inspected; the dirt pebbles read as suspended debris around the island and the island movement remains intentionally subtle.\n\n**Implementation commit:** `457b26ee13fb1a879e19c275b3bab9d166d82428` (`Float the Little Home island`).\n\n**Deployment:** GitHub Pages run `33684613308` completed successfully for exact implementation commit `457b26ee13fb1a879e19c275b3bab9d166d82428`. Live preview remains `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.\n\n**Remaining risk / next action:** This floating-motion pass is complete in the design-selection preview. The bob is deliberately restrained so it does not make the residents/cottage feel seasick; if user review wants a stronger floating read, the 5px amplitude or 7.6s cadence can be tuned. Production remains intentionally untouched pending explicit promotion.\n'''
+          t=t[:start]+section+t[end:]
+          p.write_text(t)
+          PY
+          rm -f .github/workflows/close-little-home-floating-island.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-little-home-floating-island.yml
+          git commit -m 'Complete Little Home floating island handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
