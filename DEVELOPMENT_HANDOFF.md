@@ -29,6 +29,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Refine selected Little Home concept with a living six-Latchling household
+
+**Status: IN PROGRESS**
+
+**User goal:** Refine selected procedural title concept #2 / Little Home. Remove its fence, shrink the residents so their scale makes sense relative to the cottage, and show exactly six Latchlings: four adults and two smaller children. All six should visibly move through daily-life routines, with the children playing and the adults doing varied household/island activities.
+
+**Implementation plan:** Keep the existing procedural Little Home island, cottage, CC0 surface textures, shipping-faithful Latchling faces/palettes/suits, and title UI. Remove only Concept 2's fence. Scale Concept 2 adults to roughly cottage-resident scale and children smaller again. Add distinct looping CSS choreography rather than synchronized idle motion: adult gardening, a house/parcel errand, yard/tree tending, and a home/center wandering routine; two children play/chase around a tiny procedural play prop. Preserve asynchronous shipping blink/face motion on top of the locomotion. Keep Concepts 1 and 3 intact for reference and leave production `index.html` unchanged.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transformation/browser-validation workflow/script if needed. No production runtime or campaign files should change.
+
+**Validation plan:** Static checks require Concept 2 to contain zero fence elements, exactly six residents, exactly four `.adult` and two `.child` residents, adult/child scale rules, distinct daily-life animation classes, no environment image sprites/hotlinks, and unchanged shipping Latchling palette/suit structure. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, or residents leaving the island/covering the primary controls. Sample resident bounding boxes at multiple timestamps to prove all six have locomotion, verify child bodies are smaller than adults, and capture multiple animation-phase screenshots for visual inspection. Quick sanity-render Concepts 1 and 3.
+
+**Deployment plan:** Commit the validated Concept 2 refinement to `main`, deploy through existing GitHub Pages, visually inspect the animation-phase screenshots, then close this same handoff entry with implementation SHA, validation/deployment runs, remaining risks, and exact next action.
+
+---
+
 ### 2026-09-02 — Rebuild floating-island title concepts with procedural models + CC0 textures
 
 **Status: COMPLETED**
