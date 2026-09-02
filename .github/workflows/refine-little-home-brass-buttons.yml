@@ -1,0 +1,102 @@
+name: Refine Little Home Brass Buttons
+
+on:
+  push:
+    paths:
+      - '.github/workflows/refine-little-home-brass-buttons.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply Brass Toy Plates
+        run: python3 .github/scripts/refine_little_home_brass_buttons.py
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('title-island-concepts/index.html').read_text()
+          c2=t.split('<section class="concept" id="c2"',1)[1].split('<section class="concept" id="c3"',1)[0]
+          required=[
+            '/* Selected Little Home: brass toy plate controls */',
+            '#c2 .play{left:28px;right:28px;top:590px;height:60px',
+            '#c2 .secondary{left:28px;right:28px;top:663px;gap:9px}',
+            '#c2 .secondary button{height:78px;border:2px solid #795225',
+            'repeating-linear-gradient(90deg',
+            'radial-gradient(circle at 15px 14px',
+            '#c2 .play:before',
+            '#c2 .secondary button:before',
+            '#c2 .secondary svg{width:31px;height:31px',
+            'clip-path:polygon(11px 0',
+            'drop-shadow(0 5px 0 #6b471f)'
+          ]
+          for token in required:
+              if token not in t:
+                  raise SystemExit('Missing brass-control token: '+token)
+          if c2.count('<button class="play">')!=1:
+              raise SystemExit('Play markup changed unexpectedly')
+          if c2.count('<div class="secondary">')!=1 or c2.count('<button><strong>')!=2:
+              raise SystemExit('Secondary control markup changed unexpectedly')
+          for label in ['Play','Daily Puzzle','Level Select']:
+              if label not in c2:
+                  raise SystemExit('Missing control label '+label)
+          for scene_token in ['class="float-pebble pebble-','data-role="adult"','data-role="child"','class="cloud a"','class="flower blue f3"']:
+              if scene_token not in c2:
+                  raise SystemExit('Scene regression token missing '+scene_token)
+          if '<img' in t.lower() or 'https://' in c2 or 'http://' in c2:
+              raise SystemExit('Unexpected image element/runtime hotlink')
+          print('BRASS_BUTTON_STATIC_OK', {'play':1,'secondary':2,'residents':c2.count('data-role=')})
+          PY
+          git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-a.js game400-b.js style400-game.css
+
+      - name: Install Playwright outside repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/little-home-brass-node"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and screenshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/little-home-brass-node"
+          mkdir -p brass-button-renders
+          python3 -m http.server 8132 >/tmp/little-home-brass-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cp .github/scripts/validate_little_home_brass_buttons.mjs "$TEST_NODE/validate_little_home_brass_buttons.mjs"
+          node "$TEST_NODE/validate_little_home_brass_buttons.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-brass-button-render
+          path: brass-button-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated refinement and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf brass-button-renders
+          rm -f .github/workflows/refine-little-home-brass-buttons.yml .github/scripts/refine_little_home_brass_buttons.py .github/scripts/validate_little_home_brass_buttons.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/refine-little-home-brass-buttons.yml .github/scripts/refine_little_home_brass_buttons.py .github/scripts/validate_little_home_brass_buttons.mjs
+          git commit -m 'Style Little Home controls as brass toy plates'
+          git pull --rebase origin main
+          git push origin HEAD:main
