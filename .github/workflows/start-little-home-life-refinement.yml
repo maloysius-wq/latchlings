@@ -1,0 +1,38 @@
+name: Start Little Home Life Refinement
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-little-home-life-refinement.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record current work before implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          marker='## Current Work\n'
+          entry='''\n### 2026-09-02 — Refine selected Little Home concept with a living six-Latchling household\n\n**Status: IN PROGRESS**\n\n**User goal:** Refine selected procedural title concept #2 / Little Home. Remove its fence, shrink the residents so their scale makes sense relative to the cottage, and show exactly six Latchlings: four adults and two smaller children. All six should visibly move through daily-life routines, with the children playing and the adults doing varied household/island activities.\n\n**Implementation plan:** Keep the existing procedural Little Home island, cottage, CC0 surface textures, shipping-faithful Latchling faces/palettes/suits, and title UI. Remove only Concept 2's fence. Scale Concept 2 adults to roughly cottage-resident scale and children smaller again. Add distinct looping CSS choreography rather than synchronized idle motion: adult gardening, a house/parcel errand, yard/tree tending, and a home/center wandering routine; two children play/chase around a tiny procedural play prop. Preserve asynchronous shipping blink/face motion on top of the locomotion. Keep Concepts 1 and 3 intact for reference and leave production `index.html` unchanged.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transformation/browser-validation workflow/script if needed. No production runtime or campaign files should change.\n\n**Validation plan:** Static checks require Concept 2 to contain zero fence elements, exactly six residents, exactly four `.adult` and two `.child` residents, adult/child scale rules, distinct daily-life animation classes, no environment image sprites/hotlinks, and unchanged shipping Latchling palette/suit structure. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, or residents leaving the island/covering the primary controls. Sample resident bounding boxes at multiple timestamps to prove all six have locomotion, verify child bodies are smaller than adults, and capture multiple animation-phase screenshots for visual inspection. Quick sanity-render Concepts 1 and 3.\n\n**Deployment plan:** Commit the validated Concept 2 refinement to `main`, deploy through existing GitHub Pages, visually inspect the animation-phase screenshots, then close this same handoff entry with implementation SHA, validation/deployment runs, remaining risks, and exact next action.\n\n---\n'''
+          if '### 2026-09-02 — Refine selected Little Home concept with a living six-Latchling household' not in t:
+              t=t.replace(marker, marker+entry, 1)
+              p.write_text(t)
+          PY
+          rm .github/workflows/start-little-home-life-refinement.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/start-little-home-life-refinement.yml
+          git commit -m 'Record Little Home life refinement in handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
