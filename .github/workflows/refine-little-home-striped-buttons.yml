@@ -1,0 +1,100 @@
+name: Refine Little Home Striped Buttons
+
+on:
+  push:
+    paths:
+      - '.github/workflows/refine-little-home-striped-buttons.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply rounded sage-striped controls
+        run: python3 .github/scripts/refine_little_home_striped_buttons.py
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('title-island-concepts/index.html').read_text()
+          c2=t.split('<section class="concept" id="c2"',1)[1].split('<section class="concept" id="c3"',1)[0]
+          required=[
+            '/* Selected Little Home: sage-striped toy controls */',
+            '#c2 .play{left:28px;right:28px;top:590px;height:60px;border:2px solid #71865d;border-radius:22px;clip-path:none',
+            'repeating-linear-gradient(135deg,#fff6d8 0 13px,#b9cf9c 13px 26px,#f1d99c 26px 39px,#8fae76 39px 52px)',
+            '#c2 .secondary button{height:78px;border:2px solid #71865d;border-radius:20px;clip-path:none',
+            'repeating-linear-gradient(135deg,#fff7df 0 11px,#c4d6aa 11px 22px,#f2dda8 22px 33px,#96b27b 33px 44px)',
+            '#c2 .secondary button:nth-child(2)',
+            '#c2 .play:active,#c2 .secondary button:active'
+          ]
+          for token in required:
+              if token not in t:
+                  raise SystemExit('Missing striped-control token: '+token)
+          if '/* Selected Little Home: brass toy plate controls */' in t:
+              raise SystemExit('Old brass control block still present')
+          if 'clip-path:polygon(11px 0,calc(100% - 11px)' in t:
+              raise SystemExit('Old cut-corner Play treatment still present')
+          for label in ['Play','Daily Puzzle','Level Select']:
+              if label not in c2:
+                  raise SystemExit('Missing control label '+label)
+          if c2.count('data-role="adult"')!=3 or c2.count('data-role="child"')!=2:
+              raise SystemExit('Little Home household changed unexpectedly')
+          if c2.count('class="float-pebble pebble-')!=6 or c2.count('class="cloud ')!=4:
+              raise SystemExit('Little Home scene elements changed unexpectedly')
+          for forbidden in ['#91a8de','#e0e9ff','#dce8ff','#445985']:
+              if forbidden in t[t.index('/* Selected Little Home: sage-striped toy controls */'):t.index('.variant-note{')]:
+                  raise SystemExit('Blue gallery palette leaked into Little Home controls: '+forbidden)
+          print('STRIPED_BUTTON_STATIC_OK')
+          PY
+          git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-a.js game400-b.js style400-game.css
+
+      - name: Install Playwright outside repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/little-home-striped-node"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and screenshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/little-home-striped-node"
+          mkdir -p striped-button-renders
+          python3 -m http.server 8134 >/tmp/little-home-striped-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cp .github/scripts/validate_little_home_striped_buttons.mjs "$TEST_NODE/validate_little_home_striped_buttons.mjs"
+          node "$TEST_NODE/validate_little_home_striped_buttons.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-striped-button-render
+          path: striped-button-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated refinement and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf striped-button-renders
+          rm -f .github/workflows/refine-little-home-striped-buttons.yml .github/scripts/refine_little_home_striped_buttons.py .github/scripts/validate_little_home_striped_buttons.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/refine-little-home-striped-buttons.yml .github/scripts/refine_little_home_striped_buttons.py .github/scripts/validate_little_home_striped_buttons.mjs
+          git commit -m 'Style Little Home controls as sage stripes'
+          git pull --rebase origin main
+          git push origin HEAD:main
