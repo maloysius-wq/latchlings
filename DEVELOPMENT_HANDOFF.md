@@ -31,7 +31,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Refine Little Home procedural tree
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Improve only Concept 2 / Little Home's tree. The current three-circle canopy looks too simplistic. Replace it with a more convincing procedural tree and texture it while preserving the selected island, six-resident household choreography, and production runtime.
 
@@ -42,6 +42,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks require Concept 2 to use the new dedicated tree markup/classes, at least seven irregular foliage clusters, visible branch/root elements, local wood/grass texture references, and no new image elements/hotlinks. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, or tree overlap with the title/cottage/primary controls. Capture the tree at multiple household animation phases and visually inspect silhouette, texture readability, resident clearance, and overall island balance. Sanity-check Concepts 1 and 3 remain unchanged.
 
 **Deployment plan:** Commit the validated Concept 2 tree refinement to `main`, deploy through existing GitHub Pages, visually inspect screenshots, then close this same handoff entry with implementation SHA, validation/deployment runs, remaining risks, and exact next action.
+
+
+#### Completion summary
+
+**Implementation:** Rebuilt only Concept 2 / Little Home's tree in `title-island-concepts/index.html`. The original three-circle canopy was removed. The replacement has a tapered wood-textured procedural trunk, three visible forked branch forms, three root/contact forms, a ground shadow, and a unified irregular canopy silhouette. The canopy uses the already-vendored CC0 `textures/grass.jpg` as subtle foliage grain with layered highlights/underside shading and seven internal faceted tonal patches rather than separate round leaf blobs. A very slight canopy sway adds life without competing with the six animated residents. Concepts 1 and 3 remain unchanged, the six-resident Little Home household remains 4 adults / 2 children with its existing routines, and production `index.html` was not changed.
+
+**Files changed:** `title-island-concepts/index.html`. Temporary transformer/validator workflows and scripts self-removed after their validated commits. No new third-party assets were added; existing local CC0 `wood.jpg` and `grass.jpg` were reused.
+
+**Validation:** Initial structural tree run `33666314811` passed static and Chromium checks with 7 foliage elements, 3 branches, 3 roots, all 6 residents intact, no fence/image regressions, changing canopy transform across sampled timestamps, and no title/cottage/control collisions. Screenshot artifact `9860710586` was visually inspected; it confirmed the structure was improved but the canopy still read too much like a cluster of rounded masses. A second same-scope refinement unified the crown into one irregular polygon silhouette with internal tonal facets. Final run `33666543249` passed `CANOPY_STATIC_OK` and Chromium at 390×844 with zero console/page/request errors, zero overflow, zero clipped UI, 7 internal foliage facets, 6 residents / 2 children, 3 branches, 3 roots, zero image elements, zero Concept 2 fence elements, and a rendered irregular canopy pseudo-element. Final screenshot artifact `9860803140` was downloaded and visually inspected; the crown reads as one textured organic tree at phone size and retains clear separation from the cottage, title, residents, and primary controls.
+
+**Implementation commit:** `5d466fce25c80189c7246bf075f6b96f5c3fb6e7` (`Unify the Little Home tree canopy`). The preceding structural-tree commit was `9438c1ff2af21312997e8c9ee4f2fb86c9360e5e`.
+
+**Deployment:** GitHub Pages run `33666617556` completed successfully for final implementation commit `5d466fce25c80189c7246bf075f6b96f5c3fb6e7`. The refined preview remains `title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This tree refinement is complete in the design-selection preview. Production remains intentionally unchanged. The next action is user review of the live Little Home; only promote or further adapt it when the user explicitly asks.
 
 ---
 
