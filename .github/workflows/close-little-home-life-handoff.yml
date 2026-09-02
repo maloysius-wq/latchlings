@@ -1,0 +1,44 @@
+name: Close Little Home Life Handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-little-home-life-handoff.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete Little Home refinement handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          title='### 2026-09-02 — Refine selected Little Home concept with a living six-Latchling household'
+          start=t.index(title)
+          end=t.index('\n---\n',start)
+          sec=t[start:end]
+          if '**Status: IN PROGRESS**' not in sec:
+              raise SystemExit('Target handoff entry is not IN PROGRESS')
+          sec=sec.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          completion='''\n\n#### Completion summary\n\n**Implementation:** Refined only Concept 2 / Little Home in `title-island-concepts/index.html`. Removed its fence and rescaled the six residents so they read as occupants of the cottage rather than nearly house-sized characters. The household is exactly four 34 px adults and two 25 px children. Adults now have separate looping routines for gardening, carrying a parcel between home and yard, tending the tree/yard, and making a broader home/center circuit. The two smaller children play/chase through the yard around a tiny animated procedural ball. Small procedural chore props distinguish the adult routines. Shipping-faithful face, suit, palette, blink, and idle behavior remains layered inside each moving resident. Concepts 1 and 3 remain intact for comparison, and production `index.html` was not changed.\n\n**Files changed:** `title-island-concepts/index.html`. Temporary transformer/validator/finalizer files self-removed after the permanent implementation commit.\n\n**Validation:** GitHub Actions run `33655194619` passed the substantive static and Chromium checks before its first push-cleanup step encountered a tracked `package.json` housekeeping issue. Static validation proved zero Concept 2 fence elements, exactly six residents split 4 adults / 2 children, all six distinct routine classes, the 34 px / 25 px size rules, the animated play prop, preserved shipping palette values, zero image elements/runtime hotlinks, and no production/campaign/game-file changes. Chromium at 390x844 passed with no console/page/request errors, no horizontal overflow or clipped primary UI, all six residents remaining on the island, and all six showing measurable locomotion across three sampled timestamps. Concepts 1 and 3 also passed sanity renders. Screenshot artifact `9856427867` contains three animation phases and was downloaded and visually inspected; the smaller scale, open fence-free yard, adult activity spread, and child play read cleanly in all three phases. The validated transformation was then reproduced and permanently pushed by successful finalizer run `33655345022`.\n\n**Implementation commit:** `5a7ec019f9df64e2c02a6675280a5aca30be934c` (`Animate the Little Home household`).\n\n**Deployment:** GitHub Pages run `33655361488` completed successfully for implementation commit `5a7ec019f9df64e2c02a6675280a5aca30be934c`. The refined preview is `title-island-concepts/?c=2`.\n\n**Remaining risk / next action:** This refinement is complete as a design-selection preview. Production `index.html` remains intentionally unchanged. The next action is user review of the live animated Little Home; only promote or adapt it into the production title screen when the user explicitly asks to do so.\n'''
+          sec += completion
+          t=t[:start]+sec+t[end:]
+          p.write_text(t)
+          PY
+          rm .github/workflows/close-little-home-life-handoff.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-little-home-life-handoff.yml
+          git commit -m 'Complete Little Home life refinement handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
