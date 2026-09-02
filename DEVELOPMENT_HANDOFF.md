@@ -12,6 +12,10 @@ This repository is the source of truth for **Latchlings**.
 
 Always inspect current `main`, `index.html`, and this handoff before changing anything.
 
+### Repository access invariant
+
+For **all repository work in this project**, use the connected **GitHub plugin/connector as the canonical repository path**. A failed local clone, missing local checkout, container DNS failure, or failed ordinary web/raw-GitHub fetch is **not evidence that GitHub access is unavailable**. Before ever claiming repository access is unavailable, explicitly discover/load the GitHub connector and attempt a repository read through the GitHub plugin (`GitHub.fetch_file`, `GitHub.get_repo`, or equivalent). Local/container/web access is secondary and optional; the GitHub plugin is the first-line path for inspection, edits, commits, Actions, and deployment checks.
+
 ## MANDATORY handoff workflow
 
 For every substantive repository task, in every current or future chat:
@@ -28,6 +32,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 ---
 
 ## Current Work
+
+### 2026-09-02 — Polish Little Home stone, play area, and animated clouds
+
+**Status: IN PROGRESS**
+
+**User goal:** Continue polishing selected Concept 2 / Little Home. Move the stone right so it no longer overlaps the island edge, remove the brown platform beneath the tree where the children are playing, and replace the simplistic background clouds with better-looking animated procedural clouds.
+
+**Implementation plan:** Keep the improved organic tree, cottage, six-resident household choreography, CC0 materials, and title controls. Nudge Concept 2's rock inward/right. Remove only Concept 2's brown deck/platform while preserving the children and their play/chase routine. Rebuild Concept 2's four existing cloud shapes with softer asymmetric multi-lobed CSS forms, layered highlight/shadow, varied scale/opacity, and independent slow drift cycles using CSS individual `translate` so existing scale placement is preserved. Leave production `index.html` and campaign/game runtime untouched.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transform/Chromium-validation workflow files. No new third-party assets are required.
+
+**Validation plan:** Static checks require Concept 2's rock position to move right, zero Concept 2 deck/platform elements, exactly six residents with 4 adults / 2 children intact, four cloud elements with dedicated Little Home cloud styling/animation, no image elements or runtime hotlinks, and no production/campaign/game-file changes. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, stone edge overlap, or cloud/title/island/control collisions. Sample cloud transforms at multiple timestamps to prove animation and capture screenshots for visual inspection. Sanity-check Concepts 1 and 3 remain functional.
+
+**Deployment plan:** Commit the validated Concept 2 polish to `main`, deploy through existing GitHub Pages, visually inspect captured renders, then close this entry with implementation SHA, validation/deployment runs, and next action.
+
+---
 
 ### 2026-09-02 — Refine Little Home procedural tree
 
