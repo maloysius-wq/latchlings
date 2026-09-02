@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Add Little Home island bob and floating earth pebbles
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Confirm whether the selected Little Home clouds are animated, then make the floating-island read more clearly by giving the island itself a very subtle vertical bob and adding small brown pebbles around the lower dirt mass that float on the same overall cadence but at staggered phases.
 
@@ -52,6 +52,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks require current cloud drift rules/durations to remain intact, a Concept 2-only island bob keyframe/rule, six floating-pebble elements and staggered shared-cadence animation rules, counter-motion/shadow treatment, and reduced-motion overrides. Chromium at 390x844 must sample multiple timestamps and prove the island vertical position changes slightly, the shadow remains approximately anchored, pebble positions change independently/out of phase, clouds still animate, no horizontal overflow or clipping occurs, no console/page/request errors appear, and all five residents remain present. Capture multiple timing screenshots and sanity-check Concepts 1 and 3 remain unaffected.
 
 **Deployment plan:** Commit the validated preview refinement to `main`, let GitHub Pages deploy the exact implementation commit, visually inspect timing screenshots, then close this entry with implementation SHA, validation/deployment results, and next action. Production title integration remains out of scope.
+
+
+#### Completion summary
+
+**Cloud answer:** Yes. Concept 2 already had animated clouds before this task. The four procedural clouds still use independent `littleHomeCloudDrift` cycles of 38s, 46s, 53s, and 42s; those rules were preserved unchanged.
+
+**Implementation:** Refined only selected Concept 2 / Little Home in `title-island-concepts/index.html`. Added a 7.6-second `littleHomeIslandFloat` cycle to the whole `.island-model`, preserving its horizontal centering while lifting the island only 5px at the top of the cycle for a gentle floating read. Added a matching `littleHomeShadowAnchor` counter-animation to the existing island shadow: as the island rises, the shadow translates downward relative to the moving island so it remains visually anchored while shrinking slightly and fading. Added six small irregular procedural `float-pebble` elements around the outside of the lower brown dirt mass. The pebbles reuse local `textures/earth.jpg`, all share the same 7.6-second cadence as the island, and use unique negative delays, sizes, rotations, positions, and lift amplitudes so they bob out of phase. Reduced-motion mode disables the new island/shadow/pebble animation. The five-resident household, tree, cottage, flowers, stone, children, adult rest scheduler, Play UI, and clouds remain intact.
+
+**Files changed:** Permanent product diff from the IN PROGRESS handoff commit `3b0853eee098ad73188c7b738c8311eda41f356d` to the implementation commit contains only `title-island-concepts/index.html` (17 additions, 2 deletions). Temporary transformer/browser-validator/workflow files self-removed. Production `index.html`, campaigns, game runtime, textures, and other product files were not changed.
+
+**Validation:** GitHub Actions run `33684540269` passed static and Chromium validation. Static checks confirmed all four pre-existing cloud drift durations/rules, the Concept 2-only island bob, shadow counter-animation, exactly six earth-textured pebbles with unique stagger delays, the 5-resident 3-adult / 2-child household, current scene polish, reduced-motion override, and no production/campaign/game-file changes. Chromium at 390×844 sampled three timing phases: island top positions `271.07`, `267.22`, and `268.58` px for a measured 3.85px sampled vertical range; the shadow varied by only 0.72px while the island moved; all six pebbles had distinct phase positions at the initial sample and changed across time; all four clouds also changed position across the sampled interval. No console/page/request errors, clipping, or horizontal overflow occurred, and Concepts 1 and 3 passed sanity checks with no new island bob or pebble elements. Screenshot artifact `9867566769` contains three timing phases and was downloaded and visually inspected; the dirt pebbles read as suspended debris around the island and the island movement remains intentionally subtle.
+
+**Implementation commit:** `457b26ee13fb1a879e19c275b3bab9d166d82428` (`Float the Little Home island`).
+
+**Deployment:** GitHub Pages run `33684613308` completed successfully for exact implementation commit `457b26ee13fb1a879e19c275b3bab9d166d82428`. Live preview remains `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This floating-motion pass is complete in the design-selection preview. The bob is deliberately restrained so it does not make the residents/cottage feel seasick; if user review wants a stronger floating read, the 5px amplitude or 7.6s cadence can be tuned. Production remains intentionally untouched pending explicit promotion.
 
 ---
 
