@@ -33,6 +33,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Reduce Little Home household to five residents and add blue flower
+
+**Status: IN PROGRESS**
+
+**User goal:** Make selected Concept 2 / Little Home feel less crowded by removing one adult Latchling while keeping both children, and add another flower with blue petals.
+
+**Implementation plan:** Remove the broad home/center-circuit adult (`life-home` / `l4`) so the household becomes exactly three adults plus two children. Preserve the gardener, parcel-runner, tree-tender, both children, their play/chase behavior, improved tree, stone position, removed brown platform, and animated clouds. Add one new blue procedural flower in the opened center-left yard space using the existing flower geometry with a Concept 2-only blue-petal override. Leave Concepts 1 and 3 and production `index.html` untouched.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transform/browser-validation workflow files. No third-party assets are needed.
+
+**Validation plan:** Static checks require exactly five Concept 2 residents split 3 adults / 2 children, zero `life-home` resident markup, the existing three remaining adult routine classes, a third Concept 2 flower with blue-specific styling, no deck/fence regression, four animated clouds still present, and no production/campaign/game-file changes. Chromium at 390x844 must show no console/page/request errors, overflow, clipped UI, or resident/flower placement problems. Capture screenshots for visual inspection and sanity-check Concepts 1 and 3.
+
+**Deployment plan:** Commit validated Concept 2 polish to `main`, deploy through GitHub Pages, inspect screenshots, then close this entry with implementation SHA, validation/deployment runs, and next action.
+
+---
+
 ### 2026-09-02 — Polish Little Home stone, play area, and animated clouds
 
 **Status: COMPLETED**
