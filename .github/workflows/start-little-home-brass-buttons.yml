@@ -1,0 +1,39 @@
+name: Start Little Home Brass Buttons
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-little-home-brass-buttons.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record current work
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          title='### 2026-09-02 — Apply Brass Toy Plates to Little Home controls'
+          if title not in t:
+              entry='''### 2026-09-02 — Apply Brass Toy Plates to Little Home controls\n\n**Status: IN PROGRESS**\n\n**User goal:** Replace the current generic hero-box style controls in selected Concept 2 / Little Home with the Brass Toy Plates direction chosen from the rendered button gallery. The result should feel bespoke, toy-like, intentional, and integrated with the floating-island world rather than like generic AI-generated app cards.\n\n**Implementation plan:** Refine only Concept 2. Keep the current Play / Daily Puzzle / Level Select hierarchy and functionality, but restyle the controls as chamfered brass toy plates with layered metallic gradients, inset engraved borders, corner-rivet detailing, darker brass lower lips, and compact pressed-icon treatments. Reduce the two secondary controls from oversized white cards into tighter hardware-like plates so they read as a coordinated console/control cluster. Preserve all island, cloud, pebble, resident, tree, flower, stone, and floating motion work. Concepts 1 and 3 remain unchanged. Production `index.html` remains untouched.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transform/browser-validation workflow files. No new assets or external dependencies.\n\n**Validation plan:** Static checks require Concept 2-only brass control selectors, chamfered/engraved/rivet treatment, preserved Play / Daily Puzzle / Level Select markup and labels, and unchanged global button styles for Concepts 1 and 3. Chromium at 390x844 must verify all three Concept 2 controls remain fully inside the phone, do not overlap each other or the floating island, retain readable text/icons and click targets, show no horizontal overflow/console/page/request errors, and preserve the current five-resident floating-island scene. Capture screenshots for visual inspection and sanity-check Concepts 1 and 3.\n\n**Deployment plan:** Commit the validated Concept 2 control refinement to `main`, deploy through GitHub Pages, inspect the rendered screenshot, then close this handoff entry with implementation SHA, validation/deployment details, and next action. Production title integration remains out of scope.\n\n---\n\n'''
+              marker='## Current Work\n\n'
+              t=t.replace(marker, marker+entry, 1)
+              p.write_text(t)
+          PY
+          rm -f .github/workflows/start-little-home-brass-buttons.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/start-little-home-brass-buttons.yml
+          git commit -m 'Record Little Home brass button refinement'
+          git pull --rebase origin main
+          git push origin HEAD:main
