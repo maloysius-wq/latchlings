@@ -31,7 +31,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Repair Level 269 campaign integrity defect
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **Why this was discovered:** Full-campaign validation performed while repairing the missing Chapter 3 file found exactly one pre-existing campaign integrity defect outside Chapter 3. Level 269 has a rail on cell `6,1`, which is also a nest. The shipping simulator blocks that nest entry because the rail direction check runs before nest capture, so the stored solution is invalid.
 
@@ -39,11 +39,14 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 **Validation plan:** Require zero nest/object overlaps across all 400 levels, require every stored solution to replay to completion, and verify Level 269 shortest-path optimality against its stored `optimal` value.
 
+
+**Completion:** Removed the rail that occupied the second nest at `6,1`, regenerated Level 269 from the shipping movement semantics, and stored the newly proven shortest route. Full-campaign validation now reports zero nest/object overlaps and all 400 stored routes replay successfully.
+
 ---
 
 ### 2026-09-02 — Repair missing Chapter 3 campaign data
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Continue Latchlings from the current repository, but fix critical handoff issues before feature work. The highest-severity issue is the live runtime reference to missing `campaign400-3.js`, which leaves Levels 101–150 absent.
 
@@ -54,6 +57,9 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Validate Chapter 3 IDs 101–150, compact-data schema, unique/exclusive cells, no nest/object overlap, stored solution replay, move limits, anchor use on shortest solutions, solver-confirmed optimality, difficulty progression, JavaScript loading, and then validate the full 400-level campaign references so `index.html` has no missing campaign script.
 
 **Deployment plan:** Commit `campaign400-3.js`, run the repository-backed validator, confirm the Pages build for the repaired head, then mark this entry COMPLETED with commit/run details before resuming title-screen feature work.
+
+
+**Completion:** Rebuilt `campaign400-3.js` with Levels 101–150 as deterministic Lodestone Caverns anchor boards. Validation loaded all 400 levels, replayed Chapter 3 routes, required anchor use, and independently confirmed all 50 stored Chapter 3 solutions are shortest. Optimal range is 3–13 moves with an expert tail of 10, 12, 11, 11, 13.
 
 ---
 
