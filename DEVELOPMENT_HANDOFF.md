@@ -33,6 +33,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Add randomized rest periods to Little Home adults
+
+**Status: IN PROGRESS**
+
+**User goal:** The three adult Latchlings in selected Concept 2 / Little Home move too continuously. Keep them alive and active, but introduce randomized movement timing so adults spend meaningful periods standing still between outings instead of constantly looping around the island.
+
+**Implementation plan:** Preserve the five-resident household, two continuously playful children, blue flower, improved tree, inset stone, removed brown platform, and animated clouds. Convert only the three adult route animations from perpetual loops into one-shot outings controlled by a small Concept 2-only JavaScript scheduler. Each adult will begin after an independent randomized stagger, move for roughly 4–6 seconds, return to its resting position, then idle for roughly 4–9 seconds with occasional longer rests before another outing. Face/blink/inner idle animation must continue while locomotion is paused. Keep the gardener, parcel-runner, and tree-tender paths distinct and leave children unchanged.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transform/browser-validation scripts/workflow. No assets or production runtime files should change.
+
+**Validation plan:** Static checks require exactly five Concept 2 residents split 3 adults / 2 children, adult route animations no longer infinite, a randomized adult scheduler with independent initial/idle timing, children retaining their continuous 6.1s play animations, and all current scene polish intact. Chromium at 390x844 will observe adult `data-motion-state` transitions over time and require every adult to enter both moving and idle states, every adult to complete at least one outing, meaningful idle intervals to occur, face/blink animation to remain active while an adult is idle, and no console/page/request errors or overflow. Capture several animation phases and sanity-check Concepts 1 and 3.
+
+**Deployment plan:** Commit the validated preview change to `main`, deploy through GitHub Pages, inspect screenshots, then close this same handoff entry with implementation SHA, validation/deployment results, and next action.
+
+---
+
 ### 2026-09-02 — Reduce Little Home household to five residents and add blue flower
 
 **Status: COMPLETED**
