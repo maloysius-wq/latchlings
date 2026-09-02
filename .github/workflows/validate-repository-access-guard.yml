@@ -31,6 +31,7 @@ jobs:
           grep -Fq 'GitHub connector/plugin discovery has explicitly been attempted' .github/REPOSITORY_ACCESS_PREFLIGHT.md
           grep -Fq 'do not ask the user whether to continue' .github/REPOSITORY_ACCESS_PREFLIGHT.md
           grep -Fq 'The user should not need to repeat “use the GitHub plugin.”' .github/REPOSITORY_ACCESS_PREFLIGHT.md
-          grep -Fq 'Repository access invariant' DEVELOPMENT_HANDOFF.md
-          grep -Fq 'GitHub plugin/connector as the canonical repository path' DEVELOPMENT_HANDOFF.md
+          grep -Fq 'REPOSITORY ACCESS PRE-FLIGHT — HARD GATE' DEVELOPMENT_HANDOFF.md
+          grep -Fq 'first tool action for a repository task must be connector/plugin discovery for `GitHub`' DEVELOPMENT_HANDOFF.md
+          grep -Fq 'recover immediately through GitHub and continue the original request without asking the user to repeat the plugin instruction' DEVELOPMENT_HANDOFF.md
           echo 'REPOSITORY_ACCESS_GUARD_OK'
