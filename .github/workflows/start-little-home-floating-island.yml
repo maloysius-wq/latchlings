@@ -1,0 +1,41 @@
+name: Start Little Home Floating Island
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-little-home-floating-island.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record current work
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          title='### 2026-09-02 — Add Little Home island bob and floating earth pebbles'
+          if title not in t:
+              entry='''### 2026-09-02 — Add Little Home island bob and floating earth pebbles\n\n**Status: IN PROGRESS**\n\n**User goal:** Confirm whether the selected Little Home clouds are animated, then make the floating-island read more clearly by giving the island itself a very subtle vertical bob and adding small brown pebbles around the lower dirt mass that float on the same overall cadence but at staggered phases.\n\n**Current-state note:** Concept 2 already has four independently animated procedural clouds using `littleHomeCloudDrift` at 38s, 46s, 53s, and 42s. Their motion is intentionally subtle and will be preserved.\n\n**Implementation plan:** Refine only selected Concept 2 / Little Home. Add a slow whole-island bob to `#c2 .island-model` while preserving its required horizontal centering transform. Counter the island shadow so it remains visually anchored below the island while changing slightly in scale/opacity with the float cycle. Add six small irregular earth-textured procedural pebbles around the outside of the lower brown `island-side`; give all pebbles the same base duration as the island but different negative delays, amplitudes, sizes, rotations, and positions so they rise/fall out of phase. Preserve all existing clouds, five-resident choreography, tree, cottage, flowers, stone, Play UI, and production runtime. Reduced-motion mode must disable the new bob/pebble motion.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transformer/browser-validation workflow files. No new external assets; existing local `textures/earth.jpg` may be reused for pebble material. Production `index.html`, campaigns, and game runtime must remain untouched.\n\n**Validation plan:** Static checks require current cloud drift rules/durations to remain intact, a Concept 2-only island bob keyframe/rule, six floating-pebble elements and staggered shared-cadence animation rules, counter-motion/shadow treatment, and reduced-motion overrides. Chromium at 390x844 must sample multiple timestamps and prove the island vertical position changes slightly, the shadow remains approximately anchored, pebble positions change independently/out of phase, clouds still animate, no horizontal overflow or clipping occurs, no console/page/request errors appear, and all five residents remain present. Capture multiple timing screenshots and sanity-check Concepts 1 and 3 remain unaffected.\n\n**Deployment plan:** Commit the validated preview refinement to `main`, let GitHub Pages deploy the exact implementation commit, visually inspect timing screenshots, then close this entry with implementation SHA, validation/deployment results, and next action. Production title integration remains out of scope.\n\n---\n\n'''
+              marker='## Current Work\n\n'
+              t=t.replace(marker, marker+entry, 1)
+              p.write_text(t)
+          PY
+          rm -f .github/workflows/start-little-home-floating-island.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/start-little-home-floating-island.yml
+          git commit -m 'Record Little Home floating island refinement'
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+# trigger revision 1
