@@ -31,7 +31,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Rebuild floating-island title concepts with procedural models + CC0 textures
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Move away from prebuilt environmental asset sprites. Rebuild the focused floating-island title concepts around procedural browser-rendered models, using carefully selected CC0 textures as surface material only. Latchlings must match the shipping game itself, not the looser concept-gallery interpretation.
 
@@ -42,6 +42,25 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Verify no active isometric/environment sprite references in the focused preview; all third-party runtime raster files are texture/material maps with CC0 provenance; preview Latchling CSS/markup mirrors shipping palette/proportions/expression rules; exactly three concepts; zero emoji; no external runtime hotlinks; Chromium render at 390x844 with no console/page/request errors, broken images, horizontal overflow, or clipped primary UI; capture and visually inspect all three screenshots.
 
 **Deployment plan:** Commit the procedural/textured preview only after texture provenance and browser validation pass, deploy through existing GitHub Pages, visually inspect the validated renders, then close this same handoff entry with exact files, sources, commit/run IDs, deployment result, and remaining next action.
+
+
+#### Completion summary
+
+**Implementation:** Rebuilt the focused `title-island-concepts/` gallery away from premade environment sprites/models. The floating landmass, grass cap, earth sides, clouds, path, rocks, tree, fence, deck, cottage, bridge, and flowers are now browser-built HTML/CSS geometry. The active preview contains zero environment `<img>` elements and no active Kenney/isometric references. Production `index.html` was not changed.
+
+**Latchling fidelity:** Rebuilt the preview characters directly from the current shipping `style400-game.css` / `game400-a.js` language: exact coral/blue/mint/gold/lavender COLORS/LIGHT/DARK values, shipping radial/linear body shading, 29% crown suit-mark proportions, exact heart/diamond/club/spade/star SVG paths, shipping eye/pupil/highlight proportions, all seven shipping expression classes (`happy`, `surprised`, `angry`, `smug`, `sleepy`, `curious`, `determined`), and asynchronous blink/face timing.
+
+**CC0 materials:** Added only three local 512×512 compressed color/albedo maps from ambientCG, which publishes its assets under CC0 1.0: Grass005 as `textures/grass.jpg`, Ground085 as `textures/earth.jpg`, and Wood093 as `textures/wood.jpg`. No normal/roughness/displacement maps, preview sheets, premade models, or runtime hotlinks are used.
+
+**Files changed:** `title-island-concepts/index.html`, `title-island-concepts/ASSET_CREDITS.md`, `title-island-concepts/textures/grass.jpg`, `title-island-concepts/textures/earth.jpg`, `title-island-concepts/textures/wood.jpg`. Temporary build/finalization workflows and rebuild script self-removed.
+
+**Validation:** GitHub Actions run `33651741229` passed the substantive static and Chromium gates. Static validation confirmed exactly three concepts, zero sprite image elements, zero legacy isometric runtime references, exactly the three local 512×512 texture maps, and shipping palette/expression/suit requirements. Chromium at 390×844 passed all three concepts with no console/page/request errors, no horizontal overflow, no clipped primary UI, three loaded local texture resources, zero `<img>` elements, and complete suit/face markup for 6 / 6 / 7 Latchlings. Screenshot artifact `9855068387` was downloaded and all three renders were visually inspected.
+
+**Implementation commit:** `4d2b0ed0b84965e74875cc61b306455712213f9a` (`Rebuild title concepts with procedural textured models`).
+
+**Deployment:** GitHub Pages run `33651987557` completed successfully for implementation commit `4d2b0ed0b84965e74875cc61b306455712213f9a`. The focused preview remains at `title-island-concepts/`, with `?c=1`, `?c=2`, and `?c=3` selecting Quiet Perch, Little Home, and Island Life.
+
+**Remaining risk / next action:** This is still a design-selection preview. Do not replace the production title screen until the user chooses a procedural concept, requests a hybrid, or asks for another refinement pass. Older unused experimental asset files remain archived in the repository but are not referenced by this focused preview.
 
 ---
 
