@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Apply Brass Toy Plates to Little Home controls
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Replace the current generic hero-box style controls in selected Concept 2 / Little Home with the Brass Toy Plates direction chosen from the rendered button gallery. The result should feel bespoke, toy-like, intentional, and integrated with the floating-island world rather than like generic AI-generated app cards.
 
@@ -50,6 +50,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks require Concept 2-only brass control selectors, chamfered/engraved/rivet treatment, preserved Play / Daily Puzzle / Level Select markup and labels, and unchanged global button styles for Concepts 1 and 3. Chromium at 390x844 must verify all three Concept 2 controls remain fully inside the phone, do not overlap each other or the floating island, retain readable text/icons and click targets, show no horizontal overflow/console/page/request errors, and preserve the current five-resident floating-island scene. Capture screenshots for visual inspection and sanity-check Concepts 1 and 3.
 
 **Deployment plan:** Commit the validated Concept 2 control refinement to `main`, deploy through GitHub Pages, inspect the rendered screenshot, then close this handoff entry with implementation SHA, validation/deployment details, and next action. Production title integration remains out of scope.
+
+
+#### Completion summary
+
+**Implementation:** Restyled only selected Concept 2 / Little Home controls in `title-island-concepts/index.html`. The existing generic cream Play hero rectangle and two oversized white secondary cards now render as a coordinated Brass Toy Plates control cluster. Play uses a chamfered eight-corner metal plate silhouette, brushed horizontal brass grain, four inset rivets, engraved inner frame, darker lower mechanical lip, embossed text, and a pressed circular play-icon medallion. Daily Puzzle and Level Select use compact matching brass plates with their own slightly varied brass tones, four rivets each, engraved inset frames, compact typography, and pressed circular icon medallions. Hover/press states move the plates like physical controls instead of generic card hover effects. No control labels or markup/functionality changed.
+
+**Design decision:** The brass treatment is intentionally limited to Concept 2 so the user can judge it against the existing Little Home composition. It was adapted to the real title page rather than the discarded standalone mock: the island, floating debris, clouds, residents, cottage, tree, flowers, and current spacing remain the actual source-of-truth scene. Concepts 1 and 3 keep their previous control styling.
+
+**Files changed:** Permanent product implementation changed only `title-island-concepts/index.html`; this handoff was updated separately for project tracking. Temporary transformer/browser-validator/workflow files self-removed. Production `index.html`, campaign files, game runtime, textures, and other assets were untouched.
+
+**Validation:** GitHub Actions run `33686091263` passed static and Chromium validation. At 390×844, Play rendered at 318×60 px; the two secondary plates rendered at 154.5×78 px each. All three controls remained fully inside the phone, Play did not overlap the secondary plates, and the moving island remained more than 16px clear of the Play control. Browser checks confirmed chamfered clip paths, multi-layer radial/repeating-linear brass backgrounds, 2px plate borders, engraved pseudo-element frames, readable labels, pressed icon medallions, the existing 5 residents / 6 floating pebbles / 4 clouds, no console/page/request errors, and no horizontal overflow. Concepts 1 and 3 were separately sanity-checked and retained their original non-brass control styles. Screenshot artifact `9868170479` was downloaded and visually inspected; the resulting controls read as deliberate toy-console hardware rather than generic hero/cards.
+
+**Implementation commit:** `7b35e950c96052929aaa63594d92950b7794e7fe` (`Style Little Home controls as brass toy plates`).
+
+**Deployment:** GitHub Pages run `33686161062` completed successfully for exact implementation commit `7b35e950c96052929aaa63594d92950b7794e7fe`. Live preview remains `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This is a design-selection pass, not production integration. User should review the live brass controls in motion. The brass warmth, plate heights, secondary label wrapping, or rivet/engraving intensity can be tuned further if desired. Production title remains intentionally untouched pending explicit promotion.
 
 ---
 
