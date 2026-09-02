@@ -31,7 +31,7 @@ jobs:
           python3 -m http.server 8123 >/tmp/title-island-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
-          cat > /tmp/validate-title-island.mjs <<'JS'
+          cat > .validate-title-island.mjs <<'JS'
           import { chromium } from 'playwright';
           const browser = await chromium.launch({headless:true});
           for (let i=1;i<=3;i++) {
@@ -74,7 +74,7 @@ jobs:
           }
           await browser.close();
           JS
-          node /tmp/validate-title-island.mjs
+          node .validate-title-island.mjs
 
       - uses: actions/upload-artifact@v4
         with:
@@ -84,7 +84,7 @@ jobs:
 
       - name: Commit implementation and cleanup
         run: |
-          rm -f .github/workflows/finish-isometric-title-concepts-v2.yml .github/scripts/finish_isometric_title.py
+          rm -f .github/workflows/finish-isometric-title-concepts-v2.yml .github/scripts/finish_isometric_title.py .validate-title-island.mjs
           rm -rf package.json package-lock.json node_modules
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
