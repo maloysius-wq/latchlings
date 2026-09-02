@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Switch Little Home controls to striped rounded buttons
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Replace the current cut-corner brass controls in selected Concept 2 / Little Home with the rounded striped button family the user actually intended from the earlier rendered gallery. Keep the striped concept but recolor it away from blue so it harmonizes with the Little Home title screen.
 
@@ -50,6 +50,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must confirm Concept 2 no longer contains the cut-corner brass `clip-path` treatment, uses rounded striped controls with non-blue sage/cream/moss stripe colors, preserves all three control labels and markup, and preserves the current five-resident floating-island scene. Chromium at 390x844 must verify all controls remain inside the phone, do not overlap the island or each other, retain readable labels/icons, show rounded corners and striped backgrounds, have no horizontal overflow or console/page/request errors, and leave Concepts 1 and 3 on their prior non-striped control styles. Capture a screenshot for visual inspection.
 
 **Deployment plan:** Commit this handoff entry before implementation, then commit the validated Concept 2 striped control refinement to `main`, deploy through GitHub Pages, inspect the rendered screenshot, and close this same entry with implementation SHA, validation/deployment details, and next action. Production title integration remains out of scope.
+
+
+#### Completion summary
+
+**Implementation:** Updated only selected Concept 2 / Little Home in `title-island-concepts/index.html`. Removed the previous cut-corner/chamfered brass plate control treatment entirely. Play, Daily Puzzle, and Level Select now use rounded striped toy-button styling based on the striped rendered-gallery direction the user intended. The stripe palette was changed away from blue to a Little Home-compatible mix of warm cream, soft sage, muted moss/olive, and pale golden cream. Play uses 22px rounded corners; the two compact secondary controls use 20px rounded corners. All controls retain inset outlines, tactile highlights, grounded bottom shadows, rounded icon medallions, and physical hover/press movement without rivets or clipped corners.
+
+**Visual review:** Browser screenshot artifact `9868667715` was downloaded and inspected. The controls now read as clearly striped rounded buttons rather than brass plates: cream/sage/moss diagonal stripes coordinate with the green island, warm cottage/earth colors, cream UI accents, and navy title text. The full-size Play control and compact two-button lower row retain the actual Little Home composition and do not use the discarded detached mock.
+
+**Files changed:** Permanent product implementation changed only `title-island-concepts/index.html`; this handoff was updated separately for project tracking. Temporary transformer/browser-validator/workflow files self-removed. Production `index.html`, campaign files, game runtime, textures, and other assets were untouched.
+
+**Validation:** GitHub Actions run `33687393356` passed static and Chromium validation. At 390×844, Play rendered at 318×60 px with `22px` rounded corners and `clip-path: none`; the two secondary controls rendered at 154.5×78 px with `20px` rounded corners and `clip-path: none`. Computed backgrounds confirmed repeating diagonal stripe gradients in cream/sage/moss rather than the earlier blue palette. Play and secondary controls remained fully inside the phone, did not overlap one another or the island, and preserved labels `Play`, `Daily Puzzle`, and `Level Select`. The current scene also retained 5 residents (3 adults / 2 children), 6 floating earth pebbles, and 4 clouds. No horizontal overflow or console/page/request errors occurred. Concepts 1 and 3 were sanity-checked and did not inherit the striped treatment.
+
+**Implementation commit:** `26bd7db0fea10006863671e13449112da1ca791d` (`Style Little Home controls as sage stripes`).
+
+**Deployment:** GitHub Pages run `33687462156` completed successfully for exact implementation commit `26bd7db0fea10006863671e13449112da1ca791d`. Live preview remains `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This is still a design-selection preview only. User should review the live striped controls; stripe width, sage intensity, cream balance, border weight, or secondary text layout can be tuned further if desired. Production remains intentionally untouched pending explicit promotion.
 
 ---
 
