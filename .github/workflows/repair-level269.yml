@@ -15,21 +15,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Remove the nest-conflicting rail
+      - name: Repair Level 269 and regenerate its shortest solution
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('campaign400-6.js')
-          t=p.read_text()
+          p=Path('campaign400-6.js');t=p.read_text()
           old='[[6,1,3]],[[3,1,0]],[],[],14,16,[[0,3],[0,0],[0,0],[0,3],[1,3],[0,1],[0,3],[0,1],[0,2],[1,2],[1,1],[1,2],[1,2],[1,1]],17.2,269,6]'
           new='[],[[3,1,0]],[],[],14,16,[[0,3],[0,0],[0,0],[0,3],[1,3],[0,1],[0,3],[0,1],[0,2],[1,2],[1,1],[1,2],[1,2],[1,1]],17.2,269,6]'
-          if t.count(old)!=1:
-              raise SystemExit(f'Expected one Level 269 repair target, found {t.count(old)}')
+          if t.count(old)!=1: raise SystemExit(f'Expected one Level 269 repair target, found {t.count(old)}')
           p.write_text(t.replace(old,new,1))
           PY
-      - name: Validate all stored routes and Level 269 optimality
+          cat > /tmp/solve269.js <<'JS'
+          const fs=require('fs'),vm=require('vm'),ctx={window:{}};vm.createContext(ctx);for(let i=1;i<=8;i++)vm.runInContext(fs.readFileSync(`campaign400-${i}.js`,'utf8'),ctx);const levels=ctx.window.LEVELS,l=levels[268];
+          const D={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},CW={U:'R',R:'D',D:'L',L:'U'},CCW={U:'L',L:'D',D:'R',R:'U'},dirs=['U','D','L','R'],key=(r,c)=>`${r},${c}`,at=(a,r,c)=>(a||[]).find(x=>x[0]===r&&x[1]===c);
+          function step(l,s,m,pi,d){if(!s[pi])return null;let[r,c]=s[pi],p=l.pieces[pi],cur=d,moved=false,mask=m;const occ=new Set(s.map((x,i)=>i!==pi&&x?key(...x):null).filter(Boolean));for(let z=0;z<l.size*l.size*4;z++){const[dr,dc]=D[cur],nr=r+dr,nc=c+dc;if(nr<0||nc<0||nr>=l.size||nc>=l.size)break;if(at(l.rocks,nr,nc)||occ.has(key(nr,nc)))break;const door=at(l.doors,nr,nc);if(door&&!(mask&(1<<door[2])))break;const sg=at(l.suitGates,nr,nc);if(sg&&sg[2]!==p.suit)break;const cg=at(l.colorGates,nr,nc);if(cg&&cg[2]!==p.color)break;const rail=at(l.rails,nr,nc);if(rail&&rail[2]!==cur)break;r=nr;c=nc;moved=true;const nest=l.nests[pi];if(r===nest[0]&&c===nest[1]){const ns=s.map(x=>x&&x.slice());ns[pi]=null;return{state:ns,mask}}const sw=at(l.switches,r,c);if(sw)mask^=1<<sw[2];if(at(l.anchors,r,c))break;const turn=at(l.turners,r,c);if(turn)cur=turn[2]==='CW'?CW[cur]:CCW[cur]}if(!moved)return null;const ns=s.map(x=>x&&x.slice());ns[pi]=[r,c];return{state:ns,mask}}
+          const sk=(s,m)=>m+'|'+s.map(x=>x?key(...x):'x').join(';'),start=l.pieces.map(p=>p.pos.slice()),startKey=sk(start,0),q=[[start,0]],seen=new Set([startKey]),parent=new Map(),stateByKey=new Map([[startKey,[start,0]]]);let head=0,goal=null;
+          while(head<q.length){const[s,m]=q[head++],k0=sk(s,m);if(s.every(x=>!x)){goal=k0;break}for(let pi=0;pi<s.length;pi++)if(s[pi])for(const d of dirs){const r=step(l,s,m,pi,d);if(!r)continue;const k=sk(r.state,r.mask);if(seen.has(k))continue;seen.add(k);parent.set(k,[k0,pi,d]);stateByKey.set(k,[r.state,r.mask]);q.push([r.state,r.mask])}}
+          if(!goal)throw new Error('Level 269 is unsolvable after overlap repair');const path=[];for(let k=goal;k!==startKey;){const[p,pi,d]=parent.get(k);path.push([pi,d]);k=p}path.reverse();const compact=path.map(([pi,d])=>[pi,dirs.indexOf(d)]),best=path.length;
+          let text=fs.readFileSync('campaign400-6.js','utf8');const oldTail='[],[[3,1,0]],[],[],14,16,[[0,3],[0,0],[0,0],[0,3],[1,3],[0,1],[0,3],[0,1],[0,2],[1,2],[1,1],[1,2],[1,2],[1,1]],17.2,269,6]';const newTail=`[],[[3,1,0]],[],[],${best},${best+2},${JSON.stringify(compact)},17.2,269,6]`;if(text.split(oldTail).length!==2)throw new Error('Could not uniquely patch Level 269 solution tail');fs.writeFileSync('campaign400-6.js',text.replace(oldTail,newTail));console.log('LEVEL269_REBUILT',JSON.stringify({best,path,compact}));
+          JS
+          node /tmp/solve269.js
+      - name: Validate all 400 boards after repair
         shell: bash
         run: |
           set -euo pipefail
@@ -39,8 +47,7 @@ jobs:
           const D={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},CW={U:'R',R:'D',D:'L',L:'U'},CCW={U:'L',L:'D',D:'R',R:'U'},key=(r,c)=>`${r},${c}`,at=(a,r,c)=>(a||[]).find(x=>x[0]===r&&x[1]===c);
           function step(l,s,m,pi,d){if(!s[pi])return null;let[r,c]=s[pi],p=l.pieces[pi],cur=d,moved=false,mask=m;const occ=new Set(s.map((x,i)=>i!==pi&&x?key(...x):null).filter(Boolean));for(let z=0;z<l.size*l.size*4;z++){const[dr,dc]=D[cur],nr=r+dr,nc=c+dc;if(nr<0||nc<0||nr>=l.size||nc>=l.size)break;if(at(l.rocks,nr,nc)||occ.has(key(nr,nc)))break;const door=at(l.doors,nr,nc);if(door&&!(mask&(1<<door[2])))break;const sg=at(l.suitGates,nr,nc);if(sg&&sg[2]!==p.suit)break;const cg=at(l.colorGates,nr,nc);if(cg&&cg[2]!==p.color)break;const rail=at(l.rails,nr,nc);if(rail&&rail[2]!==cur)break;r=nr;c=nc;moved=true;const nest=l.nests[pi];if(r===nest[0]&&c===nest[1]){const ns=s.map(x=>x&&x.slice());ns[pi]=null;return{state:ns,mask}}const sw=at(l.switches,r,c);if(sw)mask^=1<<sw[2];if(at(l.anchors,r,c))break;const turn=at(l.turners,r,c);if(turn)cur=turn[2]==='CW'?CW[cur]:CCW[cur]}if(!moved)return null;const ns=s.map(x=>x&&x.slice());ns[pi]=[r,c];return{state:ns,mask}}
           function replay(l){let s=l.pieces.map(p=>p.pos.slice()),m=0;for(const[pi,d]of l.solution){const r=step(l,s,m,pi,d);if(!r)throw new Error(`L${l.id} invalid stored move`);s=r.state;m=r.mask}if(!s.every(x=>!x))throw new Error(`L${l.id} stored route does not clear`)}
-          for(const l of levels){const nests=new Set(l.nests.map(x=>key(...x)));for(const a of[l.rocks,l.anchors,l.suitGates,l.colorGates,l.rails,l.turners,l.switches,l.doors])for(const x of a||[])if(nests.has(key(x[0],x[1])))throw new Error(`L${l.id} overlap ${key(x[0],x[1])}`);replay(l)}
-          const l=levels[268];if(l.id!==269)throw new Error('Level 269 index mismatch');if(l.rails.length!==0)throw new Error('Conflicting rail still present');const sk=(s,m)=>m+'|'+s.map(x=>x?key(...x):'x').join(';'),start=l.pieces.map(p=>p.pos.slice()),q=[[start,0,0]],seen=new Set([sk(start,0)]);let head=0,best=null;while(head<q.length){const[s,m,d]=q[head++];if(s.every(x=>!x)){best=d;break}if(d>=l.optimal)continue;for(let pi=0;pi<s.length;pi++)if(s[pi])for(const dir of['U','D','L','R']){const r=step(l,s,m,pi,dir);if(!r)continue;const k=sk(r.state,r.mask);if(!seen.has(k)){seen.add(k);q.push([r.state,r.mask,d+1])}}}if(best!==l.optimal)throw new Error(`Level 269 shortest ${best}, stored optimal ${l.optimal}`);console.log(`LEVEL269_OK shortest=${best} storedSolution=${l.solution.length}`);console.log('CAMPAIGN_OK levels=400 overlaps=0 storedRoutes=400');
+          for(const l of levels){const nests=new Set(l.nests.map(x=>key(...x)));for(const a of[l.rocks,l.anchors,l.suitGates,l.colorGates,l.rails,l.turners,l.switches,l.doors])for(const x of a||[])if(nests.has(key(x[0],x[1])))throw new Error(`L${l.id} overlap ${key(x[0],x[1])}`);replay(l)}const l=levels[268];if(l.id!==269||l.rails.length!==0||l.solution.length!==l.optimal)throw new Error('Level 269 metadata mismatch');console.log(`CAMPAIGN_OK levels=400 overlaps=0 storedRoutes=400 level269Optimal=${l.optimal}`);
           JS
           node /tmp/validate269.js
       - name: Close handoff entries and commit repair
@@ -54,16 +61,15 @@ jobs:
               global t
               start=t.find(title)
               if start<0: raise SystemExit(f'Missing handoff entry: {title}')
-              end=t.find('\n---\n',start)
-              chunk=t[start:end]
-              chunk=chunk.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+              end=t.find('\n---\n',start);chunk=t[start:end].replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
               if '**Completion:**' not in chunk: chunk += '\n\n**Completion:** '+summary+'\n'
               t=t[:start]+chunk+t[end:]
-          complete('### 2026-09-02 — Repair Level 269 campaign integrity defect','Removed the rail that occupied the second nest at `6,1`. Full-campaign validation now reports zero nest/object overlaps, all 400 stored routes replay successfully, and an independent BFS confirms Level 269 remains optimal at 14 moves.')
+          complete('### 2026-09-02 — Repair Level 269 campaign integrity defect','Removed the rail that occupied the second nest at `6,1`, regenerated Level 269 from the shipping movement semantics, and stored the newly proven shortest route. Full-campaign validation now reports zero nest/object overlaps and all 400 stored routes replay successfully.')
           complete('### 2026-09-02 — Repair missing Chapter 3 campaign data','Rebuilt `campaign400-3.js` with Levels 101–150 as deterministic Lodestone Caverns anchor boards. Validation loaded all 400 levels, replayed Chapter 3 routes, required anchor use, and independently confirmed all 50 stored Chapter 3 solutions are shortest. Optimal range is 3–13 moves with an expert tail of 10, 12, 11, 11, 13.')
           t=t.replace('- `campaign400-3.js` — **MISSING** (Levels 101–150, Chapter 3)','- `campaign400-3.js` — Levels 101–150, Chapter 3')
-          t=t.replace('### Critical known issue\n\n- `index.html` currently references `campaign400-3.js`, but that file is missing from `main`.\n- The affected range is Levels 101–150 (Chapter 3: Magnetic Anchors / Lodestone Caverns).\n- This means the live 400-level campaign is incomplete at runtime even though later campaign files are present.\n- Required repair: recover/regenerate Chapter 3, run the full 400-level validator, and verify the live deployment before treating campaign integrity as restored.','### Campaign integrity status\n\n- **Resolved 2026-09-02:** `campaign400-3.js` is restored with Levels 101–150.\n- **Resolved 2026-09-02:** Level 269 no longer has a rail overlapping a nest.\n- Repository validation confirms 400 loaded levels, zero nest/object overlaps, and successful replay of all 400 stored solutions.\n- Chapter 3 and Level 269 additionally passed independent shortest-path checks.')
-          t=t.replace('- Do not forget the missing `campaign400-3.js` runtime issue described above.','- Campaign integrity repairs from 2026-09-02 are complete; preserve `campaign400-3.js` and the Level 269 overlap fix when editing campaign data.')
+          old='### Critical known issue\n\n- `index.html` currently references `campaign400-3.js`, but that file is missing from `main`.\n- The affected range is Levels 101–150 (Chapter 3: Magnetic Anchors / Lodestone Caverns).\n- This means the live 400-level campaign is incomplete at runtime even though later campaign files are present.\n- Required repair: recover/regenerate Chapter 3, run the full 400-level validator, and verify the live deployment before treating campaign integrity as restored.'
+          new='### Campaign integrity status\n\n- **Resolved 2026-09-02:** `campaign400-3.js` is restored with Levels 101–150.\n- **Resolved 2026-09-02:** Level 269 no longer has a rail overlapping a nest, and its stored shortest route was regenerated.\n- Repository validation confirms 400 loaded levels, zero nest/object overlaps, and successful replay of all 400 stored solutions.\n- Chapter 3 additionally passed independent shortest-path checks for all 50 boards.'
+          t=t.replace(old,new).replace('- Do not forget the missing `campaign400-3.js` runtime issue described above.','- Campaign integrity repairs from 2026-09-02 are complete; preserve `campaign400-3.js` and the Level 269 repair when editing campaign data.')
           p.write_text(t)
           PY
           rm -f .github/workflows/repair-level269.yml
