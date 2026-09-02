@@ -1,0 +1,97 @@
+name: Finish Isometric Title Concepts v2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finish-isometric-title-concepts-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply isometric concept revision
+        run: python3 .github/scripts/finish_isometric_title.py
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and screenshots
+        run: |
+          mkdir -p title-island-renders
+          python3 -m http.server 8123 >/tmp/title-island-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cat > /tmp/validate-title-island.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          for (let i=1;i<=3;i++) {
+            const page = await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error') errors.push('console:'+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror:'+e.message));
+            page.on('requestfailed',r=>errors.push('request:'+r.url()));
+            const res=await page.goto(`http://127.0.0.1:8123/title-island-concepts/?c=${i}`,{waitUntil:'networkidle'});
+            if(!res || !res.ok()) throw new Error(`Concept ${i}: bad response`);
+            await page.waitForTimeout(800);
+            const state=await page.evaluate(()=>{
+              const a=document.querySelector('.concept.active');
+              const phone=a?.querySelector('.phone');
+              const imgs=[...a.querySelectorAll('img')];
+              const play=a?.querySelector('.play');
+              const sec=a?.querySelector('.secondary');
+              return {
+                active:a?.id,
+                broken:imgs.filter(x=>!x.complete||x.naturalWidth===0).map(x=>x.getAttribute('src')),
+                bodyWidth:document.body.scrollWidth,
+                viewport:innerWidth,
+                phone:phone?.getBoundingClientRect().toJSON(),
+                play:play?.getBoundingClientRect().toJSON(),
+                secondary:sec?.getBoundingClientRect().toJSON(),
+                latchlings:a?.querySelectorAll('.latchling').length,
+                iso:a?.querySelectorAll('img[src^="assets/isometric/"]').length
+              };
+            });
+            if(state.active!==`c${i}`) throw new Error(`Concept ${i}: wrong active concept`);
+            if(state.broken.length) throw new Error(`Concept ${i}: broken images ${state.broken.join(',')}`);
+            if(state.bodyWidth>state.viewport+1) throw new Error(`Concept ${i}: horizontal overflow`);
+            if(!state.phone || state.phone.left < -1 || state.phone.right > state.viewport+1) throw new Error(`Concept ${i}: phone out of viewport`);
+            if(!state.play || !state.secondary || state.play.bottom > state.phone.bottom || state.secondary.bottom > state.phone.bottom) throw new Error(`Concept ${i}: primary UI clipped`);
+            if(state.latchlings<6 || state.iso<4) throw new Error(`Concept ${i}: content count mismatch`);
+            if(errors.length) throw new Error(`Concept ${i}: ${errors.join(' | ')}`);
+            await page.screenshot({path:`title-island-renders/concept-${i}.png`,fullPage:true});
+            console.log('CONCEPT_OK',i,JSON.stringify(state));
+            await page.close();
+          }
+          await browser.close();
+          JS
+          node /tmp/validate-title-island.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: floating-island-title-renders-isometric
+          path: title-island-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit implementation and cleanup
+        run: |
+          rm -f .github/workflows/finish-isometric-title-concepts-v2.yml .github/scripts/finish_isometric_title.py
+          rm -rf package.json package-lock.json node_modules
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html title-island-concepts/ASSET_CREDITS.md .github/workflows/finish-isometric-title-concepts-v2.yml .github/scripts/finish_isometric_title.py
+          git commit -m 'Finish coherent isometric title concepts'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((attempt * 2))
+          done
+          exit 1
