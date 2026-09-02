@@ -1,0 +1,72 @@
+name: Import Title Island CC0 Assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-title-island-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import individual CC0 sprites
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p title-island-concepts/assets title-island-concepts/sources/platformer-art-deluxe
+
+          # Reuse previously-vendored individual Kenney sprites already in this repo.
+          cp title-concepts/assets/kenney/cloud1.png title-island-concepts/assets/cloud1.png
+          cp title-concepts/assets/kenney/cloud4.png title-island-concepts/assets/cloud4.png
+          cp title-concepts/assets/kenney/tree.png title-island-concepts/assets/tree.png
+          cp title-concepts/assets/kenney/bush3.png title-island-concepts/assets/bush3.png
+          cp title-concepts/assets/kenney/castleSmallAlt.png title-island-concepts/assets/home.png
+
+          BASE='https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/platformer-art-deluxe/Base%20pack/Tiles'
+          for f in grassCenter_rounded.png grassCliffLeft.png grassCliffRight.png grassHalfMid.png grassMid.png hill_large.png hill_small.png fence.png sign.png bridgeLogs.png ropeAttached.png ladder_top.png ladder_mid.png; do
+            curl -fsSL "$BASE/$f" -o "title-island-concepts/assets/$f"
+          done
+          curl -fsSL 'https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/platformer-art-deluxe/SOURCE.md' -o title-island-concepts/sources/platformer-art-deluxe/SOURCE.md
+          curl -fsSL 'https://raw.githubusercontent.com/Tiddybub/2d-assets/main/tiles-terrain/platformer-art-deluxe/license.txt' -o title-island-concepts/sources/platformer-art-deluxe/license.txt
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          assets = Path('title-island-concepts/assets')
+          pngs = sorted(assets.glob('*.png'))
+          expected = 18
+          if len(pngs) != expected:
+              raise SystemExit(f'Expected {expected} PNGs, found {len(pngs)}: {[p.name for p in pngs]}')
+          for p in pngs:
+              b = p.read_bytes()
+              if not b.startswith(b'\x89PNG\r\n\x1a\n'):
+                  raise SystemExit(f'Not PNG: {p}')
+              if len(b) < 24:
+                  raise SystemExit(f'Too small: {p}')
+              w,h = struct.unpack('>II', b[16:24])
+              if w < 2 or h < 2:
+                  raise SystemExit(f'Bad dimensions {p}: {w}x{h}')
+              print(f'{p.name}: {w}x{h}')
+          PY
+
+      - name: Commit imported assets and remove importer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/import-title-island-assets.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts .github/workflows/import-title-island-assets.yml
+          git commit -m 'Add individual CC0 assets for floating-island concepts'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            echo "Push race on attempt $attempt; retrying"
+            sleep $((attempt * 2))
+          done
+          exit 1
