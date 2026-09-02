@@ -1,0 +1,36 @@
+name: Validate Repository Access Guard
+
+on:
+  push:
+    paths:
+      - 'AGENTS.md'
+      - 'DEVELOPMENT_HANDOFF.md'
+      - '.github/REPOSITORY_ACCESS_PREFLIGHT.md'
+      - '.github/workflows/validate-repository-access-guard.yml'
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'DEVELOPMENT_HANDOFF.md'
+      - '.github/REPOSITORY_ACCESS_PREFLIGHT.md'
+      - '.github/workflows/validate-repository-access-guard.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify GitHub-first preflight contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f AGENTS.md
+          test -f .github/REPOSITORY_ACCESS_PREFLIGHT.md
+          grep -Fq 'FIRST ACTION RULE' AGENTS.md
+          grep -Fq 'first tool action must be GitHub plugin discovery/loading' AGENTS.md
+          grep -Fq 'Strict failure criterion' .github/REPOSITORY_ACCESS_PREFLIGHT.md
+          grep -Fq 'GitHub connector/plugin discovery has explicitly been attempted' .github/REPOSITORY_ACCESS_PREFLIGHT.md
+          grep -Fq 'do not ask the user whether to continue' .github/REPOSITORY_ACCESS_PREFLIGHT.md
+          grep -Fq 'The user should not need to repeat “use the GitHub plugin.”' .github/REPOSITORY_ACCESS_PREFLIGHT.md
+          grep -Fq 'Repository access invariant' DEVELOPMENT_HANDOFF.md
+          grep -Fq 'GitHub plugin/connector as the canonical repository path' DEVELOPMENT_HANDOFF.md
+          echo 'REPOSITORY_ACCESS_GUARD_OK'
