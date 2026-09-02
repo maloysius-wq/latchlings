@@ -1,0 +1,110 @@
+name: Validate Restored Chapter 3
+
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-chapter3-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate full campaign and Chapter 3 optimality
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check campaign400-3.js
+          node --check game400-a.js
+          node --check game400-b.js
+          cat > /tmp/validate-ch3.js <<'JS'
+          const fs=require('fs'),vm=require('vm');
+          const ctx={window:{}};vm.createContext(ctx);
+          for(let i=1;i<=8;i++) vm.runInContext(fs.readFileSync(`campaign400-${i}.js`,'utf8'),ctx,{filename:`campaign400-${i}.js`});
+          const levels=ctx.window.LEVELS;
+          if(levels.length!==400) throw new Error(`Expected 400 levels, got ${levels.length}`);
+          for(let i=0;i<400;i++) if(levels[i].id!==i+1) throw new Error(`Bad sequential id at index ${i}: ${levels[i].id}`);
+          const index=fs.readFileSync('index.html','utf8');
+          for(let i=1;i<=8;i++){
+            const f=`campaign400-${i}.js`;
+            if(!index.includes(`src="${f}"`)) throw new Error(`index.html missing ${f}`);
+            if(!fs.existsSync(f)) throw new Error(`Referenced campaign file missing: ${f}`);
+          }
+          const DIRS={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},CW={U:'R',R:'D',D:'L',L:'U'},CCW={U:'L',L:'D',D:'R',R:'U'};
+          const key=(r,c)=>`${r},${c}`;
+          function at(arr,r,c){return (arr||[]).find(x=>x[0]===r&&x[1]===c)}
+          function step(lev,state,mask,pi,d){
+            if(!state[pi]) return null;
+            let [r,c]=state[pi],piece=lev.pieces[pi],cur=d,moved=false,path=[],reason='edge',localMask=mask;
+            const occ=new Set(state.map((p,i)=>i!==pi&&p?key(...p):null).filter(Boolean));
+            for(let k=0;k<lev.size*lev.size*4;k++){
+              const [dr,dc]=DIRS[cur],nr=r+dr,nc=c+dc;
+              if(nr<0||nc<0||nr>=lev.size||nc>=lev.size){reason='edge';break}
+              if(at(lev.rocks,nr,nc)){reason='rock';break}
+              if(occ.has(key(nr,nc))){reason='piece';break}
+              const door=at(lev.doors,nr,nc);if(door&&!(localMask&(1<<door[2]))){reason='door';break}
+              const sg=at(lev.suitGates,nr,nc);if(sg&&sg[2]!==piece.suit){reason='suitGate';break}
+              const cg=at(lev.colorGates,nr,nc);if(cg&&cg[2]!==piece.color){reason='colorGate';break}
+              const rail=at(lev.rails,nr,nc);if(rail&&rail[2]!==cur){reason='rail';break}
+              r=nr;c=nc;moved=true;path.push([r,c]);
+              const nest=lev.nests[pi];
+              if(r===nest[0]&&c===nest[1]){const ns=state.map(p=>p&&p.slice());ns[pi]=null;return {state:ns,mask:localMask,reason:'nest',path,capture:true}}
+              const sw=at(lev.switches,r,c);if(sw)localMask^=(1<<sw[2]);
+              if(at(lev.anchors,r,c)){reason='anchor';break}
+              const turn=at(lev.turners,r,c);if(turn)cur=turn[2]==='CW'?CW[cur]:CCW[cur]
+            }
+            if(!moved)return null;
+            const ns=state.map(p=>p&&p.slice());ns[pi]=[r,c];return {state:ns,mask:localMask,reason,path,capture:false};
+          }
+          function stateKey(s,m){return m+'|'+s.map(p=>p?key(...p):'x').join(';')}
+          function replay(lev){let s=lev.pieces.map(p=>p.pos.slice()),m=0,anchors=0;for(const [pi,d] of lev.solution){const r=step(lev,s,m,pi,d);if(!r)throw new Error(`L${lev.id} stored solution has invalid move`);if(r.reason==='anchor')anchors++;s=r.state;m=r.mask}if(!s.every(p=>!p))throw new Error(`L${lev.id} stored solution does not clear`);return anchors}
+          function shortest(lev,maxDepth){
+            const start=lev.pieces.map(p=>p.pos.slice()),q=[[start,0,0]],seen=new Set([stateKey(start,0)]);let head=0;
+            while(head<q.length){const [s,m,d]=q[head++];if(s.every(p=>!p))return d;if(d>=maxDepth)continue;
+              for(let pi=0;pi<s.length;pi++)if(s[pi])for(const dir of ['U','D','L','R']){const r=step(lev,s,m,pi,dir);if(!r)continue;const k=stateKey(r.state,r.mask);if(!seen.has(k)){seen.add(k);q.push([r.state,r.mask,d+1])}}
+            }return null;
+          }
+          const opts=[];
+          for(const lev of levels){
+            if(lev.pieces.length!==lev.nests.length)throw new Error(`L${lev.id} pieces/nests mismatch`);
+            const starts=lev.pieces.map(p=>key(...p.pos)),nests=lev.nests.map(p=>key(...p));
+            if(new Set(starts).size!==starts.length||new Set(nests).size!==nests.length)throw new Error(`L${lev.id} duplicate start/nest`);
+            const exclusive=[...lev.rocks,...lev.anchors,...lev.suitGates,...lev.colorGates,...lev.rails,...lev.turners,...lev.switches,...lev.doors].map(x=>key(x[0],x[1]));
+            for(const n of nests)if(exclusive.includes(n))throw new Error(`L${lev.id} object overlaps nest ${n}`);
+            replay(lev);
+          }
+          for(const lev of levels.slice(100,150)){
+            if(lev.chapter!==3)throw new Error(`L${lev.id} wrong chapter`);
+            if(!lev.anchors.length)throw new Error(`L${lev.id} has no anchor`);
+            if(lev.suitGates.length||lev.colorGates.length||lev.rails.length||lev.turners.length||lev.switches.length||lev.doors.length)throw new Error(`L${lev.id} contains later mechanic`);
+            const anchors=replay(lev);if(anchors<1)throw new Error(`L${lev.id} shortest stored route never uses anchor`);
+            if(lev.solution.length!==lev.optimal)throw new Error(`L${lev.id} solution/optimal mismatch`);
+            if(lev.moveLimit<lev.optimal)throw new Error(`L${lev.id} moveLimit below optimal`);
+            const best=shortest(lev,lev.optimal);if(best!==lev.optimal)throw new Error(`L${lev.id} solver optimal ${best} != stored ${lev.optimal}`);
+            opts.push(lev.optimal);
+          }
+          const first=opts.slice(0,5),tail=opts.slice(45);
+          if(Math.max(...first)>7)throw new Error('Chapter 3 introduction is too steep');
+          if(Math.min(...tail)<10)throw new Error('Chapter 3 expert tail too soft');
+          console.log('Validated 400 loaded levels. Chapter 3 optimal range',Math.min(...opts),Math.max(...opts),'tail',tail.join(','));
+          JS
+          node /tmp/validate-ch3.js
+      - name: Commit successful validator cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/validate-chapter3-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/validate-chapter3-repair.yml
+          git commit -m 'Complete Chapter 3 campaign validation'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((attempt*2))
+          done
+          exit 1
