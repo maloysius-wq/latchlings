@@ -12,9 +12,13 @@ This repository is the source of truth for **Latchlings**.
 
 Always inspect current `main`, `index.html`, and this handoff before changing anything.
 
-### Repository access invariant
+### REPOSITORY ACCESS PRE-FLIGHT — HARD GATE
 
-For **all repository work in this project**, use the connected **GitHub plugin/connector as the canonical repository path**. A failed local clone, missing local checkout, container DNS failure, or failed ordinary web/raw-GitHub fetch is **not evidence that GitHub access is unavailable**. Before ever claiming repository access is unavailable, explicitly discover/load the GitHub connector and attempt a repository read through the GitHub plugin (`GitHub.fetch_file`, `GitHub.get_repo`, or equivalent). Local/container/web access is secondary and optional; the GitHub plugin is the first-line path for inspection, edits, commits, Actions, and deployment checks.
+For **all repository work in this project**, the connected **GitHub plugin/connector is the canonical and first-line repository path**. This rule applies before any local/container/web attempt. If GitHub functions are not already loaded, the **first tool action for a repository task must be connector/plugin discovery for `GitHub`**. The first repository read must be `DEVELOPMENT_HANDOFF.md` through `GitHub.fetch_file` (or equivalent).
+
+A failed local clone, missing checkout, container DNS failure, generic web failure, raw-GitHub failure, or absence of preloaded GitHub functions is **never evidence that GitHub access is unavailable**. An agent may claim GitHub is unavailable only after GitHub plugin discovery has explicitly been attempted **and** a real GitHub connector repository read cannot be invoked or fails. If the wrong route is attempted first, recover immediately through GitHub and continue the original request without asking the user to repeat the plugin instruction.
+
+Read `AGENTS.md` and `.github/REPOSITORY_ACCESS_PREFLIGHT.md` for the durable preflight contract. The repository guard workflow validates that these instructions remain present.
 
 ## MANDATORY handoff workflow
 
