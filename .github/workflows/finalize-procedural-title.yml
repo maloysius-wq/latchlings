@@ -1,0 +1,58 @@
+name: Finalize Validated Procedural Title Rebuild
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-procedural-title.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reproduce validated build and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet pillow
+          mkdir -p title-island-concepts/textures /tmp/ambientcg
+          for SPEC in 'Grass005 grass' 'Ground085 earth' 'Wood093 wood'; do
+            set -- $SPEC
+            ID="$1"; NAME="$2"
+            ZIP="/tmp/ambientcg/${ID}.zip"; DIR="/tmp/ambientcg/${ID}"
+            curl --fail --location --retry 3 --user-agent 'Latchlings title prototype' "https://ambientcg.com/get?file=${ID}_1K-JPG.zip" -o "$ZIP"
+            mkdir -p "$DIR"; unzip -q "$ZIP" -d "$DIR"
+            SRC="$(find "$DIR" -type f -iname '*_Color.jpg' | head -n 1)"; test -n "$SRC"
+            python3 - "$SRC" "title-island-concepts/textures/${NAME}.jpg" <<'PY'
+          from PIL import Image
+          import sys
+          src,dst=sys.argv[1:]
+          with Image.open(src) as im:
+              im=im.convert('RGB').resize((512,512),Image.Resampling.LANCZOS)
+              im.save(dst,'JPEG',quality=72,optimize=True,progressive=True)
+          PY
+          done
+          python3 .github/scripts/rebuild_procedural_title.py
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('title-island-concepts/index.html').read_text().lower()
+          assert t.count('data-concept=')==3
+          assert '<img' not in t
+          assert 'assets/isometric/' not in t
+          for x in ['textures/grass.jpg','textures/earth.jpg','textures/wood.jpg']:
+              assert x in t and Path('title-island-concepts',x).exists()
+          for x in ['#ef5f66','#4c8ff4','#66bd72','#f6b737','#9a72df']:
+              assert x in t
+          print('REPRODUCTION_CHECK_OK')
+          PY
+          rm -f .github/workflows/build-procedural-title.yml .github/workflows/finalize-procedural-title.yml .github/scripts/rebuild_procedural_title.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A title-island-concepts .github/workflows/build-procedural-title.yml .github/workflows/finalize-procedural-title.yml .github/scripts/rebuild_procedural_title.py
+          git commit -m 'Rebuild title concepts with procedural textured models'
+          git push origin HEAD:main
