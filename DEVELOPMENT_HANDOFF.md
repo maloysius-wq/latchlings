@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Apply Brass Toy Plates to Little Home controls
+
+**Status: IN PROGRESS**
+
+**User goal:** Replace the current generic hero-box style controls in selected Concept 2 / Little Home with the Brass Toy Plates direction chosen from the rendered button gallery. The result should feel bespoke, toy-like, intentional, and integrated with the floating-island world rather than like generic AI-generated app cards.
+
+**Implementation plan:** Refine only Concept 2. Keep the current Play / Daily Puzzle / Level Select hierarchy and functionality, but restyle the controls as chamfered brass toy plates with layered metallic gradients, inset engraved borders, corner-rivet detailing, darker brass lower lips, and compact pressed-icon treatments. Reduce the two secondary controls from oversized white cards into tighter hardware-like plates so they read as a coordinated console/control cluster. Preserve all island, cloud, pebble, resident, tree, flower, stone, and floating motion work. Concepts 1 and 3 remain unchanged. Production `index.html` remains untouched.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transform/browser-validation workflow files. No new assets or external dependencies.
+
+**Validation plan:** Static checks require Concept 2-only brass control selectors, chamfered/engraved/rivet treatment, preserved Play / Daily Puzzle / Level Select markup and labels, and unchanged global button styles for Concepts 1 and 3. Chromium at 390x844 must verify all three Concept 2 controls remain fully inside the phone, do not overlap each other or the floating island, retain readable text/icons and click targets, show no horizontal overflow/console/page/request errors, and preserve the current five-resident floating-island scene. Capture screenshots for visual inspection and sanity-check Concepts 1 and 3.
+
+**Deployment plan:** Commit the validated Concept 2 control refinement to `main`, deploy through GitHub Pages, inspect the rendered screenshot, then close this handoff entry with implementation SHA, validation/deployment details, and next action. Production title integration remains out of scope.
+
+---
+
 ### 2026-09-02 — Add Little Home island bob and floating earth pebbles
 
 **Status: COMPLETED**
