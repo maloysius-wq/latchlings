@@ -33,7 +33,6 @@ jobs:
                   raise SystemExit(f'Bird-anatomy term found in runtime markup: {word}')
           if 'preview.png' in low or 'sample.png' in low or 'spritesheet' in low or 'tilesheet' in low:
               raise SystemExit('Preview/sheet asset reference found in runtime')
-          # Broad emoji ranges. Suit icons are SVG paths, not Unicode symbols.
           emoji = re.compile('[\U0001F000-\U0001FAFF\U00002600-\U000027BF]')
           if emoji.search(text):
               raise SystemExit('Emoji/symbol-pictograph character found in runtime HTML')
@@ -61,9 +60,8 @@ jobs:
           python3 -m http.server 8123 >/tmp/title-island-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
-          cat > /tmp/validate-title-island.mjs <<'JS'
+          cat > .validate-title-island.mjs <<'JS'
           import { chromium } from 'playwright';
-          import fs from 'fs';
           const browser = await chromium.launch({headless:true});
           for (let i=1;i<=3;i++) {
             const page = await browser.newPage({viewport:{width:390,height:844}, deviceScaleFactor:1});
@@ -74,7 +72,7 @@ jobs:
             const res=await page.goto(`http://127.0.0.1:8123/title-island-concepts/?c=${i}`,{waitUntil:'networkidle'});
             if(!res || !res.ok()) throw new Error(`Concept ${i}: page response failed`);
             await page.waitForTimeout(700);
-            const state=await page.evaluate((i)=>{
+            const state=await page.evaluate(()=>{
               const active=document.querySelector('.concept.active');
               const phone=active?.querySelector('.phone');
               const imgs=[...active.querySelectorAll('img')];
@@ -90,7 +88,7 @@ jobs:
                 latchlings:active?.querySelectorAll('.latchling').length,
                 suitSvgs:active?.querySelectorAll('.suit').length
               };
-            },i);
+            });
             if(state.activeId!==`c${i}`) throw new Error(`Concept ${i}: wrong active concept ${state.activeId}`);
             if(state.conceptCount!==3) throw new Error(`Concept ${i}: expected 3 concepts`);
             if(state.broken.length) throw new Error(`Concept ${i}: broken images ${state.broken.join(', ')}`);
@@ -105,7 +103,7 @@ jobs:
           }
           await browser.close();
           JS
-          node /tmp/validate-title-island.mjs
+          node .validate-title-island.mjs
           test "$(find title-island-renders -name 'concept-*.png' | wc -l)" -eq 3
       - uses: actions/upload-artifact@v4
         with:
@@ -116,7 +114,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .github/workflows/validate-title-island-concepts.yml
+          rm -f .github/workflows/validate-title-island-concepts.yml .validate-title-island.mjs
           rm -rf package.json package-lock.json node_modules
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
