@@ -37,6 +37,24 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Add Little Home island bob and floating earth pebbles
+
+**Status: IN PROGRESS**
+
+**User goal:** Confirm whether the selected Little Home clouds are animated, then make the floating-island read more clearly by giving the island itself a very subtle vertical bob and adding small brown pebbles around the lower dirt mass that float on the same overall cadence but at staggered phases.
+
+**Current-state note:** Concept 2 already has four independently animated procedural clouds using `littleHomeCloudDrift` at 38s, 46s, 53s, and 42s. Their motion is intentionally subtle and will be preserved.
+
+**Implementation plan:** Refine only selected Concept 2 / Little Home. Add a slow whole-island bob to `#c2 .island-model` while preserving its required horizontal centering transform. Counter the island shadow so it remains visually anchored below the island while changing slightly in scale/opacity with the float cycle. Add six small irregular earth-textured procedural pebbles around the outside of the lower brown `island-side`; give all pebbles the same base duration as the island but different negative delays, amplitudes, sizes, rotations, and positions so they rise/fall out of phase. Preserve all existing clouds, five-resident choreography, tree, cottage, flowers, stone, Play UI, and production runtime. Reduced-motion mode must disable the new bob/pebble motion.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `title-island-concepts/index.html`, plus temporary self-removing transformer/browser-validation workflow files. No new external assets; existing local `textures/earth.jpg` may be reused for pebble material. Production `index.html`, campaigns, and game runtime must remain untouched.
+
+**Validation plan:** Static checks require current cloud drift rules/durations to remain intact, a Concept 2-only island bob keyframe/rule, six floating-pebble elements and staggered shared-cadence animation rules, counter-motion/shadow treatment, and reduced-motion overrides. Chromium at 390x844 must sample multiple timestamps and prove the island vertical position changes slightly, the shadow remains approximately anchored, pebble positions change independently/out of phase, clouds still animate, no horizontal overflow or clipping occurs, no console/page/request errors appear, and all five residents remain present. Capture multiple timing screenshots and sanity-check Concepts 1 and 3 remain unaffected.
+
+**Deployment plan:** Commit the validated preview refinement to `main`, let GitHub Pages deploy the exact implementation commit, visually inspect timing screenshots, then close this entry with implementation SHA, validation/deployment results, and next action. Production title integration remains out of scope.
+
+---
+
 ### 2026-09-02 — Harden GitHub-plugin-first repository access preflight
 
 **Status: COMPLETED**
