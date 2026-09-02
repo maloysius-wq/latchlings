@@ -1,0 +1,38 @@
+name: Trim Title Isometric Assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/trim-title-isometric-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  trim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Trim transparent padding only
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick >/dev/null
+          for f in title-island-concepts/assets/isometric/*.png; do
+            magick "$f" -trim +repage "$f"
+            identify -format '%f %wx%h\n' "$f"
+          done
+      - name: Commit trimmed copies and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/trim-title-isometric-assets.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/assets/isometric .github/workflows/trim-title-isometric-assets.yml
+          git commit -m 'Trim transparent padding from island concept assets'
+          git pull --rebase origin main
+          git push origin HEAD:main
