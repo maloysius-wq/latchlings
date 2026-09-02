@@ -1,6 +1,6 @@
 # Latchlings Development Handoff
 
-Last updated: 2026-08-31
+Last updated: 2026-09-02
 
 ## Start here
 
@@ -28,6 +28,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 ---
 
 ## Current Work
+
+### 2026-09-02 — Repair missing Chapter 3 campaign data
+
+**Status: IN PROGRESS**
+
+**User goal:** Continue Latchlings from the current repository, but fix critical handoff issues before feature work. The highest-severity issue is the live runtime reference to missing `campaign400-3.js`, which leaves Levels 101–150 absent.
+
+**Implementation plan:** Rebuild Chapter 3 as 50 frozen, deterministic Lodestone Caverns boards using the shipping movement semantics. Chapter 3 will focus on anchors while retaining rocks and movable-Latchling stopper logic, with a brief introduction followed by sustained medium/hard play and an expert tail. Every generated board must have a stored shortest solution, use at least one anchor on that shortest route, keep all starts/nests/rocks/anchors exclusive, and avoid later-chapter mechanics.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, new `campaign400-3.js`, and a temporary self-removing repository validator. Production title-screen concept files remain unchanged until this critical repair is complete.
+
+**Validation plan:** Validate Chapter 3 IDs 101–150, compact-data schema, unique/exclusive cells, no nest/object overlap, stored solution replay, move limits, anchor use on shortest solutions, solver-confirmed optimality, difficulty progression, JavaScript loading, and then validate the full 400-level campaign references so `index.html` has no missing campaign script.
+
+**Deployment plan:** Commit `campaign400-3.js`, run the repository-backed validator, confirm the Pages build for the repaired head, then mark this entry COMPLETED with commit/run details before resuming title-screen feature work.
+
+---
 
 ### 2026-09-02 — Three focused floating-island title concepts
 
