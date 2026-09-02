@@ -69,7 +69,7 @@ jobs:
           for bad in ['assets/isometric/','grasscliff','bridgelogs.png','kenney']:
               if bad in low:
                   raise SystemExit(f'Legacy environment asset reference remains: {bad}')
-          expected=['textures/grass.jpg','textures/earth.jpg','textures/wood.jpg']
+          expected=sorted(['textures/grass.jpg','textures/earth.jpg','textures/wood.jpg'])
           refs=sorted(set(re.findall(r"url\(['\"]?([^)'\"]+)",t)))
           texture_refs=sorted(r for r in refs if r.startswith('textures/'))
           if texture_refs != expected:
