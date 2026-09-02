@@ -1,0 +1,33 @@
+name: Close Title Concept Handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/close-title-island-handoff.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update handoff
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          title='### 2026-09-02 — Three focused floating-island title concepts'
+          s=t.index(title)
+          e=t.index('\n---\n',s)
+          block=t[s:e].replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          note='''\n\n#### Completion summary\n\n**Implementation:** Completed all three browser-rendered concepts under `title-island-concepts/` while leaving production `index.html` unchanged. The live Latchlings and mobile title UI were retained. Old mismatched island pieces were replaced with coherent individually exported Kenney CC0 isometric bases and farm props. Concept 1 is a quiet grassy supply/rest nook, Concept 2 adds an assembled tiny cottage and yard, and Concept 3 is a busier playful island-life scene. Asset credits were updated.\n\n**Files changed:** `title-island-concepts/index.html`, `title-island-concepts/ASSET_CREDITS.md`.\n\n**Validation:** Static checks confirmed exactly three concepts, no emoji, no bird-anatomy runtime terms, all image references local/present, 29 total local image references and 17 isometric references. Chromium at 390x844 passed all three with no broken images, console/page/request errors, horizontal overflow, or clipped primary UI. Render counts were 6 Latchlings / 4 isometric assets, 6 / 7, and 7 / 6. Screenshots were uploaded and visually inspected. GitHub Actions run `33648157837` succeeded.\n\n**Implementation commit:** `b5d649b5fedb277254fd762bef65e928fe843dbb`.\n\n**Deployment:** GitHub Pages run `33648292031` succeeded for the implementation commit. The preview remains under `title-island-concepts/`, with query values `c=1`, `c=2`, and `c=3` selecting the concepts.\n\n**Next action:** Do not change the production title screen until the user chooses one concept or asks for a hybrid/refinement.\n'''
+          if '#### Completion summary' not in block:
+              block += note
+          p.write_text(t[:s]+block+t[e:])
+          PY
+          rm .github/workflows/close-title-island-handoff.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-title-island-handoff.yml
+          git commit -m 'Complete floating-island title concept handoff'
+          git push origin main
