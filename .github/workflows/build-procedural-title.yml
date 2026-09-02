@@ -1,0 +1,172 @@
+name: Build Procedural Textured Title Concepts
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-procedural-title.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and optimize CC0 material color maps
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet pillow
+          mkdir -p title-island-concepts/textures /tmp/ambientcg
+          for SPEC in 'Grass005 grass' 'Ground085 earth' 'Wood093 wood'; do
+            set -- $SPEC
+            ID="$1"
+            NAME="$2"
+            ZIP="/tmp/ambientcg/${ID}.zip"
+            DIR="/tmp/ambientcg/${ID}"
+            curl --fail --location --retry 3 --user-agent 'Latchlings title prototype' "https://ambientcg.com/get?file=${ID}_1K-JPG.zip" -o "$ZIP"
+            mkdir -p "$DIR"
+            unzip -q "$ZIP" -d "$DIR"
+            SRC="$(find "$DIR" -type f -iname '*_Color.jpg' | head -n 1)"
+            test -n "$SRC"
+            python3 - "$SRC" "title-island-concepts/textures/${NAME}.jpg" <<'PY'
+          from PIL import Image
+          import sys
+          src,dst=sys.argv[1:]
+          with Image.open(src) as im:
+              im=im.convert('RGB')
+              im.thumbnail((512,512), Image.Resampling.LANCZOS)
+              canvas=Image.new('RGB',(512,512))
+              if im.size != (512,512):
+                  im=im.resize((512,512), Image.Resampling.LANCZOS)
+              canvas.paste(im,(0,0))
+              canvas.save(dst,'JPEG',quality=72,optimize=True,progressive=True)
+          PY
+          done
+
+      - name: Rebuild preview with procedural geometry and shipping Latchlings
+        run: python3 .github/scripts/rebuild_procedural_title.py
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import re
+          p=Path('title-island-concepts/index.html')
+          t=p.read_text()
+          low=t.lower()
+          if t.count('data-concept=') != 3:
+              raise SystemExit('Expected exactly three concepts')
+          if '<img' in low:
+              raise SystemExit('Active preview must not use raster sprite/model image elements')
+          for bad in ['assets/isometric/','grasscliff','bridgelogs.png','kenney']:
+              if bad in low:
+                  raise SystemExit(f'Legacy environment asset reference remains: {bad}')
+          expected=['textures/grass.jpg','textures/earth.jpg','textures/wood.jpg']
+          refs=sorted(set(re.findall(r"url\(['\"]?([^)'\"]+)",t)))
+          texture_refs=sorted(r for r in refs if r.startswith('textures/'))
+          if texture_refs != expected:
+              raise SystemExit(f'Unexpected texture refs: {texture_refs}')
+          if any(r.startswith(('http:','https:','data:')) for r in refs):
+              raise SystemExit('External/runtime-inline surface reference found')
+          for r in expected:
+              f=Path('title-island-concepts')/r
+              if not f.exists(): raise SystemExit(f'Missing texture {r}')
+              with Image.open(f) as im:
+                  if im.size != (512,512): raise SystemExit(f'Wrong texture size {r}: {im.size}')
+              if f.stat().st_size > 300_000: raise SystemExit(f'Texture too large {r}: {f.stat().st_size}')
+          exact=['#ef5f66','#ff9297','#c33d49','#4c8ff4','#79aff9','#2e69c8','#66bd72','#94dc98','#469852','#f6b737','#ffd06a','#d18c16','#9a72df','#c3a0f1','#724fbd']
+          for c in exact:
+              if c not in low: raise SystemExit(f'Missing shipping palette value {c}')
+          for expr in ['happy','surprised','angry','smug','sleepy','curious','determined']:
+              if f'.expr-{expr}' not in low: raise SystemExit(f'Missing shipping expression {expr}')
+          for suit in ['heart','diamond','club','spade','star']:
+              if suit not in low: raise SystemExit(f'Missing shipping suit {suit}')
+          if '.suit-mark{position:absolute;top:8%;left:50%' not in low or 'width:29%;height:29%' not in low:
+              raise SystemExit('Shipping crown-suit proportions not preserved')
+          print('STATIC_OK', {'textures':texture_refs,'bytes':[Path('title-island-concepts',r).stat().st_size for r in expected]})
+          PY
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p title-procedural-renders
+          python3 -m http.server 8123 >/tmp/title-procedural-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cat > .validate-procedural-title.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const expectedCounts=[6,6,7];
+          for(let i=1;i<=3;i++){
+            const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror:'+e.message));
+            page.on('requestfailed',r=>errors.push('request:'+r.url()));
+            const res=await page.goto(`http://127.0.0.1:8123/title-island-concepts/?c=${i}`,{waitUntil:'networkidle'});
+            if(!res?.ok())throw new Error(`Concept ${i}: bad response`);
+            await page.waitForTimeout(900);
+            const state=await page.evaluate(()=>{
+              const a=document.querySelector('.concept.active');
+              const phone=a?.querySelector('.phone');
+              const play=a?.querySelector('.play');
+              const sec=a?.querySelector('.secondary');
+              const island=a?.querySelector('.island-model');
+              const latch=[...a.querySelectorAll('.latchling')];
+              const resources=performance.getEntriesByType('resource').map(x=>x.name).filter(x=>x.includes('/textures/'));
+              return {active:a?.id,bodyWidth:document.body.scrollWidth,viewport:innerWidth,phone:phone?.getBoundingClientRect().toJSON(),play:play?.getBoundingClientRect().toJSON(),secondary:sec?.getBoundingClientRect().toJSON(),island:island?.getBoundingClientRect().toJSON(),latchlings:latch.length,suits:latch.filter(x=>x.querySelector('.suit-mark svg path')).length,faces:latch.filter(x=>x.querySelectorAll('.eye').length===2&&x.querySelector('.mouth')).length,textureResources:[...new Set(resources)].length,imgElements:a?.querySelectorAll('img').length};
+            });
+            if(state.active!==`c${i}`)throw new Error(`Concept ${i}: wrong active ${state.active}`);
+            if(state.bodyWidth>state.viewport+1)throw new Error(`Concept ${i}: horizontal overflow ${state.bodyWidth}/${state.viewport}`);
+            if(!state.phone||state.phone.left<-1||state.phone.right>state.viewport+1)throw new Error(`Concept ${i}: phone out of viewport`);
+            if(!state.play||!state.secondary||state.play.bottom>state.phone.bottom||state.secondary.bottom>state.phone.bottom)throw new Error(`Concept ${i}: primary UI clipped`);
+            if(!state.island||state.island.top<state.phone.top||state.island.bottom>state.play.top+4)throw new Error(`Concept ${i}: island geometry collides with primary UI`);
+            if(state.latchlings!==expectedCounts[i-1]||state.suits!==state.latchlings||state.faces!==state.latchlings)throw new Error(`Concept ${i}: game Latchling render mismatch ${JSON.stringify(state)}`);
+            if(state.textureResources!==3)throw new Error(`Concept ${i}: expected 3 local material textures, got ${state.textureResources}`);
+            if(state.imgElements!==0)throw new Error(`Concept ${i}: sprite image element detected`);
+            if(errors.length)throw new Error(`Concept ${i}: ${errors.join(' | ')}`);
+            await page.screenshot({path:`title-procedural-renders/concept-${i}.png`,fullPage:true});
+            console.log('CONCEPT_OK',i,JSON.stringify(state));
+            await page.close();
+          }
+          await browser.close();
+          JS
+          node .validate-procedural-title.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: procedural-textured-title-renders
+          path: title-procedural-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated preview and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf title-procedural-renders node_modules package.json package-lock.json .validate-procedural-title.mjs
+          rm -f .github/workflows/build-procedural-title.yml .github/scripts/rebuild_procedural_title.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A title-island-concepts .github/workflows/build-procedural-title.yml .github/scripts/rebuild_procedural_title.py
+          git commit -m 'Rebuild title concepts with procedural textured models'
+          test -z "$(git status --porcelain)"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((attempt*2))
+          done
+          exit 1
