@@ -1,0 +1,44 @@
+name: Close Little Home Tree Handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-little-home-tree-handoff.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete Little Home tree refinement handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          header='### 2026-09-02 — Refine Little Home procedural tree'
+          if header not in t:
+              raise SystemExit('Tree handoff entry not found')
+          start=t.index(header)
+          end=t.index('\n---\n', start)
+          entry=t[start:end]
+          entry=entry.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          if '#### Completion summary' not in entry:
+              entry += '''\n\n#### Completion summary\n\n**Implementation:** Rebuilt only Concept 2 / Little Home's tree in `title-island-concepts/index.html`. The original three-circle canopy was removed. The replacement has a tapered wood-textured procedural trunk, three visible forked branch forms, three root/contact forms, a ground shadow, and a unified irregular canopy silhouette. The canopy uses the already-vendored CC0 `textures/grass.jpg` as subtle foliage grain with layered highlights/underside shading and seven internal faceted tonal patches rather than separate round leaf blobs. A very slight canopy sway adds life without competing with the six animated residents. Concepts 1 and 3 remain unchanged, the six-resident Little Home household remains 4 adults / 2 children with its existing routines, and production `index.html` was not changed.\n\n**Files changed:** `title-island-concepts/index.html`. Temporary transformer/validator workflows and scripts self-removed after their validated commits. No new third-party assets were added; existing local CC0 `wood.jpg` and `grass.jpg` were reused.\n\n**Validation:** Initial structural tree run `33666314811` passed static and Chromium checks with 7 foliage elements, 3 branches, 3 roots, all 6 residents intact, no fence/image regressions, changing canopy transform across sampled timestamps, and no title/cottage/control collisions. Screenshot artifact `9860710586` was visually inspected; it confirmed the structure was improved but the canopy still read too much like a cluster of rounded masses. A second same-scope refinement unified the crown into one irregular polygon silhouette with internal tonal facets. Final run `33666543249` passed `CANOPY_STATIC_OK` and Chromium at 390×844 with zero console/page/request errors, zero overflow, zero clipped UI, 7 internal foliage facets, 6 residents / 2 children, 3 branches, 3 roots, zero image elements, zero Concept 2 fence elements, and a rendered irregular canopy pseudo-element. Final screenshot artifact `9860803140` was downloaded and visually inspected; the crown reads as one textured organic tree at phone size and retains clear separation from the cottage, title, residents, and primary controls.\n\n**Implementation commit:** `5d466fce25c80189c7246bf075f6b96f5c3fb6e7` (`Unify the Little Home tree canopy`). The preceding structural-tree commit was `9438c1ff2af21312997e8c9ee4f2fb86c9360e5e`.\n\n**Deployment:** GitHub Pages run `33666617556` completed successfully for final implementation commit `5d466fce25c80189c7246bf075f6b96f5c3fb6e7`. The refined preview remains `title-island-concepts/?c=2`.\n\n**Remaining risk / next action:** This tree refinement is complete in the design-selection preview. Production remains intentionally unchanged. The next action is user review of the live Little Home; only promote or further adapt it when the user explicitly asks.\n'''
+          t=t[:start]+entry+t[end:]
+          p.write_text(t)
+          PY
+          rm -f .github/workflows/close-little-home-tree-handoff.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-little-home-tree-handoff.yml
+          git commit -m 'Complete Little Home tree refinement handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
