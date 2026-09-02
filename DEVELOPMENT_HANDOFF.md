@@ -29,6 +29,18 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-02 — Repair Level 269 campaign integrity defect
+
+**Status: IN PROGRESS**
+
+**Why this was discovered:** Full-campaign validation performed while repairing the missing Chapter 3 file found exactly one pre-existing campaign integrity defect outside Chapter 3. Level 269 has a rail on cell `6,1`, which is also a nest. The shipping simulator blocks that nest entry because the rail direction check runs before nest capture, so the stored solution is invalid.
+
+**Implementation plan:** Remove or relocate the conflicting rail with the smallest possible Level 269-only data change, then replay the stored solution and independently solve the repaired board. Do not alter unrelated Chapter 6 boards.
+
+**Validation plan:** Require zero nest/object overlaps across all 400 levels, require every stored solution to replay to completion, and verify Level 269 shortest-path optimality against its stored `optimal` value.
+
+---
+
 ### 2026-09-02 — Repair missing Chapter 3 campaign data
 
 **Status: IN PROGRESS**
