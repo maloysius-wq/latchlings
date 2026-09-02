@@ -55,9 +55,9 @@
 @keyframes littleHomeCanopy{0%,100%{transform:rotate(-.7deg) translateY(0)}50%{transform:rotate(.8deg) translateY(-1px)}}#c2 .cottage{left:210px;top:43px}#c2 .rock.r1{left:58px;top:159px}#c2 .flower.f1{left:190px;top:104px}#c2 .flower.f2{left:78px;top:111px}#c2 .flower.f3{left:148px;top:84px}#c2 .flower.blue:after{background:radial-gradient(circle,#f4d77a 0 19%,transparent 21%),radial-gradient(circle at 50% 4%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 96% 50%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 50% 96%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 4% 50%,#72aef5 0 22%,transparent 24%);filter:drop-shadow(0 1px 1px rgba(48,91,142,.18))}#c2 .latchling{width:34px;height:34px;z-index:16}#c2 .latchling.child{width:25px;height:25px}#c2 .l1{left:174px;top:108px}#c2 .l2{left:198px;top:137px}#c2 .l3{left:76px;top:121px}#c2 .l5{left:111px;top:151px}#c2 .l6{left:135px;top:151px}
 /* Selected Little Home: six-resident daily-life choreography */
 #c2 .resident{transform-origin:50% 100%;will-change:transform;animation-iteration-count:infinite;animation-fill-mode:both}
-#c2 .life-garden{animation:littleHomeGarden 9.2s ease-in-out infinite}
-#c2 .life-parcel{animation:littleHomeParcel 10.4s ease-in-out infinite}
-#c2 .life-tree{animation:littleHomeTree 11.1s ease-in-out infinite}
+#c2 .life-garden.adult-outing{animation:littleHomeGarden var(--adult-move-duration,5.2s) ease-in-out 1 both}
+#c2 .life-parcel.adult-outing{animation:littleHomeParcel var(--adult-move-duration,5.4s) ease-in-out 1 both}
+#c2 .life-tree.adult-outing{animation:littleHomeTree var(--adult-move-duration,5.6s) ease-in-out 1 both}
 
 #c2 .kid-one{animation:littleHomeKidOne 6.1s cubic-bezier(.42,0,.36,1) infinite}
 #c2 .kid-two{animation:littleHomeKidTwo 6.1s cubic-bezier(.42,0,.36,1) infinite reverse}
@@ -91,6 +91,50 @@
 const PALETTES={coral:['#ef5f66','#ff9297','#c33d49'],blue:['#4c8ff4','#79aff9','#2e69c8'],mint:['#66bd72','#94dc98','#469852'],gold:['#f6b737','#ffd06a','#d18c16'],lavender:['#9a72df','#c3a0f1','#724fbd']};
 const SUITS={heart:'M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z',diamond:'M50 7 88 50 50 93 12 50Z',club:'M50 12a19 19 0 0 1 12 34 20 20 0 1 1 9 37c-9 0-15-5-18-11 1 10 5 16 12 21H35c7-5 11-11 12-21-3 6-9 11-18 11a20 20 0 1 1 9-37A19 19 0 0 1 50 12Z',spade:'M50 8C43 22 14 36 14 60c0 13 10 23 23 23 8 0 13-4 16-10-1 9-5 15-12 20h18c-7-5-11-11-12-20 3 6 8 10 16 10 13 0 23-10 23-23C86 36 57 22 50 8Z',star:'m50 7 13 27 30 4-22 21 6 30-27-14-27 14 6-30L7 38l30-4Z'};
 document.querySelectorAll('.latchling').forEach((el,i)=>{const p=PALETTES[el.dataset.color];el.style.setProperty('--piece-color',p[0]);el.style.setProperty('--light',p[1]);el.style.setProperty('--dark',p[2]);el.style.setProperty('--blink-duration',(3.35+((17+i*29)%37)/10).toFixed(2)+'s');el.style.setProperty('--blink-delay',(-((23+i*41)%59)/10).toFixed(2)+'s');el.style.setProperty('--idle-delay',(-((11+i*7)%23)/10).toFixed(2)+'s');el.classList.add('expr-'+el.dataset.expr);el.innerHTML=`<span class="suit-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="${SUITS[el.dataset.suit]}"></path></svg></span><span class="face"><span class="eyes"><i class="eye"></i><i class="eye"></i></span><i class="mouth"></i></span>`});
+
+/* Little Home adults use one-shot outings with randomized rest periods. */
+const LITTLE_HOME_ADULT_IDLE_MIN=4200;
+const LITTLE_HOME_ADULT_IDLE_MAX=8800;
+const LITTLE_HOME_ADULT_LONG_IDLE_MIN=9000;
+const LITTLE_HOME_ADULT_LONG_IDLE_MAX=13000;
+const LITTLE_HOME_ADULT_MOVE_MIN=4400;
+const LITTLE_HOME_ADULT_MOVE_MAX=6000;
+const littleHomeRandom=(min,max)=>min+Math.random()*(max-min);
+const littleHomeAdults=[...document.querySelectorAll('#c2 .resident.adult')];
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+littleHomeAdults.forEach((adult,index)=>{
+  adult.dataset.motionState='idle';
+  adult.dataset.moveCount='0';
+  if(reducedMotion)return;
+  let timer=0;
+  const scheduleIdle=(initial=false)=>{
+    adult.classList.remove('adult-outing');
+    adult.dataset.motionState='idle';
+    const longRest=!initial&&Math.random()<.20;
+    const wait=initial
+      ? 900+index*750+littleHomeRandom(0,1700)
+      : longRest
+        ? littleHomeRandom(LITTLE_HOME_ADULT_LONG_IDLE_MIN,LITTLE_HOME_ADULT_LONG_IDLE_MAX)
+        : littleHomeRandom(LITTLE_HOME_ADULT_IDLE_MIN,LITTLE_HOME_ADULT_IDLE_MAX);
+    adult.dataset.nextMoveMs=String(Math.round(wait));
+    clearTimeout(timer);
+    timer=setTimeout(startMove,wait);
+  };
+  const startMove=()=>{
+    const duration=littleHomeRandom(LITTLE_HOME_ADULT_MOVE_MIN,LITTLE_HOME_ADULT_MOVE_MAX);
+    adult.style.setProperty('--adult-move-duration',`${Math.round(duration)}ms`);
+    adult.dataset.motionState='moving';
+    adult.dataset.moveCount=String(Number(adult.dataset.moveCount||0)+1);
+    adult.classList.add('adult-outing');
+  };
+  adult.addEventListener('animationend',event=>{
+    if(!adult.classList.contains('adult-outing'))return;
+    if(!event.animationName.startsWith('littleHome'))return;
+    scheduleIdle(false);
+  });
+  scheduleIdle(true);
+});
+
 const buttons=[...document.querySelectorAll('.switcher button')],concepts=[...document.querySelectorAll('.concept')];function show(id,push=false){concepts.forEach(c=>c.classList.toggle('active',c.id===id));buttons.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.target===id)));if(push)history.replaceState(null,'',`?c=${id.slice(1)}`)}buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.target,true)));const requested=new URLSearchParams(location.search).get('c');if(['1','2','3'].includes(requested))show('c'+requested);
 </script>
 </body></html>
