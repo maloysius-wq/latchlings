@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-03 — Enlarge Little Home island while preserving Latchling size
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Make the floating island in the production Little Home title scene noticeably larger so it fills more of the currently empty space above, below, and to both sides. Preserve the island's current proportions and composition, while keeping every Latchling at exactly the same on-screen size as today.
 
@@ -50,6 +50,27 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static validation must prove the island uses one uniform scale, adult Latchlings still resolve to the same visual size as before, child Latchlings still resolve to the same visual size as before, and campaign/story/game/audio files are unchanged. Chromium at 390×844 must measure the enlarged island bounds, confirm substantially reduced unused side/vertical space without clipping terrain/cottage/tree/title/buttons, confirm all five Latchlings remain the same rendered width/height as baseline, verify their motion still runs, verify the island bob still runs, and require no horizontal overflow or console/page/request errors. Render the production embedded title at rest and during normal animation for visual inspection before deployment. Reduced-motion behavior must remain valid.
 
 **Deployment plan:** Commit this handoff entry before product edits, implement the resize behind a self-removing workflow, run strict static + Chromium measurement/render validation, inspect renders, commit only the green result, deploy the exact implementation SHA through GitHub Pages, then close this same handoff entry with the final scale factor, measurements, validation/deployment IDs, implementation SHA, and remaining risk.
+
+
+#### Completion summary
+
+**Implementation:** Enlarged the production Little Home island/environment uniformly to **1.10×** while keeping the composition centered. `#c2` now defines `--little-home-island-scale:1.10`; the existing island float transform/keyframes include that scale so the 7.6 s bob remains intact and reduced-motion still shows the enlarged resting composition. All environment children inside the island model, including terrain, cottage, organic tree, path, flowers, stone, floating pebbles, play ball, and story keepsakes, inherit the same uniform enlargement.
+
+**Resident-size preservation:** Concept 2 residents use the reciprocal visual scale `--little-home-latchling-counter-scale:.9090909091`. This exactly counteracts the 1.10× ancestor scale while preserving their enlarged-layout positions. Chromium measured all three adults at **34×34 px** and both children at **25×25 px**, identical to the pre-change production baseline. Existing adult outing choreography and both child play animations remain active.
+
+**Composition measurements:** At the 390×844 production viewport, the island changed from `350×350` at `x=20, y=185, right=370, bottom=535` to `385×385` at `x=2.5, y=167.5, right=387.5, bottom=552.5`. The center remains exactly `195 px`; the aspect ratio remains unchanged; side whitespace shrank from 20 px to 2.5 px on each side; the footprint extends 17.5 px higher and 17.5 px lower. The tagline still ends at `y=142.796875`, leaving about 24.7 px before the enlarged island, and Play still begins at `y=590`, leaving 37.5 px beneath the island. No horizontal overflow or tree/cottage clipping was observed.
+
+**Validation history:** The first trial run `33814831037` correctly failed before commit because standalone CSS `scale` caused the existing `translateX(-50%)` centering translation to scale as well, producing `x=-15`. That attempt committed no product change. The corrected implementation moved the scale into the island transform/keyframes and passed GitHub Actions run `33815360179`, which validated uniform size/ratio, exact centering, unchanged resident pixel sizes, title/tagline/button clearances, no overflow, island bob movement, child animations, adult outing activity, and zero console/page/request errors.
+
+**Visual inspection:** Artifact `9916382392` (`little-home-larger-island-final-renders`) contains reduced-motion and live-animation production renders. Both were downloaded and inspected. The island now fills the available title canvas much more confidently without clipping or crowding the approved title/tagline/buttons, while the Latchlings remain visually the same size as before.
+
+**Files changed:** Product change is limited to `title-island-concepts/index.html`. Production `index.html`, campaign definitions `campaign400-1.js` through `campaign400-8.js`, story/game runtime, styles outside the title source, music, and SFX were diff-checked unchanged. Temporary resize workflows self-removed.
+
+**Implementation commit:** `59d95f07ce0a6ec6eeeb3ff47b378f4eb60d1369` (`Enlarge Little Home island without enlarging residents`).
+
+**Deployment:** GitHub Pages run `33815544460` completed successfully for the exact implementation commit `59d95f07ce0a6ec6eeeb3ff47b378f4eb60d1369`. Live production: `https://maloysius-wq.github.io/latchlings/`.
+
+**Remaining risk / next action:** No blocking issue remains. The island intentionally uses almost the full 390 px viewport width, leaving a measured 2.5 px geometric margin per side; final renders confirm the visible terrain remains clean rather than appearing cropped.
 
 ---
 
