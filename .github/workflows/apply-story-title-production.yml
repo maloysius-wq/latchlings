@@ -1,0 +1,98 @@
+name: Apply Story And Production Little Home
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-story-title-production.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply story and production title integration
+        run: python3 .github/scripts/apply_story_title_production.py
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check story400.js
+          node --check game400-a.js
+          node --check game400-b.js
+          node - <<'NODE'
+          global.window=global;
+          require('./story400.js');
+          const s=global.LATCHLINGS_STORY;
+          if(!s)throw new Error('Story runtime missing');
+          const rows=Array.from({length:400},(_,i)=>s.levelMeta(i+1));
+          if(rows.length!==400||rows.some(x=>!x.title||!x.context||!x.mechanic))throw new Error('Story metadata incomplete');
+          if(new Set(rows.map(x=>x.chapter+':'+x.title)).size!==400)throw new Error('Story titles are not unique across campaign');
+          if(s.chapters.length!==8||s.cast.length!==5)throw new Error('Story chapter/cast counts wrong');
+          console.log('STORY_STATIC_400_OK');
+          NODE
+          python3 - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text()
+          title=Path('title-island-concepts/index.html').read_text()
+          ga=Path('game400-a.js').read_text();gb=Path('game400-b.js').read_text()
+          required_index=['id="homeTitleFrame"','title-island-concepts/?c=2&amp;embed=1','<script src="story400.js"></script>','The Skyway Lives Again','id="completeHome"']
+          for token in required_index:
+              if token not in index: raise SystemExit('Missing production index token: '+token)
+          for token in ['embed-mode','initProductionEmbed','story-mailbox','story-anchor','story-distant-islands','source:\'latchlings-home\'']:
+              if token not in title: raise SystemExit('Missing approved-home integration token: '+token)
+          for token in ['const STORY=window.LATCHLINGS_STORY||null;','storyMeta=STORY?STORY.levelMeta','chapter-opening','homeTitleFrame']:
+              if token not in ga: raise SystemExit('Missing game400-a story token: '+token)
+          for token in ['function storyModal(){','settingsStory','STORY?STORY.beatForLevel','source!==\'latchlings-home\'']:
+              if token not in gb: raise SystemExit('Missing game400-b story token: '+token)
+          print('PRODUCTION_STATIC_OK')
+          PY
+          git diff --exit-code -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+
+      - name: Install Chromium validation outside repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/story-title-node"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and production renders
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/story-title-node"
+          mkdir -p story-title-renders
+          python3 -m http.server 8137 >/tmp/story-title-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cp .github/scripts/validate_story_title_production.mjs "$TEST_NODE/validate_story_title_production.mjs"
+          node "$TEST_NODE/validate_story_title_production.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-story-title-renders
+          path: story-title-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated implementation and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf story-title-renders
+          rm -f .github/workflows/apply-story-title-production.yml .github/scripts/apply_story_title_production.py .github/scripts/validate_story_title_production.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html style400-ui.css style400-game.css game400-a.js game400-b.js title-island-concepts/index.html .github/workflows/apply-story-title-production.yml .github/scripts/apply_story_title_production.py .github/scripts/validate_story_title_production.mjs
+          git commit -m 'Integrate Little Home and campaign story into production'
+          git pull --rebase origin main
+          git push origin HEAD:main
