@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-02 — Simplify Little Home buttons to solid #F5DEAC
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Keep the current rounded Concept 2 / Little Home button shapes and layout, remove the diagonal stripe treatment entirely, and make all three controls a solid `#F5DEAC`.
 
@@ -50,6 +50,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must confirm `#F5DEAC` is used on all three Concept 2 controls, no `repeating-linear-gradient` remains in the Concept 2 control block, all existing labels and scene elements remain intact, and production/game/campaign files are untouched. Chromium at 390x844 must verify all controls remain inside the phone, retain rounded corners, remain separated from the island and each other, have no overflow or browser errors, and visually compute to a solid warm cream surface rather than stripes.
 
 **Deployment plan:** Commit this handoff entry before implementation, then commit the validated Concept 2 solid-button refinement to `main`, deploy through GitHub Pages, and close this same entry with implementation SHA, validation/deployment details, and the live preview link. Production title integration remains out of scope.
+
+
+#### Completion summary
+
+**Implementation:** Updated only selected Concept 2 / Little Home in `title-island-concepts/index.html`. Removed the cream/sage/moss repeating stripe gradients entirely and changed Play, Daily Puzzle, and Level Select to a true solid `#F5DEAC` surface. The existing rounded shapes remain: Play keeps 22px corners and the two compact secondary controls keep 20px corners. The tactile treatment is preserved through warm tan borders, inset highlights, grounded lower shadows, navy text/icons, circular icon medallions, and the existing physical hover/press movement. There is no `background-image` on any of the three Concept 2 controls.
+
+**Visual review:** Screenshot artifact `9874161783` was downloaded and inspected. The controls now read as clean solid warm-cream toy buttons rather than patterned controls. The `#F5DEAC` color harmonizes with the cottage, earth, and existing cream UI accents while keeping the navy labels highly readable.
+
+**Files changed:** Permanent product implementation changed only `title-island-concepts/index.html`; this handoff was updated separately for project tracking. Temporary transformer/browser-validator/workflow files self-removed. Production `index.html`, campaigns, game runtime, textures, and other assets were untouched.
+
+**Validation:** GitHub Actions run `33702899583` passed static and Chromium validation. At 390×844, computed styles for all three Concept 2 controls reported `background-color: rgb(245, 222, 172)` and `background-image: none`. Play remained 318×60 px with 22px rounded corners; the two secondary controls remained 154.5×78 px with 20px rounded corners. All controls stayed inside the phone, remained separated from the island and one another, preserved labels `Play`, `Daily Puzzle`, and `Level Select`, and retained the current scene with 5 residents, 6 floating earth pebbles, and 4 clouds. No horizontal overflow or console/page/request errors occurred. Concepts 1 and 3 did not inherit the solid Little Home treatment.
+
+**Implementation commit:** `88bed1d217868fbb3864546fce707f2a56b20d0f` (`Make Little Home controls solid warm cream`).
+
+**Deployment:** GitHub Pages run `33702947207` completed successfully for exact implementation commit `88bed1d217868fbb3864546fce707f2a56b20d0f`. Live preview remains `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This is still the design-selection preview only. User should review the solid `#F5DEAC` controls in motion. Production remains intentionally untouched pending explicit promotion.
 
 ---
 
