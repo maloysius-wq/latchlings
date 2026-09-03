@@ -100,4 +100,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# retry: dispatch iframe settings click because parent modal immediately overlays the frame
+# retry: native DOM settings click inside embedded Little Home
