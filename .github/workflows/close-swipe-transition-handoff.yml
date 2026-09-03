@@ -24,7 +24,9 @@ jobs:
           from pathlib import Path
           t=Path('DEVELOPMENT_HANDOFF.md').read_text()
           h='### 2026-09-03 — Replace veil transition with fast right-swipe motion blur and CC0 whoosh'
-          s=t.index(h);e=t.index('\n---',s);x=t[s:e]
+          s=t.index(h)
+          nh=t.find('\n### ',s+len(h)); sep=t.find('\n---',s+len(h)); ends=[x for x in (nh,sep) if x>=0]; e=min(ends) if ends else len(t)
+          x=t[s:e]
           for token in ['**Status: COMPLETED**','4eea640ff7e4b8f5025c06272d56274a0178abe6','33807719535','9913606116','33807823049','screen-swipe.wav','0.103923','0.002200','artisticdude','CC0']:
               assert token in x,token
           print('SWIPE_TRANSITION_HANDOFF_CLOSURE_OK')
