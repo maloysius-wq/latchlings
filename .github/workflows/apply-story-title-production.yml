@@ -100,4 +100,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# retry: native DOM settings click inside embedded Little Home
+# retry: parent contentDocument settings click with bounded browser timeouts
