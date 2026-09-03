@@ -48,11 +48,11 @@ jobs:
           required_index=['id="homeTitleFrame"','title-island-concepts/?c=2&amp;embed=1','<script src="story400.js"></script>','The Skyway Lives Again','id="completeHome"']
           for token in required_index:
               if token not in index: raise SystemExit('Missing production index token: '+token)
-          for token in ['embed-mode','initProductionEmbed','story-mailbox','story-anchor','story-distant-islands','source:\'latchlings-home\'','parent.LatchlingsHomeAction']:
+          for token in ['embed-mode','initProductionEmbed','story-mailbox','story-anchor','story-distant-islands','source:\'latchlings-home\'','parent.LatchlingsHomeAction','const bindEmbed=(el,action)=>']:
               if token not in title: raise SystemExit('Missing approved-home integration token: '+token)
           for token in ['const STORY=window.LATCHLINGS_STORY||null;','storyMeta=STORY?STORY.levelMeta','chapter-opening','homeTitleFrame']:
               if token not in ga: raise SystemExit('Missing game400-a story token: '+token)
-          for token in ['function storyModal(){','settingsStory','STORY?STORY.beatForLevel','source!==\'latchlings-home\'','window.LatchlingsHomeAction=action=>']:
+          for token in ['function storyModal(){','settingsStory','STORY?STORY.beatForLevel','source!==\'latchlings-home\'','window.LatchlingsHomeAction=action=>','const wireHomeFrame=()=>{']:
               if token not in gb: raise SystemExit('Missing game400-b story token: '+token)
           print('PRODUCTION_STATIC_OK')
           PY
@@ -100,4 +100,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# async-settings validation trigger
+# parent-owned-control validation trigger
