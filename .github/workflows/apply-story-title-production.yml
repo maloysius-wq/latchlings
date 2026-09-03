@@ -100,4 +100,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# parent-owned-control validation trigger
+# parent-settings diagnostic trigger
