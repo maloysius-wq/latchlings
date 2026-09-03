@@ -1,0 +1,28 @@
+name: Close Little Home Solid Buttons
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-little-home-solid-buttons.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete solid button handoff entry
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/close_little_home_solid_buttons.py
+          rm -f .github/workflows/close-little-home-solid-buttons.yml .github/scripts/close_little_home_solid_buttons.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-little-home-solid-buttons.yml .github/scripts/close_little_home_solid_buttons.py
+          git commit -m 'Complete Little Home solid button handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
