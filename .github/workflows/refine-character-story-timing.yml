@@ -1,0 +1,57 @@
+name: Refine Character Story Timing
+on:
+  push:
+    paths:
+      - '.github/workflows/refine-character-story-timing.yml'
+permissions:
+  contents: write
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Refine auto-story timing
+        run: python3 .github/scripts/refine-character-story-timing.py
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check story-theme400.js
+          grep -q '},260)}' story-theme400.js
+          git diff --exit-code -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story400.js game400-a.js game400-b.js index.html style400-story-theme.css title-island-concepts/index.html music400.js sfx400.js
+      - name: Install Chromium outside repository
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/character-story-timing-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Validate final timing and renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/character-story-timing-node"
+          mkdir -p character-story-final-renders
+          python3 -m http.server 8144 >/tmp/character-story-timing-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cp .github/scripts/validate-character-story-timing.mjs "$TEST_NODE/validate-character-story-timing.mjs"
+          timeout 100s node "$TEST_NODE/validate-character-story-timing.mjs"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: character-story-final-renders
+          path: character-story-final-renders/*.png
+          if-no-files-found: error
+      - name: Commit validated refinement and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf character-story-final-renders
+          rm -f .github/workflows/refine-character-story-timing.yml .github/scripts/refine-character-story-timing.py .github/scripts/validate-character-story-timing.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add story-theme400.js .github/workflows/refine-character-story-timing.yml .github/scripts/refine-character-story-timing.py .github/scripts/validate-character-story-timing.mjs
+          git commit -m 'Let character Story Cards land after screen swipe'
+          git pull --rebase origin main
+          git push origin HEAD:main
