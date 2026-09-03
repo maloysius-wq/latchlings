@@ -29,10 +29,6 @@ async function clickHome(page,selector){
   await page.waitForFunction(sel=>!!document.getElementById('homeTitleFrame')?.contentDocument?.querySelector(sel),selector);
   await page.evaluate(sel=>document.getElementById('homeTitleFrame').contentDocument.querySelector(sel).click(),selector);
 }
-async function clickHomeAsync(page,selector){
-  await page.waitForFunction(sel=>!!document.getElementById('homeTitleFrame')?.contentDocument?.querySelector(sel),selector);
-  await page.evaluate(sel=>{const b=document.getElementById('homeTitleFrame').contentDocument.querySelector(sel);setTimeout(()=>b.click(),0);},selector);
-}
 async function inspectHome(page){
   return await page.evaluate(()=>{
     const d=document.getElementById('homeTitleFrame')?.contentDocument;
@@ -86,10 +82,11 @@ const gameStory=await page.evaluate(()=>({title:document.querySelector('#levelTi
 if(gameStory.title!=='Level 1'||!gameStory.storyTitle||!gameStory.context||!gameStory.tip||!gameStory.className.includes('story-note'))throw new Error('Level 1 story context is not wired into gameplay: '+JSON.stringify(gameStory));
 
 console.log('STEP story coverage');
-const storyCoverage=await page.evaluate(()=>{const rows=Array.from({length:400},(_,i)=>LATCHLINGS_STORY.levelMeta(i+1));return {count:rows.length,unique:new Set(rows.map(x=>`${x.chapter}:${x.title}`)).size,missing:rows.filter(x=>!x.title||!x.context||!x.mechanic).length,chapters:LATCHLINGS_STORY.chapters.map(x=>x.name)};});
+const storyCoverage=await page.evaluate(()=>{const rows=Array.from({length:400},(_,i)=>LATCHLINGS_STORY.levelMeta(i+1));return {count:rows.length,unique:new Set(rows.map(x=>`${x.chapter}:${x.title}`)).size,missing:rows.filter(x=>!x.title||!x.context||!x.mechanic).length,chapters:LATCHLINGS_STORY.chapters.map(x=>x.name),samples:[1,151,301,400].map(n=>LATCHLINGS_STORY.levelMeta(n))};});
 if(storyCoverage.count!==400||storyCoverage.unique!==400||storyCoverage.missing!==0)throw new Error('400-level story metadata coverage failed: '+JSON.stringify(storyCoverage));
 const expectedChapters=['Morning Routes','Neighbors','Holding Fast','Market Day','The Long Drift','Old Ways','Coming Together','Homeward'];
 if(JSON.stringify(storyCoverage.chapters)!==JSON.stringify(expectedChapters))throw new Error('Story chapter order changed: '+JSON.stringify(storyCoverage.chapters));
+if(storyCoverage.samples.some(x=>!x.title||!x.context||!x.mechanic))throw new Error('Representative early/mid/late/final story sample missing data');
 
 console.log('STEP level select bridge');
 await page.evaluate(()=>screen('home'));await page.waitForFunction(()=>document.getElementById('home').classList.contains('active'));
@@ -98,32 +95,26 @@ await page.waitForSelector('#levels.active');
 const chapterText=await page.locator('#chapterHead').innerText(),chapterTextLower=chapterText.toLowerCase();
 if(!chapterText.includes('Chapter 1: Morning Routes')||!chapterTextLower.includes('sunpetal meadows')||!chapterText.includes('Route language:')||!chapterTextLower.includes('edges, rocks'))throw new Error('Narrative chapter header missing required story/mechanic framing: '+chapterText);
 
-console.log('STEP settings parent probe');
+console.log('STEP dedicated story screen');
 await page.evaluate(()=>screen('home'));await page.waitForFunction(()=>document.getElementById('home').classList.contains('active'));
-const functionSources=await page.evaluate(()=>({settings:typeof settingsModal==='function'?settingsModal.toString():'MISSING',action:typeof window.LatchlingsHomeAction==='function'?window.LatchlingsHomeAction.toString():'MISSING',modal:typeof modal==='function'?modal.toString():'MISSING'}));
-console.log('SETTINGS_FUNCTION_SOURCE',JSON.stringify(functionSources));
-const settingsProbe=await page.evaluate(()=>{
-  const result={actionType:typeof window.LatchlingsHomeAction,settingsType:typeof settingsModal};
-  try{
-    result.returnValue=window.LatchlingsHomeAction?.('settings');
-    result.overlay=document.getElementById('overlay')?.className||'';
-    result.hasStory=!!document.getElementById('settingsStory');
-    result.modal=document.getElementById('modal')?.innerText||'';
-  }catch(e){result.error=String(e?.stack||e)}
-  return result;
-});
-console.log('PARENT_SETTINGS_PROBE',JSON.stringify(settingsProbe));
-if(!settingsProbe.hasStory)throw new Error('Parent settings action failed: '+JSON.stringify(settingsProbe));
-await page.evaluate(()=>closeModal());
+await clickHome(page,'#c2 .settings');
+await page.waitForSelector('#story.active');
+const lore=await page.locator('#story').innerText();
+for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy','Waykeeper','Skyway','Morning Routes','Sunpetal Meadows'])if(!lore.includes(name))throw new Error('Story screen missing '+name);
+const storyState=await page.evaluate(()=>({homeActive:document.getElementById('home').classList.contains('active'),storyActive:document.getElementById('story').classList.contains('active'),scrollWidth:document.body.scrollWidth,width:innerWidth}));
+if(storyState.homeActive||!storyState.storyActive||storyState.scrollWidth>storyState.width+1)throw new Error('Story screen state/fit failed: '+JSON.stringify(storyState));
+await page.locator('#storyRules').click();
+await page.waitForSelector('#rulesClose');
+if(!(await page.locator('#modal').innerText()).includes('How the board works'))throw new Error('Rules did not open from Story screen');
+await page.locator('#rulesClose').click();
+await page.locator('#storyBack').click();
+await page.waitForSelector('#home.active');
 
-console.log('STEP settings lore bridge');
-await clickHomeAsync(page,'#c2 .settings');
-await page.waitForSelector('#settingsStory');
-await page.evaluate(()=>document.getElementById('settingsStory').click());
-await page.waitForFunction(()=>document.getElementById('modal')?.textContent.includes('Pippa'));
-const lore=await page.locator('#modal').innerText();
-for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy','Waykeeper','Skyway'])if(!lore.includes(name))throw new Error('Lore modal missing '+name);
-await page.evaluate(()=>closeModal());
+console.log('STEP daily bridge');
+await clickHome(page,'#c2 .secondary button:nth-child(1)');
+await page.waitForSelector('#game.active');
+const dailyTitle=await page.locator('#levelTitle').innerText();
+if(!/^Level \d+$/.test(dailyTitle))throw new Error('Daily Puzzle did not enter a campaign board: '+dailyTitle);
 
 console.log('STEP milestone beat');
 await page.evaluate(()=>{currentLevel=10;movesUsed=LEVELS[9].optimal;winLevel()});
