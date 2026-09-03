@@ -100,4 +100,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# parent-settings diagnostic trigger
+# function-source diagnostic trigger
