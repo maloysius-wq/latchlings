@@ -1,0 +1,88 @@
+name: Apply Title Drop Animation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-title-drop-animation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply title entrance animation
+        run: python3 .github/scripts/apply_title_drop_animation.py
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('title-island-concepts/index.html').read_text()
+          c2=t.split('<section class="concept" id="c2"',1)[1].split('<section class="concept" id="c3"',1)[0]
+          required=['@keyframes littleHomeTitleDrop','title-drop-run','function restartLittleHomeTitle()','prefers-reduced-motion:reduce','Small friends. Smart puzzles.','--drop-delay:585ms']
+          for token in required:
+              if token not in t:
+                  raise SystemExit(f'Missing title animation token: {token}')
+          if c2.count('<span aria-hidden="true">') != 10:
+              raise SystemExit('Wobbly title letter count changed')
+          if 'animation:littleHomeTitleDrop 780ms linear var(--drop-delay) 1 both' not in t:
+              raise SystemExit('Title entrance is not a one-shot staggered animation')
+          if "if(id==='c2')restartLittleHomeTitle()" not in t:
+              raise SystemExit('Concept 2 activation does not restart title entrance')
+          if '#c2 .toy-logo span:nth-child(1){--drop-delay:0ms}' not in t or '#c2 .toy-logo span:nth-child(10){--drop-delay:585ms}' not in t:
+              raise SystemExit('First/last stagger delays missing')
+          if 'Home is where you latch' in c2:
+              raise SystemExit('Old tagline returned')
+          print('TITLE_DROP_STATIC_OK')
+          PY
+          git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-a.js game400-b.js style400-game.css
+
+      - name: Install Playwright outside repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-drop-node"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-drop-node"
+          mkdir -p title-drop-renders
+          python3 -m http.server 8131 >/tmp/title-drop-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cp .github/scripts/validate_title_drop_animation.mjs "$TEST_NODE/validate_title_drop_animation.mjs"
+          node "$TEST_NODE/validate_title_drop_animation.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-title-drop-renders
+          path: title-drop-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated implementation and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf title-drop-renders
+          rm -f .github/workflows/apply-title-drop-animation.yml .github/scripts/apply_title_drop_animation.py .github/scripts/validate_title_drop_animation.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/apply-title-drop-animation.yml .github/scripts/apply_title_drop_animation.py .github/scripts/validate_title_drop_animation.mjs
+          git commit -m 'Animate Little Home title letters into place'
+          git pull --rebase origin main
+          git push origin HEAD:main
