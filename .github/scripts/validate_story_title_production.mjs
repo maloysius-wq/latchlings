@@ -98,8 +98,23 @@ await page.waitForSelector('#levels.active');
 const chapterText=await page.locator('#chapterHead').innerText(),chapterTextLower=chapterText.toLowerCase();
 if(!chapterText.includes('Chapter 1: Morning Routes')||!chapterTextLower.includes('sunpetal meadows')||!chapterText.includes('Route language:')||!chapterTextLower.includes('edges, rocks'))throw new Error('Narrative chapter header missing required story/mechanic framing: '+chapterText);
 
-console.log('STEP settings lore bridge');
+console.log('STEP settings parent probe');
 await page.evaluate(()=>screen('home'));await page.waitForFunction(()=>document.getElementById('home').classList.contains('active'));
+const settingsProbe=await page.evaluate(()=>{
+  const result={actionType:typeof window.LatchlingsHomeAction,settingsType:typeof settingsModal};
+  try{
+    result.returnValue=window.LatchlingsHomeAction?.('settings');
+    result.overlay=document.getElementById('overlay')?.className||'';
+    result.hasStory=!!document.getElementById('settingsStory');
+    result.modal=document.getElementById('modal')?.innerText||'';
+  }catch(e){result.error=String(e?.stack||e)}
+  return result;
+});
+console.log('PARENT_SETTINGS_PROBE',JSON.stringify(settingsProbe));
+if(!settingsProbe.hasStory)throw new Error('Parent settings action failed: '+JSON.stringify(settingsProbe));
+await page.evaluate(()=>closeModal());
+
+console.log('STEP settings lore bridge');
 await clickHomeAsync(page,'#c2 .settings');
 await page.waitForSelector('#settingsStory');
 await page.evaluate(()=>document.getElementById('settingsStory').click());
