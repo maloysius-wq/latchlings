@@ -11,22 +11,10 @@
 </head>
 <body>
 <div id="app">
-  <main id="home" class="screen active">
-    <div class="topbar card">
-      <div class="logo">Latchlings<small></small></div><div class="spacer"></div>
-      <div class="pill"><span id="homeStars">0</span><span>stars</span></div>
-      <button class="iconbtn" id="settingsBtn" aria-label="Settings"></button>
+  <main id="home" class="screen active production-home" aria-label="Latchlings home">
+    <div class="production-home-wrap">
+      <iframe id="homeTitleFrame" class="production-home-frame" src="title-island-concepts/?c=2&amp;embed=1" title="Latchlings Little Home" scrolling="no"></iframe>
     </div>
-    <div class="home-main">
-      <section class="hero card">
-        <h1>Latchlings</h1>
-        <p>Plan the route. Use the board. Snap every Latchling into the right nest.</p>
-        <div class="island" aria-hidden="true"><div class="island-base"></div><div class="home-house"></div><div class="hero-latch one"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch two"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch three"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div></div>
-        <button class="primary-btn" id="playBtn">Play</button>
-      </section>
-      <div class="home-secondary"><button class="secondary-btn" id="dailyBtn">Daily Puzzle<br><small>Practice board</small></button><button class="secondary-btn" id="levelSelectBtn">Level Select<br><small>400 verified boards</small></button></div>
-    </div>
-    <nav class="bottom-tabs card"><button class="tab active" data-nav="home">Home</button><button class="tab" data-nav="play">Play</button><button class="tab" data-nav="levels">Levels</button><button class="tab" data-nav="about">Rules</button></nav>
   </main>
 
   <main id="levels" class="screen">
@@ -36,6 +24,20 @@
     <div id="rangeNav" class="range-nav"></div>
     <div id="levelGrid" class="level-grid card"></div>
     <div class="level-footer"><button class="secondary-btn" id="resetProgressBtn">Reset Progress</button><button class="secondary-btn" id="continueBtn">Continue</button></div>
+  </main>
+
+  <main id="story" class="screen story-screen" aria-label="Story and residents">
+    <div class="topbar card story-topbar"><button class="iconbtn" id="storyBack" aria-label="Back"></button><div class="game-title" style="font-size:22px">Story &amp; Residents</div><div class="spacer"></div><button class="story-rules-btn" id="storyRules">Rules</button></div>
+    <section class="story-screen-card card">
+      <div class="theme-kicker">The Latchlands</div>
+      <h1>Little Home</h1>
+      <p id="storyPremise"></p>
+      <div class="story-role-card" id="storyRole"></div>
+      <h2>Residents</h2>
+      <div class="story-cast" id="storyCast"></div>
+      <h2>Current chapter</h2>
+      <div class="story-current-chapter" id="storyChapter"></div>
+    </section>
   </main>
 
   <main id="game" class="screen">
@@ -53,7 +55,7 @@
   </main>
 
   <main id="complete" class="screen">
-    <div class="home-main"><section class="hero card"><div class="logo" style="font-size:24px">Latchlings<small></small></div><h1 style="font-size:40px;margin-top:20px">Skyway Restored</h1><p>You cleared all 400 campaign puzzles. The final board stays beaten; it does not loop back into itself.</p><div class="island" aria-hidden="true"><div class="island-base"></div><div class="home-house"></div><div class="hero-latch one"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch two"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch three"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div></div><button class="primary-btn" id="completeLevels">Level Select</button></section></div>
+    <div class="home-main"><section class="hero card"><div class="logo" style="font-size:24px">Latchlings<small></small></div><h1 style="font-size:40px;margin-top:20px">The Skyway Lives Again</h1><p>The islands keep drifting. Now the routes move with them, tended by neighbors and Waykeepers across the Latchlands.</p><div class="island" aria-hidden="true"><div class="island-base"></div><div class="home-house"></div><div class="hero-latch one"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch two"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch three"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div></div><button class="primary-btn" id="completeLevels">Level Select</button><button class="secondary-btn" id="completeHome" style="margin-top:12px">Return to Little Home</button></section></div>
   </main>
 </div>
 <div class="overlay" id="overlay"><div class="modal card" id="modal"></div></div>
@@ -66,6 +68,7 @@
 <script src="campaign400-6.js"></script>
 <script src="campaign400-7.js"></script>
 <script src="campaign400-8.js"></script>
+<script src="story400.js"></script>
 <script src="game400-a.js"></script>
 <script src="game400-b.js"></script>
 <script src="music400.js"></script>
