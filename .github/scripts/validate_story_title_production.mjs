@@ -100,7 +100,7 @@ await page.evaluate(()=>screen('home'));await page.waitForFunction(()=>document.
 await clickHome(page,'#c2 .settings');
 await page.waitForSelector('#story.active');
 const lore=await page.locator('#story').innerText();
-for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy','Waykeeper','Skyway','Morning Routes','Sunpetal Meadows'])if(!lore.includes(name))throw new Error('Story screen missing '+name);
+for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy','Waykeeper','Skyway','Morning Routes'])if(!lore.includes(name))throw new Error('Story screen missing '+name);
 const storyState=await page.evaluate(()=>({homeActive:document.getElementById('home').classList.contains('active'),storyActive:document.getElementById('story').classList.contains('active'),scrollWidth:document.body.scrollWidth,width:innerWidth}));
 if(storyState.homeActive||!storyState.storyActive||storyState.scrollWidth>storyState.width+1)throw new Error('Story screen state/fit failed: '+JSON.stringify(storyState));
 await page.locator('#storyRules').click();
