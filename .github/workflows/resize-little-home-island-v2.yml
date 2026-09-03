@@ -1,0 +1,90 @@
+name: Resize Little Home Island V2
+on:
+  push:
+    paths:
+      - '.github/workflows/resize-little-home-island-v2.yml'
+permissions:
+  contents: write
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply centered uniform enlargement
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('title-island-concepts/index.html')
+          t=p.read_text()
+          old="""/* Selected Little Home: floating island drift */
+          #c2 .island-model{animation:littleHomeIslandFloat 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform}"""
+          new="""/* Selected Little Home: floating island drift */
+          #c2{--little-home-island-scale:1.10;--little-home-latchling-counter-scale:.9090909091}
+          #c2 .island-model{transform:translateX(-50%) scale(var(--little-home-island-scale));animation:littleHomeIslandFloat 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform}"""
+          if old in t:t=t.replace(old,new,1)
+          elif '--little-home-island-scale:1.10' not in t:raise SystemExit('Island drift anchor missing')
+          oldkf='@keyframes littleHomeIslandFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}'
+          newkf='@keyframes littleHomeIslandFloat{0%,100%{transform:translateX(-50%) translateY(0) scale(var(--little-home-island-scale))}50%{transform:translateX(-50%) translateY(-5px) scale(var(--little-home-island-scale))}}'
+          if oldkf in t:t=t.replace(oldkf,newkf,1)
+          elif 'scale(var(--little-home-island-scale))' not in t:raise SystemExit('Island float keyframe anchor missing')
+          old2='#c2 .latchling{width:34px;height:34px;z-index:16}'
+          new2='#c2 .latchling{width:34px;height:34px;scale:var(--little-home-latchling-counter-scale);z-index:16}'
+          if old2 in t:t=t.replace(old2,new2,1)
+          elif 'scale:var(--little-home-latchling-counter-scale)' not in t:raise SystemExit('Latchling size anchor missing')
+          p.write_text(t)
+          print('CENTERED_LITTLE_HOME_ISLAND_SCALE_APPLIED')
+          PY
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          grep -q -- '--little-home-island-scale:1.10' title-island-concepts/index.html
+          grep -q -- '--little-home-latchling-counter-scale:.9090909091' title-island-concepts/index.html
+          grep -q 'transform:translateX(-50%) scale(var(--little-home-island-scale))' title-island-concepts/index.html
+          grep -q 'translateY(-5px) scale(var(--little-home-island-scale))' title-island-concepts/index.html
+          grep -q 'scale:var(--little-home-latchling-counter-scale)' title-island-concepts/index.html
+          git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story400.js story-theme400.js game400-a.js game400-b.js music400.js sfx400.js style400-ui.css style400-game.css style400-themes.css style400-story-theme.css
+      - name: Install Chromium outside repository
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-island-resize-v2-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Validate production composition and render
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-island-resize-v2-node"
+          mkdir -p title-island-resize-v2-renders
+          python3 -m http.server 8147 >/tmp/title-island-v2-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cat > "$TEST_NODE/validate.mjs" <<'NODE'
+          import {chromium} from 'playwright';const ok=(c,m)=>{if(!c)throw new Error(m)};const browser=await chromium.launch({headless:true});
+          const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});page.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(?:mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)});
+          await page.goto('http://127.0.0.1:8147/',{waitUntil:'domcontentloaded'});const frame=page.frames().find(f=>/title-island-concepts/.test(f.url()));ok(frame,'Production Little Home iframe missing');await frame.waitForSelector('#c2 .island-model');await page.waitForTimeout(120);
+          const m=await frame.evaluate(()=>{const r=s=>{const x=document.querySelector(s)?.getBoundingClientRect();return x?{x:x.x,y:x.y,w:x.width,h:x.height,right:x.right,bottom:x.bottom}:null};const latch=[...document.querySelectorAll('#c2 .latchling')].map(e=>{const x=e.getBoundingClientRect();return {role:e.dataset.role,w:x.width,h:x.height,x:x.x,y:x.y}});return {vw:innerWidth,vh:innerHeight,island:r('#c2 .island-model'),tagline:r('#c2 .toy-tagline'),play:r('#c2 .play'),tree:r('#c2 .little-home-tree'),cottage:r('#c2 .cottage'),latch,scrollW:document.documentElement.scrollWidth,transform:getComputedStyle(document.querySelector('#c2 .island-model')).transform};});
+          ok(Math.abs(m.island.w-385)<.35&&Math.abs(m.island.h-385)<.35,'Expected 385×385 uniform island, got '+JSON.stringify(m.island));ok(Math.abs(m.island.w/m.island.h-1)<.001,'Island ratio changed');ok(Math.abs((m.island.x+m.island.right)/2-195)<.25,'Island no longer centered '+JSON.stringify(m.island));ok(m.island.x>=2&&m.island.right<=388,'Island clipped or not filling sides '+JSON.stringify(m.island));ok(m.island.y>=167&&m.island.y<=168.2,'Unexpected island top '+m.island.y);ok(m.island.y>m.tagline.bottom+20,'Island crowds tagline');ok(m.island.bottom<m.play.y-30,'Island crowds Play button');ok(m.tree.x>=0&&m.tree.right<=390&&m.cottage.x>=0&&m.cottage.right<=390,'Environment clipped');
+          const adults=m.latch.filter(x=>x.role==='adult'),kids=m.latch.filter(x=>x.role==='child');ok(adults.length===3&&kids.length===2,'Resident roster changed');ok(adults.every(x=>Math.abs(x.w-34)<.2&&Math.abs(x.h-34)<.2),'Adult visual size changed '+JSON.stringify(adults));ok(kids.every(x=>Math.abs(x.w-25)<.2&&Math.abs(x.h-25)<.2),'Child visual size changed '+JSON.stringify(kids));ok(m.scrollW<=m.vw+1,'Horizontal overflow');ok(errors.length===0,'Browser errors: '+errors.join(' | '));await page.screenshot({path:'title-island-resize-v2-renders/larger-island-reduced.png',fullPage:true});await ctx.close();
+          const liveCtx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});const live=await liveCtx.newPage();const liveErrors=[];live.on('pageerror',e=>liveErrors.push('page:'+e.message));live.on('console',x=>{if(x.type()==='error')liveErrors.push('console:'+x.text())});live.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(?:mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;liveErrors.push('request:'+u+':'+e)});await live.goto('http://127.0.0.1:8147/',{waitUntil:'domcontentloaded'});const lf=live.frames().find(f=>/title-island-concepts/.test(f.url()));ok(lf,'Live iframe missing');await lf.waitForSelector('#c2 .island-model');const y1=await lf.locator('#c2 .island-model').evaluate(e=>e.getBoundingClientRect().y);await live.waitForTimeout(1900);const motion=await lf.evaluate(()=>({islandAnimation:getComputedStyle(document.querySelector('#c2 .island-model')).animationName,kidAnimations:[...document.querySelectorAll('#c2 .child')].map(e=>getComputedStyle(e).animationName),adultOutings:[...document.querySelectorAll('#c2 .adult')].map(e=>e.classList.contains('adult-outing')),sizes:[...document.querySelectorAll('#c2 .latchling')].map(e=>e.getBoundingClientRect().width)}));const y2=await lf.locator('#c2 .island-model').evaluate(e=>e.getBoundingClientRect().y);ok(/littleHomeIslandFloat/.test(motion.islandAnimation),'Island bob missing');ok(Math.abs(y2-y1)>.3,'Island bob did not visibly move');ok(motion.kidAnimations.every(x=>/littleHomeKid/.test(x)),'Kid motion missing');ok(motion.sizes.slice(0,3).every(x=>Math.abs(x-34)<.25)&&motion.sizes.slice(3).every(x=>Math.abs(x-25)<.25),'Resident sizes drifted during live animation '+JSON.stringify(motion.sizes));ok(liveErrors.length===0,'Live errors: '+liveErrors.join(' | '));await live.screenshot({path:'title-island-resize-v2-renders/larger-island-live.png',fullPage:true});console.log('TITLE_ISLAND_RESIZE_V2_OK',JSON.stringify({baseline:{island:{x:20,y:185,w:350,h:350,right:370,bottom:535},adult:34,child:25},after:m,motion,y1,y2}));await browser.close();
+          NODE
+          node "$TEST_NODE/validate.mjs"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-larger-island-final-renders
+          path: title-island-resize-v2-renders/*.png
+          if-no-files-found: error
+      - name: Commit validated resize and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf title-island-resize-v2-renders
+          rm -f .github/workflows/resize-little-home-island.yml .github/workflows/resize-little-home-island-v2.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/resize-little-home-island.yml .github/workflows/resize-little-home-island-v2.yml
+          git commit -m 'Enlarge Little Home island without enlarging residents'
+          git pull --rebase origin main
+          git push origin HEAD:main
