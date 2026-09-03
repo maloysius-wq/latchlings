@@ -1,0 +1,31 @@
+name: Start Character Story Handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/start-character-story-handoff.yml'
+permissions:
+  contents: write
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add current work entry
+        run: python3 .github/scripts/start-character-story-handoff.py
+      - name: Validate entry
+        run: |
+          grep -q 'Add featured residents to Story Cards and clarify helper-crew canon' DEVELOPMENT_HANDOFF.md
+          grep -A8 'Add featured residents to Story Cards and clarify helper-crew canon' DEVELOPMENT_HANDOFF.md | grep -q 'Status: IN PROGRESS'
+      - name: Commit handoff and self-remove
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/start-character-story-handoff.yml .github/scripts/start-character-story-handoff.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/start-character-story-handoff.yml .github/scripts/start-character-story-handoff.py
+          git commit -m 'Start featured resident story card work'
+          git pull --rebase origin main
+          git push origin HEAD:main
