@@ -46,7 +46,8 @@
 @keyframes littleHomeCloudDrift{0%,100%{translate:var(--cloud-start,-14px) 0}50%{translate:var(--cloud-end,24px) var(--cloud-lift,-2px)}}
 
 /* Selected Little Home: floating island drift */
-#c2 .island-model{animation:littleHomeIslandFloat 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform}
+#c2{--little-home-island-scale:1.10;--little-home-latchling-counter-scale:.9090909091}
+#c2 .island-model{transform:translateX(-50%) scale(var(--little-home-island-scale));animation:littleHomeIslandFloat 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform}
 #c2 .island-shadow{animation:littleHomeShadowAnchor 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform,opacity}
 #c2 .float-pebbles{position:absolute;inset:0;z-index:1;pointer-events:none}
 #c2 .float-pebble{position:absolute;display:block;background-image:linear-gradient(145deg,rgba(255,255,255,.18),rgba(66,43,29,.26)),url('textures/earth.jpg');background-size:cover,34px 34px;background-position:center;border-radius:52% 38% 46% 41%;box-shadow:inset -2px -2px 3px rgba(55,37,25,.17),0 3px 4px rgba(45,55,62,.12);animation:littleHomePebbleFloat 7.6s ease-in-out infinite;animation-delay:var(--pebble-delay);will-change:translate}
@@ -56,7 +57,7 @@
 #c2 .float-pebble.pebble-4{right:42px;top:247px;width:14px;height:10px;rotate:-9deg;--pebble-delay:-5.1s;--pebble-lift:-7px}
 #c2 .float-pebble.pebble-5{left:79px;top:287px;width:8px;height:6px;rotate:31deg;--pebble-delay:-6.3s;--pebble-lift:-4px}
 #c2 .float-pebble.pebble-6{right:87px;top:301px;width:11px;height:8px;rotate:-24deg;--pebble-delay:-1.6s;--pebble-lift:-6px}
-@keyframes littleHomeIslandFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+@keyframes littleHomeIslandFloat{0%,100%{transform:translateX(-50%) translateY(0) scale(var(--little-home-island-scale))}50%{transform:translateX(-50%) translateY(-5px) scale(var(--little-home-island-scale))}}
 @keyframes littleHomeShadowAnchor{0%,100%{transform:translateY(0) scale(1);opacity:1}50%{transform:translateY(5px) scale(.94);opacity:.78}}
 @keyframes littleHomePebbleFloat{0%,100%{translate:0 2px}50%{translate:0 var(--pebble-lift,-5px)}}
 #c2 .path{left:111px;top:129px;width:126px}#c2 .tree{left:27px;top:15px;width:112px;height:128px;transform:none}
@@ -79,7 +80,7 @@
 #c2 .little-home-tree .leaf-e{left:59px;top:48px;width:34px;height:25px;clip-path:polygon(10% 0,76% 6%,100% 49%,70% 100%,17% 87%,0 39%);transform:rotate(5deg);opacity:.34}
 #c2 .little-home-tree .leaf-f{left:28px;top:6px;width:33px;height:22px;clip-path:polygon(3% 51%,23% 4%,72% 0,100% 40%,74% 100%,18% 89%);transform:rotate(-14deg);opacity:.36}
 #c2 .little-home-tree .leaf-g{left:72px;top:8px;width:28px;height:22px;clip-path:polygon(0 36%,29% 0,82% 12%,100% 64%,57% 100%,11% 77%);transform:rotate(16deg);opacity:.32}
-@keyframes littleHomeCanopy{0%,100%{transform:rotate(-.7deg) translateY(0)}50%{transform:rotate(.8deg) translateY(-1px)}}#c2 .cottage{left:210px;top:43px}#c2 .rock.r1{left:58px;top:159px}#c2 .flower.f1{left:190px;top:104px}#c2 .flower.f2{left:78px;top:111px}#c2 .flower.f3{left:148px;top:84px}#c2 .flower.blue:after{background:radial-gradient(circle,#f4d77a 0 19%,transparent 21%),radial-gradient(circle at 50% 4%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 96% 50%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 50% 96%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 4% 50%,#72aef5 0 22%,transparent 24%);filter:drop-shadow(0 1px 1px rgba(48,91,142,.18))}#c2 .latchling{width:34px;height:34px;z-index:16}#c2 .latchling.child{width:25px;height:25px}#c2 .l1{left:174px;top:108px}#c2 .l2{left:198px;top:137px}#c2 .l3{left:76px;top:121px}#c2 .l5{left:111px;top:151px}#c2 .l6{left:135px;top:151px}
+@keyframes littleHomeCanopy{0%,100%{transform:rotate(-.7deg) translateY(0)}50%{transform:rotate(.8deg) translateY(-1px)}}#c2 .cottage{left:210px;top:43px}#c2 .rock.r1{left:58px;top:159px}#c2 .flower.f1{left:190px;top:104px}#c2 .flower.f2{left:78px;top:111px}#c2 .flower.f3{left:148px;top:84px}#c2 .flower.blue:after{background:radial-gradient(circle,#f4d77a 0 19%,transparent 21%),radial-gradient(circle at 50% 4%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 96% 50%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 50% 96%,#72aef5 0 22%,transparent 24%),radial-gradient(circle at 4% 50%,#72aef5 0 22%,transparent 24%);filter:drop-shadow(0 1px 1px rgba(48,91,142,.18))}#c2 .latchling{width:34px;height:34px;scale:var(--little-home-latchling-counter-scale);z-index:16}#c2 .latchling.child{width:25px;height:25px}#c2 .l1{left:174px;top:108px}#c2 .l2{left:198px;top:137px}#c2 .l3{left:76px;top:121px}#c2 .l5{left:111px;top:151px}#c2 .l6{left:135px;top:151px}
 /* Selected Little Home: six-resident daily-life choreography */
 #c2 .resident{transform-origin:50% 100%;will-change:transform;animation-iteration-count:infinite;animation-fill-mode:both}
 #c2 .life-garden.adult-outing{animation:littleHomeGarden var(--adult-move-duration,5.2s) ease-in-out 1 both}
