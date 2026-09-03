@@ -38,6 +38,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 ## Current Work
 
 
+### 2026-09-03 — Replace veil transition with fast right-swipe motion blur and CC0 whoosh
+
+**Status: IN PROGRESS**
+
+**User goal:** Replace the current translucent screen-whoosh overlay with a much faster transition in which the actual current screen swipes rapidly to the right with motion blur, revealing the destination underneath. Transitions should occur only when moving between distinct major screens (Little Home/title, Level Select, Story, Complete, and Game). Advancing, retrying, or otherwise changing levels while already on the Game screen must never transition. Add a short, subtle locally shipped CC0 whoosh synchronized to the swipe, with any leading silence removed.
+
+**Transition plan:** Remove the existing `screenWhoosh` veil and destination-settle animation. Prefer the browser View Transitions API so the rendered old root snapshot itself moves right while blurring/fading and the new root remains underneath; use a very short ~180–240 ms duration and an ease-out curve. The shared `screen(...)` router will invoke the effect only when the screen id genuinely changes, so `startLevel()` calls that remain on `game` will stay transition-free. Unsupported browsers and `prefers-reduced-motion: reduce` will switch instantly with no visual transition. Rapid/reentrant navigation must not leave stale transition classes or interaction locks.
+
+**CC0 audio plan:** Use OpenGameArt `Swishes Sound Pack` by artisticdude (CC0) as the candidate source. Inspect the downloaded pack in GitHub Actions, choose a light/short swish appropriate to UI navigation, trim leading/trailing silence with ffmpeg, lightly normalize/fade if needed, encode a compact local transition asset under `assets/sfx/`, and record exact source URL, author, pack/license, selected source filename, processing steps, and local filename in `ART_ASSET_CREDITS.md`. Playback must respect the existing Sound Effects setting and occur only for real cross-screen transitions, never game-to-game level changes.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `game400-a.js`, `style400-ui.css`, `sfx400.js`, `ART_ASSET_CREDITS.md`, new local `assets/sfx/screen-swipe.*`, and temporary self-removing GitHub Actions inspection/implementation/browser-validation files. `index.html` may be simplified to remove the obsolete veil markup. Campaign/story data, puzzle mechanics, title composition, textures, and existing audio assets remain unchanged.
+
+**Validation plan:** Static validation must confirm campaign/story/title data are unchanged, old veil CSS/markup is removed, cross-screen transition eligibility is based on a genuine screen-id change, and same-screen `game` calls cannot trigger animation/audio. Audio validation must confirm the selected upstream asset is CC0, the local file has leading silence trimmed, duration is short, peak/loudness remains subtle, and no runtime hotlink exists. Chromium must exercise Home→Levels, Levels→Game, Game→Story/Home, and Complete/menu routes; sample the View Transition old-root transform/blur in flight; prove Level 1→2 and retry while remaining on Game produce neither view transition nor whoosh; verify sound playback calls align exactly with eligible transitions; verify unsupported/reduced-motion paths remain instant and clean; require no console/page/request errors or horizontal overflow. Render transition frames for visual inspection before deployment.
+
+**Deployment plan:** Commit this handoff entry before implementation. Inspect/select/process the CC0 source in CI, implement behind a self-removing workflow, run static/audio/Chromium validation and inspect renders, commit only the green product result, deploy the exact SHA with GitHub Pages, then close this same handoff entry with implementation SHA, workflow/artifact IDs, exact source/provenance, processing metrics, deployment result, and remaining risk.
+
+
 ### 2026-09-03 — Reduce story interruptions, unify Little Home background, and add screen whoosh transitions
 
 **Status: COMPLETED**
