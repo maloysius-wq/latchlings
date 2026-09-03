@@ -1,0 +1,73 @@
+name: Implement Character Story Cards
+on:
+  push:
+    paths:
+      - '.github/workflows/implement-character-story-cards.yml'
+permissions:
+  contents: write
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply character story card pass
+        run: python3 .github/scripts/apply-character-story-cards.py
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check story400.js
+          node --check story-theme400.js
+          node --check game400-b.js
+          grep -q 'Featured residents and helper crews' STORY_BIBLE.md
+          grep -q 'helperCrewMotto' story400.js
+          grep -q 'storyCardCharacters' index.html
+          grep -q 'Featured resident Story Card portraits' style400-story-theme.css
+          node - <<'NODE'
+          global.window={};require('./story400.js');const S=window.LATCHLINGS_STORY;if(!S)throw new Error('story missing');
+          const names=S.cast.map(x=>x.name).join(',');if(names!=='Pippa,Bramble,Rowan,Pip,Tansy')throw new Error('cast changed '+names);
+          const specs={Pippa:['lavender','club'],Bramble:['coral','diamond'],Rowan:['mint','heart'],Pip:['blue','spade'],Tansy:['coral','heart']};for(const c of S.cast){const x=specs[c.name];if(!x||c.color!==x[0]||c.suit!==x[1]||!c.shortRole)throw new Error('cast identity mismatch '+c.name)}
+          if(S.featuredResidents('Pippa needs tea').map(x=>x.name).join(',')!=='Pippa')throw new Error('Pippa resolution failed');
+          if(S.featuredResidents('Pip and Tansy found it').map(x=>x.name).join(',')!=='Pip,Tansy')throw new Error('pair resolution failed');
+          if(S.featuredResidents('Pippa').some(x=>x.name==='Pip'))throw new Error('Pip falsely matched Pippa');
+          const records=Array.from({length:400},(_,i)=>S.levelMeta(i+1));if(records.length!==400||records.some((x,i)=>x.level!==i+1))throw new Error('400 story records invalid');
+          if(!/whole island pitches in/i.test(S.helperCrewMotto)||!/colors and suit marks do not need to match/i.test(S.helperCrewExplanation))throw new Error('helper crew canon incomplete');
+          console.log('CHARACTER_STORY_STATIC_OK');
+          NODE
+          git diff --exit-code -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-a.js title-island-concepts/index.html music400.js sfx400.js
+      - name: Install Chromium outside repository
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/character-story-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Browser validation and renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/character-story-node"
+          mkdir -p character-story-renders
+          python3 -m http.server 8143 >/tmp/character-story-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cp .github/scripts/validate-character-story-cards.mjs "$TEST_NODE/validate-character-story-cards.mjs"
+          timeout 120s node "$TEST_NODE/validate-character-story-cards.mjs"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: character-story-card-renders
+          path: character-story-renders/*.png
+          if-no-files-found: error
+      - name: Commit validated implementation and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf character-story-renders
+          rm -f .github/workflows/implement-character-story-cards.yml .github/scripts/apply-character-story-cards.py .github/scripts/validate-character-story-cards.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add STORY_BIBLE.md story400.js story-theme400.js style400-story-theme.css game400-b.js index.html .github/workflows/implement-character-story-cards.yml .github/scripts/apply-character-story-cards.py .github/scripts/validate-character-story-cards.mjs
+          git commit -m 'Show featured residents in Story Cards'
+          git pull --rebase origin main
+          git push origin HEAD:main
