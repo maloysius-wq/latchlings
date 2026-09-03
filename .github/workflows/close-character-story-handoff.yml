@@ -1,0 +1,36 @@
+name: Close Character Story Handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/close-character-story-handoff.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close current work entry
+        run: python3 .github/scripts/close-character-story-handoff.py
+      - name: Validate closure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('DEVELOPMENT_HANDOFF.md').read_text();h='### 2026-09-03 — Add featured residents to Story Cards and clarify helper-crew canon';s=t.index(h);e=t.index('\n---',s);x=t[s:e]
+          for token in ['**Status: COMPLETED**','20d25e4ca4f9de9b97b73c747d62997f2392fe8c','1b8ad38c29b1321e763ca702d0baf739cdd8dcc5','33810071726','9914445319','33810291793','9914528069','33810347515','When one Latchling needs help, the whole island pitches in.']:
+              assert token in x,token
+          print('CHARACTER_STORY_HANDOFF_CLOSURE_OK')
+          PY
+      - name: Commit handoff and self-remove
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/close-character-story-handoff.yml .github/scripts/close-character-story-handoff.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-character-story-handoff.yml .github/scripts/close-character-story-handoff.py
+          git commit -m 'Close featured resident story card handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
