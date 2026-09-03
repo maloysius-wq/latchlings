@@ -20,6 +20,7 @@ jobs:
         run: |
           python3 .github/scripts/apply_story_title_production.py
           python3 .github/scripts/fix_story_title_bridge.py
+          python3 .github/scripts/fix_story_validator_settings_click.py
 
       - name: Static validation
         shell: bash
@@ -91,12 +92,12 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf story-title-renders
-          rm -f .github/workflows/apply-story-title-production.yml .github/scripts/apply_story_title_production.py .github/scripts/fix_story_title_bridge.py .github/scripts/validate_story_title_production.mjs
+          rm -f .github/workflows/apply-story-title-production.yml .github/scripts/apply_story_title_production.py .github/scripts/fix_story_title_bridge.py .github/scripts/fix_story_validator_settings_click.py .github/scripts/validate_story_title_production.mjs
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html style400-ui.css style400-game.css game400-a.js game400-b.js title-island-concepts/index.html .github/workflows/apply-story-title-production.yml .github/scripts/apply_story_title_production.py .github/scripts/fix_story_title_bridge.py .github/scripts/validate_story_title_production.mjs
+          git add index.html style400-ui.css style400-game.css game400-a.js game400-b.js title-island-concepts/index.html .github/workflows/apply-story-title-production.yml .github/scripts/apply_story_title_production.py .github/scripts/fix_story_title_bridge.py .github/scripts/fix_story_validator_settings_click.py .github/scripts/validate_story_title_production.mjs
           git commit -m 'Integrate Little Home and campaign story into production'
           git pull --rebase origin main
           git push origin HEAD:main
 
-# retry: same-origin home action bridge
+# retry: dispatch iframe settings click because parent modal immediately overlays the frame
