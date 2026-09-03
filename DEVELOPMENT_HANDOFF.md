@@ -40,7 +40,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-03 — Implement Wobbly Toy Letters logo in Little Home preview
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Take rendered logo exploration Option #2 exactly as selected and integrate it into the actual Concept 2 / Little Home title preview that has been refined throughout this project. Replace the current generic serif `Latchlings` wordmark and `Home is where you latch` tagline with the Wobbly Toy Letters treatment and its selected tagline, `Small friends. Smart puzzles.`
 
@@ -51,6 +51,25 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must confirm Concept 2 contains ten individually wrapped title letters spelling `Latchlings`, the exact tagline `Small friends. Smart puzzles.`, Concept 2-only wobbly logo styles, and removal of the old Concept 2 `Home is where you latch` brand markup. Chromium at 390x844 must verify the full wordmark stays inside the phone, remains clear of the top controls and island scene, the tagline pill is readable, buttons remain unchanged and solid `#F5DEAC`, the scene still contains 5 residents / 6 floating pebbles / 4 clouds, and there are no console/page/request errors or horizontal overflow. Concepts 1 and 3 must retain their prior serif brand treatment.
 
 **Deployment plan:** Commit this handoff entry before product implementation, then commit the validated Concept 2 logo refinement to `main`, deploy through GitHub Pages, visually inspect the rendered screenshot, and close this same handoff entry with implementation SHA, validation/deployment details, and the live preview link. Production integration remains out of scope.
+
+
+#### Completion summary
+
+**Implementation:** Updated only selected Concept 2 / Little Home in `title-island-concepts/index.html`. Replaced the prior generic serif `Latchlings` wordmark and `Home is where you latch` line with the selected rendered exploration Option #2, Wobbly Toy Letters. The title is now ten individually wrapped cream toy letters with a thick navy outline, subtle alternating vertical offsets/rotations, and a soft grounded shadow. The selected tagline is exactly `Small friends. Smart puzzles.` and renders in a compact warm-cream pill below the wordmark.
+
+**Design fidelity:** The implementation follows the selected HTML exploration rather than inventing a new interpretation: rounded heavy lettering, alternating odd/even tilt, cream fill, thick navy outline, and a small cream tagline pill. The top progress/settings controls, current five-resident floating island, clouds, floating earth pebbles, organic tree, cottage, flowers, randomized adult movement, and solid `#F5DEAC` Play / Daily Puzzle / Level Select controls were preserved.
+
+**Visual review:** Screenshot artifact `9902023723` was downloaded and inspected. At 390×844, the Wobbly Toy Letters wordmark is fully readable, centered, comfortably clear of the top controls, and visually distinct from the island. The cream tagline pill sits cleanly below the title without crowding the scene. The cream/navy logo treatment coordinates well with the current warm-cream controls and navy UI text.
+
+**Files changed:** Permanent product implementation changed only `title-island-concepts/index.html`; this handoff was updated separately for project tracking. Temporary transformer/browser-validator/workflow files self-removed. Production `index.html`, campaign files, game runtime, textures, and other assets were untouched.
+
+**Validation:** GitHub Actions run `33777061392` passed static and Chromium validation. Browser checks confirmed exactly ten individually wrapped letters spelling `Latchlings`, exact tagline text `Small friends. Smart puzzles.`, multiple staggered letter transforms, a 6px navy text outline, no logo/top-control or tagline/scene collision, no horizontal overflow, and no console/page/request errors. The current Little Home scene remained 5 residents (3 adults / 2 children), 6 floating earth pebbles, and 4 clouds. The Play control remained a solid `rgb(245, 222, 172)` / `#F5DEAC` surface with no background image. Concepts 1 and 3 retained their existing serif branding.
+
+**Implementation commit:** `68b716bc576be7efc3283ce98f76ad12d464d0cc` (`Apply Wobbly Toy Letters to Little Home`).
+
+**Deployment:** GitHub Pages run `33777145728` completed successfully for exact implementation commit `68b716bc576be7efc3283ce98f76ad12d464d0cc`. Live preview remains `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This remains the design-selection preview only. User should review the integrated logo in motion and can tune letter size, wobble amount, outline thickness, or tagline pill styling if desired. Production title remains intentionally untouched pending explicit promotion.
 
 ---
 
