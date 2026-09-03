@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-03 — Clamp music fade volume to valid media range
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Fix the production `IndexSizeError` raised when `HTMLMediaElement.volume` receives a tiny negative value during a music fade (observed value `-0.00186667`).
 
@@ -50,6 +50,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static syntax validation plus a focused browser/unit harness that forces animation-frame timestamps both before and after the captured fade start time, verifies every attempted media volume assignment remains in `[0,1]`, exercises fade-to-zero and fade-up transitions, and confirms normal music routing still works without console/page errors.
 
 **Deployment plan:** Commit this handoff entry before implementation, patch and validate the music fade guard, deploy the exact validated product SHA through GitHub Pages, then close this same handoff entry with implementation SHA, validation/deployment IDs, and remaining risk.
+
+
+#### Completion summary
+
+**Root cause:** `music400.js` clamped the requested fade target but only applied an upper bound to animation progress. A browser/frame could supply an animation-frame timestamp microscopically earlier than the captured `performance.now()` start, producing a negative interpolation fraction and therefore a tiny negative `HTMLMediaElement.volume` such as the reported `-0.00186667`.
+
+**Fix:** Added a reusable `clampVolume()` helper. Fade targets now pass through it, interpolation progress is clamped to `[0,1]`, and the final computed volume assignment is independently clamped to `[0,1]`. Existing `TARGET_VOLUME` (`0.24`), fade duration (`360 ms`), track routing, Music setting, and SFX code are unchanged.
+
+**Validation:** GitHub Actions run `33808735414` passed static and Chromium regression validation. The browser harness deliberately injected an animation-frame timestamp 8 ms earlier than `performance.now()` and wrapped the native media volume setter to record every attempted assignment. Across title → Chapter 1 → Chapter 2 → title transitions, 149 assignments were observed with minimum `0`, maximum `0.24`, and zero `IndexSizeError`, console, page, or request failures. Campaign files, `story400.js`, `story-theme400.js`, and the title concept source were diff-checked unchanged.
+
+**Implementation commit:** `08ab99ae0124da0e0650d8d59bce730271599814` (`Clamp music fade volume assignments`).
+
+**Deployment:** GitHub Pages run `33808806522` completed successfully for exact implementation commit `08ab99ae0124da0e0650d8d59bce730271599814`. Live production remains `https://maloysius-wq.github.io/latchlings/`.
+
+**Remaining risk / next action:** No blocking issue remains for this error. Any future volume automation should use the same clamp helper before assigning to `HTMLMediaElement.volume`.
 
 ---
 
