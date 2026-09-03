@@ -2,7 +2,8 @@ from pathlib import Path
 
 # The approved title surface is embedded same-origin in production. Production owns the
 # navigation contract directly; the embedded surface keeps postMessage as a fallback for
-# standalone preview use.
+# standalone preview use. Home modals also avoid backdrop-filter over the live animated
+# iframe because that combination can stall Chromium/mobile compositors.
 p=Path('game400-b.js')
 t=p.read_text()
 old_bridge="const homeFrame=document.getElementById('homeTitleFrame');if(homeFrame)homeFrame.addEventListener('load',()=>updateHome(true));window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-home')return;const action=e.data.action;if(action==='play')startLevel(progress.unlocked);if(action==='daily'){const now=new Date(),seed=now.getFullYear()*372+now.getMonth()*31+now.getDate();startLevel((seed*37%400)+1)}if(action==='levels'){chapterView=Math.ceil(progress.unlocked/50);rangeView=Math.floor(((progress.unlocked-1)%50)/10);screen('levels');renderChapter()}if(action==='settings')settingsModal()});"
@@ -11,6 +12,19 @@ if old_bridge in t:
     t=t.replace(old_bridge,new_bridge,1)
 elif 'const wireHomeFrame=()=>{' not in t:
     raise SystemExit('Generated parent home-action bridge not found')
+
+old_modal="function modal(html){document.getElementById('modal').innerHTML=html;document.getElementById('overlay').classList.add('show')}function closeModal(){document.getElementById('overlay').classList.remove('show')}"
+new_modal="function modal(html){const overlay=document.getElementById('overlay');document.getElementById('modal').innerHTML=html;overlay.classList.toggle('home-overlay',!!document.getElementById('home')?.classList.contains('active'));overlay.classList.add('show')}function closeModal(){document.getElementById('overlay').classList.remove('show','home-overlay')}"
+if old_modal in t:
+    t=t.replace(old_modal,new_modal,1)
+elif "classList.toggle('home-overlay'" not in t:
+    raise SystemExit('Generated modal helper not found')
+p.write_text(t)
+
+p=Path('style400-game.css')
+t=p.read_text()
+if '.overlay.home-overlay{' not in t:
+    t += "\n/* Avoid expensive live blur over the animated production-home iframe. */\n.overlay.home-overlay{backdrop-filter:none;-webkit-backdrop-filter:none}\n"
 p.write_text(t)
 
 p=Path('title-island-concepts/index.html')
