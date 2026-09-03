@@ -1,0 +1,102 @@
+name: Resize Little Home Island
+on:
+  push:
+    paths:
+      - '.github/workflows/resize-little-home-island.yml'
+permissions:
+  contents: write
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Chromium outside repository
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-island-resize-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Capture deterministic baseline
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-island-resize-node"
+          mkdir -p title-island-resize-renders
+          python3 -m http.server 8145 >/tmp/title-island-before-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cat > "$TEST_NODE/baseline.mjs" <<'NODE'
+          import {chromium} from 'playwright';import fs from 'fs';
+          const browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const page=await ctx.newPage();const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});page.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(?:mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)});
+          await page.goto('http://127.0.0.1:8145/',{waitUntil:'domcontentloaded'});const frame=page.frames().find(f=>/title-island-concepts/.test(f.url()));if(!frame)throw new Error('Production Little Home iframe missing');await frame.waitForSelector('#c2 .island-model');await page.waitForTimeout(100);
+          const metrics=await frame.evaluate(()=>{const r=s=>{const x=document.querySelector(s)?.getBoundingClientRect();return x?{x:x.x,y:x.y,w:x.width,h:x.height,right:x.right,bottom:x.bottom}:null};const latch=[...document.querySelectorAll('#c2 .latchling')].map(e=>{const x=e.getBoundingClientRect();return {role:e.dataset.role,w:x.width,h:x.height,x:x.x,y:x.y}});return {vw:innerWidth,vh:innerHeight,island:r('#c2 .island-model'),scene:r('#c2 .scene'),tagline:r('#c2 .toy-tagline'),play:r('#c2 .play'),tree:r('#c2 .little-home-tree'),cottage:r('#c2 .cottage'),latch,scrollW:document.documentElement.scrollWidth};});
+          if(metrics.latch.length!==5)throw new Error('Expected five Little Home residents');const adults=metrics.latch.filter(x=>x.role==='adult'),kids=metrics.latch.filter(x=>x.role==='child');if(adults.some(x=>Math.abs(x.w-34)>.15||Math.abs(x.h-34)>.15))throw new Error('Baseline adult size changed unexpectedly '+JSON.stringify(adults));if(kids.some(x=>Math.abs(x.w-25)>.15||Math.abs(x.h-25)>.15))throw new Error('Baseline child size changed unexpectedly '+JSON.stringify(kids));if(errors.length)throw new Error(errors.join(' | '));fs.writeFileSync('title-island-resize-renders/baseline.json',JSON.stringify(metrics,null,2));await page.screenshot({path:'title-island-resize-renders/before.png',fullPage:true});console.log('TITLE_ISLAND_BASELINE',JSON.stringify(metrics));await browser.close();
+          NODE
+          node "$TEST_NODE/baseline.mjs"
+      - name: Enlarge island and counter-scale residents
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('title-island-concepts/index.html')
+          t=p.read_text()
+          old="""/* Selected Little Home: floating island drift */
+          #c2 .island-model{animation:littleHomeIslandFloat 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform}"""
+          new="""/* Selected Little Home: floating island drift */
+          #c2{--little-home-island-scale:1.10;--little-home-latchling-counter-scale:.9090909091}
+          #c2 .island-model{scale:var(--little-home-island-scale);animation:littleHomeIslandFloat 7.6s ease-in-out infinite;transform-origin:50% 50%;will-change:transform}"""
+          if old in t:t=t.replace(old,new,1)
+          elif '--little-home-island-scale:1.10' not in t:raise SystemExit('Island drift anchor missing')
+          old2='#c2 .latchling{width:34px;height:34px;z-index:16}'
+          new2='#c2 .latchling{width:34px;height:34px;scale:var(--little-home-latchling-counter-scale);z-index:16}'
+          if old2 in t:t=t.replace(old2,new2,1)
+          elif 'scale:var(--little-home-latchling-counter-scale)' not in t:raise SystemExit('Latchling size anchor missing')
+          p.write_text(t)
+          print('LITTLE_HOME_ISLAND_SCALE_APPLIED')
+          PY
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          grep -q -- '--little-home-island-scale:1.10' title-island-concepts/index.html
+          grep -q -- '--little-home-latchling-counter-scale:.9090909091' title-island-concepts/index.html
+          grep -q 'scale:var(--little-home-island-scale)' title-island-concepts/index.html
+          grep -q 'scale:var(--little-home-latchling-counter-scale)' title-island-concepts/index.html
+          git diff --exit-code -- index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story400.js story-theme400.js game400-a.js game400-b.js music400.js sfx400.js style400-ui.css style400-game.css style400-themes.css style400-story-theme.css
+      - name: Validate enlarged production composition
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/title-island-resize-node"
+          python3 -m http.server 8146 >/tmp/title-island-after-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cat > "$TEST_NODE/after.mjs" <<'NODE'
+          import {chromium} from 'playwright';import fs from 'fs';
+          const baseline=JSON.parse(fs.readFileSync('title-island-resize-renders/baseline.json','utf8'));const ok=(c,m)=>{if(!c)throw new Error(m)};
+          const browser=await chromium.launch({headless:true});const errors=[];const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const page=await ctx.newPage();page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});page.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(?:mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)});
+          await page.goto('http://127.0.0.1:8146/',{waitUntil:'domcontentloaded'});const frame=page.frames().find(f=>/title-island-concepts/.test(f.url()));ok(frame,'Production Little Home iframe missing');await frame.waitForSelector('#c2 .island-model');await page.waitForTimeout(100);
+          const metrics=await frame.evaluate(()=>{const r=s=>{const x=document.querySelector(s)?.getBoundingClientRect();return x?{x:x.x,y:x.y,w:x.width,h:x.height,right:x.right,bottom:x.bottom}:null};const latch=[...document.querySelectorAll('#c2 .latchling')].map(e=>{const x=e.getBoundingClientRect();return {role:e.dataset.role,w:x.width,h:x.height,x:x.x,y:x.y}});return {vw:innerWidth,vh:innerHeight,island:r('#c2 .island-model'),scene:r('#c2 .scene'),tagline:r('#c2 .toy-tagline'),play:r('#c2 .play'),tree:r('#c2 .little-home-tree'),cottage:r('#c2 .cottage'),latch,scrollW:document.documentElement.scrollWidth,islandScale:getComputedStyle(document.querySelector('#c2 .island-model')).scale};});
+          ok(Math.abs(metrics.island.w-baseline.island.w*1.10)<.5,'Island width not uniformly enlarged: '+JSON.stringify({before:baseline.island,after:metrics.island}));ok(Math.abs(metrics.island.h-baseline.island.h*1.10)<.5,'Island height not uniformly enlarged');ok(Math.abs(metrics.island.w/metrics.island.h-baseline.island.w/baseline.island.h)<.002,'Island aspect ratio changed');ok(metrics.island.x>=0&&metrics.island.right<=metrics.vw,'Island clipped horizontally '+JSON.stringify(metrics.island));ok(metrics.island.y>metrics.tagline.bottom+12,'Island crowds title/tagline '+JSON.stringify({island:metrics.island,tagline:metrics.tagline}));ok(metrics.island.bottom<metrics.play.y-18,'Island crowds Play button '+JSON.stringify({island:metrics.island,play:metrics.play}));ok(metrics.island.x<baseline.island.x-14,'Side whitespace did not shrink enough');ok(metrics.island.y<baseline.island.y-14,'Top whitespace did not shrink enough');ok(metrics.island.bottom>baseline.island.bottom+14,'Bottom footprint did not grow enough');
+          const adults=metrics.latch.filter(x=>x.role==='adult'),kids=metrics.latch.filter(x=>x.role==='child');ok(adults.length===3&&kids.length===2,'Resident roster changed');ok(adults.every(x=>Math.abs(x.w-34)<.18&&Math.abs(x.h-34)<.18),'Adult Latchlings changed visual size '+JSON.stringify(adults));ok(kids.every(x=>Math.abs(x.w-25)<.18&&Math.abs(x.h-25)<.18),'Child Latchlings changed visual size '+JSON.stringify(kids));ok(metrics.scrollW<=metrics.vw+1,'Horizontal overflow');ok(errors.length===0,'Browser errors: '+errors.join(' | '));fs.writeFileSync('title-island-resize-renders/after.json',JSON.stringify(metrics,null,2));await page.screenshot({path:'title-island-resize-renders/after-reduced-motion.png',fullPage:true});await ctx.close();
+          const liveCtx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});const live=await liveCtx.newPage();const liveErrors=[];live.on('pageerror',e=>liveErrors.push('page:'+e.message));live.on('console',m=>{if(m.type()==='error')liveErrors.push('console:'+m.text())});live.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(?:mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;liveErrors.push('request:'+u+':'+e)});await live.goto('http://127.0.0.1:8146/',{waitUntil:'domcontentloaded'});const lf=live.frames().find(f=>/title-island-concepts/.test(f.url()));ok(lf,'Live production iframe missing');await lf.waitForSelector('#c2 .island-model');await live.waitForTimeout(1700);const motion=await lf.evaluate(()=>({islandAnimation:getComputedStyle(document.querySelector('#c2 .island-model')).animationName,kidAnimations:[...document.querySelectorAll('#c2 .child')].map(e=>getComputedStyle(e).animationName),adultClasses:[...document.querySelectorAll('#c2 .adult')].map(e=>e.className),titleLetters:document.querySelectorAll('#c2 .toy-logo span').length}));ok(/littleHomeIslandFloat/.test(motion.islandAnimation),'Island bob animation missing');ok(motion.kidAnimations.every(x=>/littleHomeKid/.test(x)),'Kid play animation missing '+JSON.stringify(motion.kidAnimations));ok(motion.titleLetters===10,'Title logo changed');ok(liveErrors.length===0,'Live browser errors: '+liveErrors.join(' | '));await live.screenshot({path:'title-island-resize-renders/after-live.png',fullPage:true});console.log('TITLE_ISLAND_RESIZE_OK',JSON.stringify({baseline,after:metrics,motion}));await browser.close();
+          NODE
+          node "$TEST_NODE/after.mjs"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-larger-island-renders
+          path: title-island-resize-renders/*
+          if-no-files-found: error
+      - name: Commit validated resize and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf title-island-resize-renders
+          rm -f .github/workflows/resize-little-home-island.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/resize-little-home-island.yml
+          git commit -m 'Enlarge Little Home island without enlarging residents'
+          git pull --rebase origin main
+          git push origin HEAD:main
