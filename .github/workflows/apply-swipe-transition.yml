@@ -1,0 +1,120 @@
+name: Apply Fast Swipe Transition
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-swipe-transition.yml'
+      - '.github/scripts/apply_swipe_transition.py'
+      - '.github/scripts/validate_swipe_transition.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch and process CC0 swipe sound
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg unzip >/dev/null
+          curl -fsSL 'https://opengameart.org/content/swishes-sound-pack' -o /tmp/swishes-page.html
+          grep -qi 'Swishes Sound Pack' /tmp/swishes-page.html
+          grep -qi 'artisticdude' /tmp/swishes-page.html
+          grep -qi 'CC0' /tmp/swishes-page.html
+          curl -fL --retry 3 --retry-delay 2 'https://opengameart.org/sites/default/files/swishes.zip' -o /tmp/swishes.zip
+          rm -rf /tmp/swishes && mkdir -p /tmp/swishes
+          unzip -q /tmp/swishes.zip -d /tmp/swishes
+          test -s /tmp/swishes/swishes/swish-1.wav
+          mkdir -p assets/sfx
+          ffmpeg -y -hide_banner -loglevel error -i /tmp/swishes/swishes/swish-1.wav \
+            -af "atrim=start=0.0221,asetpts=PTS-STARTPTS,volume=-4dB,afade=t=in:st=0:d=0.003,afade=t=out:st=0.092:d=0.011" \
+            -ar 44100 -ac 2 -c:a pcm_s16le assets/sfx/screen-swipe.wav
+
+      - name: Apply product changes
+        run: python3 .github/scripts/apply_swipe_transition.py
+
+      - name: Static and audio validation
+        run: |
+          set -euo pipefail
+          node --check game400-a.js
+          node --check sfx400.js
+          python3 - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text(); js=Path('game400-a.js').read_text(); css=Path('style400-ui.css').read_text(); sfx=Path('sfx400.js').read_text(); credits=Path('ART_ASSET_CREDITS.md').read_text()
+          assert 'screenWhoosh' not in index
+          assert '.screen-whoosh' not in css
+          for token in ['document.startViewTransition','current===next','activeScreenTransition','skipTransition','LatchlingsSFX.screenSwipe']:
+              assert token in js,token
+          for token in ['::view-transition-old(root)','latchlingsSwipeRightOld','translate3d(112vw','filter:blur(11px)','::view-transition-new(root)']:
+              assert token in css,token
+          assert "screenSwipe: ['screen-swipe.wav', 0.18, 2]" in sfx
+          assert "screenSwipe: () => play('screenSwipe')" in sfx
+          for token in ['Swishes Sound Pack','artisticdude','swish-1.wav','assets/sfx/screen-swipe.wav','CC0']:
+              assert token in credits,token
+          runtime='\n'.join(Path(x).read_text() for x in ['index.html','game400-a.js','sfx400.js','style400-ui.css'])
+          assert 'opengameart.org/sites/default/files/swishes.zip' not in runtime
+          print('SWIPE_TRANSITION_STATIC_OK')
+          PY
+          git diff --exit-code -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story400.js story-theme400.js title-island-concepts/index.html
+          python3 - <<'PY'
+          import subprocess,re,os
+          p='assets/sfx/screen-swipe.wav'
+          dur=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',p],text=True).strip())
+          assert 0.098 <= dur <= 0.108,dur
+          assert os.path.getsize(p) < 30000,os.path.getsize(p)
+          proc=subprocess.run(['ffmpeg','-hide_banner','-nostats','-i',p,'-af','silencedetect=noise=-45dB:d=0.001,volumedetect','-f','null','-'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+          txt=proc.stderr
+          starts=[float(x) for x in re.findall(r'silence_start: ([0-9.]+)',txt)]
+          ends=[float(x) for x in re.findall(r'silence_end: ([0-9.]+)',txt)]
+          lead=ends[0] if starts and abs(starts[0])<0.001 and ends else 0.0
+          assert lead <= 0.005,(lead,txt)
+          peaks=re.findall(r'max_volume: ([\-0-9.]+) dB',txt)
+          peak=float(peaks[-1]) if peaks else 0.0
+          assert peak <= -3.8,peak
+          print(f'SWIPE_AUDIO_OK duration={dur:.6f}s leading_silence={lead:.6f}s peak={peak:.2f}dB size={os.path.getsize(p)}')
+          PY
+
+      - name: Install Chromium outside repository
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/swipe-transition-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/swipe-transition-node"
+          mkdir -p swipe-transition-renders
+          python3 -m http.server 8141 >/tmp/swipe-transition-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cp .github/scripts/validate_swipe_transition.mjs "$TEST_NODE/validate_swipe_transition.mjs"
+          timeout 140s node "$TEST_NODE/validate_swipe_transition.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fast-swipe-transition-renders
+          path: swipe-transition-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated product and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf swipe-transition-renders
+          rm -f .github/workflows/apply-swipe-transition.yml .github/scripts/apply_swipe_transition.py .github/scripts/validate_swipe_transition.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Replace overlay whoosh with fast right swipe transition'
+          git pull --rebase origin main
+          git push origin HEAD:main
