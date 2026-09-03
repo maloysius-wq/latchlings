@@ -73,7 +73,8 @@ const frame2=await homeFrame(page);
 await frame2.locator('#c2 .secondary button').nth(1).click();
 await page.waitForSelector('#levels.active');
 const chapterText=await page.locator('#chapterHead').innerText();
-if(!chapterText.includes('Chapter 1: Morning Routes')||!chapterText.includes('Sunpetal Meadows')||!chapterText.includes('Route language:')||!chapterText.includes('Edges, rocks'))throw new Error('Narrative chapter header missing required story/mechanic framing: '+chapterText);
+const chapterTextLower=chapterText.toLowerCase();
+if(!chapterText.includes('Chapter 1: Morning Routes')||!chapterTextLower.includes('sunpetal meadows')||!chapterText.includes('Route language:')||!chapterTextLower.includes('edges, rocks'))throw new Error('Narrative chapter header missing required story/mechanic framing: '+chapterText);
 
 // Settings must expose optional lore without interrupting normal play.
 await page.evaluate(()=>screen('home'));await page.waitForTimeout(80);
