@@ -29,6 +29,10 @@ async function clickHome(page,selector){
   await page.waitForFunction(sel=>!!document.getElementById('homeTitleFrame')?.contentDocument?.querySelector(sel),selector);
   await page.evaluate(sel=>document.getElementById('homeTitleFrame').contentDocument.querySelector(sel).click(),selector);
 }
+async function clickHomeAsync(page,selector){
+  await page.waitForFunction(sel=>!!document.getElementById('homeTitleFrame')?.contentDocument?.querySelector(sel),selector);
+  await page.evaluate(sel=>{const b=document.getElementById('homeTitleFrame').contentDocument.querySelector(sel);setTimeout(()=>b.click(),0);},selector);
+}
 async function inspectHome(page){
   return await page.evaluate(()=>{
     const d=document.getElementById('homeTitleFrame')?.contentDocument;
@@ -96,7 +100,7 @@ if(!chapterText.includes('Chapter 1: Morning Routes')||!chapterTextLower.include
 
 console.log('STEP settings lore bridge');
 await page.evaluate(()=>screen('home'));await page.waitForFunction(()=>document.getElementById('home').classList.contains('active'));
-await clickHome(page,'#c2 .settings');
+await clickHomeAsync(page,'#c2 .settings');
 await page.waitForSelector('#settingsStory');
 await page.evaluate(()=>document.getElementById('settingsStory').click());
 await page.waitForFunction(()=>document.getElementById('modal')?.textContent.includes('Pippa'));
