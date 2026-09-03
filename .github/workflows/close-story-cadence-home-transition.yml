@@ -1,0 +1,39 @@
+name: Close Story Cadence Home Transition Work
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-story-cadence-home-transition.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close handoff entry
+        run: python3 .github/scripts/close_story_cadence_home_transition.py
+      - name: Validate closure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('DEVELOPMENT_HANDOFF.md').read_text();h='### 2026-09-03 — Reduce story interruptions, unify Little Home background, and add screen whoosh transitions';s=t.index(h);e=t.index('\n---',s);x=t[s:e]
+          for token in ['**Status: COMPLETED**','3d1fb4f4050c88e3c14c17cec312400b2de6043c','33805875080','9912899051','33805958028','exactly 48 automatic story moments']:
+              assert token in x,token
+          print('STORY_CADENCE_HOME_TRANSITION_HANDOFF_OK')
+          PY
+      - name: Commit handoff and self-remove
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/close-story-cadence-home-transition.yml .github/scripts/close_story_cadence_home_transition.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-story-cadence-home-transition.yml .github/scripts/close_story_cadence_home_transition.py
+          git commit -m 'Close story cadence and transition refinement handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
