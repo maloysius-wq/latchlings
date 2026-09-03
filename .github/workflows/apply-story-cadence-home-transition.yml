@@ -1,0 +1,98 @@
+name: Apply Story Cadence Home Transition Refinement
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-story-cadence-home-transition.yml'
+      - '.github/scripts/apply_story_cadence_home_transition.py'
+      - '.github/scripts/validate_story_cadence_home_transition.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply refinement
+        run: python3 .github/scripts/apply_story_cadence_home_transition.py
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check game400-a.js
+          node --check story-theme400.js
+          python3 - <<'PY'
+          from pathlib import Path
+          index=Path('index.html').read_text();ga=Path('game400-a.js').read_text();st=Path('story-theme400.js').read_text();css=Path('style400-ui.css').read_text()
+          for token in ['data-screen="home"','id="screenWhoosh"']:
+              assert token in index,token
+          for token in ['screenWhooshTimer','document.body.dataset.screen=id','prefers-reduced-motion']:
+              assert token in ga,token
+          for token in ['function autoEligible','meta.local===1||meta.local%10===0','autoEligible};']:
+              assert token in st,token
+          for token in ['Full-viewport Little Home + blurry whoosh screen transitions','latchlingsScreenWhoosh','latchlingsScreenArrive','body[data-screen="home"] .chapter-material-backdrop']:
+              assert token in css,token
+          assert 'box-shadow:none!important' in css
+          print('STORY_CADENCE_HOME_TRANSITION_STATIC_OK')
+          PY
+          node - <<'NODE'
+          global.window=global;
+          global.document={getElementById:()=>null,addEventListener:()=>{}};
+          global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};
+          require('./story400.js');
+          const STORY=global.LATCHLINGS_STORY;
+          const eligible=Array.from({length:400},(_,i)=>STORY.levelMeta(i+1)).filter(m=>m.local===1||m.local%10===0);
+          if(eligible.length!==48)throw new Error('Auto-story cadence count '+eligible.length);
+          if(!eligible.some(m=>m.level===400)||eligible.some(m=>m.level===2))throw new Error('Auto-story cadence membership wrong');
+          console.log('AUTO_STORY_48_OK');
+          NODE
+          git diff --exit-code -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story400.js title-island-concepts/index.html
+
+      - name: Install Chromium outside repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/story-cadence-transition-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and renders
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/story-cadence-transition-node"
+          mkdir -p story-cadence-transition-renders
+          python3 -m http.server 8140 >/tmp/story-cadence-transition-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          cp .github/scripts/validate_story_cadence_home_transition.mjs "$TEST_NODE/validate_story_cadence_home_transition.mjs"
+          cd "$GITHUB_WORKSPACE"
+          timeout 140s node "$TEST_NODE/validate_story_cadence_home_transition.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: story-cadence-home-transition-renders
+          path: story-cadence-transition-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated refinement and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf story-cadence-transition-renders
+          rm -f .github/workflows/apply-story-cadence-home-transition.yml .github/scripts/apply_story_cadence_home_transition.py .github/scripts/validate_story_cadence_home_transition.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html game400-a.js story-theme400.js style400-ui.css .github/workflows/apply-story-cadence-home-transition.yml .github/scripts/apply_story_cadence_home_transition.py .github/scripts/validate_story_cadence_home_transition.mjs
+          git commit -m 'Refine story cadence home background and screen transitions'
+          git pull --rebase origin main
+          git push origin HEAD:main
