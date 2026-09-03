@@ -74,7 +74,7 @@ function show(level,manual=false){
 }
 function close(mark=true){const overlay=document.getElementById('storyCardOverlay');if(!overlay)return;const level=Number(overlay.dataset.level)||activeLevel;if(mark)markSeen(level);overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true')}
 function autoEligible(meta){return !!meta&&(meta.local===1||meta.local%10===0)}
-function enterLevel(level){activeLevel=Number(level)||activeLevel;if(!STORY)return;const meta=STORY.levelMeta(level);if(!autoEligible(meta))return;const seen=seenMap();window.setTimeout(()=>{if(!seen[level])show(level,false)},90)}
+function enterLevel(level){activeLevel=Number(level)||activeLevel;if(!STORY)return;const meta=STORY.levelMeta(level);if(!autoEligible(meta))return;const seen=seenMap();window.setTimeout(()=>{if(!seen[level])show(level,false)},260)}
 const trigger=document.getElementById('storyCardBtn'),closer=document.getElementById('storyCardClose'),cont=document.getElementById('storyCardContinue');
 if(trigger){trigger.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.6-.9 5.2-.5 8 1.2v12c-2.8-1.7-5.4-2.1-8-1.2zM20 5.5c-2.6-.9-5.2-.5-8 1.2v12c2.8-1.7 5.4-2.1 8-1.2z"/><path d="M12 6.7v12"/></svg>';trigger.onclick=()=>show(activeLevel,true)}
 if(closer)closer.onclick=()=>close(true);if(cont)cont.onclick=()=>close(true);
