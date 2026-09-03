@@ -100,6 +100,8 @@ if(!chapterText.includes('Chapter 1: Morning Routes')||!chapterTextLower.include
 
 console.log('STEP settings parent probe');
 await page.evaluate(()=>screen('home'));await page.waitForFunction(()=>document.getElementById('home').classList.contains('active'));
+const functionSources=await page.evaluate(()=>({settings:typeof settingsModal==='function'?settingsModal.toString():'MISSING',action:typeof window.LatchlingsHomeAction==='function'?window.LatchlingsHomeAction.toString():'MISSING',modal:typeof modal==='function'?modal.toString():'MISSING'}));
+console.log('SETTINGS_FUNCTION_SOURCE',JSON.stringify(functionSources));
 const settingsProbe=await page.evaluate(()=>{
   const result={actionType:typeof window.LatchlingsHomeAction,settingsType:typeof settingsModal};
   try{
