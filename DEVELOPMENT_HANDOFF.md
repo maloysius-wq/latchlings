@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-03 — Animate Little Home title letters dropping into place
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Keep the selected Wobbly Toy Letters branding in Concept 2 / Little Home, but make the title screen begin with the ten `Latchlings` letters dropping down into place one by one, with a slight bounce on impact before settling into their existing wobbled positions.
 
@@ -50,6 +50,25 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must confirm a Concept 2-only title-drop keyframe, per-letter stagger delays for all ten letters, non-looping animation, preserved Wobbly Toy Letter styling, exact tagline text, and reduced-motion override. Chromium at 390x844 must sample the title shortly after load, during the stagger, and after completion to prove letters start above their resting positions, enter at different times, bounce/settle, and end at the exact current wobbled layout. The final title must stay clear of top controls and island, the scene/buttons must remain unchanged, and there must be no console/page/request errors or horizontal overflow. A reduced-motion browser pass must verify the final title appears immediately without the drop animation. Concepts 1 and 3 must remain unaffected.
 
 **Deployment plan:** Commit this handoff entry before implementation. Then commit the validated Concept 2 title entrance to `main`, deploy through GitHub Pages, inspect rendered screenshots at multiple animation phases, and close this same handoff entry with implementation SHA, validation/deployment details, and live preview link. Production integration remains out of scope.
+
+
+#### Completion summary
+
+**Implementation:** Updated only selected Concept 2 / Little Home in `title-island-concepts/index.html`. The ten Wobbly Toy Letters now perform a one-shot left-to-right entrance whenever Concept 2 is shown. Each letter begins 104px above its resting point with a small alternating entry rotation, drops into the word, overshoots 11px below its final position, rebounds 6px above it, makes a tiny 2px settling dip, and then returns exactly to the existing odd/even wobbled layout. The animation lasts 780ms per letter with 65ms stagger increments from 0ms through 585ms, so the whole word assembles in roughly 1.36 seconds. The entrance is replayed when switching back to Concept 2.
+
+**Motion/accessibility decision:** The permanent logo wobble remains in the existing `transform`; the entrance uses independent CSS `translate` and `rotate` properties. This keeps the final logo geometry identical and makes the impact/rebound physically distinct. Under `prefers-reduced-motion: reduce`, the drop animation is disabled and the finished title is immediately visible.
+
+**Validation:** GitHub Actions run `33778351126` passed static and Chromium validation. The first two browser attempts (`33777960918` and `33778153059`) correctly failed because their real-time sampling did not reliably hit the intended impact keyframe; the validator was then hardened to pause the CSS animations and set their clocks to exact keyframe times. Deterministic Chromium measurements at 390×844 confirmed the first letter at 46.07px top in the start state, 162.69px at impact, 145.47px at rebound, and 151.56px settled. Computed entrance translation measured `10.9771px` at impact and `-6px` at rebound. The tenth letter remained delayed above the title while earlier letters landed. All ten letters settled fully opaque and inside the viewport. No logo/top-control collision, tagline/scene collision, horizontal overflow, console/page/request error, or change to the five residents / six pebbles / four clouds occurred. The Play button remained solid `#F5DEAC`. Reduced-motion validation confirmed the drop animation is skipped. Concepts 1 and 3 retained their existing serif branding.
+
+**Visual review:** Screenshot artifact `9902533425` contains four rendered phases (`title-drop-start`, `title-drop-impact`, `title-drop-rebound`, and `title-drop-final`) and was inspected. The sequence visibly reads as individual letters falling from above, progressively forming the title, bouncing, and settling into the current Wobbly Toy Letters wordmark.
+
+**Files changed:** Permanent product implementation changed only `title-island-concepts/index.html`; this handoff was updated separately. Temporary transformer/validator/workflow files self-removed. Production `index.html`, campaigns, game runtime, textures, and other product assets were untouched.
+
+**Implementation commit:** `c69e8b6f9cb2f6aa9e3828cbd824d776e6cf1317` (`Animate Little Home title letters into place`).
+
+**Deployment:** GitHub Pages run `33778430035` completed successfully for exact implementation commit `c69e8b6f9cb2f6aa9e3828cbd824d776e6cf1317`. Live preview: `https://maloysius-wq.github.io/latchlings/title-island-concepts/?c=2`.
+
+**Remaining risk / next action:** This remains the Concept 2 design-selection preview. User should review the entrance at natural speed and can tune drop height, stagger spacing, bounce amount, or whether the tagline should wait to appear until the title finishes. Production remains intentionally untouched pending explicit promotion.
 
 ---
 
