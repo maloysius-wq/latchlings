@@ -2,6 +2,10 @@
 (function(){
 const STORY=window.LATCHLINGS_STORY||null;
 const SEEN_KEY='latchlings_story_cards_seen_v1';
+const CHAR_COLORS={coral:'#ef5f66',blue:'#4c8ff4',mint:'#66bd72',gold:'#f6b737',lavender:'#9a72df'};
+const CHAR_LIGHT={coral:'#ff9297',blue:'#79aff9',mint:'#94dc98',gold:'#ffd06a',lavender:'#c3a0f1'};
+const CHAR_DARK={coral:'#c33d49',blue:'#2e69c8',mint:'#469852',gold:'#d18c16',lavender:'#724fbd'};
+const CHAR_EXPR={Pippa:'curious',Bramble:'smug',Rowan:'happy',Pip:'determined',Tansy:'surprised'};
 let activeLevel=1;
 const CH_DEFAULTS={1:['basket','flower','mail'],2:['lantern','parcel','jar'],3:['anchor','crystal','chalk'],4:['market','basket','mask'],5:['prism','flower','telescope'],6:['rail','map','compass'],7:['gear','signal','parcel'],8:['compass','home','aurora']};
 const RULES=[
@@ -36,14 +40,38 @@ const ICONS={
  aurora:'<path d="M4 20c13-12 22 12 34 0s18-7 22-2M5 34c12-10 20 10 31 1s17-8 23-3M12 48c10-7 17 7 27 0s13-5 17-2"/><circle class="secondary" cx="13" cy="12" r="3"/><circle class="secondary" cx="52" cy="10" r="2"/>'
 };
 function iconSvg(key){const body=ICONS[key]||ICONS.parcel;return `<svg viewBox="0 0 64 64" aria-hidden="true">${body}</svg>`}
+function charSuitSvg(s){
+ if(s==='heart')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg>';
+ if(s==='diamond')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 7 88 50 50 93 12 50Z"/></svg>';
+ if(s==='club')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12a19 19 0 0 1 12 34 20 20 0 1 1 9 37c-9 0-15-5-18-11 1 10 5 16 12 21H35c7-5 11-11 12-21-3 6-9 11-18 11a20 20 0 1 1 9-37A19 19 0 0 1 50 12Z"/></svg>';
+ if(s==='spade')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8C43 22 14 36 14 60c0 13 10 23 23 23 8 0 13-4 16-10-1 9-5 15-12 20h18c-7-5-11-11-12-20 3 6 8 10 16 10 13 0 23-10 23-23C86 36 57 22 50 8Z"/></svg>';
+ return '';
+}
+function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue;return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color}`}
+function characterFace(){return '<span class="face"><span class="eyes"><i class="eye"></i><i class="eye"></i></span><i class="mouth"></i></span>'}
+function characterPortrait(c,index,total){const expr=CHAR_EXPR[c.name]||'happy';return `<span class="story-scene-character story-scene-character-${index+1} story-scene-character-count-${total}" data-character="${escapeHtml(c.name)}" data-color="${escapeHtml(c.color)}" data-suit="${escapeHtml(c.suit)}" style="${characterVars(c)}"><span class="story-char-body expr-${expr}"><span class="suit-mark">${charSuitSvg(c.suit)}</span>${characterFace()}</span></span>`}
+function characterAvatar(c){return `<span class="story-character-avatar" data-character="${escapeHtml(c.name)}" data-color="${escapeHtml(c.color)}" data-suit="${escapeHtml(c.suit)}" style="${characterVars(c)}"><span class="story-character-avatar-suit">${charSuitSvg(c.suit)}</span><span class="story-character-avatar-eyes"><i></i><i></i></span></span>`}
+function characterChip(c){return `<div class="story-character-chip" data-character="${escapeHtml(c.name)}">${characterAvatar(c)}<span class="story-character-copy"><strong>${escapeHtml(c.name)}</strong><small>${escapeHtml(c.shortRole||c.role)}</small></span></div>`}
+function residentCard(c){return `<div class="story-person story-person-portrait" data-character="${escapeHtml(c.name)}">${characterAvatar(c)}<span class="story-person-copy"><strong>${escapeHtml(c.name)}</strong><span>${escapeHtml(c.role)}. ${escapeHtml(c.voice)}</span></span></div>`}
+function featuredFor(meta,chapter){if(!STORY||!STORY.featuredResidents||!meta)return[];const flavor=meta.local===1?chapter.opening:meta.flavor;return STORY.featuredResidents(`${meta.context} ${flavor}`).slice(0,2)}
 function seenMap(){try{return JSON.parse(localStorage.getItem(SEEN_KEY)||'{}')}catch(_){return {}}}
 function markSeen(level){const seen=seenMap();seen[level]=1;try{localStorage.setItem(SEEN_KEY,JSON.stringify(seen))}catch(_){}}
 function decorFor(meta){if(!meta)return ['parcel'];const txt=(meta.title+' '+meta.context).toLowerCase(),out=[];for(const [re,key] of RULES){if(re.test(txt)&&!out.includes(key))out.push(key);if(out.length>=2)break}for(const k of CH_DEFAULTS[meta.chapter]||[]){if(!out.includes(k))out.push(k);if(out.length>=3)break}return out.slice(0,3)}
 function kindFor(meta){if(meta.local===1)return 'Chapter opening';if(meta.local%10===0)return 'Turning point';return 'Route story'}
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-function vignette(meta){const props=decorFor(meta);return `<div class="story-scene-land"></div>${props.map((p,i)=>`<span class="story-scene-prop scene-p${i+1} prop-${p}">${iconSvg(p)}</span>`).join('')}<span class="story-scene-route"></span>`}
+function vignette(meta,featured=[]){const props=decorFor(meta),people=featured.slice(0,2);return `<div class="story-scene-land"></div>${props.map((p,i)=>`<span class="story-scene-prop scene-p${i+1} prop-${p}">${iconSvg(p)}</span>`).join('')}<span class="story-scene-route"></span>${people.map((c,i)=>characterPortrait(c,i,people.length)).join('')}`}
 function decorateLevel(level,meta){activeLevel=Number(level)||activeLevel;meta=meta||(STORY?STORY.levelMeta(level):null);const host=document.getElementById('levelProps'),board=document.getElementById('board');if(!host||!meta)return;const props=decorFor(meta);host.dataset.level=String(level);host.dataset.props=props.join(',');host.innerHTML=props.map((p,i)=>`<span class="level-prop prop-pos-${i+1} prop-${p}">${iconSvg(p)}</span>`).join('');if(board){board.dataset.chapter=String(meta.chapter);board.dataset.storyProps=props.join(',')}}
-function show(level,manual=false){if(!STORY)return;const meta=STORY.levelMeta(level),chapter=STORY.chapters[meta.chapter-1],overlay=document.getElementById('storyCardOverlay');if(!overlay)return;overlay.className=`story-card-overlay story-card-ch${meta.chapter} story-card-${meta.local===1?'chapter':meta.local%10===0?'milestone':'route'} show`;overlay.dataset.level=String(level);overlay.dataset.manual=manual?'1':'0';document.getElementById('storyCardKind').textContent=kindFor(meta);document.getElementById('storyCardLocation').textContent=`Chapter ${meta.chapter} · ${meta.location}`;document.getElementById('storyCardTitle').textContent=meta.title;document.getElementById('storyCardContext').textContent=meta.context;document.getElementById('storyCardFlavor').textContent=meta.local===1?chapter.opening:meta.flavor;document.getElementById('storyCardScene').innerHTML=vignette(meta);document.getElementById('storyCardContinue').textContent=manual?'Back to board':'Continue';overlay.setAttribute('aria-hidden','false');requestAnimationFrame(()=>document.getElementById('storyCardContinue')?.focus())}
+function show(level,manual=false){
+ if(!STORY)return;
+ const meta=STORY.levelMeta(level),chapter=STORY.chapters[meta.chapter-1],overlay=document.getElementById('storyCardOverlay');if(!overlay)return;
+ const flavor=meta.local===1?chapter.opening:meta.flavor,featured=featuredFor(meta,chapter);
+ overlay.className=`story-card-overlay story-card-ch${meta.chapter} story-card-${meta.local===1?'chapter':meta.local%10===0?'milestone':'route'} show`;
+ overlay.dataset.level=String(level);overlay.dataset.manual=manual?'1':'0';overlay.dataset.featured=featured.map(c=>c.name).join(',');
+ document.getElementById('storyCardKind').textContent=kindFor(meta);document.getElementById('storyCardLocation').textContent=`Chapter ${meta.chapter} · ${meta.location}`;document.getElementById('storyCardTitle').textContent=meta.title;document.getElementById('storyCardContext').textContent=meta.context;document.getElementById('storyCardFlavor').textContent=flavor;document.getElementById('storyCardScene').innerHTML=vignette(meta,featured);
+ const characters=document.getElementById('storyCardCharacters');if(characters){characters.innerHTML=featured.map(characterChip).join('');characters.hidden=!featured.length;characters.classList.toggle('is-pair',featured.length>1)}
+ const crew=document.getElementById('storyCardCrewNote');if(crew){const showCrew=meta.level===1;crew.hidden=!showCrew;const copy=crew.querySelector('span');if(copy)copy.textContent=showCrew?`${STORY.helperCrewMotto} The Latchlings on the board are the helper crew working this route with you.`:''}
+ document.getElementById('storyCardContinue').textContent=manual?'Back to board':'Continue';overlay.setAttribute('aria-hidden','false');requestAnimationFrame(()=>document.getElementById('storyCardContinue')?.focus())
+}
 function close(mark=true){const overlay=document.getElementById('storyCardOverlay');if(!overlay)return;const level=Number(overlay.dataset.level)||activeLevel;if(mark)markSeen(level);overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true')}
 function autoEligible(meta){return !!meta&&(meta.local===1||meta.local%10===0)}
 function enterLevel(level){activeLevel=Number(level)||activeLevel;if(!STORY)return;const meta=STORY.levelMeta(level);if(!autoEligible(meta))return;const seen=seenMap();window.setTimeout(()=>{if(!seen[level])show(level,false)},90)}
@@ -51,5 +79,5 @@ const trigger=document.getElementById('storyCardBtn'),closer=document.getElement
 if(trigger){trigger.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.6-.9 5.2-.5 8 1.2v12c-2.8-1.7-5.4-2.1-8-1.2zM20 5.5c-2.6-.9-5.2-.5-8 1.2v12c2.8-1.7 5.4-2.1 8-1.2z"/><path d="M12 6.7v12"/></svg>';trigger.onclick=()=>show(activeLevel,true)}
 if(closer)closer.onclick=()=>close(true);if(cont)cont.onclick=()=>close(true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('storyCardOverlay')?.classList.contains('show'))close(true)});
-window.LatchlingsStoryTheme={decorateLevel,enterLevel,show,close,decorFor,iconSvg,autoEligible};
+window.LatchlingsStoryTheme={decorateLevel,enterLevel,show,close,decorFor,iconSvg,autoEligible,featuredFor,characterChip,residentCard};
 })();

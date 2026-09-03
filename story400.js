@@ -1,11 +1,11 @@
 'use strict';
 (function(){
 const CAST=[
- {name:'Pippa',color:'lavender',suit:'club',role:'Gardener and household organizer',voice:'Practical, patient, quietly stubborn about doing things properly.'},
- {name:'Bramble',color:'coral',suit:'diamond',role:'Courier, errand-runner, and enthusiastic fixer',voice:'Curious, optimistic, and always convinced there is a clever shortcut.'},
- {name:'Rowan',color:'mint',suit:'heart',role:'Tree-tender and island caretaker',voice:'Observant, patient, and usually the first to notice when the island itself has changed.'},
- {name:'Pip',color:'blue',suit:'spade',role:'Explorer, according to Pip',voice:'Bold, competitive, inventive, and suspicious of unnecessary detours.'},
- {name:'Tansy',color:'coral',suit:'heart',role:'Co-conspirator and collector',voice:'Expressive, imaginative, and unusually good at noticing what a change means to people.'}
+ {name:'Pippa',color:'lavender',suit:'club',role:'Gardener and household organizer',shortRole:'Gardener & organizer',voice:'Practical, patient, quietly stubborn about doing things properly.'},
+ {name:'Bramble',color:'coral',suit:'diamond',role:'Courier, errand-runner, and enthusiastic fixer',shortRole:'Courier & fixer',voice:'Curious, optimistic, and always convinced there is a clever shortcut.'},
+ {name:'Rowan',color:'mint',suit:'heart',role:'Tree-tender and island caretaker',shortRole:'Island caretaker',voice:'Observant, patient, and usually the first to notice when the island itself has changed.'},
+ {name:'Pip',color:'blue',suit:'spade',role:'Explorer, according to Pip',shortRole:'Explorer',voice:'Bold, competitive, inventive, and suspicious of unnecessary detours.'},
+ {name:'Tansy',color:'coral',suit:'heart',role:'Co-conspirator and collector',shortRole:'Collector & commentator',voice:'Expressive, imaginative, and unusually good at noticing what a change means to people.'}
 ];
 
 const CHAPTERS=[
@@ -262,6 +262,11 @@ function beatForLevel(level){
  const chapter=Math.ceil(L/50),c=CHAPTERS[chapter-1],beatIndex=local/10-1;
  return {chapter,local,title:local===50?`Chapter ${chapter} complete · ${c.name}`:`${c.name} · Story beat`,text:c.beats[beatIndex],homeReward:local===50?c.homeReward:null};
 }
+function featuredResidents(text){
+ const source=String(text||'');
+ return CAST.filter(c=>new RegExp(`(?:^|\\W)${c.name.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')}(?=$|\\W)`,'i').test(source));
+}
+
 function completedChapters(progress){
  const stars=progress&&progress.stars||{};
  let completed=0;
@@ -280,6 +285,8 @@ window.LATCHLINGS_STORY={
  title:'Latchlings',tagline:'Small friends. Smart puzzles.',world:'The Latchlands',network:'The Skyway',playerRole:'Waykeeper',home:'Little Home',
  premise:'Small creatures live ordinary lives across drifting floating islands. The Waykeeper helps the old Skyway keep changing with them.',
  theme:'A good path is not one that never changes. It is one that can change with the people who need it.',
- cast:CAST,chapters:CHAPTERS,levelMeta,beatForLevel,completedChapters,currentChapter
+ helperCrewMotto:'When one Latchling needs help, the whole island pitches in.',
+ helperCrewExplanation:'The resident named in a story is the person whose errand, discovery, or concern gives the route meaning. The Latchlings on the board are the helper crew working that route with the Waykeeper, so their colors and suit marks do not need to match the featured resident.',
+ cast:CAST,chapters:CHAPTERS,levelMeta,beatForLevel,featuredResidents,completedChapters,currentChapter
 };
 })();

@@ -54,6 +54,14 @@ A Waykeeper sees the route logic other Latchlings usually take for granted. The 
 
 The player is not commanding the Latchlings as pieces. They are helping everyone understand the sequence of moves that will get the right people to the right places.
 
+### Featured residents and helper crews
+
+A named resident in a Story Card is the person whose errand, discovery, concern, or request gives that route problem its meaning. The puzzle board is not a literal cast portrait of that scene. The Latchlings visible on the board are the **helper crew** or **work party** pitching in with the Waykeeper to carry out the route.
+
+That means a Story Card can be about Pippa while the active board contains Latchlings with different body colors and suit marks. Those board identities belong to the crew participating in that route problem; they do not need to visually match the featured resident. A featured resident may also be helping in-world, but the board remains a practical route abstraction rather than a one-to-one depiction of named characters.
+
+The simple player-facing rule is: **When one Latchling needs help, the whole island pitches in.**
+
 ### Gameplay fiction
 
 A board represents a practical route problem.
