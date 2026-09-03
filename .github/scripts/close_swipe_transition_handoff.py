@@ -4,8 +4,10 @@ t=p.read_text()
 heading='### 2026-09-03 — Replace veil transition with fast right-swipe motion blur and CC0 whoosh'
 start=t.find(heading)
 if start<0: raise SystemExit('swipe transition handoff entry missing')
-end=t.find('\n---',start)
-if end<0: raise SystemExit('handoff terminator missing')
+next_heading=t.find('\n### ',start+len(heading))
+separator=t.find('\n---',start+len(heading))
+candidates=[x for x in (next_heading,separator) if x>=0]
+end=min(candidates) if candidates else len(t)
 section=t[start:end]
 if '**Status: COMPLETED**' in section and '#### Completion summary' in section:
     print('already closed')
