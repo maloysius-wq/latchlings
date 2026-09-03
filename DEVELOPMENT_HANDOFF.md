@@ -37,6 +37,26 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-03 — Add featured residents to Story Cards and clarify helper-crew canon
+
+**Status: IN PROGRESS**
+
+**User goal:** Whenever a Story Card is specifically about one of the five named Little Home residents, visibly show that resident in the popup so players can connect names, faces, suit marks, colors, and personalities. Also make the relationship between named story characters and the differently colored/suited Latchlings on puzzle boards explicit and coherent in-world.
+
+**Canon decision:** A Story Card's named resident is the featured person whose errand, discovery, concern, or request gives the route problem meaning. The Latchlings on the puzzle board represent the Waykeeper's current helper crew / work party carrying out that route job. A featured resident may sometimes be part of a route in-world, but board piece colors/suits are gameplay abstractions for the participating crew and are not required to visually match the named resident shown in the Story Card. The player is helping the crew understand the sequence, not puppeteering named characters as literal pieces. Early story UI should establish the rule with the concise idea: `When one Latchling needs help, the whole island pitches in.`
+
+**Character presentation plan:** Reuse the existing canonical cast data in `story400.js` (Pippa lavender club, Bramble coral diamond, Rowan mint heart, Pip blue spade, Tansy coral heart). Extend story metadata/runtime helpers to resolve one or more featured residents from the actual visible Story Card text, including chapter-opening and turning-point copy as well as routine level context. Add an original game-style portrait renderer using the same rounded body, face language, suit marks, and palette as board/title Latchlings. Story Cards with a featured resident should show a clearly readable portrait, name, and short role badge integrated into the illustrated scene/card layout; cards with two named residents may show a paired portrait treatment. Cards with no named resident retain the existing environmental vignette without an empty character slot.
+
+**Helper-crew explanation plan:** Add durable helper-crew language to `STORY_BIBLE.md` gameplay fiction and the Story & Residents screen. The first chapter-opening Story Card should include a small non-preachy `How routes work` / helper-crew note establishing that the board shows the Latchlings pitching in on the featured errand. Manual Story Cards should remain concise after that first explanation.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `STORY_BIBLE.md`, `story400.js`, `story-theme400.js`, `style400-story-theme.css`, and `game400-b.js` or the Story & Residents screen renderer as needed. Temporary self-removing GitHub Actions transformer/browser-validation files may be used. Campaign board definitions, puzzle mechanics, title screen composition, textures, music, and SFX remain unchanged.
+
+**Validation plan:** Static checks must preserve all 400 level records, eight chapter order, five canonical cast identities, and all campaign board files unchanged. Runtime tests must confirm featured-character resolution for representative Pippa, Bramble, Rowan, Pip, Tansy, Pip+Tansy, chapter-opening, milestone, and no-character stories. Chromium at phone and wide viewports must verify portrait/name/role rendering, portrait suit/color fidelity, paired-character layout, no portrait on generic cards, helper-crew explanation on the first chapter opening, persistent explanation in Story & Residents, reopen/retry story behavior, no board layout shift, no overflow/clipping, reduced-motion behavior, and no console/page/request errors. Render representative Story Cards for visual inspection before deployment.
+
+**Deployment plan:** Commit this handoff entry before product edits, implement behind a self-removing GitHub Actions workflow, run strict static + Chromium validation and inspect rendered character cards, commit only the green result, deploy the exact product SHA with GitHub Pages, then close this same handoff entry with implementation SHA, workflow/artifact/deployment IDs, exact canon/UI decisions, and remaining risk.
+
+---
+
 ### 2026-09-03 — Clamp music fade volume to valid media range
 
 **Status: COMPLETED**
