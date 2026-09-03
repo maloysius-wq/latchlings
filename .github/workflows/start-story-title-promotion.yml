@@ -1,0 +1,29 @@
+name: Start Story And Production Title Work
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-story-title-promotion.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record combined story/title work
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/start_story_title_promotion.py
+          rm -f .github/workflows/start-story-title-promotion.yml .github/scripts/start_story_title_promotion.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/start-story-title-promotion.yml .github/scripts/start_story_title_promotion.py
+          git commit -m 'Start story and production title implementation'
+          git pull --rebase origin main
+          git push origin HEAD:main
