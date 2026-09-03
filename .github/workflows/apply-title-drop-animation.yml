@@ -1,6 +1,6 @@
 name: Apply Title Drop Animation
 
-# Retry after separating the entrance translate/rotate from the permanent logo wobble.
+# Retry after making bounce validation deterministic against exact animation times.
 on:
   push:
     paths:
