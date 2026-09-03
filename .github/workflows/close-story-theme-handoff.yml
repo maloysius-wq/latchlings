@@ -1,0 +1,41 @@
+name: Close Story Theme Handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-story-theme-handoff.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close current work entry
+        run: python3 .github/scripts/close_story_theme_handoff.py
+      - name: Validate closure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('DEVELOPMENT_HANDOFF.md').read_text()
+          h='### 2026-09-03 — Rebuild exposition delivery and theme every campaign chapter'
+          s=t.index(h);e=t.index('\n---',s);x=t[s:e]
+          for token in ['**Status: COMPLETED**','52ba89ef47ab9a77288d01b1977d2b2c55067be0','5e341610704ed7ab6e9010ec14e172cb9733cb46','33801754320','9911343887','33802266277','9911524116','33802334258','ART_ASSET_CREDITS.md']:
+              assert token in x,token
+          print('STORY_THEME_HANDOFF_CLOSURE_OK')
+          PY
+      - name: Commit handoff and self-remove
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/close-story-theme-handoff.yml .github/scripts/close_story_theme_handoff.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-story-theme-handoff.yml .github/scripts/close_story_theme_handoff.py
+          git commit -m 'Close story card and chapter art handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
