@@ -40,7 +40,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-03 — Replace veil transition with fast right-swipe motion blur and CC0 whoosh
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Replace the current translucent screen-whoosh overlay with a much faster transition in which the actual current screen swipes rapidly to the right with motion blur, revealing the destination underneath. Transitions should occur only when moving between distinct major screens (Little Home/title, Level Select, Story, Complete, and Game). Advancing, retrying, or otherwise changing levels while already on the Game screen must never transition. Add a short, subtle locally shipped CC0 whoosh synchronized to the swipe, with any leading silence removed.
 
@@ -54,6 +54,29 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 **Deployment plan:** Commit this handoff entry before implementation. Inspect/select/process the CC0 source in CI, implement behind a self-removing workflow, run static/audio/Chromium validation and inspect renders, commit only the green product result, deploy the exact SHA with GitHub Pages, then close this same handoff entry with implementation SHA, workflow/artifact IDs, exact source/provenance, processing metrics, deployment result, and remaining risk.
 
+
+
+#### Completion summary
+
+**Transition replacement:** Removed the previous translucent `screenWhoosh` overlay, streak elements, backdrop-blur veil, and destination-settle animation. Genuine cross-screen changes now use the browser View Transitions API: the old rendered root snapshot stays above the destination and whips rapidly to the right over 210 ms while stretching slightly along the X axis, accumulating up to 11 px of blur, and fading as it exits. The destination screen is already rendered underneath and does not perform a second entrance animation, so the effect reads as a fast page swipe rather than two panels moving at once. Rapid/reentrant screen changes skip any prior in-flight transition cleanly. Browsers without `document.startViewTransition` fall back to immediate navigation with no visual effect.
+
+**Where transitions occur:** The shared `screen(id)` router only starts the swipe when the destination screen id differs from the currently active screen. Transitions therefore occur between major surfaces such as Little Home/title, Level Select, Story, Complete, and Game. `startLevel()` calls that keep `#game` active return through the same-screen path, so advancing from one level to the next, replaying, retrying, resetting, or selecting another level while already on the Game screen does not animate and does not play the swipe sound. Chromium explicitly validated both Level 1→2 and same-level retry with zero additional View Transition calls and zero additional swipe-SFX calls.
+
+**Reduced motion / compatibility:** Under `prefers-reduced-motion: reduce`, cross-screen navigation remains immediate and neither the View Transition nor swipe sound fires. Chromium also tested an environment where `document.startViewTransition` was deliberately removed; navigation still completed instantly and silently.
+
+**CC0 swipe sound:** Added local `assets/sfx/screen-swipe.wav`, derived from `swish-1.wav` in OpenGameArt's **Swishes Sound Pack** by **artisticdude**, released under **CC0**. The upstream source measured 0.1260 s with approximately 0.0221 s of leading silence at a -45 dB threshold. The implementation workflow trimmed the first 22.1 ms, reset timestamps, applied -4 dB gain, a 3 ms attack fade, and an 11 ms tail fade, then wrote a 44.1 kHz 16-bit stereo PCM WAV. Final validation measured 0.103923 s duration, only 0.002200 s of near-silence at the front, -4.10 dB peak, and 18,452 bytes. `sfx400.js` plays it at 0.18 runtime volume, through the existing SFX-enabled setting, only for genuine supported cross-screen swipes. Exact provenance and processing are recorded in `ART_ASSET_CREDITS.md`; there is no runtime hotlink.
+
+**Validation:** GitHub Actions run `33807719535` completed successfully. Static gates reported `SWIPE_TRANSITION_STATIC_OK`; audio gates reported `SWIPE_AUDIO_OK duration=0.103923s leading_silence=0.002200s peak=-4.10dB size=18452`. Campaign files `campaign400-1.js` through `campaign400-8.js`, `story400.js`, `story-theme400.js`, and `title-island-concepts/index.html` were diff-checked unchanged. Chromium reported `SWIPE_TRANSITION_BROWSER_OK`, covering Home→Levels, Levels→Game, Game→Story, Story→Home, same-screen suppression, Game→Level 2 suppression, retry suppression, compact 360×740 fit, reduced-motion bypass, unsupported-API fallback, and browser/request errors.
+
+**Rendered review:** Artifact `9913606116` (`fast-swipe-transition-renders`) contains mid-transition captures for Home→Levels and Levels→Game plus a post-navigation render. The artifact was downloaded and visually inspected. The mid-swipe frames show the actual outgoing screen snapshot visibly stretched and motion-blurred as it leaves to the right while the destination remains crisp underneath, matching the requested fast swipe rather than the former overlay curtain.
+
+**Files changed:** `index.html`, `game400-a.js`, `style400-ui.css`, `sfx400.js`, `ART_ASSET_CREDITS.md`, and new local `assets/sfx/screen-swipe.wav`. Temporary implementation/validation workflows and scripts self-removed after the green product commit. Campaign/story data, Little Home source composition, textures, puzzle mechanics, and existing audio assets were unchanged.
+
+**Implementation commit:** `4eea640ff7e4b8f5025c06272d56274a0178abe6` (`Replace overlay whoosh with fast right swipe transition`).
+
+**Deployment:** GitHub Pages run `33807823049` completed successfully for exact product commit `4eea640ff7e4b8f5025c06272d56274a0178abe6`. Live production: `https://maloysius-wq.github.io/latchlings/`.
+
+**Remaining risk / next action:** No blocking issue remains. Transition speed, blur strength, and runtime whoosh volume are intentionally subjective polish values and can be tuned independently after playtesting without changing the screen-routing or level-transition rules.
 
 ### 2026-09-03 — Reduce story interruptions, unify Little Home background, and add screen whoosh transitions
 
