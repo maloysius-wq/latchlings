@@ -8,9 +8,11 @@
 <link rel="stylesheet" href="style400-ui.css">
 <link rel="stylesheet" href="style400-game.css">
 <link rel="stylesheet" href="style400-themes.css">
+<link rel="stylesheet" href="style400-story-theme.css">
 </head>
 <body>
 <div id="app">
+  <div class="chapter-material-backdrop" id="chapterMaterialBackdrop" aria-hidden="true"></div>
   <main id="home" class="screen active production-home" aria-label="Latchlings home">
     <div class="production-home-wrap">
       <iframe id="homeTitleFrame" class="production-home-frame" src="title-island-concepts/?c=2&amp;embed=1" title="Latchlings Little Home" scrolling="no"></iframe>
@@ -41,9 +43,9 @@
   </main>
 
   <main id="game" class="screen">
-    <div class="topbar card game-top"><div class="logo">Latchlings<small></small></div><div class="game-title" id="levelTitle">Level 1</div><div class="moves-box"><span>Moves left</span><strong id="movesLeft">0</strong></div><button class="iconbtn" id="pauseBtn" aria-label="Pause"></button></div>
+    <div class="topbar card game-top"><div class="logo">Latchlings<small></small></div><div class="game-title" id="levelTitle">Level 1</div><div class="moves-box"><span>Moves left</span><strong id="movesLeft">0</strong></div><button class="iconbtn story-card-trigger" id="storyCardBtn" aria-label="Story for this level" title="Story"></button><button class="iconbtn" id="pauseBtn" aria-label="Pause"></button></div>
     <div class="mechanic-note" id="mechanicNote"></div>
-    <div class="board-wrap"><div class="theme-flourish left" aria-hidden="true"></div><div class="board" id="board"><div class="piece-layer" id="pieceLayer"></div></div><div class="theme-flourish right" aria-hidden="true"></div></div>
+    <div class="board-wrap"><div class="level-props" id="levelProps" aria-hidden="true"></div><div class="theme-flourish left" aria-hidden="true"></div><div class="board" id="board"><div class="piece-layer" id="pieceLayer"></div></div><div class="theme-flourish right" aria-hidden="true"></div></div>
     <div class="controls"><button class="side-action" id="resetLevelBtn"><span id="resetIcon"></span><span>Reset</span></button><div class="dpad" aria-label="Directional pad">
 <svg class="dpad-base" viewBox="0 0 240 240" aria-hidden="true"><path class="dpad-edge" d="M100 10 H140 Q160 10 160 30 V70 Q160 80 170 80 H210 Q230 80 230 100 V140 Q230 160 210 160 H170 Q160 160 160 170 V210 Q160 230 140 230 H100 Q80 230 80 210 V170 Q80 160 70 160 H30 Q10 160 10 140 V100 Q10 80 30 80 H70 Q80 80 80 70 V30 Q80 10 100 10 Z"/></svg>
 <svg class="dpad-rocker" id="dpadRocker" viewBox="0 0 240 240" aria-hidden="true">
@@ -57,6 +59,19 @@
   <main id="complete" class="screen">
     <div class="home-main"><section class="hero card"><div class="logo" style="font-size:24px">Latchlings<small></small></div><h1 style="font-size:40px;margin-top:20px">The Skyway Lives Again</h1><p>The islands keep drifting. Now the routes move with them, tended by neighbors and Waykeepers across the Latchlands.</p><div class="island" aria-hidden="true"><div class="island-base"></div><div class="home-house"></div><div class="hero-latch one"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch two"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div><div class="hero-latch three"><i class="mini-eye e1"></i><i class="mini-eye e2"></i><i class="mini-mouth"></i></div></div><button class="primary-btn" id="completeLevels">Level Select</button><button class="secondary-btn" id="completeHome" style="margin-top:12px">Return to Little Home</button></section></div>
   </main>
+</div>
+<div class="story-card-overlay" id="storyCardOverlay" aria-hidden="true">
+  <section class="story-card-panel" id="storyCardPanel" role="dialog" aria-modal="true" aria-labelledby="storyCardTitle">
+    <button class="story-card-x" id="storyCardClose" aria-label="Close story">×</button>
+    <div class="story-card-scene" id="storyCardScene" aria-hidden="true"></div>
+    <div class="story-card-body">
+      <div class="story-card-meta"><span class="story-card-kind" id="storyCardKind"></span><span class="story-card-location" id="storyCardLocation"></span></div>
+      <h2 id="storyCardTitle"></h2>
+      <p class="story-card-context" id="storyCardContext"></p>
+      <p class="story-card-flavor" id="storyCardFlavor"></p>
+      <div class="story-card-actions"><button class="story-card-continue" id="storyCardContinue">Continue</button></div>
+    </div>
+  </section>
 </div>
 <div class="overlay" id="overlay"><div class="modal card" id="modal"></div></div>
 <div class="debug" id="debug"></div>
@@ -73,5 +88,6 @@
 <script src="game400-b.js"></script>
 <script src="music400.js"></script>
 <script src="sfx400.js"></script>
+<script src="story-theme400.js"></script>
 </body>
 </html>
