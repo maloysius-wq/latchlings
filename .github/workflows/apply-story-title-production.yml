@@ -102,4 +102,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# dedicated-story-screen validation trigger
+# rerun after redundant story-location assertion cleanup
