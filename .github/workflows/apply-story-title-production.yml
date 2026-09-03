@@ -44,7 +44,7 @@ jobs:
           from pathlib import Path
           index=Path('index.html').read_text()
           title=Path('title-island-concepts/index.html').read_text()
-          ga=Path('game400-a.js').read_text();gb=Path('game400-b.js').read_text()
+          ga=Path('game400-a.js').read_text();gb=Path('game400-b.js').read_text();css=Path('style400-game.css').read_text()
           required_index=['id="homeTitleFrame"','title-island-concepts/?c=2&amp;embed=1','<script src="story400.js"></script>','The Skyway Lives Again','id="completeHome"']
           for token in required_index:
               if token not in index: raise SystemExit('Missing production index token: '+token)
@@ -52,8 +52,9 @@ jobs:
               if token not in title: raise SystemExit('Missing approved-home integration token: '+token)
           for token in ['const STORY=window.LATCHLINGS_STORY||null;','storyMeta=STORY?STORY.levelMeta','chapter-opening','homeTitleFrame']:
               if token not in ga: raise SystemExit('Missing game400-a story token: '+token)
-          for token in ['function storyModal(){','settingsStory','STORY?STORY.beatForLevel','source!==\'latchlings-home\'','window.LatchlingsHomeAction=action=>','const wireHomeFrame=()=>{']:
+          for token in ['function storyModal(){','settingsStory','STORY?STORY.beatForLevel','source!==\'latchlings-home\'','window.LatchlingsHomeAction=action=>','const wireHomeFrame=()=>{',"classList.toggle('home-overlay'"]:
               if token not in gb: raise SystemExit('Missing game400-b story token: '+token)
+          if '.overlay.home-overlay{' not in css: raise SystemExit('Missing home overlay compositor guard')
           print('PRODUCTION_STATIC_OK')
           PY
           git diff --exit-code -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
@@ -100,4 +101,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# function-source diagnostic trigger
+# home-modal-compositor validation trigger
