@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-03 — Add featured residents to Story Cards and clarify helper-crew canon
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Whenever a Story Card is specifically about one of the five named Little Home residents, visibly show that resident in the popup so players can connect names, faces, suit marks, colors, and personalities. Also make the relationship between named story characters and the differently colored/suited Latchlings on puzzle boards explicit and coherent in-world.
 
@@ -54,6 +54,29 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must preserve all 400 level records, eight chapter order, five canonical cast identities, and all campaign board files unchanged. Runtime tests must confirm featured-character resolution for representative Pippa, Bramble, Rowan, Pip, Tansy, Pip+Tansy, chapter-opening, milestone, and no-character stories. Chromium at phone and wide viewports must verify portrait/name/role rendering, portrait suit/color fidelity, paired-character layout, no portrait on generic cards, helper-crew explanation on the first chapter opening, persistent explanation in Story & Residents, reopen/retry story behavior, no board layout shift, no overflow/clipping, reduced-motion behavior, and no console/page/request errors. Render representative Story Cards for visual inspection before deployment.
 
 **Deployment plan:** Commit this handoff entry before product edits, implement behind a self-removing GitHub Actions workflow, run strict static + Chromium validation and inspect rendered character cards, commit only the green result, deploy the exact product SHA with GitHub Pages, then close this same handoff entry with implementation SHA, workflow/artifact/deployment IDs, exact canon/UI decisions, and remaining risk.
+
+
+#### Completion summary
+
+**Canon:** Story Cards now distinguish a named **featured resident** from the puzzle-board **helper crew**. The resident named in the story is the person whose errand, discovery, concern, or request gives the route problem meaning; the differently colored/suited Latchlings on the board are the work party pitching in with the Waykeeper. Their body colors and suit marks therefore do not need to match the featured resident. The durable player-facing rule is `When one Latchling needs help, the whole island pitches in.` This interpretation is now recorded in `STORY_BIBLE.md` and exposed by the runtime story object.
+
+**Featured-character presentation:** Story Cards resolve canonical resident names from the actual visible story text using word-boundary matching, so `Pip` cannot accidentally match `Pippa`. A named card now shows a game-style Latchling portrait inside the illustrated vignette plus a compact name/role chip. The portraits preserve the existing canonical identities: Pippa = lavender club, Bramble = coral diamond, Rowan = mint heart, Pip = blue spade, and Tansy = coral heart. Cards naming two residents, such as Pip and Tansy, render both portraits and both role chips. Generic cards with no named resident retain the environmental vignette and do not invent an empty or arbitrary character slot.
+
+**Helper-crew explanation:** The first campaign Story Card includes a small `How routes work` note explaining that the Latchlings visible on the board are the helper crew working the featured errand with the player. The explanation is intentionally not repeated on every routine card. The Story & Residents surface permanently includes the fuller explanation and now gives all five Little Home residents matching face/suit/color avatars alongside their bios, so players have a durable place to learn the cast.
+
+**Presentation polish:** Manual inspection of the first validation renders found that Pippa's initial automatic card could begin appearing while the existing 210 ms cross-screen swipe was still finishing, briefly inheriting motion blur. Rather than accepting that, the automatic Story Card delay was refined from 90 ms to 260 ms. The final timing validation proves the card is still absent at 145 ms and visible after the swipe has cleared, with Pippa sharp and the card reporting `filter: none`. Manual story reopening remains immediate.
+
+**Files changed:** `STORY_BIBLE.md`, `story400.js`, `story-theme400.js`, `style400-story-theme.css`, `game400-b.js`, and `index.html`. The final timing refinement changes only `story-theme400.js`. Campaign definitions `campaign400-1.js` through `campaign400-8.js`, `game400-a.js`, `title-island-concepts/index.html`, `music400.js`, and `sfx400.js` were diff-checked unchanged.
+
+**Primary validation:** GitHub Actions run `33810071726` completed successfully and reported `CHARACTER_STORY_STATIC_OK` plus `CHARACTER_STORY_CARDS_BROWSER_OK`. Static checks preserved all 400 story records and the exact five canonical cast identities; verified Pippa single-name resolution, Pip+Tansy paired resolution, and no false `Pip` match inside `Pippa`. Chromium covered Pippa, Bramble, Rowan, Pip, Tansy, a Pip+Tansy pair, and a generic no-character card; verified exact portrait colors/suits, paired layout, helper-note cadence, unchanged 362×362 representative board geometry, phone/wide viewport fit, all five portrait cards on Story & Residents, reduced-motion behavior, and no browser/page/request errors. Artifact `9914445319` (`character-story-card-renders`) contained four representative renders and was downloaded and visually inspected.
+
+**Final timing/visual validation:** GitHub Actions run `33810291793` completed successfully and reported `CHARACTER_STORY_TIMING_OK`. It specifically verified the first automatic Story Card does not appear while the screen swipe is active, then appears after the new 260 ms delay with `featured: Pippa`, the Pippa portrait present, no horizontal overflow, and no browser errors. Artifact `9914528069` (`character-story-final-renders`) contains final crisp Pippa and Pip+Tansy renders and was downloaded and visually inspected.
+
+**Implementation commits:** Main character/story implementation `20d25e4ca4f9de9b97b73c747d62997f2392fe8c` (`Show featured residents in Story Cards`), followed by final timing refinement `1b8ad38c29b1321e763ca702d0baf739cdd8dcc5` (`Let character Story Cards land after screen swipe`).
+
+**Deployment:** GitHub Pages run `33810347515` completed successfully for exact final product commit `1b8ad38c29b1321e763ca702d0baf739cdd8dcc5`. Live production: `https://maloysius-wq.github.io/latchlings/`.
+
+**Remaining risk / next action:** No blocking issue remains. Future story copy that mentions a canonical resident by name automatically receives the matching portrait treatment; stories with no canonical name remain environmental. The current card design intentionally supports up to two featured residents at once to keep mobile story cards readable.
 
 ---
 
