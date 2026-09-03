@@ -1,0 +1,52 @@
+name: Close Little Home Island Resize Handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/close-title-island-resize.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close current work entry
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          heading='### 2026-09-03 — Enlarge Little Home island while preserving Latchling size'
+          start=t.index(heading)
+          end=t.index('\n---',start)
+          section=t[start:end]
+          if '**Status: COMPLETED**' not in section:
+              section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          if '#### Completion summary' not in section:
+              section += '''\n\n#### Completion summary\n\n**Implementation:** Enlarged the production Little Home island/environment uniformly to **1.10×** while keeping the composition centered. `#c2` now defines `--little-home-island-scale:1.10`; the existing island float transform/keyframes include that scale so the 7.6 s bob remains intact and reduced-motion still shows the enlarged resting composition. All environment children inside the island model, including terrain, cottage, organic tree, path, flowers, stone, floating pebbles, play ball, and story keepsakes, inherit the same uniform enlargement.\n\n**Resident-size preservation:** Concept 2 residents use the reciprocal visual scale `--little-home-latchling-counter-scale:.9090909091`. This exactly counteracts the 1.10× ancestor scale while preserving their enlarged-layout positions. Chromium measured all three adults at **34×34 px** and both children at **25×25 px**, identical to the pre-change production baseline. Existing adult outing choreography and both child play animations remain active.\n\n**Composition measurements:** At the 390×844 production viewport, the island changed from `350×350` at `x=20, y=185, right=370, bottom=535` to `385×385` at `x=2.5, y=167.5, right=387.5, bottom=552.5`. The center remains exactly `195 px`; the aspect ratio remains unchanged; side whitespace shrank from 20 px to 2.5 px on each side; the footprint extends 17.5 px higher and 17.5 px lower. The tagline still ends at `y=142.796875`, leaving about 24.7 px before the enlarged island, and Play still begins at `y=590`, leaving 37.5 px beneath the island. No horizontal overflow or tree/cottage clipping was observed.\n\n**Validation history:** The first trial run `33814831037` correctly failed before commit because standalone CSS `scale` caused the existing `translateX(-50%)` centering translation to scale as well, producing `x=-15`. That attempt committed no product change. The corrected implementation moved the scale into the island transform/keyframes and passed GitHub Actions run `33815360179`, which validated uniform size/ratio, exact centering, unchanged resident pixel sizes, title/tagline/button clearances, no overflow, island bob movement, child animations, adult outing activity, and zero console/page/request errors.\n\n**Visual inspection:** Artifact `9916382392` (`little-home-larger-island-final-renders`) contains reduced-motion and live-animation production renders. Both were downloaded and inspected. The island now fills the available title canvas much more confidently without clipping or crowding the approved title/tagline/buttons, while the Latchlings remain visually the same size as before.\n\n**Files changed:** Product change is limited to `title-island-concepts/index.html`. Production `index.html`, campaign definitions `campaign400-1.js` through `campaign400-8.js`, story/game runtime, styles outside the title source, music, and SFX were diff-checked unchanged. Temporary resize workflows self-removed.\n\n**Implementation commit:** `59d95f07ce0a6ec6eeeb3ff47b378f4eb60d1369` (`Enlarge Little Home island without enlarging residents`).\n\n**Deployment:** GitHub Pages run `33815544460` completed successfully for the exact implementation commit `59d95f07ce0a6ec6eeeb3ff47b378f4eb60d1369`. Live production: `https://maloysius-wq.github.io/latchlings/`.\n\n**Remaining risk / next action:** No blocking issue remains. The island intentionally uses almost the full 390 px viewport width, leaving a measured 2.5 px geometric margin per side; final renders confirm the visible terrain remains clean rather than appearing cropped.\n'''
+          t=t[:start]+section+t[end:]
+          p.write_text(t)
+          print('TITLE_ISLAND_RESIZE_HANDOFF_CLOSED')
+          PY
+      - name: Validate closure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('DEVELOPMENT_HANDOFF.md').read_text();h='### 2026-09-03 — Enlarge Little Home island while preserving Latchling size';s=t.index(h);e=t.index('\n---',s);x=t[s:e]
+          for token in ['**Status: COMPLETED**','1.10×','.9090909091','33814831037','33815360179','9916382392','59d95f07ce0a6ec6eeeb3ff47b378f4eb60d1369','33815544460','385×385','34×34 px','25×25 px']:
+              assert token in x,token
+          print('TITLE_ISLAND_RESIZE_HANDOFF_CLOSURE_OK')
+          PY
+      - name: Commit handoff and self-remove
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/close-title-island-resize.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-title-island-resize.yml
+          git commit -m 'Close Little Home island resize handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
