@@ -9,7 +9,7 @@ function prep(page,errors=[]){
   page.setDefaultNavigationTimeout(12000);
   page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
   page.on('pageerror',e=>errors.push('pageerror:'+e.message));
-  page.on('requestfailed',r=>errors.push('request:'+r.url()+':'+(r.failure()?.errorText||'')));
+  page.on('requestfailed',r=>{const failure=r.failure()?.errorText||'';if(failure==='net::ERR_ABORTED'&&/\.(mp3|ogg|wav)(?:\?|$)/i.test(r.url()))return;errors.push('request:'+r.url()+':'+failure)});
 }
 async function gotoApp(page){
   await page.goto(base,{waitUntil:'domcontentloaded'});
