@@ -96,3 +96,5 @@ jobs:
           git commit -m 'Integrate Little Home and campaign story into production'
           git pull --rebase origin main
           git push origin HEAD:main
+
+# retry: case-insensitive chapter heading validation
