@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-03 — Enlarge Little Home island while preserving Latchling size
+
+**Status: IN PROGRESS**
+
+**User goal:** Make the floating island in the production Little Home title scene noticeably larger so it fills more of the currently empty space above, below, and to both sides. Preserve the island's current proportions and composition, while keeping every Latchling at exactly the same on-screen size as today.
+
+**Implementation plan:** Increase the Concept 2 / Little Home island-model visual scale uniformly around its center rather than stretching width or height independently. Scale the cottage, tree, terrain, flowers, stone, floating pebbles, and other island environmental details with the island so the composition remains coherent. Apply the reciprocal visual scale to Concept 2 Latchling elements so adult and child Latchlings retain their existing final pixel sizes even though their positions spread with the enlarged island. Preserve adult/kid choreography, title-letter drop, clouds, island bob, progress/settings controls, and the approved `#F5DEAC` buttons. Tune the final factor from rendered 390×844 production composition rather than accepting clipping or crowding.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and `title-island-concepts/index.html`; temporary self-removing GitHub Actions validation/render files may be used. Production `index.html` remains structurally unchanged because it embeds the approved Little Home source. Campaign/story/gameplay/music/SFX files remain unchanged.
+
+**Validation plan:** Static validation must prove the island uses one uniform scale, adult Latchlings still resolve to the same visual size as before, child Latchlings still resolve to the same visual size as before, and campaign/story/game/audio files are unchanged. Chromium at 390×844 must measure the enlarged island bounds, confirm substantially reduced unused side/vertical space without clipping terrain/cottage/tree/title/buttons, confirm all five Latchlings remain the same rendered width/height as baseline, verify their motion still runs, verify the island bob still runs, and require no horizontal overflow or console/page/request errors. Render the production embedded title at rest and during normal animation for visual inspection before deployment. Reduced-motion behavior must remain valid.
+
+**Deployment plan:** Commit this handoff entry before product edits, implement the resize behind a self-removing workflow, run strict static + Chromium measurement/render validation, inspect renders, commit only the green result, deploy the exact implementation SHA through GitHub Pages, then close this same handoff entry with the final scale factor, measurements, validation/deployment IDs, implementation SHA, and remaining risk.
+
+---
+
 ### 2026-09-03 — Add featured residents to Story Cards and clarify helper-crew canon
 
 **Status: COMPLETED**
