@@ -43,3 +43,15 @@ The implementation workflow downloads the source color maps, downsizes them to 5
 ## Custom artwork
 
 All chapter vignettes, route-line ornaments, baskets, lanterns, parcels, anchors, crystals, market props, flowers, telescopes, rails, maps, compasses, gears, signals, homes, and aurora symbols used by `story-theme400.js` are original inline SVG/CSS artwork created specifically for Latchlings. They are not third-party assets.
+
+## OpenGameArt sound source
+
+- **Swishes Sound Pack**, author **artisticdude**, OpenGameArt, released under **CC0**.
+  - Asset page: https://opengameart.org/content/swishes-sound-pack
+  - Pack download: https://opengameart.org/sites/default/files/swishes.zip
+  - License: https://creativecommons.org/publicdomain/zero/1.0/
+  - Selected source file: `swish-1.wav`, one of the pack's four lighter swishes.
+  - Local derivative: `assets/sfx/screen-swipe.wav`.
+  - Source inspection measured 0.1260 s duration with approximately 0.0221 s of leading silence at a -45 dB threshold. The implementation workflow trims that leading 22.1 ms, applies a 3 ms attack fade, an 11 ms tail fade, and -4 dB gain before writing 44.1 kHz 16-bit stereo PCM WAV. Runtime playback is further reduced to 0.18 volume by `sfx400.js` so the transition cue remains subtle.
+  - Used only for genuine cross-screen swipe transitions. It is not played for level-to-level changes while already on the Game screen.
+
