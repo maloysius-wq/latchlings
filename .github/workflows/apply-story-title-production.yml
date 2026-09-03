@@ -11,6 +11,7 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,7 +21,6 @@ jobs:
         run: |
           python3 .github/scripts/apply_story_title_production.py
           python3 .github/scripts/fix_story_title_bridge.py
-          python3 .github/scripts/fix_story_validator_settings_click.py
 
       - name: Static validation
         shell: bash
@@ -79,7 +79,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           cp .github/scripts/validate_story_title_production.mjs "$TEST_NODE/validate_story_title_production.mjs"
-          node "$TEST_NODE/validate_story_title_production.mjs"
+          timeout 100s node "$TEST_NODE/validate_story_title_production.mjs"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -100,4 +100,4 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-# retry: parent contentDocument settings click with bounded browser timeouts
+# clean deterministic validation trigger
