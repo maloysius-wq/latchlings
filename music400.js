@@ -62,16 +62,20 @@
     fadeFrame = 0;
   }
 
+  function clampVolume(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+
   function fadeTo(target, duration = FADE_MS, token = transitionToken) {
     cancelFade();
     const start = performance.now();
     const from = audio.volume;
-    const clamped = Math.max(0, Math.min(1, target));
+    const clamped = clampVolume(target);
     return new Promise(resolve => {
       function step(now) {
         if (token !== transitionToken) { resolve(false); return; }
-        const t = Math.min(1, (now - start) / Math.max(1, duration));
-        audio.volume = from + (clamped - from) * t;
+        const t = Math.max(0, Math.min(1, (now - start) / Math.max(1, duration)));
+        audio.volume = clampVolume(from + (clamped - from) * t);
         if (t < 1) fadeFrame = requestAnimationFrame(step);
         else { fadeFrame = 0; resolve(true); }
       }
