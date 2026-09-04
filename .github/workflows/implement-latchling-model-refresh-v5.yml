@@ -1,0 +1,68 @@
+name: Implement Global Latchling Model Refresh V5
+on:
+  push:
+    paths:
+      - '.github/workflows/implement-latchling-model-refresh-v5.yml'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply model refresh
+        run: python3 tools/apply_latchling_model_refresh.py
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check story-theme400.js
+          grep -q 'Refined spherical Latchling model' style400-game.css
+          grep -q 'Refined spherical Latchling model' title-island-concepts/index.html
+          grep -q 'Refined spherical Latchling portraits' style400-story-theme.css
+          grep -q 'story-character-avatar-mouth' story-theme400.js
+          for expr in happy surprised angry smug sleepy curious determined; do grep -q "latchling.expr-$expr" style400-game.css; done
+          for f in campaign400-{1..8}.js game400-a.js game400-b.js story400.js music400.js sfx400.js index.html; do git diff --exit-code -- "$f"; done
+          echo GLOBAL_LATCHLING_MODEL_STATIC_OK
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-model-refresh-node"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Browser validation and renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-model-refresh-node"
+          cp tools/validate_latchling_model_refresh.mjs "$TEST_NODE/validate.mjs"
+          python3 -m http.server 8154 >/tmp/latchling-model-refresh-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          node validate.mjs
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p latchling-model-refresh-renders
+          cp "$TEST_NODE"/latchling-model-refresh-renders/*.png latchling-model-refresh-renders/
+          test "$(find latchling-model-refresh-renders -name '*.png' | wc -l)" -ge 5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: global-latchling-model-refresh-renders
+          path: latchling-model-refresh-renders/*.png
+          if-no-files-found: error
+      - name: Commit validated product and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf latchling-model-refresh-renders
+          rm -f tools/apply_latchling_model_refresh.py tools/validate_latchling_model_refresh.mjs
+          rm -f .github/workflows/implement-latchling-model-refresh-v5.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style400-game.css title-island-concepts/index.html story-theme400.js style400-story-theme.css tools/apply_latchling_model_refresh.py tools/validate_latchling_model_refresh.mjs .github/workflows/implement-latchling-model-refresh-v5.yml
+          git commit -m 'Refresh all Latchlings with polished spherical faces'
+          git pull --rebase origin main
+          git push origin HEAD:main
