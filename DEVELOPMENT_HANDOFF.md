@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-04 — Repair global Latchling coverage and finish the canonical campaign ending
+
+**Status: IN PROGRESS**
+
+**User goal:** Continue development from the current repository, repairing any critical handoff issue before new feature work. The continuation audit found that the completed global spherical-model handoff missed the campaign-completion screen: `index.html` still renders three legacy `.hero-latch` characters with old `.mini-eye` / `.mini-mouth` faces. The same screen also predates the canonical ending defined in `STORY_BIBLE.md`, which requires the final beat to preserve **Skyway Restored**, return emotionally to Little Home, show the larger connected community, and make clear that the islands still drift while the routes move with them.
+
+**Implementation plan:** First eliminate the stale completion-screen Latchling treatment and replace it with the same authored spherical-face language used elsewhere: circular gradient bodies, dark glossy blinking eyes with catchlights, soft cheeks, raised readable mouths, forehead suit symbols, and no head appendages. Then turn the existing generic campaign-completion card into the canonical Level 400 epilogue without changing campaign mechanics or completion flow: use the `Skyway Restored` ending language, stage Little Home with the five household residents, add subtle distant connected islands / route lights, and keep both existing navigation actions. Respect reduced-motion preferences and asynchronous blink timing.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `index.html`, and `style400-ui.css`. `game400-b.js` should remain unchanged unless validation reveals a completion-flow defect. Campaign definitions, solver data, level progression, Story Card content, Little Home title source, audio, and gameplay Latchling model are not in scope.
+
+**Validation plan:** Static checks must confirm no `.hero-latch`, `.mini-eye`, or `.mini-mouth` markup/styles remain; the completion heading contains `Skyway Restored`; exactly five ending residents are present with forehead suit marks and refined face parts; existing `completeLevels` and `completeHome` controls remain; and no campaign/gameplay files changed. Browser validation should reach or force the completion screen at the production phone viewport and a wide viewport, verify no horizontal overflow, verify all five ending residents are circular and visible with dark eyes/catchlights/cheeks/mouths/suits, confirm route-light scenery is visible without obscuring controls, and confirm reduced-motion disables face/route animation. The completion navigation buttons must still work.
+
+**Deployment plan:** Commit this handoff entry before product edits, implement the ending repair directly on `main`, run isolated static/browser validation through a temporary self-removing workflow if needed, verify the exact implementation deploys successfully through GitHub Pages, then close this entry with commit/run IDs and remaining risk.
+
+---
+
 ### 2026-09-04 — Fix Little Home cottage roof seam
 
 **Status: COMPLETED**
