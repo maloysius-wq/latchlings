@@ -6,6 +6,7 @@ const CHAR_COLORS={coral:'#ef5f66',blue:'#4c8ff4',mint:'#66bd72',gold:'#f6b737',
 const CHAR_LIGHT={coral:'#ff9297',blue:'#79aff9',mint:'#94dc98',gold:'#ffd06a',lavender:'#c3a0f1'};
 const CHAR_DARK={coral:'#c33d49',blue:'#2e69c8',mint:'#469852',gold:'#d18c16',lavender:'#724fbd'};
 const CHAR_EXPR={Pippa:'curious',Bramble:'smug',Rowan:'happy',Pip:'determined',Tansy:'surprised'};
+const CHAR_BLINK={Pippa:['4.55s','-1.15s'],Bramble:['5.10s','-2.70s'],Rowan:['4.80s','-3.35s'],Pip:['5.35s','-1.85s'],Tansy:['4.25s','-2.25s']};
 let activeLevel=1;
 const CH_DEFAULTS={1:['basket','flower','mail'],2:['lantern','parcel','jar'],3:['anchor','crystal','chalk'],4:['market','basket','mask'],5:['prism','flower','telescope'],6:['rail','map','compass'],7:['gear','signal','parcel'],8:['compass','home','aurora']};
 const RULES=[
@@ -47,10 +48,10 @@ function charSuitSvg(s){
  if(s==='spade')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8C43 22 14 36 14 60c0 13 10 23 23 23 8 0 13-4 16-10-1 9-5 15-12 20h18c-7-5-11-11-12-20 3 6 8 10 16 10 13 0 23-10 23-23C86 36 57 22 50 8Z"/></svg>';
  return '';
 }
-function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue;return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color}`}
+function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue,b=CHAR_BLINK[c.name]||['4.8s','-1.4s'];return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color};--avatar-blink-duration:${b[0]};--avatar-blink-delay:${b[1]}`}
 function characterFace(){return '<span class="face"><span class="eyes"><i class="eye"></i><i class="eye"></i></span><i class="mouth"></i></span>'}
 function characterPortrait(c,index,total){const expr=CHAR_EXPR[c.name]||'happy';return `<span class="story-scene-character story-scene-character-${index+1} story-scene-character-count-${total}" data-character="${escapeHtml(c.name)}" data-color="${escapeHtml(c.color)}" data-suit="${escapeHtml(c.suit)}" style="${characterVars(c)}"><span class="story-char-body expr-${expr}"><span class="suit-mark">${charSuitSvg(c.suit)}</span>${characterFace()}</span></span>`}
-function characterAvatar(c){return `<span class="story-character-avatar" data-character="${escapeHtml(c.name)}" data-color="${escapeHtml(c.color)}" data-suit="${escapeHtml(c.suit)}" style="${characterVars(c)}"><span class="story-character-avatar-suit">${charSuitSvg(c.suit)}</span><span class="story-character-avatar-eyes"><i></i><i></i></span></span>`}
+function characterAvatar(c){const expr=CHAR_EXPR[c.name]||'happy';return `<span class="story-character-avatar expr-${expr}" data-character="${escapeHtml(c.name)}" data-color="${escapeHtml(c.color)}" data-suit="${escapeHtml(c.suit)}" style="${characterVars(c)}"><span class="story-character-avatar-suit">${charSuitSvg(c.suit)}</span><span class="story-character-avatar-face"><span class="story-character-avatar-eyes"><i></i><i></i></span><i class="story-character-avatar-mouth"></i></span></span>`}
 function characterChip(c){return `<div class="story-character-chip" data-character="${escapeHtml(c.name)}">${characterAvatar(c)}<span class="story-character-copy"><strong>${escapeHtml(c.name)}</strong><small>${escapeHtml(c.shortRole||c.role)}</small></span></div>`}
 function residentCard(c){return `<div class="story-person story-person-portrait" data-character="${escapeHtml(c.name)}">${characterAvatar(c)}<span class="story-person-copy"><strong>${escapeHtml(c.name)}</strong><span>${escapeHtml(c.role)}. ${escapeHtml(c.voice)}</span></span></div>`}
 function featuredFor(meta,chapter){if(!STORY||!STORY.featuredResidents||!meta)return[];const flavor=meta.local===1?chapter.opening:meta.flavor;return STORY.featuredResidents(`${meta.context} ${flavor}`).slice(0,2)}
