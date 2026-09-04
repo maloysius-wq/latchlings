@@ -1,0 +1,44 @@
+/* Final cinematic visual refinements after manual all-24 review. */
+
+/* Prism Gardens should read as a crystal garden, not generic grassy islands. */
+.cin-islands.prism .cin-island-top{background-image:linear-gradient(180deg,rgba(224,255,242,.34),rgba(66,128,106,.09)),var(--cin-grass);box-shadow:inset 0 2px 0 rgba(255,255,255,.36),inset 0 -4px 7px rgba(42,104,75,.12),0 0 10px rgba(128,205,194,.12)}
+.cin-islands.prism .cin-island-prop:before,.cin-islands.prism .cin-island-prop:after{display:block;content:"";position:absolute;bottom:-1px;width:6px;height:15px;background:linear-gradient(135deg,#dffcf8,#72bee0 45%,#9a72df 46% 72%,#f1d273);clip-path:polygon(50% 0,100% 34%,74% 100%,22% 100%,0 34%);filter:drop-shadow(0 1px 2px rgba(53,78,95,.15));opacity:.86}
+.cin-islands.prism .cin-island-prop:before{left:-8px;rotate:-13deg;scale:.8}.cin-islands.prism .cin-island-prop:after{right:-8px;rotate:12deg;scale:.68}
+.cin-islands.prism .cin-prism-beam{height:5px;filter:blur(1px);opacity:.68;box-shadow:0 0 9px rgba(118,195,211,.22)}
+
+/* The Prism lookout telescope is mounted and visually belongs to the foreground island. */
+.cin-telescope:before{content:"";position:absolute;left:57px;top:35px;width:7px;height:48px;border-radius:4px;background-image:linear-gradient(90deg,rgba(255,244,214,.14),rgba(67,44,26,.18)),var(--cin-wood);background-size:cover,42px 42px;box-shadow:-18px 34px 0 -2px #73543a,18px 34px 0 -2px #73543a;transform-origin:top center;rotate:10deg;z-index:-1}
+.cin-telescope:after{content:"";position:absolute;left:48px;top:30px;width:27px;height:9px;border-radius:6px;background:#806044;border:2px solid #5f4936;box-shadow:0 3px 4px rgba(42,48,51,.16);z-index:-1}
+.cin-lookout-island .near-top:after{content:"";position:absolute;left:93px;top:27px;width:24px;height:13px;border-radius:50%;background:radial-gradient(circle at 18% 52%,#f3b2bd 0 10%,transparent 12%),radial-gradient(circle at 50% 20%,#f0cf67 0 10%,transparent 12%),radial-gradient(circle at 78% 62%,#79b7e8 0 10%,transparent 12%)}
+.cin-distant-home .d-house{box-shadow:0 2px 4px rgba(53,41,32,.18)}
+.cin-distant-home .d-house:after{content:"";position:absolute;left:4px;bottom:0;width:6px;height:10px;border-radius:3px 3px 0 0;background:#76513b}
+
+/* Seven regional keepsakes occupy a deliberately centered 4+3 physical display. */
+.cin-keepsake-board{grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));grid-auto-rows:unset;gap:9px 7px;padding:15px 13px}
+.cin-keepsake-token{grid-column:span 2;min-height:0;height:auto;align-self:stretch}
+.cin-keepsake-token:nth-child(5){grid-column:2 / span 2}.cin-keepsake-token:nth-child(6){grid-column:4 / span 2}.cin-keepsake-token:nth-child(7){grid-column:6 / span 2}
+.cin-keepsake-token b{flex:0 0 27px}.cin-keepsake-token small{font-size:5.6px;line-height:1.08;padding:0 2px}
+
+/* Copperline automation reads as a piece of equipment, not a split-screen infographic. */
+.cin-automation .machine:before{content:"AUTO ROUTER";position:absolute;left:13px;top:11px;padding:4px 7px;border-radius:5px;background:#51392f;border:1px solid rgba(231,184,113,.35);box-shadow:inset 0 1px rgba(255,255,255,.08);font-size:6px;font-weight:950;letter-spacing:.13em;color:#efc77c}
+.cin-automation .machine:after{content:"";position:absolute;right:17px;top:17px;width:8px;height:8px;border-radius:50%;background:#f1ca6c;box-shadow:0 0 8px rgba(245,204,102,.65),0 32px 0 #76ae80,0 32px 6px rgba(118,174,128,.35)}
+.cin-automation .gear{border-style:dashed!important;border-color:#d2a160!important;box-shadow:inset 0 0 0 3px rgba(244,200,126,.12),0 3px 5px rgba(36,24,18,.2)}
+.cin-automation .fixed-line:before{content:"";position:absolute;left:-8px;top:-4px;width:10px;height:10px;border-radius:50%;background:#d4a05d;border:2px solid #5b4033;box-shadow:120px 0 0 #d4a05d,120px 0 0 2px #5b4033}
+
+/* Give the regional network distinct landmarks rather than repeating one tree everywhere. */
+.cin-network .type-meadow .node-landmark{width:20px;height:8px;top:9px;background:radial-gradient(circle at 15% 55%,#f1b2be 0 14%,transparent 16%),radial-gradient(circle at 45% 25%,#f0ca62 0 14%,transparent 16%),radial-gradient(circle at 76% 60%,#82b9e8 0 14%,transparent 16%)}
+.cin-network .type-meadow .node-landmark:before{display:none}
+.cin-network .type-lantern .node-landmark{width:8px;height:18px;top:4px}.cin-network .type-lantern .node-landmark:after{content:"";position:absolute;left:9px;top:2px;width:5px;height:7px;border-radius:2px;background:#ffe27b;box-shadow:0 0 7px #fff0a1}
+.cin-network .type-lodestone .node-landmark{width:16px;height:14px;top:7px;border-radius:45% 40% 48% 36%;background-image:linear-gradient(145deg,rgba(255,255,255,.27),rgba(68,62,57,.25)),var(--cin-earth);background-size:cover,30px 30px}
+.cin-network .type-lodestone .node-landmark:before{content:"";display:block;position:absolute;width:5px;height:13px;left:7px;top:-7px;background:linear-gradient(135deg,#d9faf6,#75bde0 48%,#9b78dc);clip-path:polygon(50% 0,100% 36%,73% 100%,22% 100%,0 36%);border-radius:0}
+.cin-network .type-keep .node-landmark{width:20px;height:15px;top:5px;border-radius:2px;background:#8a6b77;box-shadow:inset 0 0 0 2px rgba(245,221,187,.18)}
+.cin-network .type-keep .node-landmark:before{content:"";position:absolute;display:block;left:1px;right:1px;top:-6px;width:auto;height:7px;border-radius:0;background:linear-gradient(90deg,#715666 0 23%,transparent 23% 38%,#715666 38% 62%,transparent 62% 77%,#715666 77%);box-shadow:none}
+
+/* Canonical Little Home should composite over route/network scenery with no document rectangle. */
+.cin-home-reference{color-scheme:normal}
+.cin-homeward-wrap .cin-home-reference-wrap{background:transparent}
+.cin-homeward-wrap .cin-network{opacity:.82;filter:saturate(.96) drop-shadow(0 3px 4px rgba(42,64,77,.08))}
+.cin-homeward-wrap .cin-network .node span{background:rgba(255,249,233,.95)}
+
+/* Route-drafting plaques have a slightly more instrument-like finish. */
+.cin-route-drafting{background-image:linear-gradient(180deg,rgba(255,249,230,.94),rgba(232,211,173,.94)),var(--cin-wood);background-size:cover,55px 55px;border-color:#8b633b;box-shadow:0 5px 9px rgba(44,61,72,.18),inset 0 1px rgba(255,255,255,.62)}
