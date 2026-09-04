@@ -1,0 +1,16 @@
+import {chromium} from 'playwright';
+const browser=await chromium.launch({headless:true});
+const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});
+const page=await ctx.newPage();
+const errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+await page.goto('http://127.0.0.1:8156/',{waitUntil:'domcontentloaded'});
+await page.waitForFunction(()=>typeof screen==='function'&&typeof startLevel==='function'&&window.LatchlingsStoryTheme);
+await page.evaluate(()=>{screen('game');startLevel(400);LatchlingsStoryTheme.close(false)});
+await page.waitForSelector('#game.active .latchling');
+await page.waitForTimeout(250);
+await page.screenshot({path:'clean-puzzle-latchling-render/puzzle-level-400-clean.png',fullPage:true});
+if(errors.length)throw new Error(errors.join(' | '));
+console.log('CLEAN_PUZZLE_LATCHLING_RENDER_OK');
+await browser.close();
