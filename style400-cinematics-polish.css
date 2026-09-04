@@ -1,0 +1,166 @@
+/* Professional cinematic material and composition pass.
+   Loaded after style400-cinematics.css so the original runtime remains a safe fallback. */
+:root{
+  --cin-earth:url('title-island-concepts/textures/earth.jpg');
+  --cin-grass:url('title-island-concepts/textures/grass.jpg');
+  --cin-wood:url('title-island-concepts/textures/wood.jpg');
+}
+
+.cinematic-stage{
+  background:
+    radial-gradient(circle at 22% 18%,rgba(255,255,255,.72),transparent 23%),
+    radial-gradient(circle at 79% 37%,rgba(255,255,255,.38),transparent 20%),
+    linear-gradient(180deg,#b7dcf2 0%,#dceefa 68%,#edf4f5 100%);
+}
+.cinematic-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 34%,rgba(56,95,119,.03));z-index:20;mix-blend-mode:soft-light}
+
+/* Canonical title-page Little Home, embedded scene-only. */
+.cin-home-reference-wrap{position:absolute;inset:0;z-index:4;overflow:hidden;display:grid;place-items:center;isolation:isolate}
+.cin-home-reference{display:block;width:100%;height:100%;border:0;background:transparent;pointer-events:none}
+.cin-home-reference-wrap:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 52%,transparent 0 48%,rgba(104,155,185,.08) 72%,rgba(104,155,185,.18) 100%);z-index:8}
+.cin-home-reference-wrap.morning{z-index:3}
+.cin-homeward-wrap{position:absolute;inset:0;overflow:hidden}
+.cin-homeward-wrap .cin-network{z-index:1;opacity:.68;filter:saturate(.9)}
+.cin-homeward-wrap .cin-home-reference-wrap{z-index:5;inset:7px 38px 0}
+
+/* Shared textured floating-island construction. */
+.cin-island{width:92px!important;height:82px!important;border-radius:0!important;background:none!important;clip-path:none!important;box-shadow:none!important;filter:drop-shadow(0 9px 8px rgba(40,63,77,.18));overflow:visible!important;isolation:isolate}
+.cin-island-side{position:absolute;z-index:1;left:14%;right:14%;top:31%;bottom:2%;clip-path:polygon(3% 0,97% 0,87% 40%,72% 70%,54% 100%,44% 96%,26% 70%,11% 39%);background-image:linear-gradient(110deg,rgba(255,245,216,.18),rgba(72,45,29,.28)),var(--cin-earth);background-size:cover,76px 76px;background-position:center;box-shadow:inset 0 4px 6px rgba(255,255,255,.09),inset 0 -13px 15px rgba(53,36,26,.18)}
+.cin-island-rim{position:absolute;z-index:2;left:4%;right:4%;top:19%;height:43%;border-radius:50%;background-image:linear-gradient(rgba(91,56,35,.04),rgba(91,56,35,.25)),var(--cin-earth);background-size:cover,68px 68px;box-shadow:0 4px 5px rgba(62,48,35,.13)}
+.cin-island-top{position:absolute;z-index:3;left:7%;right:7%;top:15%;height:39%;border-radius:50%;background-image:linear-gradient(180deg,rgba(244,255,225,.25),rgba(58,110,55,.12)),var(--cin-grass);background-size:cover,70px 70px;background-position:center;box-shadow:inset 0 2px 0 rgba(255,255,255,.3),inset 0 -4px 7px rgba(34,88,45,.14)}
+.cin-island-top:after{content:"";position:absolute;inset:6px 10px 8px;border-radius:50%;background:radial-gradient(ellipse at 45% 42%,rgba(255,255,255,.12),transparent 68%)}
+.cin-island-prop{position:absolute;z-index:5;left:50%;top:8%;translate:-50% 0;display:block}
+.cin-island-prop.prop-tree{width:7px;height:21px;border-radius:5px;background-image:linear-gradient(90deg,rgba(255,255,255,.16),rgba(58,35,20,.14)),var(--cin-wood);background-size:cover,34px 34px}
+.cin-island-prop.prop-tree:before,.cin-island-prop.prop-tree:after{content:"";position:absolute;border-radius:50%;background:radial-gradient(circle at 33% 25%,#b4dfa7,#6eaf70 60%,#4e8d5b);box-shadow:inset -2px -3px 4px rgba(31,78,42,.13)}
+.cin-island-prop.prop-tree:before{width:27px;height:23px;left:-10px;top:-13px}.cin-island-prop.prop-tree:after{width:20px;height:18px;left:1px;top:-7px}
+.cin-island-prop.prop-cottage{width:27px;height:20px;top:10%;border-radius:3px;background-image:linear-gradient(rgba(255,247,225,.1),rgba(75,43,24,.08)),var(--cin-wood);background-size:cover,44px 44px;box-shadow:0 2px 3px rgba(58,43,32,.14)}
+.cin-island-prop.prop-cottage:before{content:"";position:absolute;left:-4px;right:-4px;top:-10px;height:13px;background:#a76e52;clip-path:polygon(50% 0,100% 72%,91% 100%,8% 100%,0 72%);box-shadow:inset 0 1px rgba(255,255,255,.16)}
+.cin-island-prop.prop-cottage:after{content:"";position:absolute;width:5px;height:9px;left:11px;bottom:0;border-radius:3px 3px 1px 1px;background:#6d4937}
+.cin-island-prop.prop-rock{width:18px;height:13px;top:20%;border-radius:48% 42% 49% 37%;background-image:linear-gradient(145deg,rgba(255,255,255,.25),rgba(68,62,57,.26)),var(--cin-earth);background-size:cover,34px 34px;box-shadow:inset -2px -2px 3px rgba(53,42,34,.15)}
+.cin-island.i1{left:3%!important;top:10%!important;scale:.82!important}.cin-island.i2{left:40%!important;top:6%!important;scale:.62!important}.cin-island.i3{right:2%!important;top:25%!important;scale:.86!important}.cin-island.i4{left:22%!important;bottom:8%!important;scale:1.0!important}.cin-island.i5{right:25%!important;bottom:5%!important;scale:.58!important}
+.cin-islands.prism .cin-island-prop{width:9px;height:24px;top:4%;background:linear-gradient(135deg,#b9eff1,#76bce2 43%,#9a72df 44% 70%,#f5ce78);clip-path:polygon(50% 0,100% 34%,74% 100%,22% 100%,0 34%);filter:drop-shadow(0 2px 2px rgba(56,78,101,.16))}
+.cin-islands.prism .cin-island-prop:before,.cin-islands.prism .cin-island-prop:after{display:none}
+.cin-islands.frozen .cin-island-top,.cin-islands.misaligned .cin-island-top{filter:saturate(.78)}
+
+/* Route lines read as luminous infrastructure anchored between places. */
+.cin-route{height:3px!important;background:linear-gradient(90deg,rgba(73,152,211,0),rgba(76,161,222,.76) 13%,#fff1a4 49%,rgba(76,161,222,.8) 84%,rgba(73,152,211,0))!important;box-shadow:0 0 8px rgba(66,161,228,.48),0 0 2px rgba(255,244,179,.8)!important}
+.cin-route.r1{width:148px!important;left:12%!important;top:29%!important;rotate:-8deg!important}.cin-route.r2{width:158px!important;left:45%!important;top:32%!important;rotate:10deg!important}.cin-route.r3{width:154px!important;left:20%!important;top:64%!important;rotate:9deg!important}.cin-route.r4{width:128px!important;left:49%!important;top:64%!important;rotate:-15deg!important}
+
+/* Physical route cargo rather than emoji-like floating marks. */
+.cin-route-cargo i{width:22px!important;height:18px!important;border-radius:6px!important;background:linear-gradient(180deg,#fff6d8,#efd7a1)!important;border:1px solid rgba(139,103,55,.4)!important;color:#27496f!important;font-size:10px!important;font-weight:900!important;box-shadow:0 3px 6px rgba(45,67,82,.15),inset 0 1px rgba(255,255,255,.65)!important}
+
+/* Waykeeper compass gains a physical brass/wood instrument treatment. */
+.cin-compass{border:3px solid #765532!important;background-image:radial-gradient(circle,#fff7dc 0 58%,#d6ad68 59% 68%,#6e4e31 69% 73%,transparent 74%),var(--cin-wood)!important;background-size:cover,70px 70px!important;box-shadow:0 0 0 4px rgba(255,246,218,.78),0 10px 18px rgba(34,55,70,.22),inset 0 0 0 2px rgba(255,255,255,.32)!important}
+.cin-compass b{padding:4px 8px;border-radius:999px;background:rgba(255,248,229,.9);box-shadow:0 2px 5px rgba(45,57,65,.12)}
+
+/* Helper crew becomes a tangible route-planning table. */
+.cin-helper-story{background-image:linear-gradient(rgba(52,35,22,.12),rgba(52,35,22,.22)),var(--cin-wood);background-size:cover,110px 110px;border-radius:18px;margin:14px;inset:0!important;padding:13px!important;box-shadow:inset 0 0 0 2px rgba(255,245,217,.14),0 9px 16px rgba(52,61,66,.14)}
+.cin-helper-story .story-side,.cin-helper-story .crew-side{background:linear-gradient(180deg,rgba(255,249,235,.95),rgba(242,222,185,.9))!important;border:1px solid rgba(130,94,54,.32)!important;box-shadow:0 5px 9px rgba(53,48,42,.14),inset 0 1px rgba(255,255,255,.65)!important}
+.helper-arrow{color:#f3d379!important;text-shadow:0 2px 0 rgba(68,45,26,.3)}
+
+/* Snap tutorial is a real tabletop route board. */
+.cin-demo-board{background-image:linear-gradient(rgba(255,249,236,.88),rgba(232,211,174,.86)),var(--cin-wood)!important;background-size:cover,115px 115px!important;border:2px solid #9c7348!important;box-shadow:inset 0 0 0 5px rgba(255,255,255,.24),0 10px 18px rgba(43,60,71,.18)!important}
+.cin-demo-board:before{background:linear-gradient(90deg,rgba(117,89,58,.14) 1px,transparent 1px),linear-gradient(rgba(117,89,58,.14) 1px,transparent 1px)!important;background-size:38px 38px!important}
+.demo-rock{background-image:linear-gradient(145deg,rgba(255,255,255,.26),rgba(68,62,57,.25)),var(--cin-earth)!important;background-size:cover,52px 52px!important}
+.demo-nest{background:linear-gradient(180deg,#fff8e8,#efd8aa)!important;box-shadow:0 3px 7px rgba(76,54,31,.14)}
+
+/* Morning route overlays canonical Little Home without separating the cast from the yard. */
+.cin-breakfast-route{z-index:9!important;pointer-events:none}
+.cin-breakfast-route .old-line{width:55%!important;left:22%!important;top:43%!important;height:4px!important;background:repeating-linear-gradient(90deg,#f6cf5d 0 10px,rgba(255,255,255,.75) 10px 13px,transparent 13px 18px)!important;rotate:5deg!important;filter:drop-shadow(0 0 4px rgba(244,205,86,.62))}
+.cin-breakfast-route .basket{width:29px!important;height:22px!important;left:23%!important;top:38%!important;border-radius:5px 5px 8px 8px!important;background-image:linear-gradient(rgba(255,247,216,.13),rgba(87,54,29,.1)),var(--cin-wood)!important;background-size:cover,44px 44px!important;color:transparent!important;border:1px solid #8a6037;box-shadow:0 4px 6px rgba(60,49,39,.18)!important}
+.cin-breakfast-route .basket:before{content:"";position:absolute;left:5px;right:5px;top:-6px;height:9px;border:2px solid #8a6037;border-bottom:0;border-radius:9px 9px 0 0}
+.cin-breakfast-route .miss{right:21%!important;top:47%!important;color:#c95152!important;text-shadow:0 2px 0 rgba(255,255,255,.7)}
+.cinematic-stage .morning-pippa,.cinematic-stage .morning-rowan,.cinematic-stage .morning-pip,.cinematic-stage .morning-tansy{display:none!important}
+
+/* Prism lookout and distant porch are now places, not loose symbols. */
+.cin-lookout-scene{position:absolute;inset:0;overflow:hidden}
+.cin-lookout-island{position:absolute;width:170px;height:145px;left:-5px;bottom:-8px;filter:drop-shadow(0 12px 10px rgba(42,64,78,.18))}
+.cin-lookout-island .near-side{position:absolute;left:12%;right:8%;top:31%;bottom:0;clip-path:polygon(2% 0,98% 0,88% 38%,72% 70%,53% 100%,29% 72%,10% 38%);background-image:linear-gradient(112deg,rgba(255,244,212,.16),rgba(83,50,31,.23)),var(--cin-earth);background-size:cover,90px 90px}
+.cin-lookout-island .near-top{position:absolute;left:2%;right:0;top:17%;height:43%;border-radius:50%;background-image:linear-gradient(180deg,rgba(239,255,228,.26),rgba(70,125,74,.12)),var(--cin-grass);background-size:cover,83px 83px;box-shadow:inset 0 2px rgba(255,255,255,.35)}
+.cin-lookout-island .near-crystal{position:absolute;left:35px;top:17px;width:13px;height:37px;background:linear-gradient(135deg,#d9fbf8,#73b9df 46%,#9875df 47% 74%,#f2d375);clip-path:polygon(50% 0,100% 33%,72% 100%,21% 100%,0 33%);z-index:5;filter:drop-shadow(0 3px 3px rgba(44,65,82,.15))}
+.cin-telescope{left:39px!important;top:72px!important;width:116px!important;height:80px!important;rotate:-10deg!important;z-index:7}
+.cin-telescope .tube{background-image:linear-gradient(90deg,rgba(255,244,214,.14),rgba(67,44,26,.18)),var(--cin-wood)!important;background-size:cover,60px 60px!important;border-color:#655039!important;box-shadow:0 4px 6px rgba(48,55,57,.18)}
+.cin-telescope .lens{background:radial-gradient(circle at 35% 35%,#dff7ff,#8abed3 55%,#425e6e)!important;border-color:#44545c!important}
+.lookout-tansy{left:25%!important;top:56%!important;z-index:9!important}
+.cin-distant-home{position:absolute;right:18px;top:55px;width:132px;height:100px;filter:drop-shadow(0 8px 7px rgba(45,64,76,.14));animation:cinPorchDrift 6s ease-in-out infinite}
+.cin-distant-home .d-side{position:absolute;left:18%;right:17%;top:38%;bottom:0;clip-path:polygon(3% 0,97% 0,83% 48%,55% 100%,28% 71%,10% 39%);background-image:linear-gradient(110deg,rgba(255,244,212,.14),rgba(83,50,31,.22)),var(--cin-earth);background-size:cover,62px 62px}
+.cin-distant-home .d-top{position:absolute;left:8%;right:8%;top:28%;height:33%;border-radius:50%;background-image:linear-gradient(rgba(242,255,223,.2),rgba(58,110,55,.12)),var(--cin-grass);background-size:cover,58px 58px}
+.cin-distant-home .d-house{position:absolute;z-index:4;left:50%;top:19%;translate:-50% 0;width:28px;height:22px;background-image:linear-gradient(rgba(255,247,225,.1),rgba(75,43,24,.08)),var(--cin-wood);background-size:cover,45px 45px;border-radius:3px}
+.cin-distant-home .d-house:before{content:"";position:absolute;left:-4px;right:-4px;top:-11px;height:13px;background:#a76e52;clip-path:polygon(50% 0,100% 72%,91% 100%,8% 100%,0 72%)}
+.cin-distant-home .d-light{position:absolute;z-index:6;left:66%;top:30%;width:6px;height:6px;border-radius:50%;background:#ffe27a;box-shadow:0 0 8px #fff1a3}
+.cin-sightline{position:absolute;left:138px;top:95px;width:123px;height:1px;border-top:1px dashed rgba(54,93,121,.45);rotate:-7deg;transform-origin:left}
+.cin-distant-porch{display:none!important}
+
+/* Map/revelation beats live on a physical wood workbench. */
+.cinematic-overlay[data-visual="map-mismatch"] .cinematic-stage,
+.cinematic-overlay[data-visual="map-drawer"] .cinematic-stage,
+.cinematic-overlay[data-visual="dated-maps"] .cinematic-stage,
+.cinematic-overlay[data-visual="map-sequence"] .cinematic-stage,
+.cinematic-overlay[data-visual="automation"] .cinematic-stage{
+  background-image:linear-gradient(115deg,rgba(255,238,203,.2),rgba(47,28,17,.22)),var(--cin-wood)!important;
+  background-size:cover,135px 135px!important;
+  box-shadow:inset 0 0 55px rgba(46,28,17,.2);
+}
+.cinematic-overlay[data-visual="map-mismatch"] .cinematic-stage:after,
+.cinematic-overlay[data-visual="map-drawer"] .cinematic-stage:after,
+.cinematic-overlay[data-visual="dated-maps"] .cinematic-stage:after,
+.cinematic-overlay[data-visual="map-sequence"] .cinematic-stage:after,
+.cinematic-overlay[data-visual="automation"] .cinematic-stage:after{background:linear-gradient(180deg,rgba(255,246,221,.06),rgba(35,21,13,.12))!important;filter:none!important;height:auto!important;top:0!important;bottom:0!important;border-radius:0!important}
+.cin-map-sheet{background:linear-gradient(180deg,#f8eccf,#ebd6ab)!important;border:1px solid #aa895e!important;box-shadow:0 7px 12px rgba(42,29,18,.2),inset 0 1px rgba(255,255,255,.62)!important}
+.cin-map-sheet:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 14px,rgba(132,102,69,.04) 14px 15px);pointer-events:none}
+.cin-drawer{background-image:linear-gradient(rgba(255,244,214,.08),rgba(54,32,19,.2)),var(--cin-wood)!important;background-size:cover,105px 105px!important;border:2px solid rgba(73,45,27,.45);box-shadow:0 13px 18px rgba(32,23,17,.3),inset 0 1px rgba(255,255,255,.13)!important}
+.cin-overlay-map>div{background:linear-gradient(180deg,#f9edcf,#ead5a8)!important;border:1px solid #a9875c!important;box-shadow:0 7px 10px rgba(48,31,18,.18)!important}
+
+/* Drafting badge replaces the disconnected floating pencil. */
+.cin-new-route-pen{display:none!important}
+.cin-route-drafting{position:absolute;right:15px;bottom:13px;z-index:9;min-width:94px;padding:7px 9px 7px 31px;border-radius:10px;background:linear-gradient(180deg,rgba(255,249,230,.96),rgba(232,211,173,.95));border:1px solid rgba(117,83,45,.42);box-shadow:0 5px 9px rgba(44,61,72,.16);font-size:8px;font-weight:950;letter-spacing:.08em;color:#294e70}
+.cin-route-drafting i{position:absolute;width:22px;height:22px;left:5px;top:50%;translate:0 -50%;border-radius:50%;border:2px solid #795938;background:radial-gradient(circle,#fff9e7 0 56%,#d7b676 58% 68%,#60452d 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.cin-route-drafting i:after{content:"";position:absolute;width:2px;height:14px;left:8px;top:2px;background:#d75d54;rotate:28deg;transform-origin:bottom}
+
+/* Automation is now a copper control bench rather than a flat split-screen icon. */
+.cin-automation{inset:13px!important;grid-template-columns:1.05fr .95fr!important;border-radius:18px;overflow:hidden;border:2px solid rgba(86,56,36,.55);box-shadow:0 10px 16px rgba(37,26,18,.25),inset 0 1px rgba(255,255,255,.13)}
+.cin-automation .hand-map{background:linear-gradient(180deg,rgba(250,235,201,.96),rgba(229,204,158,.95));border-right:2px solid rgba(83,53,32,.3)}
+.cin-automation .machine{background:linear-gradient(145deg,#a87350,#6e4938 52%,#4f3940)!important;border-left:0!important;box-shadow:inset 0 0 0 5px rgba(255,231,194,.06)}
+.cin-automation .gear{font-size:0!important;width:54px;height:54px;border-radius:50%;border:8px dotted #d4a562;color:transparent!important;background:radial-gradient(circle,#6b4d39 0 26%,#c88c54 28% 46%,#6c4c38 48% 53%,transparent 55%);filter:drop-shadow(0 3px 3px rgba(33,23,18,.24))}
+.cin-automation .g2{width:39px!important;height:39px!important;border-width:6px!important}
+.cin-automation .fixed-line{height:5px!important;background:linear-gradient(90deg,#f3cb67,#ffeaae,#eead50)!important;box-shadow:0 0 10px rgba(255,209,99,.66)!important;border-radius:99px}
+
+/* Keepsakes: physical regional tokens on a route board, no emoji. */
+.cin-keepsakes{display:none!important}
+.cin-keepsake-board{position:absolute;inset:15px 18px;border-radius:20px;background-image:linear-gradient(rgba(255,244,214,.07),rgba(58,35,21,.14)),var(--cin-wood);background-size:cover,105px 105px;border:2px solid rgba(100,69,41,.55);box-shadow:0 10px 17px rgba(41,53,61,.18),inset 0 0 0 5px rgba(255,244,213,.08);display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:8px;padding:15px;align-items:stretch}
+.cin-keepsake-token{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;border-radius:13px;background:linear-gradient(180deg,#fff5d9,#ead19f);border:1px solid rgba(125,87,47,.5);box-shadow:0 4px 6px rgba(53,38,26,.17),inset 0 1px rgba(255,255,255,.7);font-style:normal;color:#294b6a}
+.cin-keepsake-token b{position:relative;display:block;width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,#8eb8c9,#557f93);box-shadow:inset 0 0 0 4px rgba(255,255,255,.28),0 2px 4px rgba(46,56,62,.15)}
+.cin-keepsake-token small{margin-top:5px;max-width:100%;font-size:5.8px;line-height:1;text-align:center;font-weight:950;letter-spacing:.04em;color:#516b7f}
+.cin-keepsake-token.mail b:before{content:"";position:absolute;left:6px;right:6px;top:7px;height:10px;border:2px solid #fff1c9;border-radius:3px}.cin-keepsake-token.mail b:after{content:"";position:absolute;left:9px;top:11px;width:8px;height:2px;background:#fff1c9}
+.cin-keepsake-token.flag b:before{content:"";position:absolute;left:9px;top:5px;width:2px;height:17px;background:#fff1c9}.cin-keepsake-token.flag b:after{content:"";position:absolute;left:11px;top:6px;width:9px;height:7px;background:#f2c962;clip-path:polygon(0 0,100% 20%,72% 100%,0 75%)}
+.cin-keepsake-token.anchor b:before{content:"";position:absolute;left:12px;top:5px;width:2px;height:15px;background:#fff1c9}.cin-keepsake-token.anchor b:after{content:"";position:absolute;left:6px;top:13px;width:14px;height:8px;border:2px solid #fff1c9;border-top:0;border-radius:0 0 12px 12px}
+.cin-keepsake-token.mask b:before{content:"";position:absolute;inset:7px 5px 8px;border:2px solid #fff1c9;border-radius:50% 50% 45% 45%}.cin-keepsake-token.mask b:after{content:"";position:absolute;left:8px;top:11px;width:3px;height:3px;border-radius:50%;background:#fff1c9;box-shadow:7px 0 #fff1c9}
+.cin-keepsake-token.prism b{background:conic-gradient(#e88992,#f0cc63,#86c68f,#79b1ed,#9a72df,#e88992)}
+.cin-keepsake-token.compass b:before{content:"";position:absolute;inset:5px;border:2px solid #fff1c9;border-radius:50%}.cin-keepsake-token.compass b:after{content:"";position:absolute;left:11px;top:5px;width:3px;height:16px;background:#f1d36c;rotate:32deg}
+.cin-keepsake-token.switch b:before{content:"";position:absolute;left:7px;right:7px;top:8px;height:11px;border:2px solid #fff1c9;border-radius:3px}.cin-keepsake-token.switch b:after{content:"";position:absolute;left:12px;top:6px;width:3px;height:15px;background:#f1d36c;rotate:32deg}
+
+/* Network nodes become textured regional islands with readable labels. */
+.cin-network .node{width:52px!important;height:48px!important;background:none!important;clip-path:none!important;filter:drop-shadow(0 6px 5px rgba(40,63,77,.17));overflow:visible!important;z-index:4!important}
+.cin-network .node-side{position:absolute;left:14%;right:14%;top:31%;bottom:0;clip-path:polygon(3% 0,97% 0,86% 42%,68% 74%,52% 100%,29% 72%,10% 39%);background-image:linear-gradient(110deg,rgba(255,244,212,.15),rgba(83,50,31,.22)),var(--cin-earth);background-size:cover,46px 46px}
+.cin-network .node-rim{position:absolute;left:5%;right:5%;top:21%;height:37%;border-radius:50%;background-image:linear-gradient(rgba(91,56,35,.05),rgba(91,56,35,.22)),var(--cin-earth);background-size:cover,42px 42px}
+.cin-network .node-top{position:absolute;left:8%;right:8%;top:17%;height:34%;border-radius:50%;background-image:linear-gradient(rgba(242,255,223,.2),rgba(58,110,55,.12)),var(--cin-grass);background-size:cover,42px 42px;box-shadow:inset 0 1px rgba(255,255,255,.3)}
+.cin-network .node-landmark{position:absolute;z-index:5;left:50%;top:4px;translate:-50% 0;width:7px;height:16px;border-radius:3px;background-image:linear-gradient(90deg,rgba(255,255,255,.12),rgba(58,35,20,.12)),var(--cin-wood);background-size:cover,28px 28px}
+.cin-network .node-landmark:before{content:"";position:absolute;width:18px;height:14px;border-radius:50%;left:-6px;top:-7px;background:radial-gradient(circle at 35% 25%,#b0daa3,#6ca76c 62%,#4d8758)}
+.cin-network .type-prism .node-landmark,.cin-network .type-crown .node-landmark{width:8px;height:20px;top:0;background:linear-gradient(135deg,#d6faf8,#72bce0 42%,#9875df 43% 72%,#efd173);clip-path:polygon(50% 0,100% 34%,73% 100%,23% 100%,0 34%)}
+.cin-network .type-prism .node-landmark:before,.cin-network .type-crown .node-landmark:before{display:none}
+.cin-network .type-copper .node-landmark,.cin-network .type-storm .node-landmark{width:19px;height:13px;top:6px;border-radius:2px;background:linear-gradient(145deg,#b87a52,#785046);box-shadow:inset 0 0 0 2px rgba(244,197,128,.18)}
+.cin-network .type-copper .node-landmark:before,.cin-network .type-storm .node-landmark:before{width:5px;height:17px;left:3px;top:-11px;border-radius:2px;background:#6b5142;box-shadow:9px 3px 0 -1px #7c5a45}
+.cin-network .node span{top:-17px!important;padding:2px 4px;border-radius:999px;background:rgba(255,249,233,.88);box-shadow:0 2px 4px rgba(46,62,71,.1);font-size:5.5px!important;color:#36566f!important;letter-spacing:.03em}
+.cin-network .wire{height:3px!important;background:linear-gradient(90deg,#6fb7e9,#fff0a7,#6fb7e9)!important;box-shadow:0 0 7px rgba(89,174,235,.5)!important}
+.cin-network.crown .type-crown{scale:1.55!important;filter:drop-shadow(0 0 10px rgba(255,228,128,.7))!important}
+
+/* Aurora has layered atmospheric ribbons rather than just stroked lines. */
+.cin-aurora i{height:58px!important;border-top-width:10px!important;filter:blur(5px)!important;opacity:.78}
+
+/* More cohesive multiple-route display. */
+.cin-route-options i{height:4px!important;box-shadow:0 0 8px rgba(81,153,201,.35);border-radius:99px}
+
+/* Reduced motion still keeps every modeled layer visible. */
+@media(prefers-reduced-motion:reduce){
+  .cin-distant-home,.cin-island,.cin-network .node,.cin-home-reference-wrap{animation:none!important}
+}
