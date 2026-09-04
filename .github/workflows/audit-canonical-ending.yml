@@ -1,0 +1,146 @@
+name: Audit Canonical Latchlings Ending
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-canonical-ending.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static ending assertions
+        run: |
+          set -euo pipefail
+          ! grep -q 'hero-latch' index.html
+          ! grep -q 'mini-eye' index.html
+          ! grep -q 'mini-mouth' index.html
+          ! grep -q 'hero-latch' style400-ui.css
+          ! grep -q 'mini-eye' style400-ui.css
+          ! grep -q 'mini-mouth' style400-ui.css
+          grep -q '>Skyway Restored<' index.html
+          test "$(grep -o 'class="ending-latchling' index.html | wc -l)" -eq 5
+          for name in Pippa Bramble Rowan Pip Tansy; do grep -q "data-character=\"$name\"" index.html; done
+          grep -q 'id="completeLevels"' index.html
+          grep -q 'id="completeHome"' index.html
+          grep -q 'ending-route' style400-ui.css
+          grep -q 'ending-far-island' style400-ui.css
+          grep -q 'prefers-reduced-motion:reduce' style400-ui.css
+          node --check game400-a.js
+          node --check game400-b.js
+          CHANGED="$(git diff --name-only a81d3ee464cfb448a74cc28a125ebe882d76966f..HEAD)"
+          printf '%s\n' "$CHANGED"
+          ! printf '%s\n' "$CHANGED" | grep -Eq '^(campaign400-|game400-|story400\.js|story-theme400\.js|title-island-concepts/)'
+          echo CANONICAL_ENDING_STATIC_OK
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchlings-ending-audit"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Browser audit and renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchlings-ending-audit"
+          cat > "$TEST_NODE/audit.mjs" <<'MJS'
+          import {chromium} from 'playwright';
+          import fs from 'node:fs';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};
+          const root='http://127.0.0.1:8155/';
+          const out=process.env.GITHUB_WORKSPACE+'/canonical-ending-renders';
+          fs.mkdirSync(out,{recursive:true});
+          const browser=await chromium.launch({headless:true});
+          async function open(viewport,reducedMotion='no-preference'){
+            const ctx=await browser.newContext({viewport,reducedMotion});
+            const page=await ctx.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push('page:'+e.message));
+            page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+            page.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)});
+            await page.goto(root,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>typeof screen==='function'&&typeof renderChapter==='function');
+            await page.evaluate(()=>screen('complete'));
+            await page.waitForSelector('#complete.active .ending-latchling');
+            await page.waitForTimeout(260);
+            return {ctx,page,errors};
+          }
+          async function inspect(page){
+            return page.evaluate(()=>{
+              const residents=[...document.querySelectorAll('#complete .ending-latchling')].map(x=>{
+                const r=x.getBoundingClientRect(),eyes=x.querySelector('.ending-eyes'),eye=eyes.querySelector('i'),face=x.querySelector('.ending-face'),mouth=x.querySelector('.ending-mouth'),suit=x.querySelector('.ending-suit');
+                return {name:x.dataset.character,w:r.width,h:r.height,eye:getComputedStyle(eye).backgroundColor,catchlight:getComputedStyle(eye,'::before').content,cheek:getComputedStyle(face,'::before').content,mouth:!!mouth,suit:!!suit.querySelector('svg'),blink:getComputedStyle(eyes).animationName};
+              });
+              const routes=[...document.querySelectorAll('#complete .ending-route')].map(x=>getComputedStyle(x).display);
+              const islands=[...document.querySelectorAll('#complete .ending-far-island')].map(x=>getComputedStyle(x).display);
+              return {screen:document.body.dataset.screen,active:document.getElementById('complete').classList.contains('active'),heading:document.querySelector('#complete h1')?.textContent.trim(),residents,routes,islands,overflow:document.documentElement.scrollWidth>innerWidth+1,legacy:document.querySelectorAll('#complete .hero-latch,#complete .mini-eye,#complete .mini-mouth').length,levels:!!document.getElementById('completeLevels'),home:!!document.getElementById('completeHome')};
+            });
+          }
+          {
+            const {ctx,page,errors}=await open({width:390,height:844});
+            const x=await inspect(page);
+            ok(x.screen==='complete'&&x.active,'completion screen not active '+JSON.stringify(x));
+            ok(x.heading==='Skyway Restored','canonical heading missing '+JSON.stringify(x));
+            ok(x.residents.length===5,'expected five residents '+JSON.stringify(x));
+            ok(new Set(x.residents.map(r=>r.name)).size===5,'resident identities duplicated '+JSON.stringify(x));
+            ok(x.residents.every(r=>Math.abs(r.w-r.h)<.25&&r.eye==='rgb(23, 37, 58)'&&r.catchlight!=='none'&&r.cheek!=='none'&&r.mouth&&r.suit&&r.blink==='endingBlink'),'refined ending face mismatch '+JSON.stringify(x));
+            ok(x.routes.length===3&&x.routes.every(v=>v!=='none')&&x.islands.length===3&&x.islands.every(v=>v!=='none'),'connected-island scenery missing '+JSON.stringify(x));
+            ok(!x.overflow&&x.legacy===0&&x.levels&&x.home,'phone ending layout/control regression '+JSON.stringify(x));
+            await page.screenshot({path:out+'/ending-phone.png',fullPage:true});
+            await page.click('#completeLevels');
+            await page.waitForSelector('#levels.active');
+            ok(await page.evaluate(()=>document.body.dataset.screen)==='levels','Level Select button failed');
+            await page.evaluate(()=>screen('complete'));
+            await page.waitForSelector('#complete.active');
+            await page.click('#completeHome');
+            await page.waitForSelector('#home.active');
+            ok(await page.evaluate(()=>document.body.dataset.screen)==='home','Return to Little Home button failed');
+            ok(errors.length===0,'phone browser errors '+errors.join(' | '));
+            await ctx.close();
+          }
+          {
+            const {ctx,page,errors}=await open({width:900,height:844});
+            const x=await inspect(page);
+            ok(!x.overflow&&x.residents.length===5,'wide ending regression '+JSON.stringify(x));
+            await page.screenshot({path:out+'/ending-wide.png',fullPage:true});
+            ok(errors.length===0,'wide browser errors '+errors.join(' | '));
+            await ctx.close();
+          }
+          {
+            const {ctx,page,errors}=await open({width:390,height:844},'reduce');
+            const motion=await page.evaluate(()=>({face:getComputedStyle(document.querySelector('.ending-face')).animationName,eyes:getComputedStyle(document.querySelector('.ending-eyes')).animationName,route:getComputedStyle(document.querySelector('.ending-route')).animationName,island:getComputedStyle(document.querySelector('.ending-far-island')).animationName}));
+            ok(Object.values(motion).every(v=>v==='none'),'reduced-motion ending still animates '+JSON.stringify(motion));
+            ok(errors.length===0,'reduced-motion browser errors '+errors.join(' | '));
+            await ctx.close();
+          }
+          await browser.close();
+          console.log('CANONICAL_ENDING_BROWSER_OK');
+          MJS
+          python3 -m http.server 8155 >/tmp/latchlings-ending-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          node audit.mjs
+          test "$(find "$GITHUB_WORKSPACE/canonical-ending-renders" -name '*.png' | wc -l)" -eq 2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canonical-ending-renders
+          path: canonical-ending-renders/*.png
+          if-no-files-found: error
+      - name: Self-remove successful audit workflow
+        run: |
+          set -euo pipefail
+          rm -rf canonical-ending-renders
+          rm -f .github/workflows/audit-canonical-ending.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Complete canonical ending audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
