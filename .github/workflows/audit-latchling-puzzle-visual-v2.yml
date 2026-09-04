@@ -1,0 +1,54 @@
+name: Audit Latchling Puzzle Visual V2
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-latchling-puzzle-visual-v2.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-puzzle-audit-v2"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Render clean puzzle after Story Card closes
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-puzzle-audit-v2"
+          cp tools/audit_latchling_puzzle_visual_v2.mjs "$TEST_NODE/audit.mjs"
+          python3 -m http.server 8157 >/tmp/latchling-puzzle-audit-v2-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          mkdir -p clean-puzzle-latchling-render-v2
+          node audit.mjs
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p clean-puzzle-latchling-render-v2
+          cp "$TEST_NODE"/clean-puzzle-latchling-render-v2/*.png clean-puzzle-latchling-render-v2/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clean-puzzle-latchling-render-v2
+          path: clean-puzzle-latchling-render-v2/*.png
+          if-no-files-found: error
+      - name: Self-remove audit tooling
+        run: |
+          set -euo pipefail
+          rm -rf clean-puzzle-latchling-render-v2
+          rm -f tools/audit_latchling_puzzle_visual_v2.mjs .github/workflows/audit-latchling-puzzle-visual-v2.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/audit_latchling_puzzle_visual_v2.mjs .github/workflows/audit-latchling-puzzle-visual-v2.yml
+          git commit -m 'Complete delayed clean puzzle Latchling audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
