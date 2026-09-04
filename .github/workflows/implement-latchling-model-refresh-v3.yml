@@ -1,0 +1,160 @@
+name: Implement Global Latchling Model Refresh V3
+on:
+  push:
+    paths:
+      - '.github/workflows/implement-latchling-model-refresh-v3.yml'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply refined spherical model
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          game_css=r'''
+
+/* Refined spherical Latchling model — selected makeover #4 */
+.latchling{padding:0;appearance:none;-webkit-appearance:none;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--light) 0%,var(--piece-color) 56%,var(--dark) 100%);border:2px solid rgba(39,68,98,.42);box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}
+.latchling.selected{box-shadow:0 0 0 4px rgba(255,255,255,.95),0 0 0 7px rgba(66,150,233,.65),0 7px 12px rgba(22,39,58,.28);filter:saturate(1.06)}
+.latchling .suit-mark{top:7%;width:25%;height:25%;z-index:3}.latchling .suit-mark svg{fill:#27496f;filter:drop-shadow(0 1px rgba(255,255,255,.18))}
+.latchling .face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2;animation:refinedFaceFloat 2.8s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+.latchling .eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;transform-origin:center;animation:refinedBlink var(--blink-duration,4.8s) infinite;animation-delay:var(--blink-delay,0s)}
+.latchling .eye{width:22%;height:100%;background:#17253a;border-radius:50%;position:relative;box-shadow:inset 0 -1px 0 rgba(5,16,29,.16)}
+.latchling .eye:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%;z-index:2}
+.latchling .eye:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}
+.latchling .face:before,.latchling .face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62);filter:blur(.15px);pointer-events:none}.latchling .face:before{left:2%}.latchling .face:after{right:2%}
+.latchling .mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%;margin:0;animation:none}
+.latchling.expr-happy .mouth{border:0;border-bottom:2px solid #28415f;border-radius:0 0 52% 52%;background:transparent}
+.latchling.expr-surprised .mouth{width:18%;height:22%;border:1.5px solid #17253a;border-radius:50%;background:#29415f}
+.latchling.expr-angry .mouth{width:29%;border:0;border-top:2px solid #28415f;border-radius:52% 52% 0 0;background:transparent}
+.latchling.expr-smug .mouth{width:28%;border:0;border-bottom:2px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg;background:transparent}
+.latchling.expr-sleepy .eye{height:10%;background:transparent;border:0;border-top:2px solid #28415f;border-radius:50%;box-shadow:none}.latchling.expr-sleepy .eye:before,.latchling.expr-sleepy .eye:after{display:none}.latchling.expr-sleepy .mouth{width:19%;border:0;border-bottom:2px solid #28415f;border-radius:50%;background:transparent}
+.latchling.expr-angry .eyes:before,.latchling.expr-angry .eyes:after{content:"";position:absolute;width:29%;height:2px;background:#28415f;top:-8%}.latchling.expr-angry .eyes:before{left:16%;rotate:15deg}.latchling.expr-angry .eyes:after{right:16%;rotate:-15deg}
+.latchling.expr-curious .eyes{transform:translateY(-1%)}.latchling.expr-curious .eye:first-child{scale:.88}.latchling.expr-curious .eye:last-child{scale:1.08}.latchling.expr-curious .mouth{width:19%;border:0;border-bottom:2px solid #28415f;border-radius:50%;rotate:8deg;background:transparent}
+.latchling.expr-determined .eyes:before,.latchling.expr-determined .eyes:after{content:"";position:absolute;width:30%;height:2px;background:#28415f;top:-9%}.latchling.expr-determined .eyes:before{left:15%;rotate:-13deg}.latchling.expr-determined .eyes:after{right:15%;rotate:13deg}.latchling.expr-determined .mouth{width:29%;border:0;border-top:2px solid #28415f;background:transparent}
+@keyframes refinedBlink{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}
+@keyframes refinedFaceFloat{0%,100%{translate:0 0}50%{translate:0 1px}}
+@media(prefers-reduced-motion:reduce){.latchling .face,.latchling .eyes{animation:none!important}}
+'''
+          p=Path('style400-game.css'); t=p.read_text();
+          if '/* Refined spherical Latchling model — selected makeover #4 */' not in t: p.write_text(t+game_css)
+
+          title_css=r'''
+
+/* Refined spherical Latchling model — selected makeover #4 */
+.latchling{padding:0;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--light) 0%,var(--piece-color) 56%,var(--dark) 100%);border:2px solid rgba(39,68,98,.42);box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}
+.latchling .suit-mark{top:7%;width:25%;height:25%;z-index:3}.latchling .suit-mark svg{fill:#27496f;filter:drop-shadow(0 1px rgba(255,255,255,.18))}
+.latchling .face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2;animation:refinedFaceFloat 2.8s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+.latchling .eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;transform-origin:center;animation:refinedBlink var(--blink-duration,4.8s) infinite;animation-delay:var(--blink-delay,0s)}
+.latchling .eye{width:22%;height:100%;background:#17253a;border-radius:50%;position:relative;box-shadow:inset 0 -1px 0 rgba(5,16,29,.16)}.latchling .eye:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%;z-index:2}.latchling .eye:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}
+.latchling .face:before,.latchling .face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62);filter:blur(.15px)}.latchling .face:before{left:2%}.latchling .face:after{right:2%}
+.latchling .mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%;margin:0;animation:none}
+.latchling.expr-happy .mouth{border:0;border-bottom:2px solid #28415f;border-radius:0 0 52% 52%;background:transparent}.latchling.expr-surprised .mouth{width:18%;height:22%;border:1.5px solid #17253a;border-radius:50%;background:#29415f}.latchling.expr-angry .mouth{width:29%;border:0;border-top:2px solid #28415f;border-radius:52% 52% 0 0;background:transparent}.latchling.expr-smug .mouth{width:28%;border:0;border-bottom:2px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg;background:transparent}.latchling.expr-sleepy .eye{height:10%;background:transparent;border:0;border-top:2px solid #28415f;border-radius:50%;box-shadow:none}.latchling.expr-sleepy .eye:before,.latchling.expr-sleepy .eye:after{display:none}.latchling.expr-sleepy .mouth{width:19%;border:0;border-bottom:2px solid #28415f;border-radius:50%;background:transparent}.latchling.expr-angry .eyes:before,.latchling.expr-angry .eyes:after{content:"";position:absolute;width:29%;height:2px;background:#28415f;top:-8%}.latchling.expr-angry .eyes:before{left:16%;rotate:15deg}.latchling.expr-angry .eyes:after{right:16%;rotate:-15deg}.latchling.expr-curious .eyes{transform:translateY(-1%)}.latchling.expr-curious .eye:first-child{scale:.88}.latchling.expr-curious .eye:last-child{scale:1.08}.latchling.expr-curious .mouth{width:19%;border:0;border-bottom:2px solid #28415f;border-radius:50%;rotate:8deg;background:transparent}.latchling.expr-determined .eyes:before,.latchling.expr-determined .eyes:after{content:"";position:absolute;width:30%;height:2px;background:#28415f;top:-9%}.latchling.expr-determined .eyes:before{left:15%;rotate:-13deg}.latchling.expr-determined .eyes:after{right:15%;rotate:13deg}.latchling.expr-determined .mouth{width:29%;border:0;border-top:2px solid #28415f;background:transparent}
+@keyframes refinedBlink{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}@keyframes refinedFaceFloat{0%,100%{translate:0 0}50%{translate:0 1px}}
+@media(prefers-reduced-motion:reduce){.latchling .face,.latchling .eyes{animation:none!important}}
+'''
+          p=Path('title-island-concepts/index.html'); t=p.read_text();
+          if '/* Refined spherical Latchling model — selected makeover #4 */' not in t:
+              i=t.rfind('</style>');
+              if i<0: raise SystemExit('title style close missing')
+              p.write_text(t[:i]+title_css+t[i:])
+
+          p=Path('story-theme400.js'); t=p.read_text()
+          anchor="const CHAR_EXPR={Pippa:'curious',Bramble:'smug',Rowan:'happy',Pip:'determined',Tansy:'surprised'};"
+          if 'const CHAR_BLINK=' not in t:t=t.replace(anchor,anchor+"\nconst CHAR_BLINK={Pippa:['4.55s','-1.15s'],Bramble:['5.10s','-2.70s'],Rowan:['4.80s','-3.35s'],Pip:['5.35s','-1.85s'],Tansy:['4.25s','-2.25s']};",1)
+          old="function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue;return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color}`}"
+          new="function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue,b=CHAR_BLINK[c.name]||['4.8s','-1.4s'];return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color};--avatar-blink-duration:${b[0]};--avatar-blink-delay:${b[1]}`}"
+          if old in t:t=t.replace(old,new,1)
+          old="function characterAvatar(c){return `<span class=\"story-character-avatar\" data-character=\"${escapeHtml(c.name)}\" data-color=\"${escapeHtml(c.color)}\" data-suit=\"${escapeHtml(c.suit)}\" style=\"${characterVars(c)}\"><span class=\"story-character-avatar-suit\">${charSuitSvg(c.suit)}</span><span class=\"story-character-avatar-eyes\"><i></i><i></i></span></span>`}"
+          new="function characterAvatar(c){const expr=CHAR_EXPR[c.name]||'happy';return `<span class=\"story-character-avatar expr-${expr}\" data-character=\"${escapeHtml(c.name)}\" data-color=\"${escapeHtml(c.color)}\" data-suit=\"${escapeHtml(c.suit)}\" style=\"${characterVars(c)}\"><span class=\"story-character-avatar-suit\">${charSuitSvg(c.suit)}</span><span class=\"story-character-avatar-face\"><span class=\"story-character-avatar-eyes\"><i></i><i></i></span><i class=\"story-character-avatar-mouth\"></i></span></span>`}"
+          if old in t:t=t.replace(old,new,1)
+          p.write_text(t)
+
+          story_css=r'''
+
+/* Refined spherical Latchling portraits — selected makeover #4 */
+.story-char-body,.story-character-avatar{border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--charLight) 0%,var(--charColor) 56%,var(--charDark) 100%);border:2px solid rgba(39,68,98,.42);box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}
+.story-char-body .suit-mark{top:7%;width:25%;height:25%;z-index:3}.story-char-body .suit-mark svg,.story-character-avatar-suit svg{fill:#27496f}
+.story-char-body .face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2}.story-char-body .eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;animation:refinedStoryBlink var(--blink-duration,4.8s) infinite;animation-delay:var(--blink-delay,0s);transform-origin:center}.story-char-body .eye{width:22%;height:100%;background:#17253a;border-radius:50%;position:relative;box-shadow:inset 0 -1px rgba(5,16,29,.16)}.story-char-body .eye:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%}.story-char-body .eye:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}.story-char-body .face:before,.story-char-body .face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62)}.story-char-body .face:before{left:2%}.story-char-body .face:after{right:2%}.story-char-body .mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%;margin:0;animation:none}
+.story-char-body.expr-happy .mouth{border:0;border-bottom:2px solid #28415f;border-radius:0 0 52% 52%}.story-char-body.expr-surprised .mouth{width:18%;height:22%;border:1.5px solid #17253a;border-radius:50%;background:#29415f}.story-char-body.expr-smug .mouth{width:28%;border:0;border-bottom:2px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg}.story-char-body.expr-curious .eyes{transform:translateY(-1%)}.story-char-body.expr-curious .eye:first-child{scale:.88}.story-char-body.expr-curious .eye:last-child{scale:1.08}.story-char-body.expr-curious .mouth{width:19%;border:0;border-bottom:2px solid #28415f;border-radius:50%;rotate:8deg}.story-char-body.expr-determined .eyes:before,.story-char-body.expr-determined .eyes:after{content:"";position:absolute;width:30%;height:2px;background:#28415f;top:-9%}.story-char-body.expr-determined .eyes:before{left:15%;rotate:-13deg}.story-char-body.expr-determined .eyes:after{right:15%;rotate:13deg}.story-char-body.expr-determined .mouth{width:29%;border:0;border-top:2px solid #28415f}
+.story-character-avatar-suit{position:absolute;left:50%;top:7%;translate:-50% 0;width:25%;height:25%;z-index:3}.story-character-avatar-face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2}.story-character-avatar-eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;animation:refinedAvatarBlink var(--avatar-blink-duration,4.8s) infinite;animation-delay:var(--avatar-blink-delay,-1.4s);transform-origin:center}.story-character-avatar-eyes i{width:22%;height:100%;border-radius:50%;background:#17253a;position:relative}.story-character-avatar-eyes i:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%}.story-character-avatar-eyes i:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}.story-character-avatar-face:before,.story-character-avatar-face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62)}.story-character-avatar-face:before{left:2%}.story-character-avatar-face:after{right:2%}.story-character-avatar-mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%}.story-character-avatar.expr-happy .story-character-avatar-mouth{border-bottom:1.5px solid #28415f;border-radius:0 0 52% 52%}.story-character-avatar.expr-surprised .story-character-avatar-mouth{width:18%;height:22%;border:1px solid #17253a;border-radius:50%;background:#29415f}.story-character-avatar.expr-smug .story-character-avatar-mouth{width:28%;border-bottom:1.5px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg}.story-character-avatar.expr-curious .story-character-avatar-eyes{transform:translateY(-1%)}.story-character-avatar.expr-curious .story-character-avatar-eyes i:first-child{scale:.88}.story-character-avatar.expr-curious .story-character-avatar-eyes i:last-child{scale:1.08}.story-character-avatar.expr-curious .story-character-avatar-mouth{width:19%;border-bottom:1.5px solid #28415f;border-radius:50%;rotate:8deg}.story-character-avatar.expr-determined .story-character-avatar-eyes:before,.story-character-avatar.expr-determined .story-character-avatar-eyes:after{content:"";position:absolute;width:30%;height:1.5px;background:#28415f;top:-9%}.story-character-avatar.expr-determined .story-character-avatar-eyes:before{left:15%;rotate:-13deg}.story-character-avatar.expr-determined .story-character-avatar-eyes:after{right:15%;rotate:13deg}.story-character-avatar.expr-determined .story-character-avatar-mouth{width:29%;border-top:1.5px solid #28415f}
+@keyframes refinedStoryBlink{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}@keyframes refinedAvatarBlink{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}
+@media(prefers-reduced-motion:reduce){.story-char-body .eyes,.story-character-avatar-eyes{animation:none!important}}
+'''
+          p=Path('style400-story-theme.css'); t=p.read_text();
+          if '/* Refined spherical Latchling portraits — selected makeover #4 */' not in t:p.write_text(t+story_css)
+          print('GLOBAL_LATCHLING_MODEL_REFRESH_V3_APPLIED')
+          PY
+
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check story-theme400.js
+          grep -q 'Refined spherical Latchling model' style400-game.css
+          grep -q 'Refined spherical Latchling model' title-island-concepts/index.html
+          grep -q 'Refined spherical Latchling portraits' style400-story-theme.css
+          grep -q 'story-character-avatar-mouth' story-theme400.js
+          for expr in happy surprised angry smug sleepy curious determined; do grep -q "latchling.expr-$expr" style400-game.css; done
+          for f in campaign400-{1..8}.js game400-a.js game400-b.js story400.js music400.js sfx400.js index.html; do git diff --exit-code -- "$f"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          for fn in ['style400-game.css','title-island-concepts/index.html','style400-story-theme.css']:
+              t=Path(fn).read_text(); assert 'border-radius:50%' in t
+          print('GLOBAL_LATCHLING_MODEL_STATIC_OK')
+          PY
+
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-model-v3"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Browser validation and renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-model-v3"
+          mkdir -p latchling-model-v3-renders
+          python3 -m http.server 8153 >/tmp/latchling-v3-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cat > "$TEST_NODE/validate.mjs" <<'NODE'
+          import {chromium} from 'playwright';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};const errors=[];const hook=p=>{p.on('pageerror',e=>errors.push('page:'+e.message));p.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});p.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)})};
+          const browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:390,height:844}});const page=await ctx.newPage();hook(page);await page.goto('http://127.0.0.1:8153/',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof startLevel==='function'&&window.LatchlingsStoryTheme);
+          await page.evaluate(()=>startLevel(400));await page.waitForSelector('#game .latchling');const puzzle=await page.evaluate(()=>{const xs=[...document.querySelectorAll('#game .latchling')],x=xs[0],r=x.getBoundingClientRect(),eye=x.querySelector('.eye'),face=x.querySelector('.face'),mouth=x.querySelector('.mouth'),suit=x.querySelector('.suit-mark'),anim=x.querySelector('.eyes').getAnimations()[0];return {count:xs.length,w:r.width,h:r.height,eye:getComputedStyle(eye).backgroundColor,catchlight:getComputedStyle(eye,'::before').content,cheek:getComputedStyle(face,'::before').content,mouthY:(mouth.getBoundingClientRect().top-r.top)/r.height,suitY:(suit.getBoundingClientRect().top-r.top)/r.height,eyeY:(eye.getBoundingClientRect().top-r.top)/r.height,blink:getComputedStyle(x.querySelector('.eyes')).animationName,frames:anim?anim.effect.getKeyframes().map(k=>k.scale):[],durations:xs.map(v=>getComputedStyle(v.querySelector('.eyes')).animationDuration)};});ok(puzzle.count>1,'pieces missing');ok(Math.abs(puzzle.w-puzzle.h)<.25,'not spherical '+JSON.stringify(puzzle));ok(puzzle.eye==='rgb(23, 37, 58)','eyes wrong');ok(puzzle.catchlight!=='none'&&puzzle.cheek!=='none','catchlight/cheeks missing');ok(puzzle.mouthY<.62,'mouth too low');ok(puzzle.suitY<puzzle.eyeY,'suit not forehead');ok(puzzle.blink==='refinedBlink','blink not bound');ok(puzzle.frames.some(x=>String(x).includes('0.07')),'blink close keyframe missing');ok(new Set(puzzle.durations).size>1,'blinks synchronized');await page.screenshot({path:'latchling-model-v3-renders/puzzle.png',fullPage:true});
+          await page.evaluate(()=>startLevel(1));const moved=await page.evaluate(async()=>{for(const d of ['U','R','D','L'])if(simulate(selected,d)){const b=movesUsed;await moveSelected(d);return movesUsed===b+1}return false});ok(moved,'move regression');
+          await page.evaluate(()=>{startLevel(1);LatchlingsStoryTheme.show(1,true)});await page.waitForSelector('#storyCardOverlay.show .story-char-body');const story=await page.evaluate(()=>{const x=document.querySelector('.story-char-body'),r=x.getBoundingClientRect(),e=x.querySelector('.eye'),f=x.querySelector('.face'),m=x.querySelector('.mouth'),s=x.querySelector('.suit-mark');return {w:r.width,h:r.height,eye:getComputedStyle(e).backgroundColor,cheek:getComputedStyle(f,'::before').content,mouthY:(m.getBoundingClientRect().top-r.top)/r.height,suitY:(s.getBoundingClientRect().top-r.top)/r.height,eyeY:(e.getBoundingClientRect().top-r.top)/r.height}});ok(Math.abs(story.w-story.h)<.25&&story.eye==='rgb(23, 37, 58)'&&story.cheek!=='none'&&story.mouthY<.62&&story.suitY<story.eyeY,'story portrait mismatch '+JSON.stringify(story));await page.screenshot({path:'latchling-model-v3-renders/story.png',fullPage:true});await page.evaluate(()=>LatchlingsStoryTheme.close(false));
+          await page.evaluate(()=>openStoryScreen());await page.waitForSelector('#story .story-character-avatar');const residents=await page.evaluate(()=>[...document.querySelectorAll('#story .story-character-avatar')].map(a=>({name:a.dataset.character,w:a.getBoundingClientRect().width,h:a.getBoundingClientRect().height,eyes:!!a.querySelector('.story-character-avatar-eyes'),mouth:!!a.querySelector('.story-character-avatar-mouth'),suit:!!a.querySelector('.story-character-avatar-suit svg'),cheek:getComputedStyle(a.querySelector('.story-character-avatar-face'),'::before').content,blink:getComputedStyle(a.querySelector('.story-character-avatar-eyes')).animationName,expr:[...a.classList].find(c=>c.startsWith('expr-'))})));ok(residents.length===5&&residents.every(x=>Math.abs(x.w-x.h)<.25&&x.eyes&&x.mouth&&x.suit&&x.cheek!=='none'&&x.blink==='refinedAvatarBlink'&&x.expr),'resident mismatch '+JSON.stringify(residents));await page.screenshot({path:'latchling-model-v3-renders/residents.png',fullPage:true});
+          await page.evaluate(()=>screen('home'));await page.waitForTimeout(250);const fr=page.frames().find(f=>/title-island-concepts/.test(f.url()));ok(fr,'title iframe missing');await fr.waitForSelector('#c2 .latchling');const title=await fr.evaluate(()=>[...document.querySelectorAll('#c2 .latchling')].map(x=>{const r=x.getBoundingClientRect(),e=x.querySelector('.eye'),f=x.querySelector('.face'),m=x.querySelector('.mouth'),s=x.querySelector('.suit-mark');return {role:x.dataset.role,w:r.width,h:r.height,eye:getComputedStyle(e).backgroundColor,cheek:getComputedStyle(f,'::before').content,mouthY:(m.getBoundingClientRect().top-r.top)/r.height,suitY:(s.getBoundingClientRect().top-r.top)/r.height,eyeY:(e.getBoundingClientRect().top-r.top)/r.height,blink:getComputedStyle(x.querySelector('.eyes')).animationName,dur:getComputedStyle(x.querySelector('.eyes')).animationDuration}}));const adults=title.filter(x=>x.role==='adult'),kids=title.filter(x=>x.role==='child');ok(adults.length===3&&kids.length===2,'title roster');ok(adults.every(x=>Math.abs(x.w-34)<.25&&Math.abs(x.h-34)<.25),'adult size');ok(kids.every(x=>Math.abs(x.w-25)<.25&&Math.abs(x.h-25)<.25),'kid size');ok(title.every(x=>x.eye==='rgb(23, 37, 58)'&&x.cheek!=='none'&&x.mouthY<.64&&x.suitY<x.eyeY&&x.blink==='refinedBlink'),'title face mismatch '+JSON.stringify(title));ok(new Set(title.map(x=>x.dur)).size>1,'title blinks sync');await page.screenshot({path:'latchling-model-v3-renders/title.png',fullPage:true});ok(errors.length===0,'browser errors '+errors.join(' | '));await ctx.close();
+          const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const rp=await reduced.newPage();hook(rp);await rp.goto('http://127.0.0.1:8153/',{waitUntil:'domcontentloaded'});await rp.waitForFunction(()=>typeof startLevel==='function');await rp.evaluate(()=>startLevel(1));ok(await rp.locator('#game .eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','reduced puzzle blink');await rp.evaluate(()=>openStoryScreen());ok(await rp.locator('#story .story-character-avatar-eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','reduced avatar blink');await reduced.close();ok(errors.length===0,'final errors '+errors.join(' | '));console.log('GLOBAL_LATCHLING_MODEL_V3_BROWSER_OK',JSON.stringify({puzzle,story,residents,title}));await browser.close();
+          NODE
+          node "$TEST_NODE/validate.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: global-latchling-model-v3-renders
+          path: latchling-model-v3-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated product and clean temporary workflows
+        run: |
+          set -euo pipefail
+          rm -rf latchling-model-v3-renders
+          rm -f .github/workflows/implement-latchling-model-refresh.yml .github/workflows/implement-latchling-model-refresh-v2.yml .github/workflows/implement-latchling-model-refresh-v3.yml .github/workflows/fix-latchling-model-refresh-validator.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style400-game.css title-island-concepts/index.html story-theme400.js style400-story-theme.css .github/workflows/implement-latchling-model-refresh.yml .github/workflows/implement-latchling-model-refresh-v2.yml .github/workflows/implement-latchling-model-refresh-v3.yml
+          git commit -m 'Refresh all Latchlings with polished spherical faces'
+          git pull --rebase origin main
+          git push origin HEAD:main
