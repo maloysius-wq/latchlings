@@ -1,0 +1,75 @@
+name: Final All-Beat Cinematic Visual Audit v2
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-final-all-cinematic-beats-v2.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static final assertions
+        run: |
+          set -euo pipefail
+          node --check cinematics400.js
+          grep -q 'style400-cinematics-refine.css' index.html
+          grep -q 'html.cinematic-mode,body.cinematic-mode' title-island-concepts/index.html
+          grep -q 'AUTO ROUTER' style400-cinematics-refine.css
+          grep -q 'grid-template-columns:repeat(8' style400-cinematics-refine.css
+      - name: Install Chromium
+        run: |
+          TEST_NODE="$RUNNER_TEMP/latchlings-final-visual-v2"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Render all 24 final beats
+        run: |
+          TEST_NODE="$RUNNER_TEMP/latchlings-final-visual-v2"
+          cat > "$TEST_NODE/audit.mjs" <<'MJS'
+          import {chromium} from 'playwright';import fs from 'node:fs';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};
+          const out=process.env.GITHUB_WORKSPACE+'/final-all-beats-v2';fs.mkdirSync(out,{recursive:true});
+          const browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:390,height:844}});const page=await ctx.newPage(),errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          page.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(wav|mp3|ogg|m4a)($|\?)/i.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)});
+          await page.goto('http://127.0.0.1:8164/',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.LatchlingsCinematics);
+          const ids=['opening','across-drift','old-maps','homeward'],manifest=[];
+          async function homeData(){const f=page.frames().find(x=>x.url().includes('cinematic=1'));if(!f)return null;await f.waitForSelector('#c2 .island-model');await f.waitForTimeout(180);return f.evaluate(()=>({htmlMode:document.documentElement.classList.contains('cinematic-mode'),bodyMode:document.body.classList.contains('cinematic-mode'),htmlBg:getComputedStyle(document.documentElement).backgroundColor,bodyBg:getComputedStyle(document.body).backgroundColor,residents:document.querySelectorAll('#c2 .resident').length,cottage:!!document.querySelector('#c2 .cottage'),tree:!!document.querySelector('#c2 .little-home-tree'),materials:[...document.querySelectorAll('#c2 .island-side,#c2 .island-rim,#c2 .island-top,#c2 .house-front,#c2 .trunk')].map(e=>getComputedStyle(e).backgroundImage).join(' ')}))}
+          for(const id of ids){const count=await page.evaluate(id=>LatchlingsCinematics.CINEMATICS[id].beats.length,id);await page.evaluate(id=>LatchlingsCinematics.show(id,{markSeen:false}),id);await page.waitForSelector(`#cinematicOverlay.show[data-cinematic="${id}"]`);for(let i=0;i<count;i++){if(i){await page.click('#cinematicNext');await page.waitForTimeout(90)}await page.waitForTimeout(250);const home=await homeData();if(home){ok(home.htmlMode&&home.bodyMode,'Little Home cinematic mode missing');ok(home.htmlBg==='rgba(0, 0, 0, 0)'&&home.bodyBg==='rgba(0, 0, 0, 0)','Little Home iframe opaque '+JSON.stringify(home));ok(home.residents===5&&home.cottage&&home.tree,'Little Home structure incomplete');ok(home.materials.includes('earth.jpg')&&home.materials.includes('grass.jpg')&&home.materials.includes('wood.jpg'),'Little Home textures incomplete')}
+              const m=await page.evaluate(()=>{const vis=document.getElementById('cinematicOverlay').dataset.visual;return{visual:vis,title:document.getElementById('cinematicBeat').textContent,overflow:document.documentElement.scrollWidth>innerWidth+1,homeFrames:document.querySelectorAll('iframe.cin-home-reference').length,networkNodes:document.querySelectorAll('.cin-network .node').length,keepsakes:document.querySelectorAll('.cin-keepsake-token').length}});ok(!m.overflow,'horizontal overflow '+id+' '+i);if(m.visual==='homeward-network')ok(m.homeFrames===1&&m.networkNodes===8,'Homeward composite layers missing '+JSON.stringify(m));if(m.visual==='keepsakes')ok(m.keepsakes===7,'keepsake count wrong');const file=`${id}-${String(i+1).padStart(2,'0')}-${m.visual}.png`;await page.screenshot({path:out+'/'+file,fullPage:true});manifest.push({id,beat:i,home,...m,file})}await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.getElementById('cinematicOverlay').classList.contains('show'))}
+          ok(manifest.length===24,'Expected 24 beats, got '+manifest.length);
+          await page.goto('http://127.0.0.1:8164/title-island-concepts/?c=2&embed=1',{waitUntil:'domcontentloaded'});await page.waitForSelector('#c2 .island-model');const normal=await page.evaluate(()=>({htmlMode:document.documentElement.classList.contains('cinematic-mode'),bodyMode:document.body.classList.contains('cinematic-mode'),logo:!!document.querySelector('#c2 .toy-brand'),play:!!document.querySelector('#c2 .play'),residents:document.querySelectorAll('#c2 .resident').length}));ok(!normal.htmlMode&&!normal.bodyMode&&normal.logo&&normal.play&&normal.residents===5,'normal title changed '+JSON.stringify(normal));await page.screenshot({path:out+'/REFERENCE-normal-title.png',fullPage:true});fs.writeFileSync(out+'/manifest.json',JSON.stringify({beats:manifest,normalTitle:normal,errors},null,2));ok(errors.length===0,'browser errors '+errors.join(' | '));await browser.close();console.log('FINAL_ALL_24_V2_OK');
+          MJS
+          python3 -m http.server 8164 >/tmp/latchlings-final-v2-http.log 2>&1 &
+          PID=$!; trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE" && node audit.mjs
+      - name: Wide and reduced motion
+        run: |
+          TEST_NODE="$RUNNER_TEMP/latchlings-final-visual-v2"
+          cat > "$TEST_NODE/extra.mjs" <<'MJS'
+          import {chromium} from 'playwright';const ok=(c,m)=>{if(!c)throw new Error(m)};const b=await chromium.launch({headless:true});for(const cfg of [{viewport:{width:900,height:844},reducedMotion:'no-preference'},{viewport:{width:390,height:844},reducedMotion:'reduce'}]){const c=await b.newContext(cfg),p=await c.newPage();await p.goto('http://127.0.0.1:8164/',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.LatchlingsCinematics);await p.evaluate(()=>LatchlingsCinematics.show('homeward',{markSeen:false}));await p.waitForSelector('#cinematicOverlay.show');for(let i=0;i<5;i++){await p.click('#cinematicNext');await p.waitForTimeout(70)}const shell=await p.locator('.cinematic-shell').boundingBox();ok(shell&&shell.width<=522,'wide shell overflow');if(cfg.reducedMotion==='reduce'){const a=await p.evaluate(()=>getComputedStyle(document.querySelector('.cin-network .wire')).animationName);ok(a==='none','reduced-motion network animation '+a)}await c.close()}await b.close();console.log('FINAL_EXTRA_V2_OK');
+          MJS
+          python3 -m http.server 8164 >/tmp/latchlings-final-v2-extra-http.log 2>&1 &
+          PID=$!; trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE" && node extra.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-all-24-cinematic-beats-v2
+          path: final-all-beats-v2/*
+          if-no-files-found: error
+      - name: Self-remove final audit
+        run: |
+          rm -rf final-all-beats-v2
+          rm -f .github/workflows/audit-final-all-cinematic-beats-v2.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Complete final cinematic visual acceptance audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
