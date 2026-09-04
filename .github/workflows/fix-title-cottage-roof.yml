@@ -1,0 +1,97 @@
+name: Fix Title Cottage Roof
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-title-cottage-roof.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify handoff and inspect cottage structure
+        run: |
+          set -euo pipefail
+          grep -q 'Fix Little Home cottage roof seam' DEVELOPMENT_HANDOFF.md
+          grep -n -E 'cottage|house|roof|shed' title-island-concepts/index.html | head -120
+      - name: Bridge cottage roof seam
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('title-island-concepts/index.html')
+          t=p.read_text()
+          # Add a narrow roof bridge between the existing cottage roof masses. This preserves the cottage footprint,
+          # chimney, walls, porch/details, island geometry, and title layout while making the building read as one house.
+          anchor='.cottage-roof-right{'
+          i=t.find(anchor)
+          if i<0:
+              raise SystemExit('cottage roof anchor missing')
+          # Insert bridge rule immediately before the right-roof rule, once.
+          if '.cottage-roof-bridge{' not in t:
+              bridge='''.cottage-roof-bridge{position:absolute;left:46%;top:21%;width:18%;height:15%;background:linear-gradient(180deg,#8d5f4c 0%,#734939 100%);clip-path:polygon(0 100%,32% 18%,68% 18%,100% 100%);z-index:8;filter:drop-shadow(0 2px 0 rgba(65,43,34,.18))}\n'''
+              t=t[:i]+bridge+t[i:]
+          # Add bridge element between the two roof pieces if not already present.
+          marker='<div class="cottage-roof-right"></div>'
+          if marker not in t:
+              raise SystemExit('cottage right roof element missing')
+          if '<div class="cottage-roof-bridge"></div>' not in t:
+              t=t.replace(marker,'<div class="cottage-roof-bridge"></div>'+marker,1)
+          p.write_text(t)
+          PY
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          grep -q 'cottage-roof-bridge' title-island-concepts/index.html
+          test "$(grep -o 'cottage-roof-bridge' title-island-concepts/index.html | wc -l)" -ge 2
+          git diff --exit-code -- index.html style400-game.css style400-story-theme.css story-theme400.js game400-a.js game400-b.js campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story400.js music400.js sfx400.js
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Render title and validate cottage
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8154 >/tmp/latchlings-title-roof-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cat > /tmp/audit.mjs <<'JS'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844}});
+          const errors=[]; page.on('pageerror',e=>errors.push(e.message)); page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+          await page.goto('http://127.0.0.1:8154/title-island-concepts/?c=2&embed=1',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('#c2 .cottage-roof-bridge');
+          const data=await page.evaluate(()=>{
+            const b=document.querySelector('#c2 .cottage-roof-bridge'),l=document.querySelector('#c2 .cottage-roof-left'),r=document.querySelector('#c2 .cottage-roof-right');
+            const br=b.getBoundingClientRect(),lr=l?.getBoundingClientRect(),rr=r?.getBoundingClientRect();
+            return {bridge:{x:br.x,y:br.y,w:br.width,h:br.height},left:lr&&{x:lr.x,y:lr.y,w:lr.width,h:lr.height},right:rr&&{x:rr.x,y:rr.y,w:rr.width,h:rr.height},overflow:document.documentElement.scrollWidth>innerWidth+1};
+          });
+          if(!data.left||!data.right) throw new Error('roof masses missing '+JSON.stringify(data));
+          if(data.bridge.w<8||data.bridge.h<6) throw new Error('bridge too small '+JSON.stringify(data));
+          if(data.overflow) throw new Error('horizontal overflow '+JSON.stringify(data));
+          if(errors.length) throw new Error(errors.join(' | '));
+          await page.screenshot({path:'title-cottage-roof-fixed.png',fullPage:true});
+          console.log('TITLE_COTTAGE_ROOF_OK',JSON.stringify(data));
+          await browser.close();
+          JS
+          node /tmp/audit.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: title-cottage-roof-fixed
+          path: title-cottage-roof-fixed.png
+          if-no-files-found: error
+      - name: Commit product and self-remove
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/fix-title-cottage-roof.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add title-island-concepts/index.html .github/workflows/fix-title-cottage-roof.yml
+          git commit -m 'Bridge Little Home cottage roof'
+          git pull --rebase origin main
+          git push origin HEAD:main
