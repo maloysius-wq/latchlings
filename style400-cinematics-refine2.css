@@ -1,0 +1,18 @@
+/* Final hand-tuned details from full-resolution visual acceptance. */
+
+/* The embedded title scene should blend directly into Homeward's sky/network. */
+.cin-homeward-wrap .cin-home-reference-wrap:after{display:none!important}
+.cin-homeward-wrap .cin-home-reference-wrap{inset:2px 30px 0}
+.cin-homeward-wrap .cin-network{opacity:.88!important}
+
+/* Prism Gardens gets tiny flower/crystal color on the grass, not only one crystal spire. */
+.cin-islands.prism .cin-island-top:before{content:"";position:absolute;z-index:4;left:13%;right:13%;top:24%;bottom:15%;border-radius:50%;background:radial-gradient(circle at 15% 55%,#ef9dad 0 3%,transparent 4%),radial-gradient(circle at 35% 30%,#f1d169 0 3%,transparent 4%),radial-gradient(circle at 61% 62%,#77b5e9 0 3%,transparent 4%),radial-gradient(circle at 81% 36%,#a37ae3 0 3%,transparent 4%);opacity:.9}
+.cin-islands.prism .cin-island-prop{filter:drop-shadow(0 2px 2px rgba(56,78,101,.16)) drop-shadow(0 0 4px rgba(139,192,225,.22))}
+
+/* Replace the earlier pseudo-tripod with a real three-leg mount in the scene markup. */
+.cin-telescope:before,.cin-telescope:after{display:none!important}
+.cin-telescope-mount{position:absolute;left:48px;top:30px;width:34px;height:55px;z-index:-1;rotate:10deg;transform-origin:top center}
+.cin-telescope-mount:before{content:"";position:absolute;left:8px;top:0;width:20px;height:9px;border-radius:6px;background:#806044;border:2px solid #5f4936;box-shadow:0 3px 4px rgba(42,48,51,.16)}
+.cin-telescope-mount b{position:absolute;display:block;left:16px;top:8px;width:4px;height:46px;border-radius:3px;background-image:linear-gradient(90deg,rgba(255,244,214,.14),rgba(67,44,26,.18)),var(--cin-wood);background-size:cover,42px 42px;box-shadow:0 2px 2px rgba(52,42,33,.13);transform-origin:50% 0}
+.cin-telescope-mount b:nth-child(1){rotate:0deg}.cin-telescope-mount b:nth-child(2){rotate:22deg}.cin-telescope-mount b:nth-child(3){rotate:-22deg}
+.lookout-tansy{left:30%!important;top:57%!important}
