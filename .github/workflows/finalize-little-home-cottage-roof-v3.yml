@@ -1,0 +1,67 @@
+name: Finalize Little Home Cottage Roof V3
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-little-home-cottage-roof-v3.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify deployed shared-ridge roof
+        run: |
+          set -euo pipefail
+          URL='https://maloysius-wq.github.io/latchlings/title-island-concepts/index.html'
+          ok=0
+          for i in $(seq 1 12); do
+            if curl -fsSL "$URL" -o /tmp/live-title.html; then
+              if grep -Fq '.roof-b{left:38px;width:72px;clip-path:polygon(0 0,100% 64%,100% 90%,48% 86%,48% 69%);filter:brightness(.78)}' /tmp/live-title.html; then
+                ok=1
+                break
+              fi
+            fi
+            sleep 5
+          done
+          test "$ok" = 1
+          echo LIVE_SHARED_RIDGE_ROOF_OK
+      - name: Close handoff entry
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          t=p.read_text()
+          heading='### 2026-09-04 — Fix Little Home cottage roof seam'
+          s=t.index(heading)
+          e=t.index('\n---\n\n### 2026-09-04 — Refresh all Latchlings',s)
+          section=t[s:e]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          if '#### Completion summary' not in section:
+              summary = (
+                  "\n\n#### Completion summary\n\n"
+                  "**Structure decision:** The Little Home building is one cottage, not a house plus shed. The source uses one `.cottage` container with `.house-front` and `.house-side` wall planes plus `.roof-a` and `.roof-b` roof planes. The original `.roof-b` had an independent peak, which made the side plane read as a second attached building even though it belonged to the same cottage.\n\n"
+                  "**First pass and refinement:** The first fix joined the roof boxes more aggressively in commit `c510d8244715a5497cc1a7a5b1570df62c0eee1f` and passed Actions run `33902161335` with artifact `9948058317`, but manual render inspection rejected it as the final answer because the side roof still visibly had its own gable peak. The handoff was updated before refinement in commit `910b6ea4c15653219f7dae2bbc941a3f20dc87e3`.\n\n"
+                  "**Final implementation:** Commit `4832185884d5eff38cca784cddf1fc03b4536222` (`Unify Little Home cottage roof ridge`) changes the darker side roof plane so it begins at the existing front-gable apex/ridge and slopes back over the side wall. The far-right roof edge and the cottage's 111×100 logical footprint remain unchanged; only the side-plane geometry changed. The result now reads as one cottage with a front gable and connected side roof rather than two neighboring gables.\n\n"
+                  "**Validation:** Actions run `33902364020` passed static and Chromium checks at the production 390×844 title viewport. It verified shared ridge alignment, unchanged cottage footprint, no horizontal overflow, the same five-resident roster, and unchanged rendered resident sizes (34×34 px adults, 25×25 px children). Artifact `9948130433` (`little-home-cottage-shared-ridge`) was downloaded and manually inspected; both the full title render and close-up were accepted.\n\n"
+                  "**Deployment:** GitHub Pages run `33902423865` completed successfully for implementation commit `4832185884d5eff38cca784cddf1fc03b4536222`. The final live-source check also confirmed the shared-ridge `.roof-b` rule is present on the deployed title before this handoff was closed.\n\n"
+                  "**Repository hygiene / remaining risk:** Temporary roof-fix/refinement workflows self-removed, the accidental staging file was removed, and the failed temporary finalizer attempts were cleaned up. `.github/workflows/validate-repository-access-guard.yml` remains the only durable workflow. No blocking issue remains.\n"
+              )
+              section=section.rstrip()+summary+'\n'
+          p.write_text(t[:s]+section+t[e:])
+          PY
+      - name: Commit final handoff and clean temporary workflows
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/finalize-little-home-cottage-roof.yml
+          rm -f .github/workflows/finalize-little-home-cottage-roof-v2.yml
+          rm -f .github/workflows/finalize-little-home-cottage-roof-v3.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/finalize-little-home-cottage-roof.yml .github/workflows/finalize-little-home-cottage-roof-v2.yml .github/workflows/finalize-little-home-cottage-roof-v3.yml
+          git commit -m 'Close Little Home cottage roof handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
