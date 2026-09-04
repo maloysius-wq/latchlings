@@ -167,7 +167,7 @@ body.embed-mode #c2 .phone{border-radius:0;box-shadow:none;width:100%}
 @media(prefers-reduced-motion:reduce){.latchling .face,.latchling .eyes{animation:none!important}}
 
 /* Cinematic scene-only reuse of the production Little Home */
-body.cinematic-mode{width:100vw;height:100vh;min-height:0!important;margin:0;background:transparent!important;overflow:hidden!important}
+html.cinematic-mode,body.cinematic-mode{width:100vw;height:100vh;min-height:0!important;margin:0;background:transparent!important;overflow:hidden!important}
 body.cinematic-mode .page,body.cinematic-mode .viewer,body.cinematic-mode #c2,body.cinematic-mode #c2 .phone{width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important}
 body.cinematic-mode #c2 .phone{aspect-ratio:auto!important;background:transparent!important;overflow:hidden!important;border-radius:0!important;box-shadow:none!important}
 body.cinematic-mode #c2 .topline,body.cinematic-mode #c2 .toy-brand,body.cinematic-mode #c2 .play,body.cinematic-mode #c2 .secondary,body.cinematic-mode #c2 .cloud,body.cinematic-mode #c2 .skywash{display:none!important}
@@ -238,7 +238,7 @@ const buttons=[...document.querySelectorAll('.switcher button')],concepts=[...do
 function initProductionEmbed(){
  const params=new URLSearchParams(location.search);if(params.get('embed')!=='1')return;
  const cinematic=params.get('cinematic')==='1';
- document.body.classList.add('embed-mode');if(cinematic)document.body.classList.add('cinematic-mode');show('c2');
+ document.body.classList.add('embed-mode');if(cinematic){document.documentElement.classList.add('cinematic-mode');document.body.classList.add('cinematic-mode')}show('c2');
  const c2=document.getElementById('c2'),phone=c2.querySelector('.phone'),progress=c2.querySelector('.progress span');
  const send=action=>{if(parent&&typeof parent.LatchlingsHomeAction==='function'){parent.LatchlingsHomeAction(action);return}parent.postMessage({source:'latchlings-home',action},location.origin)};
  const bindEmbed=(el,action)=>{if(!el)return;el.addEventListener('click',()=>{if(el.dataset.parentBound==='1')return;send(action)})};
