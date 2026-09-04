@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-04 — Refresh all Latchlings with refined spherical face model
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **Continuation audit note (2026-09-04):** The product refresh reached `ec21a9fa2a11b4c9377827b67d2cb51290f0aa0f`, and validation run `33897067802` passed its programmatic assertions, but artifact `9946166689` does not provide trustworthy settled-state proof for every requested surface: the puzzle/title/residents captures include transition or completion overlays. The task therefore remains **IN PROGRESS** while a corrected settled-state visual audit is run. Repository cleanup also found temporary model-refresh workflows that failed to self-remove; they are removed as part of this handoff repair before any new feature work.
 
@@ -52,6 +52,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must prove all seven expression classes remain supported, suit SVGs remain on the forehead, no head-appendage markup/classes are introduced, campaign files and gameplay JS logic remain unchanged except any strictly presentation-only avatar markup required in story UI, and title resident roster/sizes remain unchanged. Chromium must validate representative puzzle Latchlings for all seven expressions, dark eyes with visible catchlights, cheek presence, raised mouth geometry, forehead suit placement, sphere width=height, asynchronous blinking, selection outline, movement/solving, and no input regression. It must validate all five title residents at their existing rendered sizes (34 px adults / 25 px children) and verify choreography/blinking, plus single and paired Story Cards and the Story & Residents screen with named-character expressions, cheeks, mouth, blink, suit/color fidelity, and no overflow. Run phone + wide viewport and reduced-motion checks. Render puzzle, title, story-card, and Residents-screen screenshots for manual visual inspection before deployment.
 
 **Deployment plan:** Commit this handoff entry before product edits, implement behind a self-removing workflow, run strict static + Chromium validation and inspect render artifacts. Refine if any surface looks inconsistent or cramped. Commit only the green product result, deploy that exact implementation SHA through GitHub Pages, then close this same handoff entry with the final visual measurements, validation/artifact/deployment IDs, implementation SHA, and remaining risk.
+
+
+#### Completion summary
+
+**Implementation:** The refined spherical face language is now the production Latchling model across puzzle-board pieces, the five Little Home residents, named Story Card portraits, and Story & Residents avatars. The model keeps circular bodies with no head appendages, dark glossy eyes and catchlights, soft cheeks, raised expression-specific mouths, and forehead suit marks. Puzzle gameplay still supports all seven authored expressions (happy, surprised, angry, smug, sleepy, curious, determined), while the five named residents retain their canonical expressions and asynchronous blink timing.
+
+**Product commit:** `ec21a9fa2a11b4c9377827b67d2cb51290f0aa0f` (`Refresh all Latchlings with polished spherical faces`). Product files changed there are `style400-game.css`, `title-island-concepts/index.html`, `story-theme400.js`, and `style400-story-theme.css`; campaign definitions, puzzle mechanics, story canon, audio, and production loader remained unchanged.
+
+**Handoff repair:** Continuation audit found that the earlier programmatic validation run `33897067802` had passed, but its render artifact `9946166689` captured several requested surfaces during transitions or with completion overlays. Those images were not accepted as final visual proof. Five temporary model-refresh workflows that had failed to self-remove were also found on `main`. Repair commit `4559f1ed28e6f225ed267e82d314904a8cfeb273` documented the gap and removed all abandoned temporary workflows before further feature work.
+
+**Corrected validation:** Settled-state audit run `33901011206` completed successfully. Its browser harness isolated every surface in a fresh state and rejected captures if the wrong screen, generic modal, or Story Card overlay was present. It verified the clean Level 400 puzzle, clean Little Home title, single and paired Story Cards, the Story & Residents screen, wide-layout Story Card behavior, and reduced-motion behavior. It also rechecked spherical geometry, dark eyes/catchlights, cheeks, raised mouth placement, forehead suits, async blinking, selection state, absence of head appendages, five-resident roster, and the established Little Home sizes of **34×34 px adults** and **25×25 px children**. The audit produced artifact `9947639477` (`settled-latchling-refresh-renders`) with six clean renders, all manually inspected and accepted. The temporary audit workflow self-removed in commit `60c8d0252b4c46f70eee138d1de549c3563bf12b`.
+
+**Deployment:** GitHub Pages run `33901071825` completed successfully for audit-clean commit `60c8d0252b4c46f70eee138d1de549c3563bf12b`. This finalization run `33901345334` additionally fetched the deployed production HTML/CSS and opened `https://maloysius-wq.github.io/latchlings/` in Chromium, verifying the Little Home roster and the live Level 400 spherical puzzle model with no browser errors before this handoff was closed.
+
+**Repository hygiene:** All model-refresh implementation/audit workflows are now self-removed; `.github/workflows/validate-repository-access-guard.yml` is the only durable workflow expected to remain.
+
+**Remaining risk / next action:** No blocking issue remains from the spherical model refresh. Future visual changes should preserve the clean-state screenshot discipline introduced by the settled-state audit so transitions and modals cannot masquerade as surface validation.
 
 ---
 
