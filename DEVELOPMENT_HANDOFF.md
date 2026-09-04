@@ -37,6 +37,26 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-04 — Add animated campaign cinematics and durable cinematic script
+
+**Status: IN PROGRESS**
+
+**User goal:** Recover and implement the animated opening-cutscene concept that was lost with part of a previous chat, plus the smaller set of additional cutscenes planned for major plot revelations. The opening must make the puzzle campaign feel narratively legible before Level 1 by explaining the Latchlands, natural island drift, the Skyway, the Waykeeper, why board Latchlings are a helper crew, what a directional snap represents, why obstacles/other Latchlings can create stops, and what matching nests mean. Later cinematics should appear only at genuine story hinges rather than interrupting routine levels.
+
+**Recovery audit:** No surviving cutscene/cinematic implementation or script exists on current `main`, in obvious repository search results, or in recoverable personal context. The canonical reconstruction therefore comes from `STORY_BIBLE.md`, `story400.js`, the current Story Card system, and current campaign progression. Those sources identify three high-value mid-campaign hinge points: after Level 250, where Prism Gardens proves the old map cannot simply be restored; after Level 300, where Copperline reveals that historical Waykeepers constantly rewrote the Skyway and all the contradictory maps were correct for their own moment; and after Level 350, where Stormswitch establishes a living community Waykeeper network before Aurora Crown. The already completed Level 400 **Skyway Restored** ending remains the final payoff rather than duplicating it with another new film.
+
+**Implementation plan:** Add a reusable full-screen, animated, tap/keyboard-advance cinematic player with a persistent seen-state key, skip control, beat progress, reduced-motion support, and replay support. Author four durable cinematics: (1) **The Skyway**, seven compact beats shown before the first normal Level 1 Story Card, ending with the morning-route problem; (2) **Across the Drift**, shown once before Level 251 after the Prism Gardens revelation; (3) **Old Maps, New Routes**, shown once before Level 301 after Copperline’s central revelation; and (4) **Homeward**, shown once before Level 351 after the living Waykeeper network is established. Each beat will pair concise canonical dialogue/narration with animated CSS scenery such as drifting islands, route lights, Little Home/resident staging, a miniature board demonstration, changing map lines, and regional signals. The player must never auto-spoil milestone cinematics through Daily play when normal campaign progress has not unlocked that point. Add a Cinematics library to Story & Residents so unlocked films can be replayed on demand. Reset Progress should clear cinematic seen state so a fresh campaign gets the opening again. Preserve ordinary Story Cards, gameplay, solver data, and the existing Level 400 ending.
+
+**Durable script plan:** Add `CINEMATICS_SCRIPT.md` as the human-readable source of truth for all four scripts, triggers, visual intent, and gameplay meaning. The opening script will explicitly distinguish named story residents from the helper crew on the puzzle board and demonstrate: select a helper, choose a direction, the helper snaps continuously until the route/edge/obstacle stops them, another helper can become a useful stop, and a matching nest represents a safe completed arrival. Later mechanics such as anchors, gates, rails, turners, switches, and doors remain introduced by their chapters rather than dumped into the opening.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, new `CINEMATICS_SCRIPT.md`, new `cinematics400.js`, new `style400-cinematics.css`, `index.html` for loader/story-library markup, `game400-a.js` for pre-Story-Card cinematic gating, and `game400-b.js` for library rendering/reset integration. `story400.js`, `story-theme400.js`, campaign files, solver data, audio, title-island source, and Level 400 ending should remain unchanged unless validation exposes a strictly necessary integration defect.
+
+**Validation plan:** Static checks must verify four authored cinematic IDs and exact campaign triggers (1, 251, 301, 351), the opening’s route-helper/snap/stop/nest explanation, loader order, replay container, and unchanged campaign/story canon files. Chromium at 390×844 and a wide viewport must verify: fresh Level 1 shows the opening before the ordinary Story Card; advancing all seven opening beats closes the cinematic and then allows the Level 1 Story Card; seen opening does not replay automatically; Levels 251/301/351 trigger the correct cinematic only when campaign progress has reached them; a low-progress Daily-style direct jump does not reveal milestone films; skip works; replay from Story & Residents works for unlocked films; locked films cannot be replayed early; Reset Progress clears cinematic seen state; no horizontal overflow/browser errors occur; and `prefers-reduced-motion: reduce` removes cinematic motion without hiding content. Render the opening, route-demo beat, Copperline revelation, and Homeward network beat for manual visual acceptance.
+
+**Deployment plan:** Commit this handoff entry before product edits. Implement the isolated cinematic system and script, run static and Chromium validation through a temporary self-removing workflow, inspect the render artifact manually, refine if needed, confirm repository hygiene, deploy the exact accepted product state through GitHub Pages, then close this entry with implementation/audit/deployment commit and run IDs.
+
+---
+
 ### 2026-09-04 — Repair global Latchling coverage and finish the canonical campaign ending
 
 **Status: COMPLETED**
@@ -103,7 +123,6 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 **Repository hygiene / remaining risk:** Temporary roof-fix/refinement workflows self-removed, the accidental staging file was removed, and the failed temporary finalizer attempts were cleaned up. `.github/workflows/validate-repository-access-guard.yml` remains the only durable workflow. No blocking issue remains.
 
-
 ---
 
 ### 2026-09-04 — Refresh all Latchlings with refined spherical face model
@@ -121,7 +140,6 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must prove all seven expression classes remain supported, suit SVGs remain on the forehead, no head-appendage markup/classes are introduced, campaign files and gameplay JS logic remain unchanged except any strictly presentation-only avatar markup required in story UI, and title resident roster/sizes remain unchanged. Chromium must validate representative puzzle Latchlings for all seven expressions, dark eyes with visible catchlights, cheek presence, raised mouth geometry, forehead suit placement, sphere width=height, asynchronous blinking, selection outline, movement/solving, and no input regression. It must validate all five title residents at their existing rendered sizes (34 px adults / 25 px children) and verify choreography/blinking, plus single and paired Story Cards and the Story & Residents screen with named-character expressions, cheeks, mouth, blink, suit/color fidelity, and no overflow. Run phone + wide viewport and reduced-motion checks. Render puzzle, title, story-card, and Residents-screen screenshots for manual visual inspection before deployment.
 
 **Deployment plan:** Commit this handoff entry before product edits, implement behind a self-removing workflow, run strict static + Chromium validation and inspect render artifacts. Refine if any surface looks inconsistent or cramped. Commit only the green product result, deploy that exact implementation SHA through GitHub Pages, then close this same handoff entry with the final visual measurements, validation/artifact/deployment IDs, implementation SHA, and remaining risk.
-
 
 #### Completion summary
 
