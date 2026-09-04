@@ -1,0 +1,186 @@
+name: Implement Global Latchling Model Refresh V2
+on:
+  push:
+    paths:
+      - '.github/workflows/implement-latchling-model-refresh-v2.yml'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply refined spherical model across production surfaces
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('style400-game.css'); t=p.read_text()
+          start=t.index('.piece-layer{position:absolute;')
+          end=t.index('\n.motion-glow{',start)
+          model='''.piece-layer{position:absolute;inset:7px;pointer-events:none}
+          .latchling{position:absolute;width:calc((100% / var(--n)) * .74);height:calc((100% / var(--n)) * .74);margin:calc((100% / var(--n)) * .13);padding:0;appearance:none;-webkit-appearance:none;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--light) 0%,var(--piece-color) 56%,var(--dark) 100%);box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);border:2px solid rgba(39,68,98,.42);pointer-events:auto;touch-action:manipulation;z-index:5;transition:box-shadow .12s,filter .12s;will-change:transform,left,top;overflow:hidden}
+          .latchling.selected{box-shadow:0 0 0 4px rgba(255,255,255,.95),0 0 0 7px rgba(66,150,233,.65),0 7px 12px rgba(22,39,58,.28);filter:saturate(1.06)}
+          .suit-mark{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:25%;height:25%;display:grid;place-items:center;z-index:3}.suit-mark svg{width:100%;height:100%;fill:#27496f;filter:drop-shadow(0 1px rgba(255,255,255,.18))}
+          .face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2}
+          .eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;transform-origin:center}
+          .eye{width:22%;height:100%;background:#17253a;border-radius:50%;position:relative;box-shadow:inset 0 -1px 0 rgba(5,16,29,.16)}.eye:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%;z-index:2}.eye:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}
+          .face:before,.face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62);filter:blur(.15px);pointer-events:none}.face:before{left:2%}.face:after{right:2%}
+          .mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%;margin:0}
+          .expr-happy .mouth{border-bottom:2px solid #28415f;border-radius:0 0 52% 52%}
+          .expr-surprised .mouth{width:18%;height:22%;border:1.5px solid #17253a;border-radius:50%;background:#29415f}
+          .expr-angry .mouth{width:29%;border-top:2px solid #28415f;border-radius:52% 52% 0 0}
+          .expr-smug .mouth{width:28%;border-bottom:2px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg}
+          .expr-sleepy .eye{height:10%;background:transparent;border-radius:50%;border-top:2px solid #28415f;box-shadow:none}.expr-sleepy .eye:before,.expr-sleepy .eye:after{display:none}.expr-sleepy .mouth{width:19%;border-bottom:2px solid #28415f;border-radius:50%}
+          .expr-angry .eyes:before,.expr-angry .eyes:after{content:"";position:absolute;width:29%;height:2px;background:#28415f;top:-8%}.expr-angry .eyes:before{left:16%;rotate:15deg}.expr-angry .eyes:after{right:16%;rotate:-15deg}
+          .expr-curious .eyes{transform:translateY(-1%)}.expr-curious .eye:first-child{scale:.88}.expr-curious .eye:last-child{scale:1.08}.expr-curious .mouth{width:19%;border-bottom:2px solid #28415f;border-radius:50%;rotate:8deg}
+          .expr-determined .eyes:before,.expr-determined .eyes:after{content:"";position:absolute;width:30%;height:2px;background:#28415f;top:-9%}.expr-determined .eyes:before{left:15%;rotate:-13deg}.expr-determined .eyes:after{right:15%;rotate:13deg}.expr-determined .mouth{width:29%;border-top:2px solid #28415f}
+          '''.replace('          ','')
+          t=t[:start]+model+t[end:]
+          marker='/* 400-level campaign presentation layer */'; s=t.index(marker); e=t.index('\n\n.win-stars{',s)
+          anim='''/* 400-level campaign presentation layer */
+          .face{animation:faceFloat 2.8s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+          .eyes{animation:blinkCycle var(--blink-duration,4.8s) infinite;animation-delay:var(--blink-delay,0s);transform-origin:center}
+          @keyframes blinkCycle{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}
+          @keyframes faceFloat{0%,100%{translate:0 0}50%{translate:0 1px}}
+          @media(prefers-reduced-motion:reduce){.latchling .face,.latchling .eyes{animation:none!important}}
+          '''.replace('          ','').rstrip()
+          t=t[:s]+anim+t[e:]; p.write_text(t)
+
+          p=Path('title-island-concepts/index.html'); t=p.read_text(); s=t.index('/* Shipping-game-faithful Latchlings */'); e=t.index('/* concept placement */',s)
+          title='''/* Refined spherical Latchlings: selected #4 makeover */
+          .latchling{position:absolute;width:59px;height:59px;padding:0;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--light) 0%,var(--piece-color) 56%,var(--dark) 100%);box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);border:2px solid rgba(39,68,98,.42);z-index:16;will-change:transform;overflow:hidden}.latchling.large{width:64px;height:64px}.latchling.small{width:53px;height:53px}
+          .suit-mark{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:25%;height:25%;display:grid;place-items:center;z-index:3}.suit-mark svg{width:100%;height:100%;fill:#27496f;filter:drop-shadow(0 1px rgba(255,255,255,.18))}
+          .face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2;animation:faceFloat 2.8s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+          .eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;animation:blinkCycle var(--blink-duration,4.8s) infinite;animation-delay:var(--blink-delay,0s);transform-origin:center}
+          .eye{width:22%;height:100%;background:#17253a;border-radius:50%;position:relative;box-shadow:inset 0 -1px 0 rgba(5,16,29,.16)}.eye:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%;z-index:2}.eye:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}
+          .face:before,.face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62);filter:blur(.15px);pointer-events:none}.face:before{left:2%}.face:after{right:2%}
+          .mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%;margin:0}
+          .expr-happy .mouth{border-bottom:2px solid #28415f;border-radius:0 0 52% 52%}.expr-surprised .mouth{width:18%;height:22%;border:1.5px solid #17253a;border-radius:50%;background:#29415f}.expr-angry .mouth{width:29%;border-top:2px solid #28415f;border-radius:52% 52% 0 0}.expr-smug .mouth{width:28%;border-bottom:2px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg}.expr-sleepy .eye{height:10%;background:transparent;border-radius:50%;border-top:2px solid #28415f;box-shadow:none}.expr-sleepy .eye:before,.expr-sleepy .eye:after{display:none}.expr-sleepy .mouth{width:19%;border-bottom:2px solid #28415f;border-radius:50%}.expr-angry .eyes:before,.expr-angry .eyes:after{content:"";position:absolute;width:29%;height:2px;background:#28415f;top:-8%}.expr-angry .eyes:before{left:16%;rotate:15deg}.expr-angry .eyes:after{right:16%;rotate:-15deg}.expr-curious .eyes{transform:translateY(-1%)}.expr-curious .eye:first-child{scale:.88}.expr-curious .eye:last-child{scale:1.08}.expr-curious .mouth{width:19%;border-bottom:2px solid #28415f;border-radius:50%;rotate:8deg}.expr-determined .eyes:before,.expr-determined .eyes:after{content:"";position:absolute;width:30%;height:2px;background:#28415f;top:-9%}.expr-determined .eyes:before{left:15%;rotate:-13deg}.expr-determined .eyes:after{right:15%;rotate:13deg}.expr-determined .mouth{width:29%;border-top:2px solid #28415f}
+          @keyframes blinkCycle{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}@keyframes faceFloat{0%,100%{translate:0 0}50%{translate:0 1px}}@keyframes hoverLife{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes hopLife{0%,68%,100%{transform:translateY(0)}76%{transform:translateY(-9px)}83%{transform:translateY(1px)}}.motion-hover{animation:hoverLife 3.8s ease-in-out infinite}.motion-hop{animation:hopLife 3.4s ease-in-out infinite}
+          '''.replace('          ','')
+          t=t[:s]+title+t[e:]; p.write_text(t)
+
+          p=Path('story-theme400.js'); t=p.read_text()
+          anchor="const CHAR_EXPR={Pippa:'curious',Bramble:'smug',Rowan:'happy',Pip:'determined',Tansy:'surprised'};"
+          if 'const CHAR_BLINK=' not in t:t=t.replace(anchor,anchor+"\nconst CHAR_BLINK={Pippa:['4.55s','-1.15s'],Bramble:['5.10s','-2.70s'],Rowan:['4.80s','-3.35s'],Pip:['5.35s','-1.85s'],Tansy:['4.25s','-2.25s']};",1)
+          old="function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue;return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color}`}"
+          new="function characterVars(c){const color=CHAR_COLORS[c.color]||CHAR_COLORS.blue,b=CHAR_BLINK[c.name]||['4.8s','-1.4s'];return `--charColor:${color};--charLight:${CHAR_LIGHT[c.color]||color};--charDark:${CHAR_DARK[c.color]||color};--avatar-blink-duration:${b[0]};--avatar-blink-delay:${b[1]}`}"
+          if old not in t:raise SystemExit('characterVars anchor missing')
+          t=t.replace(old,new,1)
+          old="function characterAvatar(c){return `<span class=\"story-character-avatar\" data-character=\"${escapeHtml(c.name)}\" data-color=\"${escapeHtml(c.color)}\" data-suit=\"${escapeHtml(c.suit)}\" style=\"${characterVars(c)}\"><span class=\"story-character-avatar-suit\">${charSuitSvg(c.suit)}</span><span class=\"story-character-avatar-eyes\"><i></i><i></i></span></span>`}"
+          new="function characterAvatar(c){const expr=CHAR_EXPR[c.name]||'happy';return `<span class=\"story-character-avatar expr-${expr}\" data-character=\"${escapeHtml(c.name)}\" data-color=\"${escapeHtml(c.color)}\" data-suit=\"${escapeHtml(c.suit)}\" style=\"${characterVars(c)}\"><span class=\"story-character-avatar-suit\">${charSuitSvg(c.suit)}</span><span class=\"story-character-avatar-face\"><span class=\"story-character-avatar-eyes\"><i></i><i></i></span><i class=\"story-character-avatar-mouth\"></i></span></span>`}"
+          if old not in t:raise SystemExit('characterAvatar anchor missing')
+          t=t.replace(old,new,1); p.write_text(t)
+
+          p=Path('style400-story-theme.css'); t=p.read_text()
+          oldbody=".story-char-body{position:relative;display:block;width:82px;height:82px;border-radius:50%;background:radial-gradient(circle at 34% 24%,rgba(255,255,255,.66) 0 7%,transparent 18%),linear-gradient(145deg,var(--charLight),var(--charColor) 55%,var(--charDark));box-shadow:0 5px 9px rgba(22,39,58,.27),inset 0 -5px 8px rgba(30,32,40,.13);border:1.5px solid rgba(255,255,255,.72);--blink-duration:4.7s;--blink-delay:-1.8s;--idle-delay:-.7s}"
+          newbody=".story-char-body{position:relative;display:block;width:82px;height:82px;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--charLight) 0%,var(--charColor) 56%,var(--charDark) 100%);box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);border:2px solid rgba(39,68,98,.42);overflow:hidden;--blink-duration:4.7s;--blink-delay:-1.8s;--idle-delay:-.7s}"
+          if oldbody not in t:raise SystemExit('story-char-body anchor missing')
+          t=t.replace(oldbody,newbody,1)
+          s=t.index('.story-character-avatar{');e=t.index('.story-character-copy{',s)
+          avatars='''.story-character-avatar{position:relative;display:block;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--charLight) 0%,var(--charColor) 56%,var(--charDark) 100%);border:1.5px solid rgba(39,68,98,.42);box-shadow:0 2px 5px rgba(24,39,55,.20),inset 0 -3px 5px rgba(25,31,42,.08);overflow:hidden}
+          .story-character-avatar-suit{position:absolute;left:50%;top:7%;translate:-50% 0;width:25%;height:25%;z-index:3}.story-character-avatar-suit svg{width:100%;height:100%;fill:#27496f}
+          .story-character-avatar-face{position:absolute;left:13%;right:13%;top:29%;height:58%;display:block;z-index:2}
+          .story-character-avatar-eyes{position:absolute;left:0;right:0;top:6%;height:34%;display:flex;justify-content:center;gap:23%;align-items:center;transform-origin:center;animation:storyAvatarBlink var(--avatar-blink-duration,4.8s) infinite;animation-delay:var(--avatar-blink-delay,-1.4s)}.story-character-avatar-eyes i{display:block;width:22%;height:100%;border-radius:50%;background:#17253a;position:relative;box-shadow:inset 0 -1px rgba(5,16,29,.14)}.story-character-avatar-eyes i:before{content:"";position:absolute;width:29%;height:29%;border-radius:50%;background:#fff;left:18%;top:14%}.story-character-avatar-eyes i:after{content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:rgba(255,255,255,.72);right:18%;bottom:20%}
+          .story-character-avatar-face:before,.story-character-avatar-face:after{content:"";position:absolute;top:39%;width:22%;height:14%;border-radius:50%;background:rgba(244,160,174,.62)}.story-character-avatar-face:before{left:2%}.story-character-avatar-face:after{right:2%}
+          .story-character-avatar-mouth{position:absolute;left:50%;top:44%;translate:-50% 0;width:29%;height:19%}.story-character-avatar.expr-happy .story-character-avatar-mouth{border-bottom:1.5px solid #28415f;border-radius:0 0 52% 52%}.story-character-avatar.expr-surprised .story-character-avatar-mouth{width:18%;height:22%;border:1px solid #17253a;border-radius:50%;background:#29415f}.story-character-avatar.expr-smug .story-character-avatar-mouth{width:28%;border-bottom:1.5px solid #28415f;border-radius:0 0 80% 20%;rotate:-7deg}.story-character-avatar.expr-curious .story-character-avatar-eyes{transform:translateY(-1%)}.story-character-avatar.expr-curious .story-character-avatar-eyes i:first-child{scale:.88}.story-character-avatar.expr-curious .story-character-avatar-eyes i:last-child{scale:1.08}.story-character-avatar.expr-curious .story-character-avatar-mouth{width:19%;border-bottom:1.5px solid #28415f;border-radius:50%;rotate:8deg}.story-character-avatar.expr-determined .story-character-avatar-eyes:before,.story-character-avatar.expr-determined .story-character-avatar-eyes:after{content:"";position:absolute;width:30%;height:1.5px;background:#28415f;top:-9%}.story-character-avatar.expr-determined .story-character-avatar-eyes:before{left:15%;rotate:-13deg}.story-character-avatar.expr-determined .story-character-avatar-eyes:after{right:15%;rotate:13deg}.story-character-avatar.expr-determined .story-character-avatar-mouth{width:29%;border-top:1.5px solid #28415f}
+          @keyframes storyAvatarBlink{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}
+          '''.replace('          ','')
+          t=t[:s]+avatars+t[e:]
+          old='.story-person-portrait>.story-character-avatar{flex-basis:42px;width:42px;height:42px}.story-person-portrait>.story-character-avatar .story-character-avatar-suit{top:4px;width:12px;height:12px}.story-person-portrait>.story-character-avatar .story-character-avatar-eyes{left:10px;right:10px;top:20px;height:10px}'
+          if old not in t:raise SystemExit('story person avatar override anchor missing')
+          t=t.replace(old,'.story-person-portrait>.story-character-avatar{flex-basis:42px;width:42px;height:42px}',1)
+          old='@media(prefers-reduced-motion:reduce){.story-scene-character,.story-char-body .face,.story-char-body .eyes,.story-char-body .mouth{animation:none!important}}'
+          if old not in t:raise SystemExit('story reduced-motion anchor missing')
+          t=t.replace(old,'@media(prefers-reduced-motion:reduce){.story-scene-character,.story-char-body .face,.story-char-body .eyes,.story-char-body .mouth,.story-character-avatar-eyes{animation:none!important}}',1);p.write_text(t)
+          print('GLOBAL_LATCHLING_MODEL_REFRESH_APPLIED')
+          PY
+
+      - name: Static validation
+        run: |
+          set -euo pipefail
+          node --check story-theme400.js
+          grep -q 'background:#17253a' style400-game.css
+          grep -q '.face:before,.face:after' style400-game.css
+          grep -q 'top:44%' style400-game.css
+          grep -q 'scale:1 .07' style400-game.css
+          grep -q 'Refined spherical Latchlings: selected #4 makeover' title-island-concepts/index.html
+          grep -q 'story-character-avatar-mouth' story-theme400.js
+          grep -q 'storyAvatarBlink' style400-story-theme.css
+          grep -q 'story-character-avatar-face:before' style400-story-theme.css
+          for expr in happy surprised angry smug sleepy curious determined; do grep -q ".expr-$expr" style400-game.css; grep -q ".expr-$expr" title-island-concepts/index.html; done
+          for f in campaign400-{1..8}.js game400-a.js game400-b.js story400.js music400.js sfx400.js index.html; do git diff --exit-code -- "$f"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          banned={'horn','stem','antenna','ear','hair','hat','sprout'}
+          for fn in ['title-island-concepts/index.html','story-theme400.js']:
+              text=Path(fn).read_text()
+              classes=[]
+              for m in re.finditer(r'class=["\']([^"\']+)["\']',text): classes.extend(m.group(1).split())
+              bad=sorted(banned.intersection(classes))
+              if bad: raise SystemExit(f'Unexpected head appendage classes in {fn}: {bad}')
+          print('NO_HEAD_APPENDAGE_MARKUP_OK')
+          PY
+          echo GLOBAL_LATCHLING_MODEL_STATIC_OK
+
+      - name: Install Chromium outside repository
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-model-refresh-v2-node"
+          mkdir -p "$TEST_NODE" && cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+
+      - name: Validate model across puzzle, title, story, and residents
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-model-refresh-v2-node"
+          mkdir -p latchling-model-refresh-renders
+          python3 -m http.server 8152 >/tmp/latchling-model-refresh-v2-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cat > "$TEST_NODE/validate.mjs" <<'NODE'
+          import {chromium} from 'playwright';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};const errors=[];
+          const hook=page=>{page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});page.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(?:mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)})};
+          const browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});const page=await ctx.newPage();hook(page);
+          await page.goto('http://127.0.0.1:8152/',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof window.startLevel==='function'&&window.LatchlingsStoryTheme&&window.LATCHLINGS_STORY);
+          await page.evaluate(()=>startLevel(400));await page.waitForSelector('#game.active .latchling');
+          const puzzle=await page.evaluate(()=>{const pieces=[...document.querySelectorAll('#game .latchling')],sample=pieces[0],r=sample.getBoundingClientRect(),face=sample.querySelector('.face'),eyes=sample.querySelector('.eyes'),eye=sample.querySelector('.eye'),mouth=sample.querySelector('.mouth'),suit=sample.querySelector('.suit-mark'),er=eye.getBoundingClientRect(),mr=mouth.getBoundingClientRect(),sr=suit.getBoundingClientRect(),cheek=getComputedStyle(face,'::before'),catchlight=getComputedStyle(eye,'::before');return {count:pieces.length,ratio:r.width/r.height,w:r.width,h:r.height,eyeBg:getComputedStyle(eye).backgroundColor,catchlightBg:catchlight.backgroundColor,catchlightContent:catchlight.content,cheekBg:cheek.backgroundColor,cheekContent:cheek.content,mouthY:(mr.top-r.top)/r.height,suitY:(sr.top-r.top)/r.height,eyeY:(er.top-r.top)/r.height,blinkNames:pieces.map(x=>getComputedStyle(x.querySelector('.eyes')).animationName),blinkDurations:pieces.map(x=>getComputedStyle(x.querySelector('.eyes')).animationDuration),suits:pieces.map(x=>!!x.querySelector('.suit-mark svg')),appendages:pieces.filter(x=>x.querySelector('.horn,.stem,.antenna,.ear,.hair,.hat,.sprout')).length};});
+          ok(puzzle.count>=2,'Expected multiple puzzle Latchlings');ok(Math.abs(puzzle.ratio-1)<.01,'Puzzle Latchling not spherical '+JSON.stringify(puzzle));ok(puzzle.eyeBg==='rgb(23, 37, 58)','Puzzle eyes are not dark navy '+puzzle.eyeBg);ok(puzzle.catchlightBg==='rgb(255, 255, 255)'&&puzzle.catchlightContent!=='none','Eye catchlight missing');ok(puzzle.cheekContent!=='none'&&/244, 160, 174/.test(puzzle.cheekBg),'Cheeks missing '+puzzle.cheekBg);ok(puzzle.mouthY<.62&&puzzle.mouthY>.48,'Mouth not in raised zone '+puzzle.mouthY);ok(puzzle.suitY<puzzle.eyeY,'Suit not on forehead');ok(puzzle.suits.every(Boolean),'Puzzle suit missing');ok(puzzle.appendages===0,'Unexpected head appendage');ok(puzzle.blinkNames.every(x=>x==='blinkCycle'),'Puzzle blink missing');ok(new Set(puzzle.blinkDurations).size>1,'Puzzle blinks not asynchronous');
+          const expressionAudit=await page.evaluate(()=>{const piece=document.querySelector('#game .latchling'),eyes=piece.querySelector('.eyes'),anim=eyes.getAnimations().find(a=>a.animationName==='blinkCycle')||eyes.getAnimations()[0],duration=parseFloat(getComputedStyle(eyes).animationDuration)*1000;anim.pause();anim.currentTime=duration*.445;const closed=getComputedStyle(eyes).scale;anim.currentTime=duration*.10;const open=getComputedStyle(eyes).scale;anim.cancel();const all=['happy','surprised','angry','smug','sleepy','curious','determined'],out={closed,open,expr:{}};for(const name of all){piece.classList.remove(...all.map(x=>'expr-'+x));piece.classList.add('expr-'+name);const m=getComputedStyle(piece.querySelector('.mouth')),e1=piece.querySelectorAll('.eye')[0].getBoundingClientRect(),e2=piece.querySelectorAll('.eye')[1].getBoundingClientRect(),es=getComputedStyle(piece.querySelector('.eye')),b=getComputedStyle(piece.querySelector('.eyes'),'::before');out.expr[name]={bb:m.borderBottomWidth,bt:m.borderTopWidth,bg:m.backgroundColor,rot:m.rotate,ew1:e1.width,ew2:e2.width,eyeBorderTop:es.borderTopWidth,brow:b.content}}return out});
+          ok(expressionAudit.closed.includes('0.07')||expressionAudit.closed.includes('0.069'),'Blink does not close '+expressionAudit.closed);ok(expressionAudit.open==='1'||expressionAudit.open==='1 1','Blink does not open '+expressionAudit.open);const ex=expressionAudit.expr;ok(parseFloat(ex.happy.bb)>0,'Happy mouth missing');ok(ex.surprised.bg!=='rgba(0, 0, 0, 0)','Surprised mouth missing');ok(parseFloat(ex.angry.bt)>0&&ex.angry.brow!=='none','Angry missing');ok(parseFloat(ex.smug.bb)>0&&ex.smug.rot!=='none'&&ex.smug.rot!=='0deg','Smug missing');ok(parseFloat(ex.sleepy.eyeBorderTop)>0,'Sleepy missing');ok(Math.abs(ex.curious.ew1-ex.curious.ew2)>.5,'Curious missing');ok(parseFloat(ex.determined.bt)>0&&ex.determined.brow!=='none','Determined missing');await page.screenshot({path:'latchling-model-refresh-renders/puzzle-level-400.png',fullPage:true});
+          await page.evaluate(()=>startLevel(1));const movement=await page.evaluate(async()=>{for(const d of ['U','R','D','L'])if(simulate(selected,d)){const before=movesUsed;await moveSelected(d);return {ok:movesUsed===before+1,dir:d,movesUsed}}return {ok:false}});ok(movement.ok,'Real puzzle movement failed '+JSON.stringify(movement));
+          await page.evaluate(()=>{startLevel(1);window.LatchlingsStoryTheme.show(1,true)});await page.waitForSelector('#storyCardOverlay.show .story-char-body');const story=await page.evaluate(()=>{const b=document.querySelector('.story-char-body'),r=b.getBoundingClientRect(),eye=b.querySelector('.eye'),face=b.querySelector('.face'),mouth=b.querySelector('.mouth'),suit=b.querySelector('.suit-mark'),mr=mouth.getBoundingClientRect(),sr=suit.getBoundingClientRect(),er=eye.getBoundingClientRect();return {ratio:r.width/r.height,eye:getComputedStyle(eye).backgroundColor,cheek:getComputedStyle(face,'::before').content,mouthY:(mr.top-r.top)/r.height,suitBeforeEye:sr.top<er.top,character:document.querySelector('.story-scene-character')?.dataset.character||null}});ok(Math.abs(story.ratio-1)<.01&&story.eye==='rgb(23, 37, 58)'&&story.cheek!=='none'&&story.mouthY<.62&&story.suitBeforeEye,'Story portrait mismatch '+JSON.stringify(story));await page.screenshot({path:'latchling-model-refresh-renders/story-single.png',fullPage:true});await page.evaluate(()=>window.LatchlingsStoryTheme.close(false));
+          const pairLevel=await page.evaluate(()=>{for(let i=1;i<=400;i++){const m=window.LATCHLINGS_STORY.levelMeta(i),c=window.LATCHLINGS_STORY.chapters[m.chapter-1],f=window.LatchlingsStoryTheme.featuredFor(m,c);if(f.length===2)return i}return null});ok(pairLevel,'No paired story found');await page.evaluate(L=>{startLevel(L);window.LatchlingsStoryTheme.show(L,true)},pairLevel);await page.waitForSelector('#storyCardOverlay.show .story-scene-character-count-2');const pair=await page.locator('#storyCardOverlay .story-char-body').count();ok(pair===2,'Expected two paired portraits');await page.screenshot({path:'latchling-model-refresh-renders/story-pair.png',fullPage:true});await page.evaluate(()=>window.LatchlingsStoryTheme.close(false));
+          await page.evaluate(()=>openStoryScreen());await page.waitForSelector('#story.active .story-character-avatar');const residents=await page.evaluate(()=>[...document.querySelectorAll('#story .story-character-avatar')].map(a=>{const r=a.getBoundingClientRect(),e=a.querySelector('.story-character-avatar-eyes i'),f=a.querySelector('.story-character-avatar-face'),m=a.querySelector('.story-character-avatar-mouth'),s=a.querySelector('.story-character-avatar-suit');return {name:a.dataset.character,ratio:r.width/r.height,eye:getComputedStyle(e).backgroundColor,cheek:getComputedStyle(f,'::before').content,mouth:!!m,suit:!!s?.querySelector('svg'),blink:getComputedStyle(a.querySelector('.story-character-avatar-eyes')).animationName,expr:[...a.classList].find(x=>x.startsWith('expr-'))}}));ok(residents.length===5,'Expected five resident avatars');ok(residents.every(x=>Math.abs(x.ratio-1)<.01&&x.eye==='rgb(23, 37, 58)'&&x.cheek!=='none'&&x.mouth&&x.suit&&x.blink==='storyAvatarBlink'&&x.expr),'Resident avatars incomplete '+JSON.stringify(residents));await page.screenshot({path:'latchling-model-refresh-renders/story-residents.png',fullPage:true});
+          await page.evaluate(()=>screen('home'));await page.waitForTimeout(250);const frame=page.frames().find(f=>/title-island-concepts/.test(f.url()));ok(frame,'Little Home iframe missing');await frame.waitForSelector('#c2 .latchling');const title=await frame.evaluate(()=>[...document.querySelectorAll('#c2 .latchling')].map(x=>{const r=x.getBoundingClientRect(),eye=x.querySelector('.eye'),face=x.querySelector('.face'),mouth=x.querySelector('.mouth'),suit=x.querySelector('.suit-mark'),eyes=x.querySelector('.eyes');return {role:x.dataset.role,w:r.width,h:r.height,ratio:r.width/r.height,eye:getComputedStyle(eye).backgroundColor,cheek:getComputedStyle(face,'::before').content,mouthY:(mouth.getBoundingClientRect().top-r.top)/r.height,suitY:(suit.getBoundingClientRect().top-r.top)/r.height,eyeY:(eye.getBoundingClientRect().top-r.top)/r.height,blink:getComputedStyle(eyes).animationName,dur:getComputedStyle(eyes).animationDuration,appendage:!!x.querySelector('.horn,.stem,.antenna,.ear,.hair,.hat,.sprout')}}));const adults=title.filter(x=>x.role==='adult'),kids=title.filter(x=>x.role==='child');ok(adults.length===3&&kids.length===2,'Title roster changed');ok(adults.every(x=>Math.abs(x.w-34)<.2&&Math.abs(x.h-34)<.2),'Adult size changed '+JSON.stringify(adults));ok(kids.every(x=>Math.abs(x.w-25)<.2&&Math.abs(x.h-25)<.2),'Child size changed '+JSON.stringify(kids));ok(title.every(x=>Math.abs(x.ratio-1)<.01&&x.eye==='rgb(23, 37, 58)'&&x.cheek!=='none'&&x.mouthY<.64&&x.suitY<x.eyeY&&x.blink==='blinkCycle'&&!x.appendage),'Title refresh incomplete '+JSON.stringify(title));ok(new Set(title.map(x=>x.dur)).size>1,'Title blinks not asynchronous');await page.screenshot({path:'latchling-model-refresh-renders/title-home.png',fullPage:true});ok(errors.length===0,'Browser errors: '+errors.join(' | '));await ctx.close();
+          const wide=await browser.newContext({viewport:{width:900,height:844},reducedMotion:'no-preference'});const wp=await wide.newPage();hook(wp);await wp.goto('http://127.0.0.1:8152/',{waitUntil:'domcontentloaded'});await wp.waitForFunction(()=>window.LatchlingsStoryTheme&&typeof window.startLevel==='function');await wp.evaluate(()=>{startLevel(1);window.LatchlingsStoryTheme.show(1,true)});await wp.waitForSelector('#storyCardOverlay.show');ok(!(await wp.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)),'Wide overflow');await wp.screenshot({path:'latchling-model-refresh-renders/story-wide.png',fullPage:true});await wide.close();
+          const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const rp=await reduced.newPage();hook(rp);await rp.goto('http://127.0.0.1:8152/',{waitUntil:'domcontentloaded'});await rp.waitForFunction(()=>typeof window.startLevel==='function');await rp.evaluate(()=>startLevel(1));ok(await rp.locator('#game .eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','Reduced puzzle blink active');await rp.evaluate(()=>openStoryScreen());ok(await rp.locator('#story .story-character-avatar-eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','Reduced avatar blink active');await rp.evaluate(()=>screen('home'));await rp.waitForTimeout(150);const rf=rp.frames().find(f=>/title-island-concepts/.test(f.url()));ok(rf,'Reduced title iframe missing');await rf.waitForSelector('#c2 .eyes');ok(await rf.locator('#c2 .eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','Reduced title blink active');await reduced.close();ok(errors.length===0,'Final browser errors: '+errors.join(' | '));console.log('GLOBAL_LATCHLING_MODEL_BROWSER_OK',JSON.stringify({puzzle,story,pairLevel,residents,title,movement}));await browser.close();
+          NODE
+          node "$TEST_NODE/validate.mjs"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: global-latchling-model-refresh-renders
+          path: latchling-model-refresh-renders/*.png
+          if-no-files-found: error
+
+      - name: Commit validated model and self-remove
+        run: |
+          set -euo pipefail
+          rm -rf latchling-model-refresh-renders
+          rm -f .github/workflows/implement-latchling-model-refresh.yml .github/workflows/implement-latchling-model-refresh-v2.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style400-game.css title-island-concepts/index.html story-theme400.js style400-story-theme.css .github/workflows/implement-latchling-model-refresh.yml .github/workflows/implement-latchling-model-refresh-v2.yml
+          git commit -m 'Refresh all Latchlings with polished spherical faces'
+          git pull --rebase origin main
+          git push origin HEAD:main
