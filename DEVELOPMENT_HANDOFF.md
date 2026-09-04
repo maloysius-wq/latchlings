@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-04 — Refresh all Latchlings with refined spherical face model
+
+**Status: IN PROGRESS**
+
+**User goal:** Promote the selected HTML makeover direction (#4, then refined with a raised mouth) into the actual game for every Latchling. Preserve the established species/gameplay identity while making the cast feel cuter, cleaner, and more intentionally authored: true spherical bodies, no head protrusions, dark glossy blinking eyes with catchlights, soft cheeks, raised readable mouths with the existing expression variety, and suit symbols retained on the forehead.
+
+**Implementation plan:** Treat the refined #4 model as one shared visual language across all production surfaces. Update puzzle-board Latchlings in `style400-game.css` without changing piece dimensions, movement, selection, color/suit identity, or solver data. Update the embedded Little Home/title residents in `title-island-concepts/index.html` with the same spherical body/face ratios while preserving the five-resident choreography and the existing reciprocal island counter-scale. Update named Story Card portraits and Story & Residents avatars in `story-theme400.js` / `style400-story-theme.css` so they use the same eyes, cheeks, mouths, expressions, and forehead suits instead of the older simplified avatar face. Keep the existing seven gameplay expressions (happy, surprised, angry, smug, sleepy, curious, determined), canonical named-resident expressions, asynchronous blink timing, and reduced-motion handling. Do not add horns, stems, ears, hair, leaves, hats, or any other head appendage.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `style400-game.css`, `title-island-concepts/index.html`, `story-theme400.js`, and `style400-story-theme.css`; `index.html` only if a loader change proves necessary. Temporary self-removing GitHub Actions validation/render files may be used. Campaign definitions, level data, story text/canon, title layout/island geometry, textures, music, and SFX remain unchanged.
+
+**Validation plan:** Static checks must prove all seven expression classes remain supported, suit SVGs remain on the forehead, no head-appendage markup/classes are introduced, campaign files and gameplay JS logic remain unchanged except any strictly presentation-only avatar markup required in story UI, and title resident roster/sizes remain unchanged. Chromium must validate representative puzzle Latchlings for all seven expressions, dark eyes with visible catchlights, cheek presence, raised mouth geometry, forehead suit placement, sphere width=height, asynchronous blinking, selection outline, movement/solving, and no input regression. It must validate all five title residents at their existing rendered sizes (34 px adults / 25 px children) and verify choreography/blinking, plus single and paired Story Cards and the Story & Residents screen with named-character expressions, cheeks, mouth, blink, suit/color fidelity, and no overflow. Run phone + wide viewport and reduced-motion checks. Render puzzle, title, story-card, and Residents-screen screenshots for manual visual inspection before deployment.
+
+**Deployment plan:** Commit this handoff entry before product edits, implement behind a self-removing workflow, run strict static + Chromium validation and inspect render artifacts. Refine if any surface looks inconsistent or cramped. Commit only the green product result, deploy that exact implementation SHA through GitHub Pages, then close this same handoff entry with the final visual measurements, validation/artifact/deployment IDs, implementation SHA, and remaining risk.
+
+---
+
 ### 2026-09-03 — Enlarge Little Home island while preserving Latchling size
 
 **Status: COMPLETED**
