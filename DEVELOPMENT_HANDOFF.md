@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-04 — Fix Little Home cottage roof seam
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Clarify the title-screen cottage silhouette. If the apparent house-and-shed composition is actually intended to be one house, visually bridge the separated roof masses so the building unmistakably reads as a single cottage rather than two detached structures.
 
@@ -54,6 +54,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static validation must show only the title cottage source changed in the product. Chromium at the production 390×844 title viewport must verify the cottage retains its existing position/footprint, the connecting roof is visible and overlaps the adjacent roof masses rather than floating separately, no horizontal overflow appears, and the five-resident/title composition remains intact. Render a clean title screenshot for manual visual inspection before accepting the change.
 
 **Deployment plan:** Commit this handoff entry before product edits, run the isolated roof fix behind a self-removing workflow, inspect the render, commit only the accepted title change, verify GitHub Pages deployment, then mark this entry `COMPLETED` with implementation/deployment IDs and remaining risk.
+
+#### Completion summary
+
+**Structure decision:** The Little Home building is one cottage, not a house plus shed. The source uses one `.cottage` container with `.house-front` and `.house-side` wall planes plus `.roof-a` and `.roof-b` roof planes. The original `.roof-b` had an independent peak, which made the side plane read as a second attached building even though it belonged to the same cottage.
+
+**First pass and refinement:** The first fix joined the roof boxes more aggressively in commit `c510d8244715a5497cc1a7a5b1570df62c0eee1f` and passed Actions run `33902161335` with artifact `9948058317`, but manual render inspection rejected it as the final answer because the side roof still visibly had its own gable peak. The handoff was updated before refinement in commit `910b6ea4c15653219f7dae2bbc941a3f20dc87e3`.
+
+**Final implementation:** Commit `4832185884d5eff38cca784cddf1fc03b4536222` (`Unify Little Home cottage roof ridge`) changes the darker side roof plane so it begins at the existing front-gable apex/ridge and slopes back over the side wall. The far-right roof edge and the cottage's 111×100 logical footprint remain unchanged; only the side-plane geometry changed. The result now reads as one cottage with a front gable and connected side roof rather than two neighboring gables.
+
+**Validation:** Actions run `33902364020` passed static and Chromium checks at the production 390×844 title viewport. It verified shared ridge alignment, unchanged cottage footprint, no horizontal overflow, the same five-resident roster, and unchanged rendered resident sizes (34×34 px adults, 25×25 px children). Artifact `9948130433` (`little-home-cottage-shared-ridge`) was downloaded and manually inspected; both the full title render and close-up were accepted.
+
+**Deployment:** GitHub Pages run `33902423865` completed successfully for implementation commit `4832185884d5eff38cca784cddf1fc03b4536222`. The final live-source check also confirmed the shared-ridge `.roof-b` rule is present on the deployed title before this handoff was closed.
+
+**Repository hygiene / remaining risk:** Temporary roof-fix/refinement workflows self-removed, the accidental staging file was removed, and the failed temporary finalizer attempts were cleaned up. `.github/workflows/validate-repository-access-guard.yml` remains the only durable workflow. No blocking issue remains.
+
 
 ---
 
