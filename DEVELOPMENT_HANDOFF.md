@@ -37,9 +37,27 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
-### 2026-09-04 — Add animated campaign cinematics and durable cinematic script
+### 2026-09-04 — Professional visual QA and title-parity cinematic rebuild
 
 **Status: IN PROGRESS**
+
+**User goal:** Render and inspect every beat of every campaign cinematic through GitHub Actions, identify anything that looks weak, disjointed, placeholder-like, incorrectly positioned, under-textured, or visually inconsistent, and bring the full cinematic presentation to a polished professional standard. Little Home inside cinematics must render like the production title-page Little Home rather than the current simplified parallel imitation. The cinematic island should use the same authored geometry language, the same locally vendored CC0 grass/earth/wood material textures, the same cottage/tree/path/prop relationships, and the same resident scale/placement logic wherever Little Home appears.
+
+**Source-of-truth visual audit:** `title-island-concepts/index.html` is the reference for Little Home. Its production-selected `#c2` island uses a 350×350 procedural island model with layered textured earth side, textured earth rim, textured grass top, authored shadow, path, floating earth pebbles, a detailed rooted/branched tree, the unified two-plane cottage, rock/flowers/play prop, and five refined residents at explicit authored positions. Materials are locally vendored CC0 ambientCG color maps: `title-island-concepts/textures/grass.jpg` (Grass005), `earth.jpg` (Ground085), and `wood.jpg` (Wood093), documented in `title-island-concepts/ASSET_CREDITS.md`. The current cinematic `homeHtml()` and associated `.cin-home-*` CSS are substantially simpler and therefore are not accepted as title parity.
+
+**Implementation plan:** First create a baseline GitHub Actions visual audit that renders **every beat** of all four cinematics at 390×844, plus representative wide/reduced-motion checks, and uploads all screenshots with a machine-readable beat manifest. Manually inspect the full artifact and record beat-specific visual defects before product edits. Then rebuild the cinematic Little Home component from the title-page geometry/material system using cinematic-prefixed markup/styles and direct references to the same vendored textures. Preserve cinematic framing and narrative staging while matching the title model’s island silhouette, depth, cottage roof/walls, tree construction, material scale, prop layering, and resident relationships. Improve the other cinematic scenes beat-by-beat where the baseline audit shows weak hierarchy, crude placeholder geometry, inconsistent perspective, empty space, illegible labels, or disconnected route/map/network elements. Prefer coherent modeled scenes, material depth, subtle atmospheric layering, and consistent lighting over flat iconography. Do not change scripts/story meaning unless a tiny wording/layout adjustment is required for visual fit.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `cinematics400.js`, `style400-cinematics.css`, and possibly `CINEMATICS_SCRIPT.md` only for visual-direction notes. The title source and its texture files are references and should remain unchanged unless an actual defect in the title model is discovered. `game400-a.js`, `game400-b.js`, campaign definitions, solver data, Story Card canon, title navigation, audio, and Level 400 ending are out of scope unless validation exposes a strictly necessary integration regression. Temporary self-removing GitHub Actions workflows and audit artifacts are expected.
+
+**Validation plan:** Baseline and final audits must cover all 24 authored beats: 7 opening beats, 5 Across the Drift beats, 6 Old Maps/New Routes beats, and 6 Homeward beats. For every beat, Chromium must settle the requested cinematic/beat, assert no overflow or browser errors, capture the complete 390×844 frame, and record stage geometry. Final validation must additionally verify that Little Home scenes load all three CC0 texture files successfully, use separate earth-side/rim/grass-top material layers, show cottage and tree fully above the island, preserve all five named residents, keep scenery within the cinematic stage, and visually match the title-page island’s relative composition. Representative wide and reduced-motion passes must remain clean. Manual acceptance requires inspecting the complete final artifact, not only selected hero frames.
+
+**Deployment plan:** Commit this handoff state before product edits. Run baseline all-beat render audit and manually inspect it. Implement/refine in isolated product commits, rerun all-beat final audit, manually inspect every resulting frame, refine again if any beat still looks amateurish or disjointed, self-remove temporary workflows, confirm repository hygiene, deploy the exact accepted audit-clean product state through GitHub Pages, then close this entry with defect findings, implementation commits, audit/artifact IDs, and deployment run.
+
+---
+
+### 2026-09-04 — Add animated campaign cinematics and durable cinematic script
+
+**Status: COMPLETED**
 
 **User goal:** Recover and implement the animated opening-cutscene concept that was lost with part of a previous chat, plus the smaller set of additional cutscenes planned for major plot revelations. The opening must make the puzzle campaign feel narratively legible before Level 1 by explaining the Latchlands, natural island drift, the Skyway, the Waykeeper, why board Latchlings are a helper crew, what a directional snap represents, why obstacles/other Latchlings can create stops, and what matching nests mean. Later cinematics should appear only at genuine story hinges rather than interrupting routine levels.
 
@@ -54,6 +72,15 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must verify four authored cinematic IDs and exact campaign triggers (1, 251, 301, 351), the opening’s route-helper/snap/stop/nest explanation, loader order, replay container, and unchanged campaign/story canon files. Chromium at 390×844 and a wide viewport must verify: fresh Level 1 shows the opening before the ordinary Story Card; advancing all seven opening beats closes the cinematic and then allows the Level 1 Story Card; seen opening does not replay automatically; Levels 251/301/351 trigger the correct cinematic only when campaign progress has reached them; a low-progress Daily-style direct jump does not reveal milestone films; skip works; replay from Story & Residents works for unlocked films; locked films cannot be replayed early; Reset Progress clears cinematic seen state; no horizontal overflow/browser errors occur; and `prefers-reduced-motion: reduce` removes cinematic motion without hiding content. Render the opening, route-demo beat, Copperline revelation, and Homeward network beat for manual visual acceptance.
 
 **Deployment plan:** Commit this handoff entry before product edits. Implement the isolated cinematic system and script, run static and Chromium validation through a temporary self-removing workflow, inspect the render artifact manually, refine if needed, confirm repository hygiene, deploy the exact accepted product state through GitHub Pages, then close this entry with implementation/audit/deployment commit and run IDs.
+
+
+#### Completion summary
+
+**Implemented:** Four campaign cinematics are live: **The Skyway** before Level 1, **Across the Drift** before Level 251, **Old Maps, New Routes** before Level 301, and **Homeward** before Level 351. `CINEMATICS_SCRIPT.md` is the durable script source. `cinematics400.js` owns runtime/seen-state/replay behavior and `style400-cinematics.css` owns cinematic presentation. Story Cards remain intact, milestone films are progress-gated to prevent Daily-style spoilers, replay is available from Story & Residents, Reset Progress clears cinematic seen-state, and reduced-motion is supported.
+
+**Validation / deployment:** Full functional browser audit run `33909276970` passed; later visual refinement runs `33909576607` and `33909814678` passed after fixing View Transition timing, mini-board helper sizing, Little Home centering, and cottage/tree clipping. Accepted visual artifact `9950912226` was manually inspected. GitHub Pages deployment run `33909871306` succeeded for audit-clean product commit `4a355a621fe84cc81e8758c1d36e3b4362de5082`.
+
+**Process note:** A documentation-only finalizer workflow later failed YAML parsing before executing and therefore never touched product or handoff content. It was removed directly through the GitHub connector before the next task.
 
 ---
 
