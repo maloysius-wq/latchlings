@@ -1,0 +1,114 @@
+name: Audit Refined Cinematic Staging
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-refined-cinematics.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static refinement assertions
+        run: |
+          set -euo pipefail
+          node --check cinematics400.js
+          node --check game400-a.js
+          grep -q 'activeScreenTransition.finished.then(enterCinematicOrStory)' game400-a.js
+          grep -q 'display:block;position:relative;width:33px;height:33px' style400-cinematics.css
+          grep -q '@keyframes cinHomeFloat' style400-cinematics.css
+          grep -q '@keyframes cinPortraitBob' style400-cinematics.css
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchlings-cinematic-refinement"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Browser visual geometry audit
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchlings-cinematic-refinement"
+          cat > "$TEST_NODE/audit.mjs" <<'MJS'
+          import {chromium} from 'playwright';
+          import fs from 'node:fs';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};
+          const out=process.env.GITHUB_WORKSPACE+'/refined-cinematic-renders';
+          fs.mkdirSync(out,{recursive:true});
+          const browser=await chromium.launch({headless:true});
+          async function fresh(unlocked=1,seen={}){
+            const ctx=await browser.newContext({viewport:{width:390,height:844}});
+            await ctx.addInitScript(({unlocked,seen})=>{
+              localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked,stars:{}}));
+              localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify(seen));
+              localStorage.removeItem('latchlings_story_cards_seen_v1');
+            },{unlocked,seen});
+            const page=await ctx.newPage(),errors=[];
+            page.on('pageerror',e=>errors.push('page:'+e.message));
+            page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+            await page.goto('http://127.0.0.1:8157/',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>typeof startLevel==='function'&&window.LatchlingsCinematics);
+            return {ctx,page,errors};
+          }
+          async function start(page,level,id){await page.evaluate(L=>startLevel(L),level);await page.waitForSelector(`#cinematicOverlay.show[data-cinematic="${id}"]`);await page.waitForFunction(()=>document.body.dataset.screen==='game'&&activeScreenTransition===null);await page.waitForTimeout(120)}
+          async function advance(page,n){for(let i=0;i<n;i++){await page.click('#cinematicNext');await page.waitForTimeout(110)}}
+          const errors=[];
+
+          // Settled opening frame must not be inside the home-to-game swipe.
+          {
+            const {ctx,page,errors:e}=await fresh();await start(page,1,'opening');
+            const x=await page.evaluate(()=>({screen:document.body.dataset.screen,transition:activeScreenTransition,active:LatchlingsCinematics.active,islands:document.querySelectorAll('.cin-island').length,stage:document.getElementById('cinematicStage').getBoundingClientRect().toJSON()}));
+            ok(x.screen==='game'&&x.transition===null&&x.active==='opening'&&x.islands===5,'opening not settled '+JSON.stringify(x));
+            await page.screenshot({path:out+'/opening-settled.png',fullPage:true});
+            await advance(page,1);
+            const home=await page.evaluate(()=>{const s=document.getElementById('cinematicStage').getBoundingClientRect(),h=document.querySelector('.cin-home-island').getBoundingClientRect();return {stage:{l:s.left,r:s.right,c:s.left+s.width/2},home:{l:h.left,r:h.right,c:h.left+h.width/2,w:h.width}}});
+            ok(home.home.l>=home.stage.l-1&&home.home.r<=home.stage.r+1&&Math.abs(home.home.c-home.stage.c)<12,'Little Home off center '+JSON.stringify(home));
+            await page.screenshot({path:out+'/little-home-settled.png',fullPage:true});
+            await advance(page,3);
+            const portrait=await page.locator('.cin-helper-story .portrait').boundingBox();ok(portrait&&portrait.width>50&&portrait.height>50,'helper story portrait collapsed '+JSON.stringify(portrait));
+            await page.click('#cinematicNext');await page.waitForTimeout(130);
+            const demo=await page.evaluate(()=>[...document.querySelectorAll('.cin-demo-track .cin-character')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height,opacity:getComputedStyle(el).opacity}}));
+            ok(demo.length===3&&demo.every(r=>r.w>30&&r.h>30&&r.opacity!=='0'),'demo helpers collapsed '+JSON.stringify(demo));
+            await page.screenshot({path:out+'/route-demo-settled.png',fullPage:true});
+            errors.push(...e);await ctx.close();
+          }
+
+          // Homeward Little Home must remain centered and fully visible while the network surrounds it.
+          {
+            const {ctx,page,errors:e}=await fresh(351,{opening:1,'across-drift':1,'old-maps':1});await start(page,351,'homeward');await advance(page,5);
+            const x=await page.evaluate(()=>{const s=document.getElementById('cinematicStage').getBoundingClientRect(),h=document.querySelector('.cin-home-island').getBoundingClientRect();return {stage:{l:s.left,r:s.right,c:s.left+s.width/2},home:{l:h.left,r:h.right,c:h.left+h.width/2,w:h.width},chars:document.querySelectorAll('.cin-home-cast .cin-character').length,nodes:document.querySelectorAll('.cin-network .node').length}});
+            ok(x.home.l>=x.stage.l-1&&x.home.r<=x.stage.r+1&&Math.abs(x.home.c-x.stage.c)<12&&x.chars===5&&x.nodes===8,'Homeward staging wrong '+JSON.stringify(x));
+            await page.screenshot({path:out+'/homeward-settled.png',fullPage:true});errors.push(...e);await ctx.close();
+          }
+
+          ok(errors.length===0,'browser errors '+errors.join(' | '));
+          await browser.close();console.log('REFINED_CINEMATIC_VISUAL_OK');
+          MJS
+          python3 -m http.server 8157 >/tmp/latchlings-refined-cinematic-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          node audit.mjs
+          test "$(find "$GITHUB_WORKSPACE/refined-cinematic-renders" -name '*.png' | wc -l)" -eq 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: refined-cinematic-renders
+          path: refined-cinematic-renders/*.png
+          if-no-files-found: error
+      - name: Self-remove successful audit workflow
+        run: |
+          set -euo pipefail
+          rm -rf refined-cinematic-renders
+          rm -f .github/workflows/audit-refined-cinematics.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Complete refined cinematic visual audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
