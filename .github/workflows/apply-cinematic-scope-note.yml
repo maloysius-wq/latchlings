@@ -1,0 +1,22 @@
+name: Apply Cinematic Scope Note
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-cinematic-scope-note.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/cinematic_scope_note.py
+      - run: |
+          rm -f .github/cinematic_scope_note.py .github/workflows/apply-cinematic-scope-note.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md .github/cinematic_scope_note.py .github/workflows/apply-cinematic-scope-note.yml
+          git commit -m 'Refine cinematic title-parity scope'
+          git pull --rebase origin main
+          git push origin HEAD:main
