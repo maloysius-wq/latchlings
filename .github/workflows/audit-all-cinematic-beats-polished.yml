@@ -1,0 +1,91 @@
+name: Audit Every Rebuilt Cinematic Beat
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-all-cinematic-beats-polished.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static visual-system assertions
+        run: |
+          set -euo pipefail
+          node --check cinematics400.js
+          grep -q 'style400-cinematics-polish.css' index.html
+          grep -q 'title-island-concepts/?c=2&embed=1&cinematic=1' cinematics400.js
+          grep -q 'title-island-concepts/textures/earth.jpg' style400-cinematics-polish.css
+          grep -q 'title-island-concepts/textures/grass.jpg' style400-cinematics-polish.css
+          grep -q 'title-island-concepts/textures/wood.jpg' style400-cinematics-polish.css
+          grep -q 'cin-keepsake-board' cinematics400.js
+          grep -q 'cin-lookout-scene' cinematics400.js
+          grep -q 'node-side' cinematics400.js
+          grep -q 'body.cinematic-mode' title-island-concepts/index.html
+      - name: Install Chromium
+        run: |
+          TEST_NODE="$RUNNER_TEMP/latchlings-polished-all-beats"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Render and validate all 24 beats
+        run: |
+          TEST_NODE="$RUNNER_TEMP/latchlings-polished-all-beats"
+          cat > "$TEST_NODE/audit.mjs" <<'MJS'
+          import {chromium} from 'playwright';import fs from 'node:fs';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};
+          const out=process.env.GITHUB_WORKSPACE+'/polished-all-beats';fs.mkdirSync(out,{recursive:true});
+          const browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:390,height:844}});const page=await ctx.newPage();const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          page.on('requestfailed',r=>errors.push('request:'+r.url()+':'+(r.failure()?.errorText||'')));
+          await page.goto('http://127.0.0.1:8162/',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.LatchlingsCinematics);
+          const ids=['opening','across-drift','old-maps','homeward'];const manifest=[];
+          async function settleHome(){const iframe=page.locator('iframe.cin-home-reference');if(await iframe.count()){const frame=page.frames().find(f=>f.url().includes('cinematic=1'));ok(frame,'Little Home iframe frame missing');await frame.waitForSelector('#c2 .island-model');await frame.waitForTimeout(250);const x=await frame.evaluate(()=>({mode:document.body.classList.contains('cinematic-mode'),side:!!document.querySelector('#c2 .island-side'),rim:!!document.querySelector('#c2 .island-rim'),top:!!document.querySelector('#c2 .island-top'),cottage:!!document.querySelector('#c2 .cottage'),tree:!!document.querySelector('#c2 .little-home-tree'),residents:document.querySelectorAll('#c2 .resident').length,images:[...document.querySelectorAll('#c2 .island-side,#c2 .island-rim,#c2 .island-top,#c2 .house-front,#c2 .trunk')].map(e=>getComputedStyle(e).backgroundImage).join(' ')}));ok(x.mode&&x.side&&x.rim&&x.top&&x.cottage&&x.tree&&x.residents===5,'canonical Little Home structure missing '+JSON.stringify(x));ok(x.images.includes('earth.jpg')&&x.images.includes('grass.jpg')&&x.images.includes('wood.jpg'),'Little Home textures missing '+x.images)}}
+          for(const id of ids){const count=await page.evaluate(id=>LatchlingsCinematics.CINEMATICS[id].beats.length,id);await page.evaluate(id=>LatchlingsCinematics.show(id,{markSeen:false}),id);await page.waitForSelector(`#cinematicOverlay.show[data-cinematic="${id}"]`);
+            for(let i=0;i<count;i++){if(i>0){await page.click('#cinematicNext');await page.waitForTimeout(100)}await page.waitForTimeout(260);await settleHome();
+              const meta=await page.evaluate(()=>{const st=document.getElementById('cinematicStage').getBoundingClientRect(),vis=document.getElementById('cinematicOverlay').dataset.visual;const inside=[...document.querySelectorAll('#cinematicStage>*')].every(e=>{const r=e.getBoundingClientRect();return r.right>=st.left-40&&r.left<=st.right+40&&r.bottom>=st.top-40&&r.top<=st.bottom+40});return{id:LatchlingsCinematics.active,beat:LatchlingsCinematics.beat,title:document.getElementById('cinematicBeat').textContent,visual:vis,stage:{x:st.x,y:st.y,w:st.width,h:st.height},overflow:document.documentElement.scrollWidth>innerWidth+1,inside,home:document.querySelectorAll('iframe.cin-home-reference').length,islands:document.querySelectorAll('.cin-island').length,networkNodes:document.querySelectorAll('.cin-network .node').length}});
+              ok(!meta.overflow,'overflow '+id+' '+i);ok(meta.inside,'top-level scene outside stage '+id+' '+i);const name=`${id}-${String(i+1).padStart(2,'0')}-${meta.visual}.png`;await page.screenshot({path:out+'/'+name,fullPage:true});manifest.push({...meta,file:name});
+            }await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.getElementById('cinematicOverlay').classList.contains('show'))}
+          ok(manifest.length===24,'Expected 24 beats, got '+manifest.length);
+          // Normal title screen must remain normal, without cinematic-only mode.
+          await page.goto('http://127.0.0.1:8162/title-island-concepts/?c=2&embed=1',{waitUntil:'domcontentloaded'});await page.waitForSelector('#c2 .island-model');await page.waitForTimeout(400);const normal=await page.evaluate(()=>({cinematic:document.body.classList.contains('cinematic-mode'),logo:!!document.querySelector('#c2 .toy-brand'),play:!!document.querySelector('#c2 .play'),island:!!document.querySelector('#c2 .island-model'),residents:document.querySelectorAll('#c2 .resident').length}));ok(!normal.cinematic&&normal.logo&&normal.play&&normal.island&&normal.residents===5,'normal title changed '+JSON.stringify(normal));await page.screenshot({path:out+'/REFERENCE-normal-title-after.png',fullPage:true});
+          fs.writeFileSync(out+'/manifest.json',JSON.stringify({beats:manifest,normalTitle:normal,errors},null,2));ok(errors.length===0,'browser errors '+errors.join(' | '));await browser.close();console.log('POLISHED_ALL_24_BEATS_OK');
+          MJS
+          python3 -m http.server 8162 >/tmp/latchlings-polished-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          node audit.mjs
+      - name: Representative wide and reduced-motion checks
+        run: |
+          TEST_NODE="$RUNNER_TEMP/latchlings-polished-all-beats"
+          cat > "$TEST_NODE/extra.mjs" <<'MJS'
+          import {chromium} from 'playwright';const ok=(c,m)=>{if(!c)throw new Error(m)};const browser=await chromium.launch({headless:true});
+          for(const cfg of [{viewport:{width:900,height:844},reducedMotion:'no-preference'},{viewport:{width:390,height:844},reducedMotion:'reduce'}]){const ctx=await browser.newContext(cfg);const p=await ctx.newPage();await p.goto('http://127.0.0.1:8162/',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.LatchlingsCinematics);await p.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false}));await p.waitForSelector('#cinematicOverlay.show');const shell=await p.locator('.cinematic-shell').boundingBox();ok(shell&&shell.width<=522,'wide shell overflow');if(cfg.reducedMotion==='reduce'){const a=await p.evaluate(()=>getComputedStyle(document.querySelector('.cin-island')).animationName);ok(a==='none','reduced motion island still animates: '+a)}await ctx.close()}await browser.close();console.log('POLISHED_EXTRA_OK');
+          MJS
+          python3 -m http.server 8162 >/tmp/latchlings-polished-extra-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          node extra.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: polished-all-24-cinematic-beats
+          path: polished-all-beats/*
+          if-no-files-found: error
+      - name: Self-remove audit workflow
+        run: |
+          rm -rf polished-all-beats
+          rm -f .github/workflows/audit-all-cinematic-beats-polished.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Complete polished all-beat cinematic audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
