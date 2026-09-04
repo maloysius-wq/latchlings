@@ -1,0 +1,187 @@
+name: Audit Settled Latchling Refresh
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-settled-latchling-refresh.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Static refresh assertions
+        run: |
+          set -euo pipefail
+          node --check story-theme400.js
+          grep -q 'Refined spherical Latchling model' style400-game.css
+          grep -q 'Refined spherical Latchling model' title-island-concepts/index.html
+          grep -q 'Refined spherical Latchling portraits' style400-story-theme.css
+          grep -q 'story-character-avatar-mouth' story-theme400.js
+          for expr in happy surprised angry smug sleepy curious determined; do grep -q "latchling.expr-$expr" style400-game.css; done
+          for f in campaign400-{1..8}.js; do test -s "$f"; done
+          echo SETTLED_LATCHLING_STATIC_OK
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-settled-audit"
+          mkdir -p "$TEST_NODE"
+          cd "$TEST_NODE"
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          ./node_modules/.bin/playwright install --with-deps chromium >/dev/null
+      - name: Browser audit and clean renders
+        run: |
+          set -euo pipefail
+          TEST_NODE="$RUNNER_TEMP/latchling-settled-audit"
+          cat > "$TEST_NODE/audit.mjs" <<'MJS'
+          import {chromium} from 'playwright';
+          import fs from 'node:fs';
+          const ok=(c,m)=>{if(!c)throw new Error(m)};
+          const root='http://127.0.0.1:8154/';
+          const out=process.env.GITHUB_WORKSPACE+'/settled-latchling-refresh-renders';
+          fs.mkdirSync(out,{recursive:true});
+          const errors=[];
+          const hook=p=>{
+            p.on('pageerror',e=>errors.push('page:'+e.message));
+            p.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+            p.on('requestfailed',r=>{const u=r.url(),e=r.failure()?.errorText||'';if(/\.(mp3|wav|ogg|m4a)($|\?)/.test(u)&&/ERR_ABORTED/.test(e))return;errors.push('request:'+u+':'+e)});
+          };
+          const browser=await chromium.launch({headless:true});
+          async function fresh(viewport={width:390,height:844},reducedMotion='no-preference'){
+            const ctx=await browser.newContext({viewport,reducedMotion});
+            const page=await ctx.newPage();hook(page);
+            await page.goto(root,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>typeof startLevel==='function'&&window.LatchlingsStoryTheme&&window.LATCHLINGS_STORY);
+            return {ctx,page};
+          }
+          async function clearBlockingUi(page){
+            await page.evaluate(()=>{try{LatchlingsStoryTheme.close(false)}catch(_){};try{closeModal()}catch(_){}});
+            await page.waitForTimeout(120);
+          }
+
+          // Clean puzzle: wait out both view-transition and automatic Story Card timing, then close the card.
+          {
+            const {ctx,page}=await fresh();
+            await page.evaluate(()=>startLevel(400));
+            await page.waitForSelector('#game.active .latchling');
+            await page.waitForTimeout(420);
+            await clearBlockingUi(page);
+            await page.waitForTimeout(260);
+            const puzzle=await page.evaluate(()=>{
+              const xs=[...document.querySelectorAll('#game .latchling')],x=xs[0],r=x.getBoundingClientRect(),eye=x.querySelector('.eye'),face=x.querySelector('.face'),mouth=x.querySelector('.mouth'),suit=x.querySelector('.suit-mark'),eyes=x.querySelector('.eyes');
+              const er=eye.getBoundingClientRect(),mr=mouth.getBoundingClientRect(),sr=suit.getBoundingClientRect();
+              return {screen:document.body.dataset.screen,game:document.getElementById('game').classList.contains('active'),story:document.getElementById('storyCardOverlay').classList.contains('show'),modal:document.getElementById('overlay').classList.contains('show'),count:xs.length,w:r.width,h:r.height,eye:getComputedStyle(eye).backgroundColor,catchlight:getComputedStyle(eye,'::before').content,cheek:getComputedStyle(face,'::before').content,mouthY:(mr.top-r.top)/r.height,suitY:(sr.top-r.top)/r.height,eyeY:(er.top-r.top)/r.height,selected:!!document.querySelector('#game .latchling.selected'),durations:xs.map(v=>getComputedStyle(v.querySelector('.eyes')).animationDuration),appendages:xs.filter(v=>v.querySelector('.horn,.stem,.antenna,.ear,.hair,.hat,.sprout')).length};
+            });
+            ok(puzzle.screen==='game'&&puzzle.game&&!puzzle.story&&!puzzle.modal,'puzzle is not a clean settled game state '+JSON.stringify(puzzle));
+            ok(puzzle.count>1&&Math.abs(puzzle.w-puzzle.h)<.25,'puzzle pieces missing/not spherical '+JSON.stringify(puzzle));
+            ok(puzzle.eye==='rgb(23, 37, 58)'&&puzzle.catchlight!=='none'&&puzzle.cheek!=='none','puzzle face details missing '+JSON.stringify(puzzle));
+            ok(puzzle.mouthY>.45&&puzzle.mouthY<.62&&puzzle.suitY<puzzle.eyeY,'puzzle face geometry wrong '+JSON.stringify(puzzle));
+            ok(puzzle.selected&&new Set(puzzle.durations).size>1&&puzzle.appendages===0,'puzzle selection/blink/appendage regression '+JSON.stringify(puzzle));
+            await page.screenshot({path:out+'/puzzle-clean.png',fullPage:true});
+            await ctx.close();
+          }
+
+          // Clean title/home in its own state, with no modal inherited from gameplay.
+          {
+            const {ctx,page}=await fresh();
+            await page.waitForTimeout(1600);
+            const frame=page.frames().find(f=>/title-island-concepts/.test(f.url()));ok(frame,'title iframe missing');
+            await frame.waitForSelector('#c2 .latchling');
+            const title=await frame.evaluate(()=>[...document.querySelectorAll('#c2 .latchling')].map(x=>{const r=x.getBoundingClientRect(),e=x.querySelector('.eye'),f=x.querySelector('.face'),m=x.querySelector('.mouth'),s=x.querySelector('.suit-mark'),eyes=x.querySelector('.eyes');return {role:x.dataset.role,w:r.width,h:r.height,eye:getComputedStyle(e).backgroundColor,cheek:getComputedStyle(f,'::before').content,mouthY:(m.getBoundingClientRect().top-r.top)/r.height,suitY:(s.getBoundingClientRect().top-r.top)/r.height,eyeY:(e.getBoundingClientRect().top-r.top)/r.height,blink:getComputedStyle(eyes).animationName,dur:getComputedStyle(eyes).animationDuration,appendage:!!x.querySelector('.horn,.stem,.antenna,.ear,.hair,.hat,.sprout')}}));
+            const clean=await page.evaluate(()=>({screen:document.body.dataset.screen,modal:document.getElementById('overlay').classList.contains('show'),story:document.getElementById('storyCardOverlay').classList.contains('show')}));
+            const adults=title.filter(x=>x.role==='adult'),kids=title.filter(x=>x.role==='child');
+            ok(clean.screen==='home'&&!clean.modal&&!clean.story,'home is obstructed '+JSON.stringify(clean));
+            ok(adults.length===3&&kids.length===2,'title roster changed');
+            ok(adults.every(x=>Math.abs(x.w-34)<.25&&Math.abs(x.h-34)<.25)&&kids.every(x=>Math.abs(x.w-25)<.25&&Math.abs(x.h-25)<.25),'title resident sizes changed '+JSON.stringify(title));
+            ok(title.every(x=>x.eye==='rgb(23, 37, 58)'&&x.cheek!=='none'&&x.mouthY<.64&&x.suitY<x.eyeY&&x.blink==='refinedBlink'&&!x.appendage),'title face mismatch '+JSON.stringify(title));
+            ok(new Set(title.map(x=>x.dur)).size>1,'title blinks synchronized');
+            await page.screenshot({path:out+'/title-clean.png',fullPage:true});
+            await ctx.close();
+          }
+
+          // Single Story Card.
+          {
+            const {ctx,page}=await fresh();
+            await page.evaluate(()=>startLevel(1));await page.waitForTimeout(380);await clearBlockingUi(page);
+            await page.evaluate(()=>LatchlingsStoryTheme.show(1,true));await page.waitForSelector('#storyCardOverlay.show .story-char-body');await page.waitForTimeout(260);
+            const card=await page.evaluate(()=>({screen:document.body.dataset.screen,story:document.getElementById('storyCardOverlay').classList.contains('show'),modal:document.getElementById('overlay').classList.contains('show'),portraits:document.querySelectorAll('#storyCardOverlay .story-char-body').length}));
+            ok(card.screen==='game'&&card.story&&!card.modal&&card.portraits===1,'single story card not clean '+JSON.stringify(card));
+            await page.screenshot({path:out+'/story-single-clean.png',fullPage:true});
+            await ctx.close();
+          }
+
+          // Paired Story Card.
+          {
+            const {ctx,page}=await fresh();
+            const pairLevel=await page.evaluate(()=>{for(let i=1;i<=400;i++){const m=LATCHLINGS_STORY.levelMeta(i),c=LATCHLINGS_STORY.chapters[m.chapter-1],f=LatchlingsStoryTheme.featuredFor(m,c);if(f.length===2)return i}return null});
+            ok(pairLevel,'paired story not found');
+            await page.evaluate(L=>startLevel(L),pairLevel);await page.waitForTimeout(380);await clearBlockingUi(page);
+            await page.evaluate(L=>LatchlingsStoryTheme.show(L,true),pairLevel);await page.waitForSelector('#storyCardOverlay.show .story-scene-character-count-2');await page.waitForTimeout(260);
+            ok(await page.locator('#storyCardOverlay .story-char-body').count()===2,'paired portraits missing');
+            await page.screenshot({path:out+'/story-pair-clean.png',fullPage:true});
+            await ctx.close();
+          }
+
+          // Story & Residents screen with no leftover completion modal.
+          {
+            const {ctx,page}=await fresh();
+            await clearBlockingUi(page);
+            await page.evaluate(()=>openStoryScreen());await page.waitForSelector('#story.active .story-character-avatar');await page.waitForTimeout(320);
+            const residents=await page.evaluate(()=>({screen:document.body.dataset.screen,active:document.getElementById('story').classList.contains('active'),modal:document.getElementById('overlay').classList.contains('show'),storyCard:document.getElementById('storyCardOverlay').classList.contains('show'),avatars:[...document.querySelectorAll('#story .story-character-avatar')].map(a=>{const r=a.getBoundingClientRect(),eyes=a.querySelector('.story-character-avatar-eyes'),face=a.querySelector('.story-character-avatar-face');return {name:a.dataset.character,w:r.width,h:r.height,eyes:!!eyes,mouth:!!a.querySelector('.story-character-avatar-mouth'),suit:!!a.querySelector('.story-character-avatar-suit svg'),cheek:getComputedStyle(face,'::before').content,eye:getComputedStyle(eyes.querySelector('i')).backgroundColor,blink:getComputedStyle(eyes).animationName,expr:[...a.classList].find(c=>c.startsWith('expr-'))}})}));
+            ok(residents.screen==='story'&&residents.active&&!residents.modal&&!residents.storyCard,'Residents screen obstructed '+JSON.stringify(residents));
+            ok(residents.avatars.length===5&&residents.avatars.every(x=>Math.abs(x.w-x.h)<.25&&x.eyes&&x.mouth&&x.suit&&x.cheek!=='none'&&x.eye==='rgb(23, 37, 58)'&&x.blink==='refinedAvatarBlink'&&x.expr),'resident avatars mismatch '+JSON.stringify(residents));
+            await page.screenshot({path:out+'/residents-clean.png',fullPage:true});
+            await ctx.close();
+          }
+
+          // Wide story card and overflow check.
+          {
+            const {ctx,page}=await fresh({width:900,height:844});
+            await page.evaluate(()=>startLevel(1));await page.waitForTimeout(380);await clearBlockingUi(page);await page.evaluate(()=>LatchlingsStoryTheme.show(1,true));await page.waitForSelector('#storyCardOverlay.show');await page.waitForTimeout(260);
+            ok(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)),'wide story overflow');
+            await page.screenshot({path:out+'/story-wide-clean.png',fullPage:true});
+            await ctx.close();
+          }
+
+          // Reduced-motion model remains static on all three character surfaces.
+          {
+            const {ctx,page}=await fresh({width:390,height:844},'reduce');
+            await page.evaluate(()=>startLevel(1));await page.waitForTimeout(320);await clearBlockingUi(page);
+            ok(await page.locator('#game .eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','reduced puzzle blink active');
+            await page.evaluate(()=>openStoryScreen());await page.waitForSelector('#story.active .story-character-avatar-eyes');
+            ok(await page.locator('#story .story-character-avatar-eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','reduced avatar blink active');
+            await page.evaluate(()=>screen('home'));await page.waitForTimeout(180);const frame=page.frames().find(f=>/title-island-concepts/.test(f.url()));ok(frame,'reduced title frame missing');await frame.waitForSelector('#c2 .eyes');
+            ok(await frame.locator('#c2 .eyes').first().evaluate(e=>getComputedStyle(e).animationName)==='none','reduced title blink active');
+            await ctx.close();
+          }
+
+          ok(errors.length===0,'browser errors '+errors.join(' | '));
+          console.log('SETTLED_LATCHLING_REFRESH_BROWSER_OK');
+          await browser.close();
+          MJS
+          python3 -m http.server 8154 >/tmp/latchling-settled-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          cd "$TEST_NODE"
+          node audit.mjs
+          test "$(find "$GITHUB_WORKSPACE/settled-latchling-refresh-renders" -name '*.png' | wc -l)" -eq 6
+      - uses: actions/upload-artifact@v4
+        with:
+          name: settled-latchling-refresh-renders
+          path: settled-latchling-refresh-renders/*.png
+          if-no-files-found: error
+      - name: Self-remove successful audit workflow
+        run: |
+          set -euo pipefail
+          rm -rf settled-latchling-refresh-renders
+          rm -f .github/workflows/audit-settled-latchling-refresh.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Complete settled Latchling refresh audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
