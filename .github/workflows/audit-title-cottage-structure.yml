@@ -1,0 +1,27 @@
+name: Audit Title Cottage Structure
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-title-cottage-structure.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect cottage source
+        run: |
+          set -euo pipefail
+          grep -n -E 'cottage|roof|house|shed' title-island-concepts/index.html | head -180
+          grep -q 'Fix Little Home cottage roof seam' DEVELOPMENT_HANDOFF.md
+      - name: Self-remove
+        run: |
+          rm -f .github/workflows/audit-title-cottage-structure.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/audit-title-cottage-structure.yml
+          git commit -m 'Complete title cottage structure audit'
+          git pull --rebase origin main
+          git push origin HEAD:main
