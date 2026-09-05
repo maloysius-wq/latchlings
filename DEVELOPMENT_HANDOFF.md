@@ -1,6 +1,6 @@
 # Latchlings Development Handoff
 
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
 ## Start here
 
@@ -37,6 +37,28 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-05 — Chapter-one visual journey, cinematic dialogue clarity, and community-story grounding
+
+**Status: IN PROGRESS**
+
+**User goal:** Make the 50 levels inside a chapter feel visually varied enough that the player is not staring at one chapter skin repeated fifty times. Start by prototyping the full system across all 50 Sunpetal Meadows levels. Also revise the opening cinematic so named residents are clearly identified, spoken dialogue appears in speech bubbles anchored to the speaking Latchling instead of sharing the narrator box, the bottom copy area is narrator-only with no visible `Narrator` label, and the story clearly explains why Little Home's five residents recur and how the broader community participates without making the cast feel like they are ordering everyone else around. Make typography throughout the production game more whimsical while leaving the title and tagline unchanged.
+
+**Design basis:** Current production already has eight strong chapter identities, but `style400-themes.css` changes its major environment treatment only once per 50-level chapter. `story400.js` already divides each chapter into five ten-level movements and ten recurring level-story motifs, while `story-theme400.js` currently reduces level-specific context to a few small medallion props. The new prototype will use that existing 5×10 structure as the visual-variation framework rather than adding new mechanics or authoring 400 unrelated backgrounds.
+
+**Implementation plan:** Add a dedicated level-environment layer for Chapter 1 with five ten-level micro-locations: Little Home Morning (1–10), Meadow Detours (11–20), Open Fields (21–30), Reroute Work (31–40), and Golden-Hour Return (41–50). Within each micro-location, use the level's existing story motif to place a larger readable subject prop and deterministic ambient variants, while keeping the board and puzzle cells visually calm and fully legible. Milestone levels 10/20/30/40/50 receive stronger set-piece accents. Prefer reusable CSS/SVG scene components and deterministic level classes over hand-painted one-off backgrounds. Keep campaign data and puzzle rules unchanged.
+
+For the opening cinematic, extend the scene model so individual beats can render character nameplates and stage-anchored speech bubbles. Character dialogue will be removed from the bottom copy stack and rendered above/near the speaking character; narrator text remains in the bottom box without the word `Narrator`. Beat 2 will explicitly pair each of Pippa, Bramble, Rowan, Pip, and Tansy with a visible name/role treatment. The script and story bible will clarify that Little Home becomes the coordination hub because this household is the first to recognize that many ordinary route failures share one system-level cause: Pippa tracks routine failures, Rowan tracks island drift, Bramble carries reports between communities, and Pip/Tansy surface social stakes and overlooked clues. The wider community contributes crews, observations, route stops, and local infrastructure because every repaired route serves shared daily life; the cast coordinates and investigates rather than commanding others.
+
+Typography will move to a playful rounded/storybook UI stack across production screens and cinematics, while `.logo`, the production title artwork, and title tagline remain unchanged. Use a resilient system-first stack so the game does not gain a fragile external runtime dependency.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `STORY_BIBLE.md`, `CINEMATICS_SCRIPT.md`, `cinematics400.js`, `style400-cinematics.css` and/or a small additive cinematic refinement stylesheet, `index.html`, plus new dedicated Chapter-1 visual-variation JS/CSS files. `story400.js`, `story-theme400.js`, `style400-ui.css`, and `style400-story-theme.css` may receive presentation-only changes if needed. Campaign level definitions, solver data, move limits, progression, title island art, title logo/tagline, music, SFX, and the Level 400 ending logic are out of scope unless validation exposes a regression.
+
+**Validation plan:** Use a temporary self-removing GitHub Actions browser audit. For Chapter 1, render all 50 playable levels at 390×844 into an ordered contact-sheet artifact and assert five distinct micro-location classes, ten deterministic motif identities, stronger milestone treatments, no board occlusion, no horizontal overflow, and unchanged level data. Manually inspect the 50-frame gallery for repetition, clutter, weak props, and abrupt transitions. For cinematics, render every opening beat and assert that narrator copy appears only in the bottom narrator area, dialogue appears only in stage speech bubbles, the literal narrator label is absent, all five residents receive clear name identification, and mobile/wide/reduced-motion layouts remain clean. Verify the new community rationale appears in both durable script/canon and player-facing opening copy. Verify the title/logo/tagline typography is unchanged while representative gameplay, level-select, story, modal, and cinematic UI use the new whimsical stack.
+
+**Deployment plan:** This handoff commit is the pre-implementation checkpoint. Implement in isolated product commits, run the complete Chapter-1 plus opening-cinematic visual audit, manually inspect artifacts, refine any rejected frames, remove temporary workflows, verify the repository access guard, confirm GitHub Pages deploys the exact accepted product state, then close this entry with files, commits, run/artifact IDs, visual findings, remaining risks, and the next chapter-wide rollout recommendation.
+
+---
+
 ### 2026-09-04 — Professional visual QA and title-parity cinematic rebuild
 
 **Status: COMPLETED**
@@ -50,7 +72,6 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `cinematics400.js`, `style400-cinematics.css`, and possibly `CINEMATICS_SCRIPT.md` only for visual-direction notes. The title source and its texture files are references and should remain unchanged unless an actual defect in the title model is discovered. `game400-a.js`, `game400-b.js`, campaign definitions, solver data, Story Card canon, title navigation, audio, and Level 400 ending are out of scope unless validation exposes a strictly necessary integration regression. Temporary self-removing GitHub Actions workflows and audit artifacts are expected.
 
 **Scope refinement after baseline comparison:** The baseline all-beat gallery shows that duplicating Little Home as separate cinematic CSS is itself the parity defect. The implementation will therefore add a **non-default scene-only cinematic mode** to `title-island-concepts/index.html` and embed that canonical `#c2` scene inside cinematic Little Home beats. Normal title/embed behavior must remain pixel-identical outside the new query mode. This makes the title source a deliberately shared production component while continuing to use the same local CC0 textures. `title-island-concepts/index.html` is now an expected file for this task; its existing island geometry/materials/resident choreography are not to be redesigned.
-
 
 **Validation plan:** Baseline and final audits must cover all 24 authored beats: 7 opening beats, 5 Across the Drift beats, 6 Old Maps/New Routes beats, and 6 Homeward beats. For every beat, Chromium must settle the requested cinematic/beat, assert no overflow or browser errors, capture the complete 390×844 frame, and record stage geometry. Final validation must additionally verify that Little Home scenes load all three CC0 texture files successfully, use separate earth-side/rim/grass-top material layers, show cottage and tree fully above the island, preserve all five named residents, keep scenery within the cinematic stage, and visually match the title-page island’s relative composition. Representative wide and reduced-motion passes must remain clean. Manual acceptance requires inspecting the complete final artifact, not only selected hero frames.
 
@@ -91,7 +112,6 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Static checks must verify four authored cinematic IDs and exact campaign triggers (1, 251, 301, 351), the opening’s route-helper/snap/stop/nest explanation, loader order, replay container, and unchanged campaign/story canon files. Chromium at 390×844 and a wide viewport must verify: fresh Level 1 shows the opening before the ordinary Story Card; advancing all seven opening beats closes the cinematic and then allows the Level 1 Story Card; seen opening does not replay automatically; Levels 251/301/351 trigger the correct cinematic only when campaign progress has reached them; a low-progress Daily-style direct jump does not reveal milestone films; skip works; replay from Story & Residents works for unlocked films; locked films cannot be replayed early; Reset Progress clears cinematic seen state; no horizontal overflow/browser errors occur; and `prefers-reduced-motion: reduce` removes cinematic motion without hiding content. Render the opening, route-demo beat, Copperline revelation, and Homeward network beat for manual visual acceptance.
 
 **Deployment plan:** Commit this handoff entry before product edits. Implement the isolated cinematic system and script, run static and Chromium validation through a temporary self-removing workflow, inspect the render artifact manually, refine if needed, confirm repository hygiene, deploy the exact accepted product state through GitHub Pages, then close this entry with implementation/audit/deployment commit and run IDs.
-
 
 #### Completion summary
 
