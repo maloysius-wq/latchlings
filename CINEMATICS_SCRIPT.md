@@ -1,12 +1,12 @@
 # Latchlings Cinematics Script
 
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
 This file is the durable source of truth for the campaign cinematics in the 400-level production game.
 
 The cinematics are not a replacement for Story Cards. Story Cards carry the small, frequent route stories. Cinematics are reserved for the few moments where the player needs a new mental model of the world or of the campaign itself.
 
-All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
+All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` plus the production story-grounding layer.
 
 ## Runtime rules
 
@@ -18,6 +18,8 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 - Reset Progress clears cinematic seen state.
 - Reduced-motion mode keeps every visual and line of dialogue but removes nonessential motion.
 - Routine chapter mechanics are still introduced by their chapters. The opening explains the *meaning* of the puzzle board and its universal interaction language, not every later tile type.
+- **Narration and character dialogue use different visual channels.** Narration belongs only in the lower copy panel and carries no visible `Narrator` label. Spoken character lines appear in speech bubbles attached to named character portraits on the scene itself.
+- The first introduction of the recurring household must visibly pair all five residents with their face, name, and short role so the player is never expected to infer which Latchling a name belongs to.
 
 ---
 
@@ -25,23 +27,23 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 
 **Trigger:** Before Level 1, before the ordinary Level 1 Story Card.  
 **Replay unlock:** Always available.  
-**Story job:** Make the entire puzzle campaign legible before the first move. Establish the Latchlands, natural drift, Little Home, the Skyway, the Waykeeper, the helper crew, snapping/stopping, and nests.
+**Story job:** Make the entire puzzle campaign legible before the first move. Establish the Latchlands, natural drift, Little Home, why its five residents recur, the Skyway, the Waykeeper, cooperative helper crews, snapping/stopping, and nests.
 
 ## Beat 1 — The Latchlands Move
 
 **Visual:** A wide field of small floating islands drifts at different speeds beneath soft clouds. Faint route lights stretch between several islands, flexing as the islands move.
 
-**Narrator:**  
+**Narration:**  
 > The Latchlands are always moving. Not quickly. Not dangerously. Just enough that yesterday’s path is never quite today’s.
 
 **Meaning:** Drift is normal. The player is not trying to stop it.
 
 ## Beat 2 — Little Home
 
-**Visual:** Little Home comes forward. The cottage, garden, tree, and five residents settle into view: Pippa, Bramble, Rowan, Pip, and Tansy. Tiny ordinary-life props move around them.
+**Visual:** The production Little Home scene comes forward. All five recurring residents receive explicit face/name/role identification at the bottom of the scene: **Pippa — Organizer**, **Bramble — Courier**, **Rowan — Caretaker**, **Pip — Explorer**, and **Tansy — Collector**. Tansy and Pip speak from bubbles attached to their own portraits.
 
-**Narrator:**  
-> This is Little Home. Pippa keeps the garden organized. Bramble carries half the errands on the island. Rowan watches the island itself. Pip and Tansy turn almost anything into an expedition.
+**Narration:**  
+> This is Little Home, a shared household where five very different sets of eyes keep catching different parts of the same day.
 
 **Tansy:**  
 > It was one basket.
@@ -49,56 +51,62 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 **Pip:**  
 > It was an expedition basket.
 
-**Meaning:** The story is about ordinary lives, not abstract puzzle pieces.
+**Meaning:** The player can immediately pair each recurring name with a face and role. These are ordinary residents of a shared household, not magically selected heroes.
 
 ## Beat 3 — What the Skyway Does
 
 **Visual:** Route lights brighten from Little Home to neighboring islands. A basket icon, parcel, and tiny visitor light travel along separate paths while the islands continue drifting.
 
-**Narrator:**  
+**Narration:**  
 > For generations, the Skyway has kept homes, gardens, markets, and neighbors connected while the islands drift. A good route does not hold the world still. It keeps working while the world moves.
 
 **Meaning:** The Skyway is infrastructure that adapts to movement.
 
 ## Beat 4 — You Are the Waykeeper
 
-**Visual:** A Waykeeper compass motif appears over the moving islands. Old route lines fade, new lines sketch themselves between the islands’ current positions.
+**Visual:** A Waykeeper compass motif appears over the moving islands. Old route lines fade, new lines sketch themselves between the islands’ current positions. Pippa and Rowan appear as the speakers, each with a named speech bubble.
+
+**Narration:**  
+> Little Home is the first place where the odd little failures get compared instead of shrugged off: Pippa tracks broken routines, Rowan tracks the island’s drift, Bramble carries reports between neighbors, and Pip and Tansy keep noticing the clues adults step past. Together, their notes reveal one shared problem.
 
 **Pippa:**  
-> That is where you come in. You are the Waykeeper.
+> We can tell you what keeps going wrong.
 
 **Rowan:**  
-> You do not tell the islands where to be. You watch where they are, then find a route that works now.
+> You can help us read the route underneath it.
 
-**Meaning:** The player’s role is route-tending and adaptation, not controlling the islands.
+**Meaning:** Little Home matters because this household is the first to connect several ordinary failures into one pattern. The Waykeeper supplies specialized route-reading skill; the residents supply observations and lived context.
 
 ## Beat 5 — The Helper Crew
 
-**Visual:** A miniature route board appears. Several spherical Latchlings hop into place. A small story portrait of one household resident remains outside the board while the helper crew stands inside it.
+**Visual:** A miniature route board appears. Several spherical Latchlings hop into place as a local work party. Bramble speaks beside the board.
+
+**Narration:**  
+> Little Home becomes a coordination point, not a command post. Every community knows its own paths best. Neighbors volunteer observations, route crews, travel windows, and hands on their own Skyway hardware because every repaired route helps somebody get home.
 
 **Bramble:**  
-> When somebody needs a route fixed, the whole island pitches in. The Latchlings on your board are the helper crew working that route with you.
+> We connect the reports. Everybody brings the part they know.
 
-**Narrator:**  
-> The person in the story gives the route its reason. The Latchlings on the board are the crew helping make it possible.
-
-**Meaning:** Named residents in Story Cards do not have to match the color or suit of board pieces.
+**Meaning:** Named residents do not order an anonymous population around. The wider Latchlands are capable participants cooperating on shared infrastructure. The board crew is the local group carrying out that specific route job, so their colors and suit marks do not need to match the featured resident.
 
 ## Beat 6 — Snap, Stop, Set Up
 
-**Visual:** One helper is selected. A direction flashes. The helper snaps in a straight line and stops against a rock. The demonstration resets; a second helper is positioned as the stopper, and the first helper snaps into it. A matching nest glows nearby.
+**Visual:** One helper is selected. A direction flashes. The helper snaps in a straight line and stops against a rock. The demonstration resets; a second helper is positioned as the stopper, and the first helper snaps into it. A matching nest glows nearby. Rowan’s explanation appears in a speech bubble above Rowan.
 
-**Narrator:**  
+**Narration:**  
 > Choose a Latchling, then choose a direction. They snap along that route until something stops them. An edge, a rock, or another helper can turn one move into the setup for the next.
 
 **Rowan:**  
-> Guide each helper into the nest that matches them. A nest is a safe arrival point. When every helper is safely placed, the route is working.
+> Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.
 
 **Meaning:** This is the universal board language: select, direction, continuous snap, deliberate stop, matching nest, solve everyone.
 
 ## Beat 7 — This Morning
 
-**Visual:** The miniature board dissolves back into Little Home. A breakfast basket follows an old glowing route, misses its intended connection because the islands have shifted, and lands at an awkward stop. Rowan looks toward the horizon. Pippa looks at the route. Pip and Tansy look at breakfast.
+**Visual:** The miniature board dissolves back into Little Home. A breakfast basket follows an old glowing route, misses its intended connection because the islands have shifted, and lands at an awkward stop. Pippa, Rowan, Pip, and Tansy each speak from their own on-stage bubbles.
+
+**Narration:**  
+> Start small, Waykeeper. Fix the morning route. Then help Little Home compare what it learns with the neighbors who are already working on their own pieces of the Skyway.
 
 **Pippa:**  
 > That route worked yesterday.
@@ -110,10 +118,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 > So breakfast is a puzzle now?
 
 **Tansy:**  
-> Breakfast is *urgently* a puzzle now.
-
-**Narrator:**  
-> Start small, Waykeeper. Fix the morning route. Then find out why the Skyway stopped keeping up.
+> Breakfast is urgently a puzzle now.
 
 **Final button:** **Begin Level 1**
 
@@ -129,12 +134,12 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 
 **Visual:** The camera rises above Prism Gardens. Color routes glow below. Beyond them, clusters of islands sit visibly farther apart than the older translucent route map expects.
 
-**Narrator:**  
+**Narration:**  
 > From Prism Gardens, the Waykeeper can finally see farther than one route at a time.
 
 ## Beat 2 — A Familiar Porch
 
-**Visual:** Tansy looks through Little Home’s new telescope. A tiny Lanternwood porch light appears at the edge of the view and slowly drifts farther from its old route marker.
+**Visual:** Tansy looks through Little Home’s new telescope. A tiny Lanternwood porch light appears at the edge of the view and slowly drifts farther from its old route marker. Tansy and Pip speak in bubbles attached to named portraits.
 
 **Tansy:**  
 > I can still see their porch.
@@ -152,7 +157,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 **Rowan:**  
 > This is not one route behaving badly. Look at all of them.
 
-**Narrator:**  
+**Narration:**  
 > The islands are doing what they have always done. The network is falling behind them.
 
 ## Beat 4 — Yesterday’s Map
@@ -172,7 +177,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 **Bramble:**  
 > Good. I was getting tired of chasing yesterday.
 
-**Narrator:**  
+**Narration:**  
 > Prism Gardens reconnects on a route that never existed on the old map. The next question is waiting at Copperline Junction: what did the first Waykeepers know that everyone else forgot?
 
 **Final button:** **Continue to Copperline**
@@ -215,7 +220,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 **Pippa:**  
 > They were all correct.
 
-**Narrator:**  
+**Narration:**  
 > Old Waykeepers never protected one perfect map. They watched the drift and rewrote the routes again and again.
 
 ## Beat 4 — What Was Forgotten
@@ -232,7 +237,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 
 **Visual:** The frozen network falls out of alignment. The islands remain calm and healthy beneath it.
 
-**Narrator:**  
+**Narration:**  
 > The islands are not broken. The drift is not the disaster. The Skyway stopped changing with them.
 
 **Pippa:**  
@@ -248,7 +253,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 **Bramble:**  
 > Finally. Instructions I can follow.
 
-**Narrator:**  
+**Narration:**  
 > For the first time, the Waykeeper deliberately builds a route that has never existed before.
 
 **Final button:** **Build the Living Skyway**
@@ -265,7 +270,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 
 **Visual:** Little Home’s route board fills with small signals from Sunpetal Meadows, Lanternwood Grove, Lodestone Caverns, Masquerade Keep, Prism Gardens, Copperline Junction, and Stormswitch Foundry.
 
-**Narrator:**  
+**Narration:**  
 > By the time Stormswitch comes online, the Waykeeper is no longer working alone.
 
 ## Beat 2 — Everyone Has a Part
@@ -285,7 +290,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 
 **Visual:** Route lights pulse from region to region rather than from one central hub. One path changes and neighboring paths adjust around it.
 
-**Narrator:**  
+**Narration:**  
 > One community watches the drift. Another adjusts an anchor. Another changes a travel window. The Skyway begins responding faster than the islands can leave yesterday’s map behind.
 
 ## Beat 4 — No Perfect Route
@@ -302,7 +307,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 
 **Visual:** Aurora Crown appears in the distance where many old and new route lines overlap. No giant lever or central machine appears. Instead, lines arrive from every region.
 
-**Narrator:**  
+**Narration:**  
 > Aurora Crown is not a master switch. It is where the oldest surviving Skyway lines meet.
 
 **Bramble:**  
@@ -324,7 +329,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js`.
 **Pip:**  
 > Preferably by the interesting route.
 
-**Narrator:**  
+**Narration:**  
 > Home is not the place that never moves. It is the place you keep finding a way back to.
 
 **Final button:** **Begin Homeward**
