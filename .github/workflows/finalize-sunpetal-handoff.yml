@@ -1,0 +1,55 @@
+name: Finalize Sunpetal Visual Journey Handoff
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close handoff and remove finalizer
+        run: |
+          git pull --ff-only origin main
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          heading='### 2026-09-05 — Chapter-one visual journey, cinematic dialogue clarity, and community-story grounding'
+          start=text.index(heading)
+          end=text.index('\n---', start)
+          section=text[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          marker='#### Completion summary\n'
+          if marker not in section:
+              summary=r'''
+
+#### Completion summary
+
+**Implemented Chapter 1 journey:** Sunpetal Meadows now uses five deterministic ten-level micro-locations across Levels 1–50: Little Home Morning, Meadow Detours, Open Fields, Reroute Work, and Golden-Hour Return. Each ten-level block keeps the ten existing story motifs (breakfast, watering, kite, bread, mail, tea, gate, picnic, cart, scarf), while the environment layer supplies phase-specific scenery, ambient A/B variations, milestone treatment on Levels 10/20/30/40/50, and reactive route-life feedback as helpers are delivered. The puzzle board itself remains visually calm and campaign definitions were not modified. Manual review of the first all-50 gallery rejected the initial phase separation as too subtle, so the final refinement deliberately moved signature scenery into the visible space around/below the board and strengthened phase palettes. The accepted phone renders now read distinctly: cottage/home, meadow/signpost/creek, windmill/open fields, route stakes/work zone, and lantern-lit golden return.
+
+**Cinematic dialogue and story grounding:** `cinematic-dialogue400.js` now converts named-character speech into stage speech bubbles and leaves only narrator copy in the lower text area, without a visible `Narrator` label. Opening beat 2 presents Pippa, Bramble, Rowan, Pip, and Tansy with explicit names and roles. The opening script and story bible now establish Little Home as the first household to compare several ordinary failures and recognize one shared Skyway problem; it becomes a coordination point rather than a command center, while each community remains the expert on its own paths and contributes observations, crews, timing, and local infrastructure. Production UI typography uses the new rounded/storybook stack while the Latchlings title/logo and title-page tagline typography remain unchanged.
+
+**Late runtime fixes found by acceptance testing:** The focused cinematic audit exposed a real MutationObserver feedback loop in `cinematic-dialogue400.js`: `postProcess()` repeatedly re-added an already-present class that the observer itself watched, starving Playwright and potentially wasting browser work. Commit `86bf22a3f7fe3c36ac392c82a63b96c9c74f0ff3` makes that class mutation idempotent and removes the loop. The next full run reached Opening beat 7 and found the outer four-speaker bubbles extending about 1.4 px beyond the mobile stage. Diagnostic run `33993556576` / artifact `9977367220` measured the exact bounds; commit `9431c070ec4acbe675a311f2a8dad72d31e98d51` moved the outer speakers inward and cleared both normal-phone and compact-phone bounds.
+
+**Gameplay validation:** The original exhaustive render run `33989676209` produced artifact `9976599117` (`settled-sunpetal-visual-journey-audit`) with all 50 Chapter 1 phone screenshots and contact sheets before the combined job exhausted its screenshot-heavy timeout. Those 50 frames were manually reviewed and directly drove the phase-visibility refinement. Final split gameplay acceptance run `33992841616` then completed successfully. Its gameplay job asserted all 50 levels in sequence (`LEVELS_OK_THROUGH_10/20/30/40/50`, `GAMEPLAY_V7_OK`), including phase identity, motif identity, ambient state, milestone state, visible phase landmark, zero horizontal overflow, safe board geometry, non-interactive environment layers, no medallion intrusion into the board play area, phase-label clearance, whimsical gameplay typography, unchanged Georgia gameplay logo, reactive `working` and `complete` states, unchanged `campaign400-*.js`, and the player-facing community rationale. Artifact `9977146544` (`sunpetal-v7-gameplay`) records the machine-readable level/reactive results.
+
+**Cinematic validation and manual acceptance:** Final cinematic acceptance run `33993647137` completed successfully and produced artifact `9977394234` (`cinematic-dialogue-v10`). It asserted every beat of all four campaign cinematics at 390×844: 7 Opening, 5 Across the Drift, 6 Old Maps/New Routes, and 6 Homeward beats. For every beat it verified the expected number of character bubbles and narrator lines, no legacy bottom dialogue, no visible Narrator label, speech bubbles contained inside the stage, and no horizontal overflow. It also verified all five named residents in the opening cast intro, Opening beat 7 at a compact 390×700 reduced-motion viewport, the cast intro at 900×844 reduced motion, and preservation of title/tagline typography. All seven final Opening phone frames, the compact beat-7 frame, and the wide reduced-motion cast frame were manually inspected and accepted. The final opening presentation is visually coherent: speech stays attached to characters, narration remains clearly separate, Little Home remains the established production scene, and the busy four-speaker final beat stays legible without clipping.
+
+**Durable product files changed:** `CINEMATICS_SCRIPT.md`, `STORY_BIBLE.md`, `cinematic-dialogue400.js`, `index.html`, `level-variation400.js`, `story-grounding400.js`, `style400-cinematics-dialogue.css`, `style400-level-variation.css`, `style400-level-variation-refine.css`, `style400-level-variation-reactive.css`, and `style400-whimsy-font.css`. `DEVELOPMENT_HANDOFF.md` contains the work journal. Campaign level definitions, solver data, move limits, progression rules, title island art, music/SFX, and the Level 400 ending were not changed by this task.
+
+**Accepted deployment / repository hygiene:** Cleanup commit `4ba8f6d3d666540de0481b02fd1c8e04de4b893e` contains the accepted product state with the final v10 audit workflow removed. GitHub Pages run `33993689666` completed successfully for that exact SHA. After v10 cleanup, `.github/workflows/validate-repository-access-guard.yml` was again the only durable workflow. This completion finalizer removes itself in the same documentation closeout commit, so the repository returns to that one-workflow state. No blocking defect remains for this Chapter 1 prototype. The recommended next product step is to roll the same five-movement variation framework through Chapters 2–8 one chapter at a time, using each chapter’s existing story movements and material identity rather than duplicating Sunpetal scenery.
+'''
+              section += summary
+          text=text[:start]+section+text[end:]
+          p.write_text(text)
+          PY
+          rm -f .github/workflows/finalize-sunpetal-handoff.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/finalize-sunpetal-handoff.yml
+          git commit -m "Close Sunpetal visual journey handoff"
+          git push
