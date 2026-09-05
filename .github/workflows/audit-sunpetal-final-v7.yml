@@ -1,0 +1,221 @@
+name: Audit Sunpetal Final Acceptance v7
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  gameplay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Static integrity checks
+        run: |
+          set -euo pipefail
+          node --check level-variation400.js
+          node --check story-grounding400.js
+          node --check cinematic-dialogue400.js
+          node --check cinematics400.js
+          node --check game400-a.js
+          node --check game400-b.js
+          test "$(git diff --name-only eb3fb94a20befb81cb2e178d186bd08e5e16ba49..HEAD -- 'campaign400-*.js' | wc -l)" -eq 0
+          grep -q "coordination point, not a command center" STORY_BIBLE.md
+          grep -q "## Ending" STORY_BIBLE.md
+          grep -q "## Core theme" STORY_BIBLE.md
+          ! grep -q '^\*\*Narrator:\*\*' CINEMATICS_SCRIPT.md
+      - name: Install browser tooling
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        run: |
+          python3 -m http.server 8080 > /tmp/latchlings-server.log 2>&1 &
+          sleep 2
+      - name: Run 50-level gameplay assertions
+        run: |
+          cat > gameplay-audit.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const fail=m=>{throw new Error(m)};
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+          const page=await context.newPage();
+          page.setDefaultTimeout(5000);
+          await page.addInitScript(()=>{
+            const stars={};for(let i=1;i<=400;i++)stars[i]=0;
+            localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars}));
+            const story={};for(let i=1;i<=400;i++)story[i]=1;
+            localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(story));
+            localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));
+          });
+          await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>window.startLevel&&window.LatchlingsLevelVariation&&window.LatchlingsStoryTheme);
+          const phases=['home-morning','meadow-detours','open-fields','reroute-work','golden-return'];
+          const subjects=['breakfast','watering','kite','bread','mail','tea','gate','picnic','cart','scarf'];
+          const landmarks=['.lv-cottage','.lv-signpost','.lv-windmill','.lv-route-stake','.lv-lantern'];
+          const manifest=[];
+          for(let L=1;L<=50;L++){
+            await page.evaluate(n=>startLevel(n),L);
+            await page.waitForTimeout(35);
+            await page.evaluate(()=>{window.LatchlingsStoryTheme?.close(false);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(false);document.getElementById('overlay')?.classList.remove('show')});
+            const d=await page.evaluate(({L,landmarks})=>{
+              const app=document.getElementById('app'),game=document.getElementById('game'),env=document.getElementById('levelEnvironment'),board=document.getElementById('board');
+              const phase=Math.floor((L-1)/10),land=document.querySelector(landmarks[phase]),br=board.getBoundingClientRect();
+              const inner={l:br.left+br.width*.12,r:br.right-br.width*.12,t:br.top+br.height*.12,b:br.bottom-br.height*.12};
+              const props=[...document.querySelectorAll('#levelProps .level-prop')].map(el=>{const r=el.getBoundingClientRect();return {intrudes:r.right>inner.l&&r.left<inner.r&&r.bottom>inner.t&&r.top<inner.b}});
+              const badge=env.querySelector('.lv-milestone-badge')?.getBoundingClientRect(),lr=land?.getBoundingClientRect();
+              return {phase:app.dataset.sunpetalPhase,envPhase:env.dataset.phase,ambient:env.dataset.ambient,subject:game.dataset.levelSubject,milestone:env.classList.contains('milestone'),landVisible:!!land&&getComputedStyle(land).display!=='none'&&lr.width>0&&lr.height>0,overflow:document.documentElement.scrollWidth-window.innerWidth,viewportWidth:window.innerWidth,board:{l:br.left,r:br.right,w:br.width,h:br.height},envPointer:getComputedStyle(env).pointerEvents,propIntrudes:props.some(x=>x.intrudes),badgeAboveBoard:!!badge&&badge.bottom<=br.top+1,font:getComputedStyle(document.querySelector('.game-title')).fontFamily,logoFont:getComputedStyle(document.querySelector('#game .logo')).fontFamily};
+            },{L,landmarks});
+            const phase=Math.floor((L-1)/10),slot=(L-1)%10;
+            if(d.phase!==String(phase+1)||d.envPhase!==phases[phase])fail(`Level ${L}: phase mismatch`);
+            if(d.subject!==subjects[slot]||d.ambient!==((slot<5)?'a':'b'))fail(`Level ${L}: motif/ambient mismatch`);
+            if(d.milestone!==(L%10===0)||!d.landVisible)fail(`Level ${L}: landmark/milestone mismatch`);
+            if(d.viewportWidth!==390||d.overflow>1||d.board.l<-1||d.board.r>391||d.board.w<300||d.board.h<300)fail(`Level ${L}: board geometry/overflow`);
+            if(d.envPointer!=='none'||d.propIntrudes)fail(`Level ${L}: decorative layer collision`);
+            if(!d.badgeAboveBoard)fail(`Level ${L}: phase label collision`);
+            if(!/Rounded|Trebuchet|ui-rounded/i.test(d.font)||!/Georgia/i.test(d.logoFont))fail(`Level ${L}: typography regression`);
+            manifest.push({level:L,...d});
+            if(L%10===0)console.log(`LEVELS_OK_THROUGH_${L}`);
+          }
+          fs.mkdirSync('final-v7-gameplay',{recursive:true});
+          fs.writeFileSync('final-v7-gameplay/levels.json',JSON.stringify(manifest,null,2));
+          await page.reload({waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>window.startLevel&&window.LatchlingsLevelVariation);
+          await page.evaluate(()=>startLevel(19));await page.waitForTimeout(60);
+          await page.evaluate(()=>{window.LatchlingsStoryTheme?.close(false);document.getElementById('overlay')?.classList.remove('show')});
+          const total=await page.locator('#pieceLayer .latchling').count();if(total<2)fail('Reactive audit level has fewer than 2 helpers');
+          await page.evaluate(()=>{document.querySelector('#pieceLayer .latchling')?.remove();window.LatchlingsLevelVariation.updateRouteProgress()});
+          if(await page.locator('#game').getAttribute('data-route-progress')!=='working')fail('Reactive scenery working state missing');
+          await page.evaluate(()=>{document.querySelectorAll('#pieceLayer .latchling').forEach(x=>x.remove());window.LatchlingsLevelVariation.updateRouteProgress()});
+          if(await page.locator('#game').getAttribute('data-route-progress')!=='complete')fail('Reactive scenery complete state missing');
+          const grounding=await page.evaluate(()=>({m:LATCHLINGS_STORY.helperCrewMotto,e:LATCHLINGS_STORY.helperCrewExplanation,p:LATCHLINGS_STORY.premise}));
+          if(!/Every island knows its own paths/i.test(grounding.m)||!/not a command center/i.test(grounding.e)||!/first household/i.test(grounding.p))fail('Community rationale missing from production story data');
+          fs.writeFileSync('final-v7-gameplay/reactive.json',JSON.stringify({total,grounding},null,2));
+          await browser.close();
+          console.log('GAMEPLAY_V7_OK');
+          EOF
+          timeout 420s node gameplay-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sunpetal-v7-gameplay
+          path: final-v7-gameplay
+          if-no-files-found: warn
+
+  cinematics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install browser tooling
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python3 -m pip install --quiet pillow
+      - name: Start static server
+        run: |
+          python3 -m http.server 8080 > /tmp/latchlings-server.log 2>&1 &
+          sleep 2
+      - name: Render and assert all cinematic beats
+        run: |
+          cat > cinematic-audit.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const OUT='final-v7-cinematics';fs.mkdirSync(OUT,{recursive:true});
+          const fail=m=>{throw new Error(m)};
+          const browser=await chromium.launch({headless:true});
+          const errors=[];
+          const context=await browser.newContext({viewport:{width:390,height:844}});
+          const page=await context.newPage();page.setDefaultTimeout(6000);
+          page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+          page.on('console',m=>{if(m.type()==='error'&&!/ERR_ABORTED|favicon|Failed to load resource/i.test(m.text()))errors.push('console: '+m.text())});
+          await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>window.LatchlingsCinematics&&window.LatchlingsCinematicDialogue?.dialogueGroups);
+          const manifest=[];
+          for(const id of ['opening','across-drift','old-maps','homeward']){
+            if(!await page.evaluate(id=>LatchlingsCinematics.show(id,{markSeen:false}),id))fail(`Could not show ${id}`);
+            await page.waitForTimeout(100);
+            const count=await page.evaluate(()=>LatchlingsCinematics.CINEMATICS[LatchlingsCinematics.active].beats.length);
+            for(let i=0;i<count;i++){
+              if(i){await page.evaluate(()=>LatchlingsCinematics.next());await page.waitForTimeout(55)}
+              const d=await page.evaluate(()=>{
+                const a=LatchlingsCinematics,beat=a.CINEMATICS[a.active].beats[a.beat],groups=LatchlingsCinematicDialogue.dialogueGroups(beat),narr=LatchlingsCinematicDialogue.narratorLines(beat),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines'),sr=stage.getBoundingClientRect();
+                const bubbles=[...stage.querySelectorAll('.cin-speech-bubble')].map(x=>{const r=x.getBoundingClientRect();return {l:r.left,r:r.right,t:r.top,b:r.bottom}});
+                return {id:a.active,index:a.beat,label:beat.label,expected:groups.length,narrExpected:narr.length,bubbles:bubbles.length,narr:lines.querySelectorAll('.narrator-only').length,old:lines.querySelectorAll('.dialogue').length,narrLabel:/Narrator/i.test(lines.textContent||''),within:bubbles.every(r=>r.l>=sr.left-1&&r.r<=sr.right+1&&r.t>=sr.top-1&&r.b<=sr.bottom+1),intro:stage.querySelectorAll('.cin-intro-person').length,names:[...stage.querySelectorAll('.cin-intro-person .cin-speaker-name')].map(x=>x.textContent),overflow:document.documentElement.scrollWidth-window.innerWidth};
+              });
+              if(d.bubbles!==d.expected||d.narr!==d.narrExpected||d.old||d.narrLabel||!d.within||d.overflow>1)fail(`${id} beat ${i+1}: dialogue/layout assertion ${JSON.stringify(d)}`);
+              if(id==='opening'&&i===1){if(d.intro!==5)fail('Opening cast intro count');for(const n of ['Pippa','Bramble','Rowan','Pip','Tansy'])if(!d.names.includes(n))fail(`Opening cast intro missing ${n}`)}
+              const file=path.join(OUT,`${id}-${String(i+1).padStart(2,'0')}.png`);
+              await page.screenshot({path:file,fullPage:false,animations:'disabled'});
+              manifest.push({...d,file});
+              console.log(`CIN_OK_${id}_${i+1}`);
+            }
+            await page.evaluate(()=>LatchlingsCinematics.finish(false));await page.waitForTimeout(25);
+          }
+          fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
+          await context.close();
+          const wideContext=await browser.newContext({viewport:{width:900,height:844},reducedMotion:'reduce'});const wide=await wideContext.newPage();
+          await wide.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await wide.waitForFunction(()=>window.LatchlingsCinematics&&document.getElementById('homeTitleFrame')?.contentDocument?.querySelector('#c2 .toy-logo'));
+          await wide.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false}));await wide.waitForTimeout(80);await wide.evaluate(()=>LatchlingsCinematics.next());await wide.waitForTimeout(60);
+          const wd=await wide.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,people:document.querySelectorAll('.cin-intro-person').length,animations:[...document.querySelectorAll('.cin-dialogue-layer *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none')}));
+          if(wd.overflow>1||wd.people!==5||wd.animations.length)fail(`Wide/reduced-motion regression ${JSON.stringify(wd)}`);
+          await wide.screenshot({path:path.join(OUT,'opening-cast-wide-reduced.png'),fullPage:false,animations:'disabled'});
+          await wide.evaluate(()=>LatchlingsCinematics.finish(false));
+          const title=await wide.evaluate(()=>{const d=document.getElementById('homeTitleFrame').contentDocument;return {titleFont:getComputedStyle(d.querySelector('#c2 .toy-logo')).fontFamily,tagFont:getComputedStyle(d.querySelector('#c2 .toy-tagline')).fontFamily,title:d.querySelector('#c2 .toy-logo').textContent.replace(/\s+/g,''),tag:d.querySelector('#c2 .toy-tagline').textContent.trim()}});
+          if(!/Arial Rounded|Trebuchet/i.test(title.titleFont)||!/Inter|Avenir Next|system-ui/i.test(title.tagFont))fail(`Title/tagline typography changed ${JSON.stringify(title)}`);
+          fs.writeFileSync(path.join(OUT,'wide-title.json'),JSON.stringify({wd,title},null,2));
+          if(errors.length)fail('Browser errors:\n'+errors.join('\n'));
+          await browser.close();
+          console.log('CINEMATICS_V7_OK');
+          EOF
+          timeout 420s node cinematic-audit.mjs
+      - name: Build cinematic contact sheet
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          import glob,os,math
+          files=sorted([f for f in glob.glob('final-v7-cinematics/*.png') if 'wide' not in f])
+          if files:
+              ims=[Image.open(f).convert('RGB') for f in files];w=156;h=int(w*844/390);cols=6;rows=math.ceil(len(files)/cols)
+              canvas=Image.new('RGB',(cols*w,rows*(h+18)),'white');draw=ImageDraw.Draw(canvas)
+              for i,(im,f) in enumerate(zip(ims,files)):
+                  im.thumbnail((w,h));x=(i%cols)*w;y=(i//cols)*(h+18);canvas.paste(im,(x,y));draw.text((x+3,y+h+2),os.path.basename(f).replace('.png',''),fill='black')
+              canvas.save('final-v7-cinematics/contact-sheet.jpg',quality=91)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sunpetal-v7-cinematics
+          path: final-v7-cinematics
+          if-no-files-found: warn
+
+  cleanup:
+    if: always()
+    needs: [gameplay, cinematics]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove temporary final audit
+        run: |
+          git pull --ff-only origin main
+          rm -f .github/workflows/audit-sunpetal-final-v7.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/audit-sunpetal-final-v7.yml
+          if ! git diff --cached --quiet; then git commit -m "Remove temporary Sunpetal final audit" && git push; fi
