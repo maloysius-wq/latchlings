@@ -65,7 +65,9 @@ function postProcess(){
  try{
   const groups=dialogueGroups(beat);
   if(!stage.querySelector(':scope > .cin-dialogue-layer'))stage.insertAdjacentHTML('beforeend',dialogueLayerHtml(id,index,beat));
-  const narration=narratorLines(beat);lines.classList.add('cinematic-narration-only');lines.dataset.narratorCount=String(narration.length);
+  const narration=narratorLines(beat);
+  if(!lines.classList.contains('cinematic-narration-only'))lines.classList.add('cinematic-narration-only');
+  lines.dataset.narratorCount=String(narration.length);
   const desired=narration.map(text=>`<p class="narrator-only"><span>${escapeHtml(text)}</span></p>`).join('')+accessibleDialogueHtml(groups);
   if(lines.innerHTML!==desired)lines.innerHTML=desired;
   lines.hidden=!narration.length&&!groups.length;
