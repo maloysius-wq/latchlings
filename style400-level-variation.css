@@ -1,0 +1,121 @@
+/* Chapter 1 visual-journey prototype: five micro-locations, ten recurring story motifs. */
+#game{isolation:isolate}
+#game>.level-environment{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+#game>.level-environment[hidden]{display:none}
+#game>:not(.level-environment){position:relative;z-index:2}
+#game .board-wrap{z-index:2}
+
+/* Phase-wide atmosphere. These deliberately change the whole play-space silhouette while preserving board contrast. */
+#app.theme-ch1[data-sunpetal-phase="1"]{background:radial-gradient(circle at 16% 16%,rgba(255,244,159,.96) 0 4%,rgba(255,244,159,.24) 5% 13%,transparent 14%),linear-gradient(#99d4f3 0 49%,#d7edbd 50% 68%,#87c565 69% 100%)}
+#app.theme-ch1[data-sunpetal-phase="2"]{background:radial-gradient(circle at 82% 17%,rgba(255,247,190,.78) 0 4%,transparent 13%),linear-gradient(#a8d9ef 0 45%,#c9e2a1 46% 62%,#6fa857 63% 100%)}
+#app.theme-ch1[data-sunpetal-phase="3"]{background:radial-gradient(circle at 72% 14%,rgba(255,250,201,.8) 0 5%,transparent 14%),linear-gradient(#8fd0f3 0 57%,#d5ebb1 58% 72%,#7dbb5c 73% 100%)}
+#app.theme-ch1[data-sunpetal-phase="4"]{background:radial-gradient(circle at 18% 18%,rgba(255,233,150,.72) 0 5%,transparent 15%),linear-gradient(#97cde8 0 49%,#d7e6a6 50% 67%,#77ae57 68% 100%)}
+#app.theme-ch1[data-sunpetal-phase="5"]{background:radial-gradient(circle at 82% 17%,rgba(255,203,107,.96) 0 5%,rgba(255,203,107,.25) 6% 15%,transparent 16%),linear-gradient(#8ec6e8 0 42%,#efc992 43% 61%,#84ae5c 62% 100%)}
+#app.theme-ch1[data-sunpetal-phase="5"] .chapter-material-backdrop{filter:saturate(.92) sepia(.08)}
+
+.level-environment .lv-sky,.level-environment .lv-landmarks,.level-environment .lv-ambient,.level-environment .lv-reactive{position:absolute;inset:0}
+.level-environment i{position:absolute;display:block}
+.lv-sun{width:66px;height:66px;border-radius:50%;right:25px;top:78px;background:radial-gradient(circle,#fff9c9 0 35%,#ffe07d 36% 60%,rgba(255,221,118,.18) 61% 100%);box-shadow:0 0 34px rgba(255,220,109,.34)}
+.phase-home-morning .lv-sun{left:22px;right:auto;top:88px;scale:.72}
+.phase-meadow-detours .lv-sun{right:32px;top:96px;scale:.58;opacity:.7}
+.phase-open-fields .lv-sun{right:28px;top:83px;scale:.82}
+.phase-reroute-work .lv-sun{left:34px;right:auto;top:92px;scale:.64}
+.phase-golden-return .lv-sun{right:22px;top:92px;scale:1.02}
+
+.lv-cloud{height:23px;border-radius:50%;background:rgba(255,255,255,.68);filter:blur(.4px);animation:lvCloudDrift 15s linear infinite}
+.lv-cloud:before,.lv-cloud:after{content:"";position:absolute;border-radius:50%;background:inherit}.lv-cloud:before{width:38%;height:130%;left:18%;bottom:16%}.lv-cloud:after{width:45%;height:165%;right:15%;bottom:5%}
+.lv-cloud.c1{width:88px;left:-18px;top:128px}.lv-cloud.c2{width:105px;right:-35px;top:180px;animation-delay:-6s;scale:.75}.lv-cloud.c3{width:72px;left:58%;top:110px;animation-delay:-11s;scale:.56;opacity:.55}
+.ambient-a .lv-cloud.c2{opacity:.28}.ambient-b .lv-cloud.c1{opacity:.38}.ambient-b .lv-cloud.c3{opacity:.78}
+
+.lv-far-island{width:62px;height:31px;clip-path:polygon(5% 9%,95% 9%,84% 56%,63% 86%,50% 100%,33% 86%,14% 57%);background:linear-gradient(#92cb6d 0 30%,#9f744f 31% 64%,#654b3d 65%);filter:drop-shadow(0 7px 8px rgba(50,72,84,.18));animation:lvIslandFloat 5.4s ease-in-out infinite}
+.lv-far-island:before{content:"";position:absolute;left:8%;right:8%;top:0;height:8px;border-radius:50%;background:#a6d981}
+.lv-far-island.i1{left:18px;top:36%;scale:.62}.lv-far-island.i2{right:20px;top:41%;scale:.48;animation-delay:-2.7s}
+.phase-home-morning .lv-far-island{opacity:.28}.phase-meadow-detours .lv-far-island{opacity:.45}.phase-open-fields .lv-far-island{opacity:.86;scale:1}.phase-open-fields .lv-far-island.i1{left:16px;top:30%;scale:.86}.phase-open-fields .lv-far-island.i2{right:18px;top:35%;scale:.68}.phase-reroute-work .lv-far-island{opacity:.52}.phase-golden-return .lv-far-island{opacity:.7;filter:sepia(.12) drop-shadow(0 7px 8px rgba(50,72,84,.18))}
+
+/* Recurring landmark grammar for the five ten-level movements. */
+.lv-cottage{left:7px;bottom:94px;width:84px;height:54px;border-radius:17px 17px 5px 5px;background:#f7e9d1;border:2px solid rgba(174,127,75,.55);box-shadow:0 6px 10px rgba(64,72,67,.14)}
+.lv-cottage:before{content:"";position:absolute;left:-9px;right:-9px;top:-29px;height:37px;clip-path:polygon(50% 0,100% 77%,89% 100%,11% 100%,0 77%);background:#cf6a4d}
+.lv-cottage:after{content:"";position:absolute;left:31px;bottom:0;width:18px;height:26px;border-radius:8px 8px 1px 1px;background:#806047}
+.phase-home-morning .lv-cottage{opacity:.88}.phase-golden-return .lv-cottage{left:auto;right:8px;opacity:.9;filter:sepia(.12)}
+.phase-meadow-detours .lv-cottage,.phase-open-fields .lv-cottage,.phase-reroute-work .lv-cottage{display:none}
+
+.lv-hedge{height:46px;border-radius:50% 50% 12px 12px;background:linear-gradient(#74ad57,#4f8244);box-shadow:inset 0 9px rgba(255,255,255,.08)}
+.lv-hedge:before,.lv-hedge:after{content:"";position:absolute;border-radius:50%;background:#78b45d}.lv-hedge:before{width:50px;height:43px;left:8px;top:-18px}.lv-hedge:after{width:58px;height:48px;right:8px;top:-20px}
+.lv-hedge.h1{width:135px;left:-42px;bottom:92px}.lv-hedge.h2{width:150px;right:-58px;bottom:83px;scale:.84}
+.phase-meadow-detours .lv-hedge{display:block}.phase-home-morning .lv-hedge,.phase-open-fields .lv-hedge,.phase-reroute-work .lv-hedge,.phase-golden-return .lv-hedge{display:none}
+
+.lv-signpost{left:18px;top:40%;width:8px;height:76px;background:#76573f;border-radius:4px;filter:drop-shadow(0 4px 3px rgba(44,50,45,.18))}
+.lv-signpost:before,.lv-signpost:after{content:"";position:absolute;height:18px;background:#e5bf7b;border:2px solid #9b6e41;border-radius:5px}
+.lv-signpost:before{width:62px;left:-2px;top:7px;rotate:-4deg}.lv-signpost:after{width:49px;right:-6px;top:33px;rotate:5deg}
+.phase-meadow-detours .lv-signpost{display:block}.phase-home-morning .lv-signpost,.phase-open-fields .lv-signpost,.phase-reroute-work .lv-signpost,.phase-golden-return .lv-signpost{display:none}
+
+.lv-creek{right:-28px;bottom:83px;width:190px;height:44px;border-radius:50%;border:8px solid rgba(79,167,205,.52);border-top-color:transparent;border-left-color:transparent;rotate:-8deg;filter:drop-shadow(0 3px 2px rgba(38,83,101,.12))}
+.lv-creek:before{content:"";position:absolute;width:22px;height:12px;border-radius:50%;left:55px;top:15px;background:#a99c7d;box-shadow:35px -4px 0 #b6a889,70px -2px 0 #a99c7d}
+.phase-meadow-detours .lv-creek{display:block}.phase-home-morning .lv-creek,.phase-open-fields .lv-creek,.phase-reroute-work .lv-creek,.phase-golden-return .lv-creek{display:none}
+
+.lv-windmill{right:12px;bottom:84px;width:22px;height:75px;background:linear-gradient(90deg,#b88758,#8f6648);clip-path:polygon(26% 0,74% 0,100% 100%,0 100%)}
+.lv-windmill b{position:absolute;width:8px;height:8px;border-radius:50%;background:#75533b;left:7px;top:7px}
+.lv-windmill b:before,.lv-windmill b:after{content:"";position:absolute;left:3px;top:-34px;width:3px;height:76px;background:#ead4a2;box-shadow:0 0 0 1px rgba(132,99,60,.22);transform-origin:center;animation:lvWindmill 8s linear infinite}
+.lv-windmill b:after{rotate:90deg}
+.phase-open-fields .lv-windmill{display:block}.phase-home-morning .lv-windmill,.phase-meadow-detours .lv-windmill,.phase-reroute-work .lv-windmill,.phase-golden-return .lv-windmill{display:none}
+
+.lv-route-stake{bottom:91px;width:6px;height:67px;background:#76513b;border-radius:4px}
+.lv-route-stake:after{content:"";position:absolute;left:4px;top:8px;width:58px;height:14px;background:linear-gradient(90deg,#f1c45e,#e57f5c);clip-path:polygon(0 0,100% 12%,84% 100%,0 75%);filter:drop-shadow(0 2px 1px rgba(64,53,38,.14));animation:lvPennant 2.8s ease-in-out infinite}
+.lv-route-stake.s1{left:20px}.lv-route-stake.s2{left:49%;height:51px;bottom:88px;scale:.78}.lv-route-stake.s3{right:30px;height:60px;bottom:95px;scale:.9}
+.phase-reroute-work .lv-route-stake{display:block}.phase-home-morning .lv-route-stake,.phase-meadow-detours .lv-route-stake,.phase-open-fields .lv-route-stake,.phase-golden-return .lv-route-stake{display:none}
+
+.lv-lantern{bottom:96px;width:8px;height:63px;background:#6f523d;border-radius:4px}
+.lv-lantern:after{content:"";position:absolute;left:-8px;top:-9px;width:24px;height:27px;border-radius:8px;background:radial-gradient(circle,#fff4b5 0 22%,#f0b34c 23% 46%,rgba(240,179,76,.18) 47% 100%);border:2px solid rgba(111,78,45,.55);box-shadow:0 0 calc(8px + 13px * var(--lv-progress,0)) rgba(255,201,94,calc(.18 + .55 * var(--lv-progress,0)))}
+.lv-lantern.l1{left:20px}.lv-lantern.l2{left:48%;scale:.8;bottom:89px}.lv-lantern.l3{right:24px;scale:.9}
+.phase-golden-return .lv-lantern{display:block}.phase-home-morning .lv-lantern,.phase-meadow-detours .lv-lantern,.phase-open-fields .lv-lantern,.phase-reroute-work .lv-lantern{display:none}
+
+/* Ambient A/B alternates inside each ten-level micro-location. */
+.lv-butterfly{width:8px;height:6px;border-radius:70% 20%;background:#ef8c80;box-shadow:7px 1px 0 #f5b062;animation:lvButterfly 4.2s ease-in-out infinite}.lv-butterfly.b1{left:12%;top:29%}.lv-butterfly.b2{right:15%;top:32%;animation-delay:-2s;scale:.8}.ambient-b .lv-butterfly{display:none}
+.lv-seed{width:4px;height:4px;border-radius:50%;background:#fff8dd;box-shadow:8px -4px 0 rgba(255,248,221,.9),15px 2px 0 rgba(255,248,221,.75);animation:lvSeeds 6s linear infinite}.lv-seed.p1{left:12%;top:27%}.lv-seed.p2{left:57%;top:31%;animation-delay:-2.1s}.lv-seed.p3{right:8%;top:24%;animation-delay:-4.3s}.ambient-a .lv-seed{display:none}
+
+/* Reactive route-life feedback: the world brightens as helpers reach their nests. */
+.lv-route-thread{height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(94,184,239,0),rgba(94,184,239,.82),#fff0a1,rgba(94,184,239,.82),rgba(94,184,239,0));box-shadow:0 0 calc(4px + 8px * var(--lv-progress,0)) rgba(74,169,232,.46);opacity:calc(.16 + .62 * var(--lv-progress,0));transition:opacity .25s ease,filter .25s ease;transform-origin:left center}
+.lv-route-thread.t1{width:150px;left:2%;bottom:125px;rotate:-7deg}.lv-route-thread.t2{width:155px;right:1%;bottom:145px;rotate:8deg}
+.lv-reactive-flower{width:13px;height:13px;border-radius:50%;background:#f2a1a9;box-shadow:10px 0 0 #f7d37d,-10px 0 0 #f7d37d,0 10px 0 #f4b4d0,0 -10px 0 #f4b4d0;scale:calc(.72 + .28 * var(--lv-progress,0));opacity:calc(.32 + .68 * var(--lv-progress,0));transition:scale .25s ease,opacity .25s ease}.lv-reactive-flower:after{content:"";position:absolute;width:4px;height:24px;background:#5f984c;left:5px;top:11px;border-radius:4px}.lv-reactive-flower.f1{left:11%;bottom:96px}.lv-reactive-flower.f2{left:54%;bottom:85px;scale:.7}.lv-reactive-flower.f3{right:10%;bottom:105px;scale:.8}
+#game[data-route-progress="working"] .lv-reactive{filter:saturate(1.08)}
+#game[data-route-progress="complete"] .lv-route-thread{opacity:.98;filter:brightness(1.16)}
+#game[data-route-progress="complete"] .lv-reactive-flower{opacity:1;scale:1.08}
+
+/* Level-specific story motif medallions. Larger and more varied than the old three identical small badges. */
+#app.theme-ch1[data-sunpetal-phase] #game .level-props.lv-level-props{z-index:4}
+#app.theme-ch1[data-sunpetal-phase] #game .level-props.lv-level-props .level-prop{background:rgba(255,249,231,.9);border:1px solid rgba(141,105,60,.34);backdrop-filter:blur(3px);color:#5f9954}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-subject-medallion{width:52px;height:52px;padding:8px;left:18px;top:4px;border-radius:18px;transform:rotate(-4deg);box-shadow:0 5px 12px rgba(47,67,62,.15),inset 0 1px rgba(255,255,255,.72)}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-subject-medallion svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-subject-medallion svg .secondary{fill:#e5b758;stroke:#e5b758}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion{width:31px;height:31px;padding:5px;border-radius:50%;opacity:.78;box-shadow:0 3px 8px rgba(47,67,62,.12)}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion.a1{right:22px;top:8px;left:auto;transform:rotate(6deg)}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion.a2{right:60px;bottom:5px;top:auto;left:auto;transform:rotate(-4deg) scale(.88)}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion svg .secondary{fill:#e9b961;stroke:#e9b961}
+#game[data-route-progress="working"] .lv-subject-medallion{box-shadow:0 5px 14px rgba(47,67,62,.18),0 0 0 3px rgba(255,227,139,.15)}
+#game[data-route-progress="complete"] .lv-subject-medallion{box-shadow:0 5px 14px rgba(47,67,62,.18),0 0 0 4px rgba(255,222,117,.32)}
+
+.lv-milestone-badge{position:absolute;left:50%;top:88px;translate:-50% 0;padding:5px 10px;border-radius:999px;background:rgba(255,248,226,.78);border:1px solid rgba(145,104,54,.28);color:#71583c;font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;opacity:.56;box-shadow:0 3px 8px rgba(50,64,61,.1)}
+.level-environment.milestone .lv-milestone-badge{opacity:.98;background:#fff1bf;box-shadow:0 4px 12px rgba(87,68,35,.16),0 0 0 3px rgba(255,225,132,.22)}
+.level-environment.milestone .lv-route-thread{height:4px;opacity:calc(.34 + .62 * var(--lv-progress,0))}
+
+@keyframes lvCloudDrift{0%{translate:-14px 0}50%{translate:18px 3px}100%{translate:-14px 0}}
+@keyframes lvIslandFloat{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes lvWindmill{to{rotate:360deg}}
+@keyframes lvPennant{0%,100%{transform:skewY(0deg) scaleX(1)}50%{transform:skewY(4deg) scaleX(.93)}}
+@keyframes lvButterfly{0%,100%{translate:0 0;rotate:-6deg}50%{translate:17px -10px;rotate:8deg}}
+@keyframes lvSeeds{0%{translate:-14px 8px;opacity:0}20%{opacity:.9}80%{opacity:.75}100%{translate:34px -18px;opacity:0}}
+
+@media(max-width:520px){
+ .lv-milestone-badge{top:81px;font-size:8px;padding:4px 8px}
+ .lv-cottage{scale:.8;left:-4px;bottom:92px}.phase-golden-return .lv-cottage{left:auto;right:-5px}
+ .lv-hedge.h1{left:-62px}.lv-hedge.h2{right:-75px}
+ .lv-signpost{left:5px;scale:.78}.lv-creek{right:-72px;scale:.8}.lv-windmill{right:3px;scale:.75}
+ .lv-route-stake.s1{left:7px}.lv-route-stake.s3{right:9px}.lv-lantern.l1{left:8px}.lv-lantern.l3{right:10px}
+ .lv-far-island.i1{left:4px}.lv-far-island.i2{right:5px}
+ #app.theme-ch1[data-sunpetal-phase] #game .lv-subject-medallion{width:48px;height:48px;left:14px;top:6px}
+ #app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion.a1{right:16px;top:8px}
+ #app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion.a2{right:52px;bottom:4px}
+}
+@media(max-height:720px){.lv-milestone-badge{top:68px}.lv-cottage,.lv-hedge,.lv-creek,.lv-route-stake,.lv-lantern{bottom:76px}.lv-windmill{bottom:72px}.lv-reactive-flower{bottom:76px}.lv-route-thread.t1{bottom:104px}.lv-route-thread.t2{bottom:117px}}
+@media(prefers-reduced-motion:reduce){.level-environment *{animation:none!important;transition:none!important}.lv-cloud,.lv-far-island,.lv-butterfly,.lv-seed{translate:0 0!important;rotate:0deg!important}}
