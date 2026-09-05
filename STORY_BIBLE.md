@@ -445,3 +445,103 @@ The goal is to make a Skyway that can keep becoming tomorrow's map.
 Distant **connected islands / route lights** become visible around Little Home. The title screen that began as one tiny household now quietly shows the larger community surrounding it.
 
 ---
+
+## Ending
+
+The ending should preserve the existing phrase **Skyway Restored**, but clarify what "restored" means.
+
+The Waykeeper has not stopped the islands from moving.
+
+Instead, Latchlings across the archipelago have relearned how to watch the drift, communicate, and maintain routes together.
+
+The final emotional beat returns to Little Home.
+
+Pippa tends the garden. Bramble has another parcel. Rowan checks the tree. Pip and Tansy are already turning some harmless object into tomorrow's route problem.
+
+In the distance, other islands drift past, connected by the living Skyway.
+
+Ordinary life continues.
+
+That is the victory.
+
+---
+
+## Environmental progression on Little Home
+
+The production title screen should gradually become a visual record of the campaign while keeping its uncluttered base composition.
+
+| Completed chapter | Little Home change |
+|---|---|
+| 1 | Route mailbox / post |
+| 2 | Neighbor pennant / visitor token |
+| 3 | Restored anchor beneath island |
+| 4 | Market bunting |
+| 5 | Telescope |
+| 6 | Waykeeper compass / relic |
+| 7 | Small docking beam / arrival platform |
+| 8 | Distant connected islands / route lights |
+
+These changes should be subtle enough that returning players notice the island growing without the title screen turning into a trophy shelf.
+
+---
+
+## Per-level writing rules
+
+Each of the 400 levels receives:
+
+1. a compact title;
+2. one sentence describing the tiny practical problem;
+3. normal mechanic guidance when appropriate.
+
+Level context should not imply board geometry that is not actually present. Prefer motives and destinations over literal claims about exact board objects.
+
+Good:
+
+> **Breakfast Detour**  
+> Pippa wants the herb basket home before the kettle gives up waiting.
+
+Good:
+
+> **The Lantern Roundabout**  
+> A neighbor promised supper, and Bramble promised the route was shorter this way.
+
+Avoid:
+
+> Cross the red bridge and move the blue cart around three rocks.
+
+unless those objects are guaranteed by authored level data.
+
+---
+
+## Story beat rules
+
+- Normal level completion stays fast.
+- Levels ending in 10, 20, 30, 40, and 50 may show one extra short paragraph.
+- Chapter 50 beats may be slightly larger and mention the new Little Home keepsake.
+- A player can always continue immediately.
+- Story text should never obscure the move result or star result.
+
+---
+
+## Naming / terminology
+
+Use consistently:
+
+- **Latchling / Latchlings** — the people.
+- **Latchlands** — the floating-island archipelago.
+- **Little Home** — the recurring household island.
+- **Waykeeper** — the player's role and the historical route-tending profession.
+- **Skyway** — the route infrastructure linking islands.
+- **drift** — the normal movement of floating islands.
+
+Avoid introducing additional proper nouns unless they genuinely help the player remember a place, person, or mechanic.
+
+---
+
+## Core theme
+
+The story ultimately says:
+
+**A good path is not one that never changes. It is one that can change with the people who need it.**
+
+That idea should remain implicit in most of the game and become explicit only near the end.
