@@ -1,0 +1,44 @@
+name: Diagnose Sunpetal Collision
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 8080 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Capture diagnostics
+        run: |
+          cat > diag.mjs <<'EOF'
+          import { chromium } from 'playwright';import fs from 'node:fs';
+          const b=await chromium.launch({headless:true}),c=await b.newContext({viewport:{width:390,height:844}}),p=await c.newPage();
+          await p.addInitScript(()=>{const stars={};for(let i=1;i<=400;i++)stars[i]=0;localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars}));const story={};for(let i=1;i<=400;i++)story[i]=1;localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(story));localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));});
+          await p.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.startLevel&&window.LatchlingsLevelVariation);await p.evaluate(()=>startLevel(1));await p.waitForTimeout(150);await p.evaluate(()=>{LatchlingsStoryTheme?.close(false);document.getElementById('overlay')?.classList.remove('show');document.getElementById('board')?.scrollIntoView({block:'center'})});await p.waitForTimeout(80);
+          const d=await p.evaluate(()=>{const board=document.getElementById('board'),br=board.getBoundingClientRect(),center=document.elementFromPoint(br.left+br.width/2,br.top+br.height/2),inner={l:br.left+br.width*.12,r:br.right-br.width*.12,t:br.top+br.height*.12,b:br.bottom-br.height*.12};const props=[...document.querySelectorAll('#levelProps .level-prop')].map(el=>{const r=el.getBoundingClientRect();return {cls:el.className,l:r.left,r:r.right,t:r.top,b:r.bottom,intrudes:r.right>inner.l&&r.left<inner.r&&r.bottom>inner.t&&r.top<inner.b}});const env=document.getElementById('levelEnvironment'),badge=env.querySelector('.lv-milestone-badge')?.getBoundingClientRect();return {scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,overflow:document.documentElement.scrollWidth-window.innerWidth,board:{l:br.left,r:br.right,t:br.top,b:br.bottom},center:{tag:center?.tagName,cls:center?.className,inside:!!center&&board.contains(center)},inner,props,badge:badge&&{l:badge.left,r:badge.right,t:badge.top,b:badge.bottom},phase:env.dataset.phase};});
+          console.log('DIAGNOSTIC '+JSON.stringify(d));fs.mkdirSync('diag',{recursive:true});await p.screenshot({path:'diag/level-01.png',fullPage:true,animations:'disabled'});fs.writeFileSync('diag/data.json',JSON.stringify(d,null,2));await b.close();
+          EOF
+          node diag.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sunpetal-collision-diagnostic
+          path: diag
+      - name: Remove temporary diagnostic workflow
+        if: always()
+        run: |
+          rm -f .github/workflows/diagnose-sunpetal-collision.yml diag.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/diagnose-sunpetal-collision.yml
+          if ! git diff --cached --quiet; then git commit -m "Remove temporary Sunpetal collision diagnostic" && git push; fi
