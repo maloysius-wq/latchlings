@@ -1,8 +1,9 @@
 /* Cinematic dialogue clarity layer. Narration stays in the lower copy area; character speech lives on stage. */
-.cinematic-lines.cinematic-narration-only{display:grid;gap:6px;margin-top:2px}
+.cinematic-lines.cinematic-narration-only{display:grid;gap:6px;margin-top:2px;position:relative}
 .cinematic-lines.cinematic-narration-only[hidden]{display:none}
 .cinematic-lines .narrator-only{margin:0;padding:8px 10px;border-radius:13px;background:rgba(255,249,237,.7);border:1px solid rgba(201,176,140,.32);color:#496279;font-size:12px;line-height:1.4;font-style:normal;box-shadow:inset 0 1px rgba(255,255,255,.56)}
 .cinematic-lines .narrator-only span{display:block}
+.cin-dialogue-a11y{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 
 .cin-dialogue-layer{position:absolute;inset:0;z-index:48;pointer-events:none;font-family:var(--latch-ui-font,ui-rounded,"SF Pro Rounded",system-ui,sans-serif)}
 .cin-dialogue-speaker{position:absolute;width:88px;bottom:12px;translate:-50% 0;display:flex;flex-direction:column;align-items:center;z-index:2}
@@ -12,7 +13,7 @@
 .cin-speech-bubble{position:absolute;left:50%;bottom:60px;translate:-50% 0;width:max-content;max-width:154px;min-width:90px;padding:7px 9px;border-radius:14px;background:#fffaf0;border:1.5px solid rgba(125,91,55,.43);box-shadow:0 6px 13px rgba(28,51,70,.18),inset 0 1px rgba(255,255,255,.8);color:#294c69;font-size:10.5px;line-height:1.24;text-align:left}
 .cin-speech-bubble:after{content:"";position:absolute;left:50%;bottom:-8px;width:14px;height:14px;background:#fffaf0;border-right:1.5px solid rgba(125,91,55,.43);border-bottom:1.5px solid rgba(125,91,55,.43);transform:translateX(-50%) rotate(45deg);border-radius:0 0 3px 0}
 .cin-speech-bubble b{display:block;margin-bottom:2px;color:#173a67;font-size:8.5px;line-height:1.1;font-weight:950;letter-spacing:.045em;text-transform:uppercase}
-.cin-speech-bubble span{display:block}
+.cin-speech-bubble span{display:block}.cin-speech-bubble .speech-followup{margin-top:4px;padding-top:4px;border-top:1px solid rgba(118,91,61,.18)}
 
 /* Speaker placement by simultaneous speaker count. Bubbles alternate heights when a beat is busy. */
 .speaker-count-1.speaker-1{left:50%}
