@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-05 — Chapter-one visual journey, cinematic dialogue clarity, and community-story grounding
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Make the 50 levels inside a chapter feel visually varied enough that the player is not staring at one chapter skin repeated fifty times. Start by prototyping the full system across all 50 Sunpetal Meadows levels. Also revise the opening cinematic so named residents are clearly identified, spoken dialogue appears in speech bubbles anchored to the speaking Latchling instead of sharing the narrator box, the bottom copy area is narrator-only with no visible `Narrator` label, and the story clearly explains why Little Home's five residents recur and how the broader community participates without making the cast feel like they are ordering everyone else around. Make typography throughout the production game more whimsical while leaving the title and tagline unchanged.
 
@@ -56,6 +56,16 @@ Typography will move to a playful rounded/storybook UI stack across production s
 **Validation plan:** Use a temporary self-removing GitHub Actions browser audit. For Chapter 1, render all 50 playable levels at 390×844 into an ordered contact-sheet artifact and assert five distinct micro-location classes, ten deterministic motif identities, stronger milestone treatments, no board occlusion, no horizontal overflow, and unchanged level data. Manually inspect the 50-frame gallery for repetition, clutter, weak props, and abrupt transitions. For cinematics, render every opening beat and assert that narrator copy appears only in the bottom narrator area, dialogue appears only in stage speech bubbles, the literal narrator label is absent, all five residents receive clear name identification, and mobile/wide/reduced-motion layouts remain clean. Verify the new community rationale appears in both durable script/canon and player-facing opening copy. Verify the title/logo/tagline typography is unchanged while representative gameplay, level-select, story, modal, and cinematic UI use the new whimsical stack.
 
 **Deployment plan:** This handoff commit is the pre-implementation checkpoint. Implement in isolated product commits, run the complete Chapter-1 plus opening-cinematic visual audit, manually inspect artifacts, refine any rejected frames, remove temporary workflows, verify the repository access guard, confirm GitHub Pages deploys the exact accepted product state, then close this entry with files, commits, run/artifact IDs, visual findings, remaining risks, and the next chapter-wide rollout recommendation.
+
+#### Completion summary
+
+**Result:** COMPLETED. Chapter 1 now has five ten-level visual movements: Little Home Morning, Meadow Detours, Open Fields, Reroute Work, and Golden-Hour Return. The ten existing story motifs remain deterministic, milestone levels receive stronger accents, and the environment reacts as helpers reach their destinations. The first all-50 render gallery was manually rejected as too subtle, then refined so each phase has a clearly visible landmark and palette around the board without intruding into the play area.
+
+**Cinematics and story:** Named-character dialogue now appears in stage speech bubbles while the lower copy area is narrator-only with no visible Narrator label. Opening beat 2 identifies Pippa, Bramble, Rowan, Pip, and Tansy by name and role. Story canon and player-facing copy establish Little Home as a coordination point rather than a command center, with each community remaining the expert on its own paths. Acceptance testing also found and fixed a MutationObserver feedback loop in commit `86bf22a3f7fe3c36ac392c82a63b96c9c74f0ff3` and a roughly 1.4 px four-speaker mobile overflow in commit `9431c070ec4acbe675a311f2a8dad72d31e98d51`.
+
+**Validation:** Gameplay run `33992841616` with artifact `9977146544` passed all 50 Chapter 1 levels, reactive working/complete states, overflow and collision checks, typography checks, unchanged `campaign400-*.js`, and story-grounding assertions. Cinematic run `33993647137` with artifact `9977394234` passed all 24 campaign beats plus compact 390×700, wide 900×844 reduced-motion, cast-name, dialogue/narrator separation, overflow, and title/tagline preservation checks. All seven final Opening phone frames plus compact and wide variants were manually inspected and accepted.
+
+**Deployment and hygiene:** Accepted clean product state `4ba8f6d3d666540de0481b02fd1c8e04de4b893e` deployed successfully in GitHub Pages run `33993689666`. Durable product changes are limited to the cinematic/story grounding files, Chapter 1 variation files, `index.html`, and the whimsical typography layer. Campaign definitions, solver data, progression, title-island art, audio, and the Level 400 ending were unchanged. The next recommended product step is to roll the same five-movement framework through Chapters 2–8 one chapter at a time using each chapter’s own story and material identity.
 
 ---
 
