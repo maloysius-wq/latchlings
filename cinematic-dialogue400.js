@@ -48,24 +48,28 @@ function suitSvg(s){
 }
 function portrait(name,extra=''){const c=CAST[name];if(!c)return'';return `<span class="cin-character ${c.child?'child':''} ${extra} expr-${c.expr}" data-character="${escapeHtml(name)}" style="--cin-color:${c.color};--cin-light:${c.light};--cin-dark:${c.dark}"><span class="cin-suit">${suitSvg(c.suit)}</span><span class="cin-face"><span class="cin-eyes"><i></i><i></i></span><i class="cin-mouth"></i></span></span>`}
 function dialogueLines(beat){return (beat?.lines||[]).filter(x=>x&&x[0]!=='Narrator'&&CAST[x[0]])}
+function dialogueGroups(beat){const out=[],byName=new Map();for(const [name,text] of dialogueLines(beat)){if(!byName.has(name)){const g=[name,[]];byName.set(name,g);out.push(g)}byName.get(name)[1].push(text)}return out}
 function narratorLines(beat){return (beat?.lines||[]).filter(x=>x&&x[0]==='Narrator').map(x=>x[1])}
-function bubbleHtml(name,text,index,count,intro=false){return `<div class="cin-dialogue-speaker speaker-${index+1} speaker-count-${count}${intro?' intro-speaker':''}" data-speaker="${escapeHtml(name)}"><div class="cin-speech-bubble"><b>${escapeHtml(name)}</b><span>${escapeHtml(text)}</span></div>${portrait(name,'dialogue-portrait')}<span class="cin-speaker-name">${escapeHtml(name)}</span></div>`}
-function castIntroHtml(lines){const spoken=new Map(lines.map(([name,text])=>[name,text]));const order=['Pippa','Bramble','Rowan','Pip','Tansy'];return `<div class="cin-dialogue-layer cin-cast-intro" data-dialogue-count="${lines.length}">${order.map((name,i)=>{const c=CAST[name],speech=spoken.get(name);return `<div class="cin-intro-person intro-${i+1}" data-speaker="${name}">${speech?`<div class="cin-speech-bubble intro-bubble"><b>${name}</b><span>${escapeHtml(speech)}</span></div>`:''}${portrait(name,'dialogue-portrait')}<span class="cin-speaker-name">${name}</span><small>${c.role}</small></div>`}).join('')}</div>`}
-function dialogueLayerHtml(id,index,beat){const lines=dialogueLines(beat);if(id==='opening'&&index===1)return castIntroHtml(lines);if(!lines.length)return '';
- return `<div class="cin-dialogue-layer" data-dialogue-count="${lines.length}">${lines.map(([name,text],i)=>bubbleHtml(name,text,i,lines.length)).join('')}</div>`;
+function speechTextHtml(texts){return texts.map((text,i)=>`<span${i?' class="speech-followup"':''}>${escapeHtml(text)}</span>`).join('')}
+function bubbleHtml(name,texts,index,count){return `<div class="cin-dialogue-speaker speaker-${index+1} speaker-count-${count}" data-speaker="${escapeHtml(name)}"><div class="cin-speech-bubble"><b>${escapeHtml(name)}</b>${speechTextHtml(texts)}</div>${portrait(name,'dialogue-portrait')}<span class="cin-speaker-name">${escapeHtml(name)}</span></div>`}
+function castIntroHtml(groups){const spoken=new Map(groups);const order=['Pippa','Bramble','Rowan','Pip','Tansy'];return `<div class="cin-dialogue-layer cin-cast-intro" data-dialogue-count="${groups.length}">${order.map((name,i)=>{const c=CAST[name],speech=spoken.get(name);return `<div class="cin-intro-person intro-${i+1}" data-speaker="${name}">${speech?`<div class="cin-speech-bubble intro-bubble"><b>${name}</b>${speechTextHtml(speech)}</div>`:''}${portrait(name,'dialogue-portrait')}<span class="cin-speaker-name">${name}</span><small>${c.role}</small></div>`}).join('')}</div>`}
+function dialogueLayerHtml(id,index,beat){const groups=dialogueGroups(beat);if(id==='opening'&&index===1)return castIntroHtml(groups);if(!groups.length)return '';
+ return `<div class="cin-dialogue-layer" data-dialogue-count="${groups.length}">${groups.map(([name,texts],i)=>bubbleHtml(name,texts,i,groups.length)).join('')}</div>`;
 }
+function accessibleDialogueHtml(groups){if(!groups.length)return'';return `<span class="cin-dialogue-a11y">${groups.map(([name,texts])=>`${escapeHtml(name)}: ${texts.map(escapeHtml).join(' ')}`).join(' ')}</span>`}
 let scheduled=false,processing=false;
 function postProcess(){
  scheduled=false;if(processing)return;const id=API.active,index=API.beat,c=API.CINEMATICS[id],beat=c&&c.beats[index],overlay=document.getElementById('cinematicOverlay'),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines');
  if(!id||!beat||!overlay||!stage||!lines)return;
  processing=true;
  try{
+  const groups=dialogueGroups(beat);
   if(!stage.querySelector(':scope > .cin-dialogue-layer'))stage.insertAdjacentHTML('beforeend',dialogueLayerHtml(id,index,beat));
   const narration=narratorLines(beat);lines.classList.add('cinematic-narration-only');lines.dataset.narratorCount=String(narration.length);
-  const desired=narration.map(text=>`<p class="narrator-only"><span>${escapeHtml(text)}</span></p>`).join('');
+  const desired=narration.map(text=>`<p class="narrator-only"><span>${escapeHtml(text)}</span></p>`).join('')+accessibleDialogueHtml(groups);
   if(lines.innerHTML!==desired)lines.innerHTML=desired;
-  lines.hidden=!narration.length;
-  overlay.dataset.dialogueCount=String(dialogueLines(beat).length);
+  lines.hidden=!narration.length&&!groups.length;
+  overlay.dataset.dialogueCount=String(groups.length);
   overlay.dataset.narratorCount=String(narration.length);
  }finally{processing=false}
 }
@@ -77,5 +81,5 @@ function observe(){
 }
 const oldEnsure=API.show;API.show=function(){const out=oldEnsure.apply(API,arguments);requestAnimationFrame(()=>requestAnimationFrame(schedule));return out};
 observe();
-window.LatchlingsCinematicDialogue={CAST,postProcess,narratorLines,dialogueLines};
+window.LatchlingsCinematicDialogue={CAST,postProcess,narratorLines,dialogueLines,dialogueGroups};
 })();
