@@ -1,0 +1,12 @@
+/* Warmer, more whimsical production typography. The Latchlings title/logo and the title-island tagline keep their existing typography. */
+:root{
+ --latch-ui-font:ui-rounded,"SF Pro Rounded","Avenir Next Rounded","Arial Rounded MT Bold","Trebuchet MS",system-ui,-apple-system,sans-serif;
+ --latch-display-font:"Avenir Next Rounded",ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,-apple-system,sans-serif;
+}
+html,body,button,input,select,textarea{font-family:var(--latch-ui-font)}
+body{letter-spacing:.004em}
+.logo{font-family:Georgia,"Times New Roman",serif!important;letter-spacing:-.5px}
+.game-title,.moves-box strong,.modal h2,.chapter-head h2,.story-screen-card h1,.story-screen-card h2,.story-role-card strong,.story-current-chapter strong,.story-card-body h2,.story-helper-explain strong,.cinematic-copy h2,.cinematic-library-card strong,.ending-hero h1,.ending-note,.primary-btn,.win-story-title,.story-beat strong{font-family:var(--latch-display-font)!important}
+.game-title,.chapter-head h2,.story-card-body h2,.cinematic-copy h2,.ending-hero h1{letter-spacing:-.025em}
+button,.mechanic-chip-label,.theme-kicker,.chapter-badge,.chapter-chip,.range-chip,.level-node,.story-card-kind,.story-card-location,.cinematic-kind,.cinematic-chapter,.cinematic-counter,.cinematic-skip,.cinematic-next{font-family:var(--latch-ui-font)}
+.story-card-context,.story-card-flavor,.cinematic-lines,.story-person-copy,.story-character-copy,.chapter-opening,.chapter-mechanic,.modal p,.legend-item{font-family:var(--latch-ui-font)}
