@@ -1,0 +1,57 @@
+name: Start Visual Story and Board Rework Handoff
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  start-handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add IN PROGRESS handoff and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          heading='### 2026-09-05 — Opening cinematic geometry, player-facing story rail, and board-first visual variety'
+          if heading not in text:
+              entry='''### 2026-09-05 — Opening cinematic geometry, player-facing story rail, and board-first visual variety
+
+**Status: IN PROGRESS**
+
+**User goal:** Correct the remaining opening-cinematic composition problems and replace the rejected Chapter 1 background/medallion approach with a player-facing story/progression system and board-first visual variety. Specifically: make the non-Little-Home cinematic trees use the same textured, dimensional visual language as Little Home; make every Skyway route line truly connect its source and destination islands and make moving cargo follow the exact same route path; normalize speech-bubble heights and make each tail point directly at its speaker; re-block cinematic scenes so dialogue does not cover important windows, architecture, or scene focal points; remove any development-facing/internal commentary from all player-visible copy; remove gameplay medallions and the Chapter 1 scenery hidden behind the board; replace the route-tip strip with a fixed-size, chapter-themed story rail showing the active story Latchling, that Latchling's level-specific line, the current ten-level movement, and chapter progress; and make the puzzle board itself materially more interesting from level to level without reducing gameplay readability.
+
+**Implementation plan:** Treat this as a replacement of the previous Sunpetal presentation prototype, not an additive pile-on. Remove the production load of the old Chapter 1 environment/medallion layer and introduce a new deterministic gameplay-presentation module that derives chapter, local level, five-part movement, and ten-slot story motif from the existing `story400.js` metadata. The story rail will occupy the existing tip area at a stable height, use a canonical named resident portrait and concise first-person player-facing dialogue, and show a 1–50 progress bar with five movement markers. It will work for all eight chapters and inherit a distinct chapter visual treatment. The story button remains available for expanded context, but the level's current story beat must be understandable without opening it.
+
+Board variety will move into the focal gameplay surface: five movement treatments per chapter, ten deterministic motif accents, milestone treatment on levels 10/20/30/40/50, chapter-specific frame/material language, subtle cell-surface variation, and themed corner/inlay details. Interactive semantics, board geometry, piece/nest/gate/rail/anchor readability, move limits, solver data, and campaign definitions remain unchanged. Background scenery and all `levelProps` medallions will be removed/hidden rather than repositioned.
+
+For the opening cinematic, use shared route geometry as a single source of truth for both visible lines and moving cargo. Upgrade generic island trees with locally vendored CC0 wood/grass material language and multi-crown silhouettes modeled after the canonical Little Home tree. Replace the speech layout's alternating/random-looking bubble heights with a fixed speech band, calculate/direct bubble tails toward each speaker, and introduce beat-aware safe zones/placements so speech and portraits do not obscure cottage windows, doors, trees, route demonstrations, or other focal props. Re-render and manually inspect every opening beat after the geometry change.
+
+Run a player-visible copy audit across `index.html`, story/cinematic scripts, and UI copy for phrases that talk about implementation choices, prototypes, development, what the requester did/did not want, or otherwise break the fourth wall. Rewrite/remove only those player-visible strings; durable developer documentation remains unchanged.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`; `index.html`; `cinematics400.js`; `cinematic-dialogue400.js`; `style400-cinematics-dialogue.css` plus a focused cinematic geometry/refinement stylesheet if useful; `story400.js` only if durable story-rail dialogue metadata belongs there, otherwise a new presentation module; new story-rail / board-variation JS and CSS; and removal from production of `level-variation400.js` / `style400-level-variation.css` presentation if fully superseded. `story-theme400.js` may remain for Story Card art but its gameplay medallions must no longer be visible. Campaign files, solver logic, progression rules, audio, title/tagline art, canonical Little Home source, and Level 400 ending are out of scope unless validation exposes a regression.
+
+**Validation plan:** Use temporary self-removing GitHub Actions browser audits. Opening cinematic validation must render all seven opening beats at 390×844 plus compact 390×700 and wide/reduced-motion cases; verify textured multi-crown trees; mathematically verify route endpoints land on island bounds; verify cargo centers remain on the same route path throughout sampled animation progress; verify bubble top/bottom bands are normalized within tolerance, tails intersect/aim at their named speaker, and dialogue elements do not overlap protected focal regions (cottage windows/door, route demo focal cells, major props); and manually inspect the full contact sheet. Gameplay validation must render all 50 Sunpetal levels and representative levels from Chapters 2–8; assert no visible `levelProps` medallions or Chapter 1 environment layer, fixed story-rail height, correct named speaker/dialogue/movement/progress, five movement states and ten motif states, milestone states, zero horizontal overflow, board readability, unchanged campaign data, and no development-facing copy. Manual review must reject any board variations that are too subtle or that obscure puzzle state.
+
+**Deployment plan:** This IN PROGRESS entry is the mandatory pre-implementation checkpoint. After implementation and visual acceptance, remove all temporary workflows, confirm the repository-access guard is the only durable workflow, verify GitHub Pages deploys the exact accepted product state, then close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits, files, audit/artifact IDs, manual findings, deployment run, remaining risk, and next action.
+
+---
+
+'''
+              marker='## Current Work\n\n'
+              text=text.replace(marker,marker+entry,1)
+              p.write_text(text)
+          PY
+          rm -f .github/workflows/start-visual-story-board-rework.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/start-visual-story-board-rework.yml
+          git commit -m "Open visual story and board rework handoff"
+          git push
