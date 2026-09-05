@@ -45,7 +45,7 @@
  .cin-dialogue-speaker .dialogue-portrait{width:42px;height:42px;flex-basis:42px}.cin-dialogue-speaker .dialogue-portrait.child{width:36px;height:36px;flex-basis:36px}
  .cin-speech-bubble{bottom:55px}
  .speaker-count-3 .cin-speech-bubble{max-width:116px}.speaker-count-4 .cin-speech-bubble{max-width:92px;min-width:68px;font-size:8.8px;line-height:1.2;padding:5px 6px}
- .speaker-count-4.speaker-1{left:12%}.speaker-count-4.speaker-2{left:37%}.speaker-count-4.speaker-3{left:63%}.speaker-count-4.speaker-4{left:88%}
+ .speaker-count-4.speaker-1{left:13%}.speaker-count-4.speaker-2{left:37%}.speaker-count-4.speaker-3{left:63%}.speaker-count-4.speaker-4{left:87%}
  .speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:76px}
  .cin-cast-intro{padding-left:4px;padding-right:4px;gap:1px}.cin-intro-person .dialogue-portrait{width:40px;height:40px;flex-basis:40px}.cin-intro-person .dialogue-portrait.child{width:35px;height:35px;flex-basis:35px}.cin-intro-person>small{font-size:6.4px}.cin-intro-person .intro-bubble{bottom:61px;max-width:105px;min-width:78px;font-size:8.8px}
  .cinematic-lines .narrator-only{font-size:11.2px;padding:7px 9px}
