@@ -60,7 +60,9 @@ A named resident in a Story Card is the person whose errand, discovery, concern,
 
 That means a Story Card can be about Pippa while the active board contains Latchlings with different body colors and suit marks. Those board identities belong to the crew participating in that route problem; they do not need to visually match the featured resident. A featured resident may also be helping in-world, but the board remains a practical route abstraction rather than a one-to-one depiction of named characters.
 
-The simple player-facing rule is: **When one Latchling needs help, the whole island pitches in.**
+The simple player-facing rule is: **Every island knows its own paths. When a route fails, neighbors pitch in with the part they know.**
+
+Helper crews are voluntary local work parties, not an anonymous workforce controlled by Little Home. A community might contribute people who know the terrain, somebody willing to stand at a useful stopping point, a neighbor operating a gate, a station worker adjusting a travel window, or a maintenance crew handling its own anchor or switch. The Waykeeper helps those participants see the route as a sequence. The people who live there supply the local knowledge and do the work together.
 
 ### Gameplay fiction
 
@@ -122,6 +124,32 @@ The approved production title island is a real place in the story: **Little Home
 It is the player's emotional anchor and the recurring home base for the campaign. The title screen shows five residents going about ordinary life while the larger story unfolds around them.
 
 The household is a chosen-family style home. Their exact biological relationships do not need to be defined. They live together, care for one another, and share the work of keeping a tiny floating island running.
+
+### Why these five keep appearing
+
+Pippa, Bramble, Rowan, Pip, and Tansy are the recurring cast because **Little Home is the first household to recognize that several small route failures are one shared systems problem**. They are not selected by prophecy, rank, special powers, or political authority.
+
+Their ordinary routines happen to give them five useful kinds of evidence:
+
+- **Pippa** notices when dependable routines begin taking longer or landing in the wrong place.
+- **Rowan** watches the physical island closely enough to connect those failures to unusual drift.
+- **Bramble** already travels between households, so Bramble can compare Little Home's problems with reports from neighbors.
+- **Pip** explores places adults dismiss as irrelevant and keeps finding physical clues outside the usual routes.
+- **Tansy** notices the social meaning of each change, including which friendships, visits, and everyday connections will disappear if a route is allowed to fail.
+
+Once those observations are put together, Little Home has enough of the picture to ask the Waykeeper the right question. That makes the household a natural recurring point of view for the player.
+
+### Why Little Home becomes a hub
+
+Little Home becomes a **coordination point, not a command center**.
+
+Bramble can carry reports. Pippa can keep records. Rowan can compare drift observations. The cottage gives neighbors a familiar place to leave messages and later becomes one visible node in the rebuilt network. None of that makes the household more important than the communities whose routes are being repaired.
+
+Every region knows its own paths, hazards, schedules, and infrastructure better than the household does. A Lanternwood neighbor knows which porch crossing is safe. A Lodestone crew understands its anchor. A market worker knows the gate flow. A Copperline technician knows the rail hardware. Those communities choose to participate because the Skyway is shared infrastructure and the route problem affects their own daily lives.
+
+The Waykeeper and the Little Home household **connect information across places that were previously improvising alone**. The communities provide local knowledge, crews, travel windows, equipment, and decisions. As the campaign grows, the work deliberately becomes less centered on Little Home until the final Skyway is maintained by a distributed network of communities.
+
+The story should never imply that the five residents are delegating their chores to everyone else. They are investigating a shared failure while also contributing their own work, and each board represents people cooperating on a route that matters to them.
 
 ### Pippa
 
@@ -417,103 +445,3 @@ The goal is to make a Skyway that can keep becoming tomorrow's map.
 Distant **connected islands / route lights** become visible around Little Home. The title screen that began as one tiny household now quietly shows the larger community surrounding it.
 
 ---
-
-## Ending
-
-The ending should preserve the existing phrase **Skyway Restored**, but clarify what "restored" means.
-
-The Waykeeper has not stopped the islands from moving.
-
-Instead, Latchlings across the archipelago have relearned how to watch the drift, communicate, and maintain routes together.
-
-The final emotional beat returns to Little Home.
-
-Pippa tends the garden. Bramble has another parcel. Rowan checks the tree. Pip and Tansy are already turning some harmless object into tomorrow's route problem.
-
-In the distance, other islands drift past, connected by the living Skyway.
-
-Ordinary life continues.
-
-That is the victory.
-
----
-
-## Environmental progression on Little Home
-
-The production title screen should gradually become a visual record of the campaign while keeping its uncluttered base composition.
-
-| Completed chapter | Little Home change |
-|---|---|
-| 1 | Route mailbox / post |
-| 2 | Neighbor pennant / visitor token |
-| 3 | Restored anchor beneath island |
-| 4 | Market bunting |
-| 5 | Telescope |
-| 6 | Waykeeper compass / relic |
-| 7 | Small docking beam / arrival platform |
-| 8 | Distant connected islands / route lights |
-
-These changes should be subtle enough that returning players notice the island growing without the title screen turning into a trophy shelf.
-
----
-
-## Per-level writing rules
-
-Each of the 400 levels receives:
-
-1. a compact title;
-2. one sentence describing the tiny practical problem;
-3. normal mechanic guidance when appropriate.
-
-Level context should not imply board geometry that is not actually present. Prefer motives and destinations over literal claims about exact board objects.
-
-Good:
-
-> **Breakfast Detour**  
-> Pippa wants the herb basket home before the kettle gives up waiting.
-
-Good:
-
-> **The Lantern Roundabout**  
-> A neighbor promised supper, and Bramble promised the route was shorter this way.
-
-Avoid:
-
-> Cross the red bridge and move the blue cart around three rocks.
-
-unless those objects are guaranteed by authored level data.
-
----
-
-## Story beat rules
-
-- Normal level completion stays fast.
-- Levels ending in 10, 20, 30, 40, and 50 may show one extra short paragraph.
-- Chapter 50 beats may be slightly larger and mention the new Little Home keepsake.
-- A player can always continue immediately.
-- Story text should never obscure the move result or star result.
-
----
-
-## Naming / terminology
-
-Use consistently:
-
-- **Latchling / Latchlings** — the people.
-- **Latchlands** — the floating-island archipelago.
-- **Little Home** — the recurring household island.
-- **Waykeeper** — the player's role and the historical route-tending profession.
-- **Skyway** — the route infrastructure linking islands.
-- **drift** — the normal movement of floating islands.
-
-Avoid introducing additional proper nouns unless they genuinely help the player remember a place, person, or mechanic.
-
----
-
-## Core theme
-
-The story ultimately says:
-
-**A good path is not one that never changes. It is one that can change with the people who need it.**
-
-That idea should remain implicit in most of the game and become explicit only near the end.
