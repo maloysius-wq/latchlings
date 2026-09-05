@@ -1,0 +1,46 @@
+name: Diagnose Opening Beat 7
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 8080 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Capture beat seven
+        run: |
+          cat > diag.mjs <<'EOF'
+          import { chromium } from 'playwright';import fs from 'node:fs';
+          const b=await chromium.launch({headless:true}),c=await b.newContext({viewport:{width:390,height:844}}),p=await c.newPage();
+          await p.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.LatchlingsCinematics&&window.LatchlingsCinematicDialogue);
+          await p.evaluate(()=>window.LatchlingsCinematics.show('opening',{markSeen:false}));await p.waitForTimeout(60);for(let i=0;i<6;i++){await p.evaluate(()=>window.LatchlingsCinematics.next());await p.waitForTimeout(70)}
+          const d=await p.evaluate(()=>{const s=document.getElementById('cinematicStage'),sr=s.getBoundingClientRect();return {stage:{l:sr.left,r:sr.right,t:sr.top,b:sr.bottom,w:sr.width,h:sr.height},bubbles:[...s.querySelectorAll('.cin-speech-bubble')].map(x=>{const r=x.getBoundingClientRect();return {speaker:x.parentElement?.dataset?.speaker,text:x.textContent,l:r.left,r:r.right,t:r.top,b:r.bottom,w:r.width,h:r.height}}),speakers:[...s.querySelectorAll('.cin-dialogue-speaker')].map(x=>{const r=x.getBoundingClientRect();return {speaker:x.dataset.speaker,l:r.left,r:r.right,t:r.top,b:r.bottom}})}});console.log('BEAT7_BOUNDS '+JSON.stringify(d));fs.mkdirSync('beat7-diag',{recursive:true});fs.writeFileSync('beat7-diag/bounds.json',JSON.stringify(d,null,2));await p.screenshot({path:'beat7-diag/beat7.png',fullPage:false,animations:'disabled'});await b.close();
+          EOF
+          node diag.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opening-beat7-diagnostic
+          path: beat7-diag
+          if-no-files-found: warn
+      - name: Cleanup
+        if: always()
+        run: |
+          git pull --ff-only origin main
+          rm -f .github/workflows/diagnose-opening-beat7.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/diagnose-opening-beat7.yml
+          if ! git diff --cached --quiet; then git commit -m "Remove opening beat seven diagnostic" && git push; fi
