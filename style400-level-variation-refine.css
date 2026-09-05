@@ -1,0 +1,113 @@
+/* Manual visual-QA refinement for the Chapter 1 journey.
+   The first pass technically changed scenery every ten levels, but most landmarks
+   sat behind the board on a 390px phone. This pass moves each phase's signature
+   into the visible board-to-controls breathing room and increases atmospheric contrast. */
+
+/* Make the five movement palettes read immediately, even before a landmark is noticed. */
+#app.theme-ch1[data-sunpetal-phase="1"]{
+  background:
+    radial-gradient(circle at 15% 17%,rgba(255,242,141,.98) 0 4%,rgba(255,242,141,.23) 5% 14%,transparent 15%),
+    linear-gradient(#91d6f1 0 46%,#d8efbd 47% 66%,#8dcc66 67% 100%);
+}
+#app.theme-ch1[data-sunpetal-phase="2"]{
+  background:
+    radial-gradient(circle at 82% 16%,rgba(255,245,181,.78) 0 4%,transparent 14%),
+    linear-gradient(#89c9df 0 44%,#b8d99a 45% 61%,#5f9d52 62% 100%);
+}
+#app.theme-ch1[data-sunpetal-phase="3"]{
+  background:
+    radial-gradient(circle at 76% 14%,rgba(255,250,203,.88) 0 5%,transparent 15%),
+    linear-gradient(#79c9f2 0 58%,#dceeb7 59% 72%,#76b756 73% 100%);
+}
+#app.theme-ch1[data-sunpetal-phase="4"]{
+  background:
+    radial-gradient(circle at 17% 17%,rgba(255,229,139,.82) 0 5%,transparent 15%),
+    linear-gradient(#8abbd0 0 46%,#d6dda0 47% 63%,#78964c 64% 100%);
+}
+#app.theme-ch1[data-sunpetal-phase="5"]{
+  background:
+    radial-gradient(circle at 82% 17%,rgba(255,196,87,.98) 0 6%,rgba(255,196,87,.28) 7% 18%,transparent 19%),
+    linear-gradient(#79b6da 0 40%,#efbd7e 41% 60%,#829e52 61% 100%);
+}
+
+/* A low-contrast environmental floor pattern gives every movement a different silhouette
+   without entering the board's play surface. */
+.level-environment:after{content:"";position:absolute;left:0;right:0;top:67%;bottom:0;pointer-events:none;opacity:.55}
+.phase-home-morning:after{
+  background:
+    radial-gradient(circle at 10% 18%,rgba(255,245,189,.74) 0 4px,transparent 5px),
+    radial-gradient(circle at 20% 35%,rgba(255,245,189,.58) 0 3px,transparent 4px),
+    radial-gradient(circle at 89% 25%,rgba(255,245,189,.62) 0 4px,transparent 5px),
+    repeating-linear-gradient(100deg,transparent 0 24px,rgba(73,126,55,.11) 25px 27px,transparent 28px 52px);
+}
+.phase-meadow-detours:after{
+  background:
+    radial-gradient(ellipse at 15% 56%,rgba(55,109,57,.22) 0 21%,transparent 22%),
+    radial-gradient(ellipse at 86% 65%,rgba(55,109,57,.2) 0 24%,transparent 25%),
+    linear-gradient(163deg,transparent 0 36%,rgba(86,178,207,.28) 37% 43%,rgba(212,241,235,.18) 44% 46%,rgba(86,178,207,.24) 47% 52%,transparent 53%);
+}
+.phase-open-fields:after{
+  background:
+    repeating-linear-gradient(83deg,transparent 0 16px,rgba(89,139,55,.14) 17px 18px,transparent 19px 34px),
+    linear-gradient(180deg,rgba(255,248,190,.06),rgba(255,248,190,.18));
+}
+.phase-reroute-work:after{
+  background:
+    linear-gradient(160deg,transparent 0 24%,rgba(238,180,78,.16) 25% 26%,transparent 27% 48%,rgba(238,180,78,.13) 49% 50%,transparent 51%),
+    repeating-linear-gradient(90deg,transparent 0 44px,rgba(83,105,53,.13) 45px 48px,transparent 49px 86px);
+}
+.phase-golden-return:after{
+  background:
+    radial-gradient(circle at 8% 25%,rgba(255,203,91,.25) 0 22px,transparent 46px),
+    radial-gradient(circle at 51% 39%,rgba(255,203,91,.18) 0 20px,transparent 44px),
+    radial-gradient(circle at 92% 23%,rgba(255,203,91,.24) 0 24px,transparent 49px);
+}
+
+/* Put phase labels in the clear band below the route tip rather than behind it. */
+.level-environment .lv-milestone-badge{top:132px;opacity:.78;background:rgba(255,248,226,.84);font-size:8.5px}
+.level-environment.milestone .lv-milestone-badge{opacity:1}
+
+/* The original landmarks were mostly hidden behind the D-pad. Move them into the
+   55-90px visual shelf directly under the board. */
+.phase-home-morning .lv-cottage{display:block;left:-4px;right:auto;top:66%;bottom:auto;scale:.72;opacity:.96}
+.phase-home-morning .lv-reactive-flower.f1{left:27%;bottom:132px}
+.phase-home-morning .lv-reactive-flower.f3{right:18%;bottom:137px}
+
+.phase-meadow-detours .lv-hedge.h1{left:-46px;top:68%;bottom:auto;scale:.72}
+.phase-meadow-detours .lv-hedge.h2{right:-52px;top:69%;bottom:auto;scale:.68}
+.phase-meadow-detours .lv-signpost{left:7px;top:65%;scale:.7}
+.phase-meadow-detours .lv-creek{right:-22px;top:68%;bottom:auto;scale:.78;opacity:.86}
+
+.phase-open-fields .lv-windmill{right:12px;top:63%;bottom:auto;scale:.78}
+.phase-open-fields .lv-far-island.i1{left:8px;top:28%;scale:.94}
+.phase-open-fields .lv-far-island.i2{right:8px;top:32%;scale:.76}
+
+.phase-reroute-work .lv-route-stake.s1{left:10px;top:65%;bottom:auto;scale:.78}
+.phase-reroute-work .lv-route-stake.s2{left:48%;top:67%;bottom:auto;scale:.62}
+.phase-reroute-work .lv-route-stake.s3{right:12px;top:65%;bottom:auto;scale:.73}
+.phase-reroute-work .lv-route-thread.t1{bottom:150px;opacity:.22}
+.phase-reroute-work .lv-route-thread.t2{bottom:166px;opacity:.22}
+
+.phase-golden-return .lv-cottage{display:block;right:-5px;left:auto;top:67%;bottom:auto;scale:.68;opacity:.88}
+.phase-golden-return .lv-lantern.l1{left:9px;top:64%;bottom:auto;scale:.82}
+.phase-golden-return .lv-lantern.l2{left:48%;top:67%;bottom:auto;scale:.66}
+.phase-golden-return .lv-lantern.l3{right:11px;top:64%;bottom:auto;scale:.78}
+
+/* Let the story subject feel like a collectible scene token rather than a tiny utility icon. */
+#app.theme-ch1[data-sunpetal-phase] #game .lv-subject-medallion{width:56px;height:56px;padding:9px}
+#app.theme-ch1[data-sunpetal-phase] #game .lv-accent-medallion{opacity:.88}
+
+/* Milestones get an extra warm horizon pulse, visible without changing puzzle geometry. */
+.level-environment.milestone:before{content:"";position:absolute;left:6%;right:6%;top:64%;height:72px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,231,148,.27),transparent 68%);filter:blur(1px);pointer-events:none}
+
+@media(max-width:430px){
+  .level-environment .lv-milestone-badge{top:132px}
+  #app.theme-ch1[data-sunpetal-phase] #game .lv-subject-medallion{width:54px;height:54px;left:12px}
+  .phase-meadow-detours .lv-creek{right:-54px}
+  .phase-open-fields .lv-windmill{right:4px}
+}
+@media(max-height:720px){
+  .level-environment .lv-milestone-badge{top:104px;font-size:7.8px}
+  .phase-home-morning .lv-cottage,.phase-meadow-detours .lv-hedge,.phase-meadow-detours .lv-creek,.phase-open-fields .lv-windmill,.phase-reroute-work .lv-route-stake,.phase-golden-return .lv-cottage,.phase-golden-return .lv-lantern{top:63%}
+}
+@media(prefers-reduced-motion:reduce){.level-environment:after,.level-environment.milestone:before{animation:none!important;transition:none!important}}
