@@ -1,0 +1,114 @@
+name: Audit Sunpetal Acceptance v6
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Static integrity checks
+        run: |
+          set -euo pipefail
+          node --check level-variation400.js
+          node --check story-grounding400.js
+          node --check cinematic-dialogue400.js
+          node --check cinematics400.js
+          node --check game400-a.js
+          node --check game400-b.js
+          test "$(git diff --name-only eb3fb94a20befb81cb2e178d186bd08e5e16ba49..HEAD -- 'campaign400-*.js' | wc -l)" -eq 0
+          grep -q "style400-level-variation-refine.css" style400-level-variation-reactive.css
+          grep -q "coordination point, not a command center" STORY_BIBLE.md
+          grep -q "## Ending" STORY_BIBLE.md
+          grep -q "## Core theme" STORY_BIBLE.md
+          ! grep -q '^\*\*Narrator:\*\*' CINEMATICS_SCRIPT.md
+      - name: Install browser tooling
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python3 -m pip install --quiet pillow
+      - name: Start static server
+        run: |
+          python3 -m http.server 8080 > /tmp/latchlings-server.log 2>&1 &
+          sleep 2
+      - name: Create browser audit harness
+        run: |
+          cat > audit-v6.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const OUT='acceptance-v6',PHONE_W=390;
+          for(const d of [OUT,path.join(OUT,'levels'),path.join(OUT,'cinematics')]) fs.mkdirSync(d,{recursive:true});
+          const fail=m=>{throw new Error(m)};
+          const browser=await chromium.launch({headless:true});
+          const errors=[];
+          const makePage=async(viewport={width:390,height:844},reducedMotion='no-preference')=>{const context=await browser.newContext({viewport,reducedMotion});const page=await context.newPage();page.setDefaultTimeout(7000);page.setDefaultNavigationTimeout(12000);page.on('pageerror',e=>errors.push('pageerror: '+e.message));page.on('console',m=>{if(m.type()==='error'&&!/ERR_ABORTED|favicon|Failed to load resource/i.test(m.text()))errors.push('console: '+m.text())});return {context,page}};
+          const seed=page=>page.addInitScript(()=>{const stars={};for(let i=1;i<=400;i++)stars[i]=0;localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars}));const story={};for(let i=1;i<=400;i++)story[i]=1;localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(story));localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}))});
+          const settle=async(page,L)=>{await page.evaluate(n=>startLevel(n),L);await page.waitForTimeout(90);await page.evaluate(()=>{window.LatchlingsStoryTheme?.close(false);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(false);document.getElementById('overlay')?.classList.remove('show');document.getElementById('board')?.scrollIntoView({block:'center',inline:'center'})});await page.waitForTimeout(35)};
+          const phases=['home-morning','meadow-detours','open-fields','reroute-work','golden-return'];
+          const subjects=['breakfast','watering','kite','bread','mail','tea','gate','picnic','cart','scarf'];
+          const landmarks=['.lv-cottage','.lv-signpost','.lv-windmill','.lv-route-stake','.lv-lantern'];
+          const captures=new Set([1,5,10,11,15,20,21,25,30,31,35,40,41,45,50]);
+          const {context,page}=await makePage();await seed(page);await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.startLevel&&window.LatchlingsLevelVariation&&window.LatchlingsStoryTheme);
+          const levelManifest=[];
+          for(let L=1;L<=50;L++){
+            await settle(page,L);
+            const d=await page.evaluate(({L,landmarks})=>{const app=document.getElementById('app'),game=document.getElementById('game'),env=document.getElementById('levelEnvironment'),board=document.getElementById('board');const phase=Math.floor((L-1)/10),land=document.querySelector(landmarks[phase]),br=board.getBoundingClientRect();const inner={l:br.left+br.width*.12,r:br.right-br.width*.12,t:br.top+br.height*.12,b:br.bottom-br.height*.12};const props=[...document.querySelectorAll('#levelProps .level-prop')].map(el=>{const r=el.getBoundingClientRect();return {cls:el.className,l:r.left,r:r.right,t:r.top,b:r.bottom,intrudes:r.right>inner.l&&r.left<inner.r&&r.bottom>inner.t&&r.top<inner.b}});const badge=env.querySelector('.lv-milestone-badge')?.getBoundingClientRect(),lr=land?.getBoundingClientRect();return {phase:app.dataset.sunpetalPhase,envPhase:env?.dataset.phase,ambient:env?.dataset.ambient,subject:game.dataset.levelSubject,milestone:env?.classList.contains('milestone'),landVisible:!!land&&getComputedStyle(land).display!=='none'&&lr.width>0&&lr.height>0,landmarkRect:lr&&{l:lr.left,r:lr.right,t:lr.top,b:lr.bottom},overflow:document.documentElement.scrollWidth-window.innerWidth,viewportWidth:window.innerWidth,board:{l:br.left,r:br.right,t:br.top,b:br.bottom,w:br.width,h:br.height},envPointer:getComputedStyle(env).pointerEvents,propIntrudes:props.some(x=>x.intrudes),props,badge:badge&&{l:badge.left,r:badge.right,t:badge.top,b:badge.bottom},badgeAboveBoard:!!badge&&badge.bottom<=br.top+1,font:getComputedStyle(document.querySelector('.game-title')).fontFamily,logoFont:getComputedStyle(document.querySelector('#game .logo')).fontFamily}}, {L,landmarks});
+            const phase=Math.floor((L-1)/10),slot=(L-1)%10;
+            if(d.phase!==String(phase+1)||d.envPhase!==phases[phase])fail(`Level ${L}: phase mismatch ${JSON.stringify(d)}`);
+            if(d.subject!==subjects[slot]||d.ambient!==((slot<5)?'a':'b'))fail(`Level ${L}: motif/ambient mismatch`);
+            if(d.milestone!==(L%10===0)||!d.landVisible)fail(`Level ${L}: landmark/milestone mismatch`);
+            if(d.viewportWidth!==PHONE_W||d.overflow>1||d.board.l<-1||d.board.r>PHONE_W+1||d.board.w<300||d.board.h<300)fail(`Level ${L}: board geometry/overflow ${JSON.stringify(d.board)}`);
+            if(d.envPointer!=='none'||d.propIntrudes)fail(`Level ${L}: decorative layer intrudes ${JSON.stringify(d.props)}`);
+            if(!d.badgeAboveBoard)fail(`Level ${L}: phase label collides with board ${JSON.stringify(d.badge)}`);
+            if(!/Rounded|Trebuchet|ui-rounded/i.test(d.font)||!/Georgia/i.test(d.logoFont))fail(`Level ${L}: typography regression ${d.font} / ${d.logoFont}`);
+            if(captures.has(L)){const file=path.join(OUT,'levels',`level-${String(L).padStart(2,'0')}.png`);await page.screenshot({path:file,fullPage:true,animations:'disabled'});d.file=file}
+            levelManifest.push({level:L,...d});
+          }
+          await settle(page,19);const total=await page.locator('#pieceLayer .latchling').count();if(total<2)fail('Reactive audit level has fewer than 2 helpers');await page.evaluate(()=>{document.querySelector('#pieceLayer .latchling')?.remove();LatchlingsLevelVariation.updateRouteProgress()});if(await page.locator('#game').getAttribute('data-route-progress')!=='working')fail('Reactive scenery did not enter working state');await page.evaluate(()=>{document.querySelectorAll('#pieceLayer .latchling').forEach(x=>x.remove());LatchlingsLevelVariation.updateRouteProgress()});if(await page.locator('#game').getAttribute('data-route-progress')!=='complete')fail('Reactive scenery did not enter complete state');const grounding=await page.evaluate(()=>({m:LATCHLINGS_STORY.helperCrewMotto,e:LATCHLINGS_STORY.helperCrewExplanation,p:LATCHLINGS_STORY.premise}));if(!/Every island knows its own paths/i.test(grounding.m)||!/not a command center/i.test(grounding.e)||!/first household/i.test(grounding.p))fail('Community rationale is not player-facing');await context.close();
+          const {context:cinContext,page:cin}=await makePage();await cin.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await cin.waitForFunction(()=>window.LatchlingsCinematics&&window.LatchlingsCinematicDialogue?.dialogueGroups);const cinManifest=[];for(const id of ['opening','across-drift','old-maps','homeward']){if(!await cin.evaluate(id=>LatchlingsCinematics.show(id,{markSeen:false}),id))fail(`Could not show ${id}`);await cin.waitForTimeout(130);const count=await cin.evaluate(()=>LatchlingsCinematics.CINEMATICS[LatchlingsCinematics.active].beats.length);for(let i=0;i<count;i++){if(i){await cin.evaluate(()=>LatchlingsCinematics.next());await cin.waitForTimeout(80)}const d=await cin.evaluate(()=>{const a=LatchlingsCinematics,beat=a.CINEMATICS[a.active].beats[a.beat],groups=LatchlingsCinematicDialogue.dialogueGroups(beat),narr=LatchlingsCinematicDialogue.narratorLines(beat),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines'),sr=stage.getBoundingClientRect();const bubbles=[...stage.querySelectorAll('.cin-speech-bubble')].map(x=>{const r=x.getBoundingClientRect();return {l:r.left,r:r.right,t:r.top,b:r.bottom}});return {id:a.active,index:a.beat,label:beat.label,expected:groups.length,narrExpected:narr.length,bubbles:bubbles.length,narr:lines.querySelectorAll('.narrator-only').length,old:lines.querySelectorAll('.dialogue').length,narrLabel:/Narrator/i.test(lines.textContent||''),within:bubbles.every(r=>r.l>=sr.left-1&&r.r<=sr.right+1&&r.t>=sr.top-1&&r.b<=sr.bottom+1),intro:stage.querySelectorAll('.cin-intro-person').length,names:[...stage.querySelectorAll('.cin-intro-person .cin-speaker-name')].map(x=>x.textContent),overflow:document.documentElement.scrollWidth-window.innerWidth}});if(d.bubbles!==d.expected||d.narr!==d.narrExpected||d.old||d.narrLabel||!d.within||d.overflow>1)fail(`${id} beat ${i+1}: cinematic dialogue assertion ${JSON.stringify(d)}`);if(id==='opening'&&i===1){if(d.intro!==5)fail('Opening cast intro does not show five residents');for(const n of ['Pippa','Bramble','Rowan','Pip','Tansy'])if(!d.names.includes(n))fail(`Opening cast intro missing ${n}`)}const capture=id==='opening'||i===0||i===count-1;if(capture){const file=path.join(OUT,'cinematics',`${id}-${String(i+1).padStart(2,'0')}.png`);await cin.screenshot({path:file,fullPage:true,animations:'disabled'});d.file=file}cinManifest.push(d)}await cin.evaluate(()=>LatchlingsCinematics.finish(false));await cin.waitForTimeout(35)}await cinContext.close();
+          const {context:wideContext,page:wide}=await makePage({width:900,height:844},'reduce');await wide.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await wide.waitForFunction(()=>window.LatchlingsCinematics&&document.getElementById('homeTitleFrame')?.contentDocument?.querySelector('#c2 .toy-logo'));await wide.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false}));await wide.waitForTimeout(100);await wide.evaluate(()=>LatchlingsCinematics.next());await wide.waitForTimeout(80);const wd=await wide.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,people:document.querySelectorAll('.cin-intro-person').length,animations:[...document.querySelectorAll('.cin-dialogue-layer *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none')}));if(wd.overflow>1||wd.people!==5||wd.animations.length)fail(`Wide/reduced-motion regression ${JSON.stringify(wd)}`);await wide.screenshot({path:path.join(OUT,'cinematics','opening-cast-wide-reduced.png'),fullPage:true,animations:'disabled'});await wide.evaluate(()=>LatchlingsCinematics.finish(false));const title=await wide.evaluate(()=>{const d=document.getElementById('homeTitleFrame').contentDocument;return {titleFont:getComputedStyle(d.querySelector('#c2 .toy-logo')).fontFamily,tagFont:getComputedStyle(d.querySelector('#c2 .toy-tagline')).fontFamily,title:d.querySelector('#c2 .toy-logo').textContent.replace(/\s+/g,''),tag:d.querySelector('#c2 .toy-tagline').textContent.trim()}});if(!/Arial Rounded|Trebuchet/i.test(title.titleFont)||!/Inter|Avenir Next|system-ui/i.test(title.tagFont))fail(`Title/tagline typography changed ${JSON.stringify(title)}`);await wideContext.close();if(errors.length)fail('Browser errors:\n'+errors.join('\n'));fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify({levels:levelManifest,cinematics:cinManifest,title},null,2));await browser.close();console.log('SUNPETAL_ACCEPTANCE_V6_OK');
+          EOF
+      - name: Run browser acceptance audit
+        run: node audit-v6.mjs
+      - name: Build visual contact sheets
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          import glob,os,math
+          os.makedirs('acceptance-v6/contact-sheets',exist_ok=True)
+          def sheet(items,out,cols=5,w=195):
+              if not items:return
+              ims=[Image.open(x).convert('RGB') for x in items];h=int(w*ims[0].height/ims[0].width);rows=math.ceil(len(items)/cols);can=Image.new('RGB',(cols*w,rows*(h+18)),'white');dr=ImageDraw.Draw(can)
+              for i,(im,f) in enumerate(zip(ims,items)):im.thumbnail((w,h));x=(i%cols)*w;y=(i//cols)*(h+18);can.paste(im,(x,y));dr.text((x+4,y+h+2),os.path.basename(f).replace('.png',''),fill='black')
+              can.save(out,quality=92)
+          sheet(sorted(glob.glob('acceptance-v6/levels/*.png')),'acceptance-v6/contact-sheets/levels.jpg')
+          sheet(sorted(glob.glob('acceptance-v6/cinematics/*.png')),'acceptance-v6/contact-sheets/cinematics.jpg',4,195)
+          PY
+      - name: Upload acceptance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunpetal-acceptance-v6
+          path: acceptance-v6
+          if-no-files-found: warn
+      - name: Remove temporary audit workflow
+        if: always()
+        run: |
+          rm -f .github/workflows/audit-sunpetal-acceptance-v6.yml audit-v6.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/audit-sunpetal-acceptance-v6.yml
+          if ! git diff --cached --quiet; then git commit -m "Remove temporary Sunpetal acceptance v6" && git push; fi
