@@ -1,0 +1,93 @@
+name: Audit Cinematic Dialogue Final v8
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install browser tooling
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python3 -m pip install --quiet pillow
+      - name: Start static server
+        run: |
+          python3 -m http.server 8080 > /tmp/latchlings-server.log 2>&1 &
+          sleep 2
+      - name: Assert every cinematic beat and render opening
+        run: |
+          cat > cinema-v8.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';import path from 'node:path';
+          const OUT='cinema-v8';fs.mkdirSync(OUT,{recursive:true});
+          const fail=m=>{throw new Error(m)};
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844}});page.setDefaultTimeout(6000);
+          const errors=[];page.on('pageerror',e=>errors.push('pageerror: '+e.message));page.on('console',m=>{if(m.type()==='error'&&!/ERR_ABORTED|favicon|Failed to load resource/i.test(m.text()))errors.push('console: '+m.text())});
+          await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>window.LatchlingsCinematics&&window.LatchlingsCinematicDialogue?.dialogueGroups);
+          const manifest=[];
+          for(const id of ['opening','across-drift','old-maps','homeward']){
+            if(!await page.evaluate(id=>LatchlingsCinematics.show(id,{markSeen:false}),id))fail(`Could not show ${id}`);
+            await page.waitForTimeout(70);
+            const count=await page.evaluate(()=>LatchlingsCinematics.CINEMATICS[LatchlingsCinematics.active].beats.length);
+            for(let i=0;i<count;i++){
+              if(i){await page.evaluate(()=>LatchlingsCinematics.next());await page.waitForTimeout(35)}
+              const d=await page.evaluate(()=>{const a=LatchlingsCinematics,beat=a.CINEMATICS[a.active].beats[a.beat],groups=LatchlingsCinematicDialogue.dialogueGroups(beat),narr=LatchlingsCinematicDialogue.narratorLines(beat),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines'),sr=stage.getBoundingClientRect();const bubbles=[...stage.querySelectorAll('.cin-speech-bubble')].map(x=>x.getBoundingClientRect());return {id:a.active,index:a.beat,label:beat.label,expected:groups.length,narrExpected:narr.length,bubbles:bubbles.length,narr:lines.querySelectorAll('.narrator-only').length,old:lines.querySelectorAll('.dialogue').length,narrLabel:/Narrator/i.test(lines.textContent||''),within:bubbles.every(r=>r.left>=sr.left-1&&r.right<=sr.right+1&&r.top>=sr.top-1&&r.bottom<=sr.bottom+1),intro:stage.querySelectorAll('.cin-intro-person').length,names:[...stage.querySelectorAll('.cin-intro-person .cin-speaker-name')].map(x=>x.textContent),overflow:document.documentElement.scrollWidth-window.innerWidth};});
+              if(d.bubbles!==d.expected||d.narr!==d.narrExpected||d.old||d.narrLabel||!d.within||d.overflow>1)fail(`${id} beat ${i+1}: ${JSON.stringify(d)}`);
+              if(id==='opening'&&i===1){if(d.intro!==5)fail('Opening cast intro count');for(const n of ['Pippa','Bramble','Rowan','Pip','Tansy'])if(!d.names.includes(n))fail(`Opening cast intro missing ${n}`)}
+              if(id==='opening')await page.screenshot({path:path.join(OUT,`opening-${String(i+1).padStart(2,'0')}.png`),fullPage:false,animations:'disabled'});
+              manifest.push(d);console.log(`ASSERTED_${id}_${i+1}`);
+            }
+            await page.evaluate(()=>LatchlingsCinematics.finish(false));await page.waitForTimeout(20);
+          }
+          fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
+          await page.setViewportSize({width:900,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.LatchlingsCinematics&&document.getElementById('homeTitleFrame')?.contentDocument?.querySelector('#c2 .toy-logo'));
+          await page.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false}));await page.waitForTimeout(60);await page.evaluate(()=>LatchlingsCinematics.next());await page.waitForTimeout(40);
+          const wd=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,people:document.querySelectorAll('.cin-intro-person').length,animations:[...document.querySelectorAll('.cin-dialogue-layer *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none')}));if(wd.overflow>1||wd.people!==5||wd.animations.length)fail(`Wide/reduced regression ${JSON.stringify(wd)}`);
+          await page.screenshot({path:path.join(OUT,'opening-cast-wide-reduced.png'),fullPage:false,animations:'disabled'});await page.evaluate(()=>LatchlingsCinematics.finish(false));
+          const title=await page.evaluate(()=>{const d=document.getElementById('homeTitleFrame').contentDocument;return {titleFont:getComputedStyle(d.querySelector('#c2 .toy-logo')).fontFamily,tagFont:getComputedStyle(d.querySelector('#c2 .toy-tagline')).fontFamily,title:d.querySelector('#c2 .toy-logo').textContent.replace(/\s+/g,''),tag:d.querySelector('#c2 .toy-tagline').textContent.trim()}});if(!/Arial Rounded|Trebuchet/i.test(title.titleFont)||!/Inter|Avenir Next|system-ui/i.test(title.tagFont))fail(`Title typography changed ${JSON.stringify(title)}`);
+          fs.writeFileSync(path.join(OUT,'wide-title.json'),JSON.stringify({wd,title},null,2));if(errors.length)fail('Browser errors:\n'+errors.join('\n'));await browser.close();console.log('CINEMA_V8_OK');
+          EOF
+          timeout 360s node cinema-v8.mjs
+      - name: Build opening contact sheet
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          import glob,os,math
+          files=sorted(glob.glob('cinema-v8/opening-??.png'))
+          if files:
+              w=195;h=int(w*844/390);cols=4;rows=math.ceil(len(files)/cols);canvas=Image.new('RGB',(cols*w,rows*(h+18)),'white');draw=ImageDraw.Draw(canvas)
+              for i,f in enumerate(files):
+                  im=Image.open(f).convert('RGB');im.thumbnail((w,h));x=(i%cols)*w;y=(i//cols)*(h+18);canvas.paste(im,(x,y));draw.text((x+3,y+h+2),os.path.basename(f).replace('.png',''),fill='black')
+              canvas.save('cinema-v8/opening-contact-sheet.jpg',quality=92)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cinematic-dialogue-v8
+          path: cinema-v8
+          if-no-files-found: warn
+      - name: Remove temporary cinematic audit
+        if: always()
+        run: |
+          git pull --ff-only origin main
+          rm -f .github/workflows/audit-cinematic-dialogue-final-v8.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/audit-cinematic-dialogue-final-v8.yml
+          if ! git diff --cached --quiet; then git commit -m "Remove temporary cinematic dialogue audit" && git push; fi
