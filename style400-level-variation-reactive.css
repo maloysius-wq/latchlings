@@ -1,0 +1,18 @@
+/* Explicit reactive states avoid relying on unsupported CSS multiplication inside calc(). */
+#game .level-environment .lv-lantern:after{box-shadow:0 0 8px rgba(255,201,94,.18)}
+#game[data-route-progress="working"] .level-environment .lv-lantern:after{box-shadow:0 0 15px rgba(255,201,94,.46)}
+#game[data-route-progress="complete"] .level-environment .lv-lantern:after{box-shadow:0 0 22px rgba(255,201,94,.72)}
+#game .level-environment .lv-route-thread{opacity:.16}
+#game[data-route-progress="working"] .level-environment .lv-route-thread{opacity:.62}
+#game[data-route-progress="complete"] .level-environment .lv-route-thread{opacity:.98;filter:brightness(1.16)}
+#game .level-environment .lv-reactive-flower{opacity:.32;scale:.74}
+#game[data-route-progress="working"] .level-environment .lv-reactive-flower{opacity:.72;scale:.92}
+#game[data-route-progress="complete"] .level-environment .lv-reactive-flower{opacity:1;scale:1.08}
+#game .level-environment .lv-reactive-flower.f2{scale:.62}
+#game .level-environment .lv-reactive-flower.f3{scale:.68}
+#game[data-route-progress="working"] .level-environment .lv-reactive-flower.f2{scale:.82}
+#game[data-route-progress="working"] .level-environment .lv-reactive-flower.f3{scale:.86}
+#game[data-route-progress="complete"] .level-environment .lv-reactive-flower.f2,#game[data-route-progress="complete"] .level-environment .lv-reactive-flower.f3{scale:1}
+.level-environment.milestone .lv-route-thread{opacity:.34}
+#game[data-route-progress="working"] .level-environment.milestone .lv-route-thread{opacity:.72}
+#game[data-route-progress="complete"] .level-environment.milestone .lv-route-thread{opacity:1}
