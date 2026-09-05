@@ -1,0 +1,57 @@
+/* Cinematic dialogue clarity layer. Narration stays in the lower copy area; character speech lives on stage. */
+.cinematic-lines.cinematic-narration-only{display:grid;gap:6px;margin-top:2px}
+.cinematic-lines.cinematic-narration-only[hidden]{display:none}
+.cinematic-lines .narrator-only{margin:0;padding:8px 10px;border-radius:13px;background:rgba(255,249,237,.7);border:1px solid rgba(201,176,140,.32);color:#496279;font-size:12px;line-height:1.4;font-style:normal;box-shadow:inset 0 1px rgba(255,255,255,.56)}
+.cinematic-lines .narrator-only span{display:block}
+
+.cin-dialogue-layer{position:absolute;inset:0;z-index:48;pointer-events:none;font-family:var(--latch-ui-font,ui-rounded,"SF Pro Rounded",system-ui,sans-serif)}
+.cin-dialogue-speaker{position:absolute;width:88px;bottom:12px;translate:-50% 0;display:flex;flex-direction:column;align-items:center;z-index:2}
+.cin-dialogue-speaker .dialogue-portrait{position:relative;left:auto;top:auto;right:auto;bottom:auto;width:46px;height:46px;flex:0 0 46px;animation-duration:3.1s;box-shadow:0 5px 10px rgba(21,42,62,.25),0 0 0 3px rgba(255,250,236,.72)}
+.cin-dialogue-speaker .dialogue-portrait.child{width:40px;height:40px;flex-basis:40px}
+.cin-speaker-name{margin-top:4px;padding:2px 6px;border-radius:999px;background:rgba(25,60,94,.88);color:#fff8e7;font-size:8px;font-weight:950;letter-spacing:.055em;text-transform:uppercase;box-shadow:0 2px 5px rgba(17,35,53,.16)}
+.cin-speech-bubble{position:absolute;left:50%;bottom:60px;translate:-50% 0;width:max-content;max-width:154px;min-width:90px;padding:7px 9px;border-radius:14px;background:#fffaf0;border:1.5px solid rgba(125,91,55,.43);box-shadow:0 6px 13px rgba(28,51,70,.18),inset 0 1px rgba(255,255,255,.8);color:#294c69;font-size:10.5px;line-height:1.24;text-align:left}
+.cin-speech-bubble:after{content:"";position:absolute;left:50%;bottom:-8px;width:14px;height:14px;background:#fffaf0;border-right:1.5px solid rgba(125,91,55,.43);border-bottom:1.5px solid rgba(125,91,55,.43);transform:translateX(-50%) rotate(45deg);border-radius:0 0 3px 0}
+.cin-speech-bubble b{display:block;margin-bottom:2px;color:#173a67;font-size:8.5px;line-height:1.1;font-weight:950;letter-spacing:.045em;text-transform:uppercase}
+.cin-speech-bubble span{display:block}
+
+/* Speaker placement by simultaneous speaker count. Bubbles alternate heights when a beat is busy. */
+.speaker-count-1.speaker-1{left:50%}
+.speaker-count-2.speaker-1{left:28%}.speaker-count-2.speaker-2{left:72%}
+.speaker-count-3.speaker-1{left:17%}.speaker-count-3.speaker-2{left:50%}.speaker-count-3.speaker-3{left:83%}
+.speaker-count-4.speaker-1{left:13%}.speaker-count-4.speaker-2{left:38%}.speaker-count-4.speaker-3{left:63%}.speaker-count-4.speaker-4{left:87%}
+.speaker-count-3.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:82px}
+.speaker-count-3 .cin-speech-bubble{max-width:128px}.speaker-count-4 .cin-speech-bubble{max-width:108px;min-width:76px;padding:6px 7px;font-size:9.5px}
+.speaker-count-4 .dialogue-portrait{width:40px;height:40px;flex-basis:40px}.speaker-count-4 .dialogue-portrait.child{width:35px;height:35px;flex-basis:35px}
+
+/* Beat 2: every recurring resident is explicitly paired with a face, name, and role. */
+.cin-cast-intro{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;gap:3px;padding:0 8px 10px}
+.cin-intro-person{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;align-self:end}
+.cin-intro-person .dialogue-portrait{position:relative;left:auto;top:auto;right:auto;bottom:auto;width:44px;height:44px;flex:0 0 44px;box-shadow:0 5px 10px rgba(21,42,62,.24),0 0 0 3px rgba(255,250,236,.72)}
+.cin-intro-person .dialogue-portrait.child{width:38px;height:38px;flex-basis:38px}
+.cin-intro-person .cin-speaker-name{margin-top:3px;white-space:nowrap;font-size:7.5px;padding:2px 5px}
+.cin-intro-person>small{margin-top:2px;padding:1px 3px;border-radius:5px;background:rgba(255,250,238,.76);color:#4c6377;font-size:7px;line-height:1.05;font-weight:850;text-align:center;white-space:nowrap}
+.cin-intro-person .intro-bubble{bottom:68px;max-width:125px;min-width:90px;font-size:9.5px}
+.cin-intro-person.intro-4 .intro-bubble{left:15%;translate:-74% 0}.cin-intro-person.intro-4 .intro-bubble:after{left:76%}
+.cin-intro-person.intro-5 .intro-bubble{left:45%;translate:-80% 0}.cin-intro-person.intro-5 .intro-bubble:after{left:82%}
+
+/* Do not let the overlay hide important scene content more than necessary. */
+.cinematic-overlay[data-dialogue-count="1"] .cin-dialogue-layer:not(.cin-cast-intro){background:linear-gradient(180deg,transparent 55%,rgba(224,239,238,.08))}
+.cinematic-overlay[data-dialogue-count="4"] .cin-dialogue-layer{background:linear-gradient(180deg,rgba(190,221,238,.05),rgba(255,248,229,.08))}
+
+@media(max-width:430px){
+ .cin-speech-bubble{max-width:138px;min-width:82px;padding:6px 8px;font-size:9.8px}
+ .cin-dialogue-speaker{bottom:9px;width:76px}
+ .cin-dialogue-speaker .dialogue-portrait{width:42px;height:42px;flex-basis:42px}.cin-dialogue-speaker .dialogue-portrait.child{width:36px;height:36px;flex-basis:36px}
+ .cin-speech-bubble{bottom:55px}
+ .speaker-count-3 .cin-speech-bubble{max-width:116px}.speaker-count-4 .cin-speech-bubble{max-width:92px;min-width:68px;font-size:8.8px;line-height:1.2;padding:5px 6px}
+ .speaker-count-4.speaker-1{left:12%}.speaker-count-4.speaker-2{left:37%}.speaker-count-4.speaker-3{left:63%}.speaker-count-4.speaker-4{left:88%}
+ .speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:76px}
+ .cin-cast-intro{padding-left:4px;padding-right:4px;gap:1px}.cin-intro-person .dialogue-portrait{width:40px;height:40px;flex-basis:40px}.cin-intro-person .dialogue-portrait.child{width:35px;height:35px;flex-basis:35px}.cin-intro-person>small{font-size:6.4px}.cin-intro-person .intro-bubble{bottom:61px;max-width:105px;min-width:78px;font-size:8.8px}
+ .cinematic-lines .narrator-only{font-size:11.2px;padding:7px 9px}
+}
+@media(max-height:720px){
+ .cin-dialogue-speaker{bottom:5px}.cin-dialogue-speaker .dialogue-portrait{width:36px;height:36px;flex-basis:36px}.cin-dialogue-speaker .dialogue-portrait.child{width:32px;height:32px;flex-basis:32px}.cin-speech-bubble{bottom:47px;font-size:9px;max-width:126px;padding:5px 7px}.speaker-count-4 .cin-speech-bubble{font-size:8.3px;max-width:88px}.speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:66px}
+ .cin-intro-person .dialogue-portrait{width:34px;height:34px;flex-basis:34px}.cin-intro-person .dialogue-portrait.child{width:30px;height:30px;flex-basis:30px}.cin-intro-person .intro-bubble{bottom:53px}.cin-intro-person>small{display:none}
+ .cinematic-lines .narrator-only{font-size:10.5px;padding:5px 7px;line-height:1.32}
+}
+@media(prefers-reduced-motion:reduce){.cin-dialogue-layer *{animation:none!important;transition:none!important}}
