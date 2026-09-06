@@ -27,6 +27,7 @@
 /* Opening beat safe zones. Dialogue gets its own lower dock; scene focal objects move above it rather than being covered. */
 .cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-home-reference-wrap{transform:translateY(-37px) scale(.79);transform-origin:50% 48%}
 .cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-cast-intro{background:linear-gradient(180deg,transparent 0 53%,rgba(222,238,237,.28) 72%,rgba(249,242,220,.45) 100%)}
+.cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-intro-person.intro-5 .intro-bubble{translate:calc(-50% - 3px) 0!important}
 .cinematic-overlay[data-cinematic="opening"][data-beat="4"] .cin-islands.waykeeper-map{transform:translateY(-21px) scale(.88);transform-origin:50% 42%}.cinematic-overlay[data-cinematic="opening"][data-beat="4"] .cin-compass{top:40%!important;scale:.86!important}
 .cinematic-overlay[data-cinematic="opening"][data-beat="5"] .cin-helper-story{inset:-9px 13px 55px!important;margin:11px!important;transform:scale(.9);transform-origin:50% 30%}
 .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{transform:translateY(-22px) scale(.89);transform-origin:50% 25%}
