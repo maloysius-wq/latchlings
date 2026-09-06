@@ -1,0 +1,17 @@
+/* Acceptance refinement: simultaneous speakers share one deliberate horizontal speech band. */
+.cin-dialogue-layer[data-dialogue-count="1"] .cin-speech-bubble{height:54px!important}
+.cin-dialogue-layer[data-dialogue-count="2"] .cin-speech-bubble{height:56px!important}
+.cin-dialogue-layer[data-dialogue-count="3"] .cin-speech-bubble{height:62px!important}
+.cin-dialogue-layer[data-dialogue-count="4"] .cin-speech-bubble{height:68px!important}
+.cin-cast-intro[data-dialogue-count="2"] .intro-bubble{height:54px!important}
+
+/* The bubble tail remains attached to the computed speaker center even when the bubble is edge-clamped. */
+.cin-speech-bubble:after{left:var(--cin-tail-x,50%)!important}
+
+@media(max-height:720px){
+ .cin-dialogue-layer[data-dialogue-count="1"] .cin-speech-bubble{height:48px!important}
+ .cin-dialogue-layer[data-dialogue-count="2"] .cin-speech-bubble{height:50px!important}
+ .cin-dialogue-layer[data-dialogue-count="3"] .cin-speech-bubble{height:56px!important}
+ .cin-dialogue-layer[data-dialogue-count="4"] .cin-speech-bubble{height:62px!important}
+ .cin-cast-intro[data-dialogue-count="2"] .intro-bubble{height:48px!important}
+}
