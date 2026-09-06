@@ -1,0 +1,19 @@
+/* Sunpetal acceptance refinement: the five movements must read on the board itself at phone scale. */
+#app.theme-ch1 #game[data-story-phase="1"] .board{border-color:#8a6b43;box-shadow:0 17px 35px rgba(30,48,65,.25),0 0 0 3px rgba(118,163,91,.12),inset 0 0 0 5px rgba(119,173,93,.13);--cellPhaseTint:#f3e7c8}
+#app.theme-ch1 #game[data-story-phase="2"] .board{border-color:#5f8c4e;background-color:#7a9c5f;box-shadow:0 17px 35px rgba(30,48,65,.25),0 0 0 4px rgba(91,139,75,.18),inset 0 0 0 5px rgba(83,132,70,.17);--cellPhaseTint:#e3e8c8}
+#app.theme-ch1 #game[data-story-phase="2"] .cell{border-color:#8f9b72}
+#app.theme-ch1 #game[data-story-phase="3"] .board{border-color:#4c93b5;background-color:#86c1d0;box-shadow:0 17px 35px rgba(30,48,65,.25),0 0 0 4px rgba(91,168,195,.21),inset 0 0 0 5px rgba(111,185,202,.18);--cellPhaseTint:#dfede2}
+#app.theme-ch1 #game[data-story-phase="3"] .cell{border-color:#8fa893}
+#app.theme-ch1 #game[data-story-phase="4"] .board{border-color:#b96638;background-color:#c58b51;box-shadow:0 17px 35px rgba(30,48,65,.25),0 0 0 4px rgba(198,117,63,.2),inset 0 0 0 5px rgba(217,147,74,.18);--cellPhaseTint:#efd2ae}
+#app.theme-ch1 #game[data-story-phase="4"] .cell{border-color:#a47d5e}
+#app.theme-ch1 #game[data-story-phase="5"] .board{border-color:#c8922f;background-color:#d5ad52;box-shadow:0 17px 35px rgba(30,48,65,.26),0 0 0 4px rgba(233,185,86,.25),0 0 18px rgba(240,193,86,.16),inset 0 0 0 5px rgba(238,194,91,.2);--cellPhaseTint:#f3dbb4}
+#app.theme-ch1 #game[data-story-phase="5"] .cell{border-color:#ad8a58}
+
+/* Stronger inlays live in frame/gap space and never cover pieces, nests, gates, rails, or blockers. */
+#app.theme-ch1 #game[data-story-phase="2"] .board:after{opacity:.92}
+#app.theme-ch1 #game[data-story-phase="3"] .board:after{opacity:.9}
+#app.theme-ch1 #game[data-story-phase="4"] .board:after{opacity:.95}
+#app.theme-ch1 #game[data-story-phase="5"] .board:after{opacity:1;filter:drop-shadow(0 0 2px rgba(255,238,163,.5))}
+
+/* Milestones get a visible chapter punctuation without touching puzzle state. */
+#app.theme-ch1 #game[data-story-milestone="true"] .board{outline:2px solid color-mix(in srgb,var(--boardStoryAccent2) 45%,transparent);outline-offset:3px}
