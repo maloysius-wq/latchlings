@@ -156,6 +156,7 @@ function install(){
  if(title)new MutationObserver(schedule).observe(title,{childList:true,subtree:true,characterData:true});
  if(note)new MutationObserver(schedule).observe(note,{childList:true,subtree:true,characterData:true});
  if(debug)new MutationObserver(sanitizeDebug).observe(debug,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['style','class']});
+ new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['data-screen']});
  document.addEventListener('click',schedule,true);schedule();
 }
 install();
