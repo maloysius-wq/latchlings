@@ -57,7 +57,7 @@ function tick(time){
  enhanceTrees(stage);
  const stageRect=stage.getBoundingClientRect();let brightGeom=null;
  stage.querySelectorAll('.cin-islands').forEach(islands=>{const g=layoutIslandRoutes(islands,stageRect);if(islands.classList.contains('bright'))brightGeom=g});
- if(brightGeom)layoutCargo(stage,brightGeom,time);
+ if(brightGeom)layoutCargo(stage,brightGeom,(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)?cargoEpoch+2200:time);
  if(time-lastDialoguePass>500){normalizeDialogue(stage);lastDialoguePass=time}
  raf=requestAnimationFrame(tick);
 }

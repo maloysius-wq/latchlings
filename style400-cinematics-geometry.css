@@ -54,3 +54,18 @@
  .cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-home-reference-wrap{transform:translateY(-44px) scale(.61)}.cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-breakfast-route{transform:translateY(-37px) scale(.66)}
 }
 @media(prefers-reduced-motion:reduce){.cinematic-stage .cin-route-cargo i,.cin-tree-crown,.cin-tree-trunk{transition:none!important;animation:none!important}}
+
+/* Acceptance refinement: simultaneous speakers share one deliberate horizontal speech band. */
+.cin-dialogue-layer[data-dialogue-count="1"] .cin-speech-bubble{height:54px!important}
+.cin-dialogue-layer[data-dialogue-count="2"] .cin-speech-bubble{height:56px!important}
+.cin-dialogue-layer[data-dialogue-count="3"] .cin-speech-bubble{height:62px!important}
+.cin-dialogue-layer[data-dialogue-count="4"] .cin-speech-bubble{height:68px!important}
+.cin-cast-intro[data-dialogue-count="2"] .intro-bubble{height:54px!important}
+.cin-speech-bubble:after{left:var(--cin-tail-x,50%)!important}
+@media(max-height:720px){
+ .cin-dialogue-layer[data-dialogue-count="1"] .cin-speech-bubble{height:48px!important}
+ .cin-dialogue-layer[data-dialogue-count="2"] .cin-speech-bubble{height:50px!important}
+ .cin-dialogue-layer[data-dialogue-count="3"] .cin-speech-bubble{height:56px!important}
+ .cin-dialogue-layer[data-dialogue-count="4"] .cin-speech-bubble{height:62px!important}
+ .cin-cast-intro[data-dialogue-count="2"] .intro-bubble{height:48px!important}
+}
