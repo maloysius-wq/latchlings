@@ -1,0 +1,110 @@
+name: Validate SFX Normalization
+
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-sfx-normalization.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Static mix assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('sfx400.js').read_text()
+          assert "capture: ['capture.wav', 0.14, 3]" in s
+          assert "levelClear: ['level-clear.wav', 0.12, 2]" in s
+          assert "levelClear: () => play('levelClear', 280)" in s
+          assert "capture: ['capture.wav', 0.34, 3]" not in s
+          assert "levelClear: ['level-clear.wav', 0.24, 2]" not in s
+          assert "levelLose: ['level-lose.wav', 0.30, 2]" in s
+          assert "campaignComplete: ['campaign-complete.wav', 0.42, 2]" in s
+          print('SFX_STATIC_NORMALIZATION_OK')
+          PY
+      - name: Install browser tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        shell: bash
+        run: |
+          python3 -m http.server 8080 >/tmp/latchlings-sfx-server.log 2>&1 &
+          sleep 2
+      - name: Runtime SFX smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > sfx-smoke.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          const page = await browser.newPage({viewport:{width:390,height:844}});
+          const errors=[];
+          page.on('pageerror', e => errors.push(String(e)));
+          await page.addInitScript(() => {
+            window.__sfxPlayed=[];
+            HTMLMediaElement.prototype.play=function(){
+              window.__sfxPlayed.push({src:this.src,volume:this.volume,at:performance.now()});
+              return Promise.resolve();
+            };
+          });
+          await page.goto('http://127.0.0.1:8080/', {waitUntil:'domcontentloaded'});
+          await page.waitForFunction(() => !!window.LatchlingsSFX);
+          const result = await page.evaluate(async () => {
+            window.__sfxPlayed.length=0;
+            window.LatchlingsSFX.setEnabled(true);
+            window.LatchlingsSFX.endMove('nest', true);
+            window.LatchlingsSFX.levelClear();
+            window.LatchlingsSFX.invalidMove();
+            await new Promise(r => setTimeout(r, 340));
+            const pick = suffix => window.__sfxPlayed.find(x => x.src.endsWith(suffix));
+            return {
+              capture: pick('/assets/sfx/capture.wav'),
+              clear: pick('/assets/sfx/level-clear.wav'),
+              invalid: pick('/assets/sfx/invalid.wav')
+            };
+          });
+          const fail=m=>{throw new Error(m)};
+          if(errors.length) fail('page errors: '+errors.join(' | '));
+          if(!result.capture) fail('capture sound did not play');
+          if(!result.clear) fail('level-clear sound did not play');
+          if(!result.invalid) fail('control SFX did not play');
+          if(Math.abs(result.capture.volume-0.14)>0.001) fail('capture volume '+result.capture.volume);
+          if(Math.abs(result.clear.volume-0.12)>0.001) fail('clear volume '+result.clear.volume);
+          if(Math.abs(result.invalid.volume-0.28)>0.001) fail('unrelated invalid volume changed '+result.invalid.volume);
+          const spacing=result.clear.at-result.capture.at;
+          if(spacing < 250) fail('capture/clear transients still stack too closely: '+spacing+'ms');
+          console.log('SFX_RUNTIME_NORMALIZATION_OK', JSON.stringify({capture:result.capture.volume,clear:result.clear.volume,control:result.invalid.volume,spacingMs:Math.round(spacing)}));
+          await browser.close();
+          EOF
+          node sfx-smoke.mjs
+          rm -f sfx-smoke.mjs
+      - name: Self-remove
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f sfx-smoke.mjs
+          git pull --ff-only origin main
+          rm -f .github/workflows/validate-sfx-normalization.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/validate-sfx-normalization.yml
+          if ! git diff --cached --quiet; then
+            git commit -m "Remove SFX normalization validator"
+            git push
+          fi
