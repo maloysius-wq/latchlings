@@ -1,8 +1,8 @@
 'use strict';
 (function(){
 const STORY=window.LATCHLINGS_STORY;if(!STORY)return;
-STORY.premise='Small creatures live ordinary lives across drifting floating islands. Little Home is the first household to realize that many tiny route failures share one larger cause, and the Waykeeper helps its residents compare what they learn with communities across the Latchlands.';
-STORY.helperCrewMotto='Every island knows its own paths. When a route fails, neighbors pitch in with the part they know.';
-STORY.helperCrewExplanation='Pippa, Bramble, Rowan, Pip, and Tansy recur because their household is where the pattern is first recognized: Pippa tracks broken routines, Rowan tracks the island itself, Bramble carries reports between communities, and Pip and Tansy keep finding overlooked clues and the people affected by them. Little Home coordinates those reports with the Waykeeper, but it is not a command center. The Latchlings on each board are local helper crews and work parties volunteering their own observations, stopping positions, travel windows, and hands on nearby Skyway hardware. The named resident gives the route its reason; the board crew represents the community making that route work.';
-STORY.coordinationExplanation='Little Home connects information rather than issuing orders. Communities remain capable participants who know their own routes and infrastructure best, and the Skyway is restored through shared local work coordinated across the Latchlands.';
+STORY.premise='Small creatures live ordinary lives across drifting floating islands. At Little Home, garden schedules, deliveries, drift notes, and neighbor messages begin pointing to the same problem: the Skyway is falling behind the islands.';
+STORY.helperCrewMotto='Every island knows its own paths. When a route slips, neighbors bring local knowledge, spare hands, and a safe place to stop.';
+STORY.helperCrewExplanation='Pippa, Bramble, Rowan, Pip, and Tansy keep Little Home’s route desk busy by comparing garden plans, deliveries, island observations, and messages from friends. Around the Latchlands, nearby Latchlings volunteer to test stopping points, carry supplies, watch travel windows, and tend the pieces of Skyway they know best.';
+STORY.coordinationExplanation='Reports meet at Little Home, then travel back out with the Waykeeper. Each community keeps watch over its own routes, and together the Latchlands keep the Skyway moving with the drift.';
 })();
