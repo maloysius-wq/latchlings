@@ -18,20 +18,20 @@ if(opening){
  ];
  opening.beats[2].lines=[['Narrator','For generations, the Skyway has kept homes, gardens, markets, and neighbors connected while the islands drift. A good route does not hold the world still. It keeps working while the world moves.']];
  opening.beats[3].lines=[
-  ['Narrator','Little Home is the first place where the odd little failures get compared instead of shrugged off: Pippa tracks broken routines, Rowan tracks the island’s drift, Bramble carries reports between neighbors, and Pip and Tansy keep noticing the clues adults step past. Together, their notes reveal one shared problem.'],
-  ['Pippa','We can tell you what keeps going wrong.'],
-  ['Rowan','You can help us read the route underneath it.']
+  ['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.'],
+  ['Pippa','We can show you where the routes keep slipping.'],
+  ['Rowan','You can help us find where they should go now.']
  ];
  opening.beats[4].lines=[
-  ['Narrator','Little Home becomes a coordination point, not a command post. Every community knows its own paths best. Neighbors volunteer observations, route crews, travel windows, and hands on their own Skyway hardware because every repaired route helps somebody get home.'],
-  ['Bramble','We connect the reports. Everybody brings the part they know.']
+  ['Narrator','Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.'],
+  ['Bramble','Everybody knows a piece of the route. We just need to put the pieces together.']
  ];
  opening.beats[5].lines=[
   ['Narrator','Choose a Latchling, then choose a direction. They snap along that route until something stops them. An edge, a rock, or another helper can turn one move into the setup for the next.'],
   ['Rowan','Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.']
  ];
  opening.beats[6].lines=[
-  ['Narrator','Start small, Waykeeper. Fix the morning route. Then help Little Home compare what it learns with the neighbors who are already working on their own pieces of the Skyway.'],
+  ['Narrator','Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.'],
   ['Pippa','That route worked yesterday.'],
   ['Rowan','Little Home moved farther than usual overnight.'],
   ['Pip','So breakfast is a puzzle now?'],

@@ -67,13 +67,13 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 **Visual:** A Waykeeper compass motif appears over the moving islands. Old route lines fade, new lines sketch themselves between the islands’ current positions. Pippa and Rowan appear as the speakers, each with a named speech bubble.
 
 **Narration:**  
-> Little Home is the first place where the odd little failures get compared instead of shrugged off: Pippa tracks broken routines, Rowan tracks the island’s drift, Bramble carries reports between neighbors, and Pip and Tansy keep noticing the clues adults step past. Together, their notes reveal one shared problem.
+> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.
 
 **Pippa:**  
-> We can tell you what keeps going wrong.
+> We can show you where the routes keep slipping.
 
 **Rowan:**  
-> You can help us read the route underneath it.
+> You can help us find where they should go now.
 
 **Meaning:** Little Home matters because this household is the first to connect several ordinary failures into one pattern. The Waykeeper supplies specialized route-reading skill; the residents supply observations and lived context.
 
@@ -82,10 +82,10 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 **Visual:** A miniature route board appears. Several spherical Latchlings hop into place as a local work party. Bramble speaks beside the board.
 
 **Narration:**  
-> Little Home becomes a coordination point, not a command post. Every community knows its own paths best. Neighbors volunteer observations, route crews, travel windows, and hands on their own Skyway hardware because every repaired route helps somebody get home.
+> Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.
 
 **Bramble:**  
-> We connect the reports. Everybody brings the part they know.
+> Everybody knows a piece of the route. We just need to put the pieces together.
 
 **Meaning:** Named residents do not order an anonymous population around. The wider Latchlands are capable participants cooperating on shared infrastructure. The board crew is the local group carrying out that specific route job, so their colors and suit marks do not need to match the featured resident.
 
@@ -106,7 +106,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 **Visual:** The miniature board dissolves back into Little Home. A breakfast basket follows an old glowing route, misses its intended connection because the islands have shifted, and lands at an awkward stop. Pippa, Rowan, Pip, and Tansy each speak from their own on-stage bubbles.
 
 **Narration:**  
-> Start small, Waykeeper. Fix the morning route. Then help Little Home compare what it learns with the neighbors who are already working on their own pieces of the Skyway.
+> Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.
 
 **Pippa:**  
 > That route worked yesterday.
