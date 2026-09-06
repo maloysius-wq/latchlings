@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-05 — Nest and victory SFX loudness normalization
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Normalize the successful-nest and level-win sound effects because they are extremely loud and piercing relative to the rest of the game mix.
 
@@ -50,6 +50,17 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Verify the exact runtime definitions and call sequence, statically assert the reduced capture/clear gains and non-overlapping clear delay, run a browser smoke test that loads production scripts without console/page errors and exercises the exposed `LatchlingsSFX` methods, and confirm no unrelated SFX definitions changed. Because headless CI cannot make a trustworthy psychoacoustic judgment, use the existing mix levels and the known 324 ms capture duration as the engineering reference, with conservative gain reductions rather than muting either cue.
 
 **Deployment plan:** Deploy the accepted product commit through GitHub Pages, verify the deployment succeeds, remove every temporary workflow, confirm `validate-repository-access-guard.yml` is the only durable workflow, then close this same handoff entry as COMPLETED/PARTIAL/BLOCKED with exact values, commits, validation, deployment run, remaining risk, and next action.
+
+
+#### Completion summary
+
+**Implementation:** `sfx400.js` is the only product file changed. The successful-nest `capture.wav` playback gain was reduced from `0.34` to `0.14` (about -7.7 dB), and the ordinary level-clear `level-clear.wav` gain was reduced from `0.24` to `0.12` (-6.0 dB). The level-clear cue delay was increased from `115 ms` to `280 ms`. Because the capture asset is about 324 ms long, the final-nest sequence now leaves only a short tail overlap instead of stacking the two bright confirmation transients for most of the capture sound. Source WAV assets, pitch, playback rate, gameplay timing, campaign data, music, and every unrelated SFX definition were left unchanged. Product commit: `f7ed9d956cb8794115ae32a07d7b9656fe469524` (`Normalize nest and level-clear SFX`). A compare against the clean pre-product state confirmed exactly one product file changed, with three value edits.
+
+**Validation:** Static assertions confirmed the new `0.14` capture gain, `0.12` clear gain, and `280 ms` clear delay while preserving unrelated `invalid`, `levelLose`, and `campaignComplete` levels. The first temporary browser-validation run `34011074374` failed only because its Playwright script was written under `/tmp`, outside Node's repository module-resolution path; static mix assertions had already passed and no product code was changed in response. The corrected self-removing validation run `34011123867` completed successfully. Its runtime browser smoke test loaded the production page without page errors, exercised the public `LatchlingsSFX` API, and printed `SFX_RUNTIME_NORMALIZATION_OK {"capture":0.14,"clear":0.12,"control":0.28,"spacingMs":280}`.
+
+**Deployment and hygiene:** After validation, the temporary validator self-removed on clean-main commit `440f456554342ecdebf5e64b72cf429140e3f969`. GitHub Pages run `34011150717` successfully built and deployed that clean product state. `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow before this closeout helper was created; this helper self-removes immediately after recording the completion.
+
+**Remaining risk / next action:** Loudness perception still varies by phone speaker, headphones, and device volume, so the final subjective check belongs on a real device. The reductions are intentionally substantial because the reported problem was extreme/piercing. There is no known functional blocker. If real-device listening still finds either cue too sharp, the next action is a small additional gain trim to that individual cue rather than altering the source asset or unrelated mix.
 
 ---
 
