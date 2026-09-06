@@ -1,0 +1,56 @@
+/* Final opening-cinematic geometry layer: exact route attachment, Little-Home-quality trees, normalized speech bands, and protected scene composition. */
+.cinematic-stage .cin-route{height:3px!important;background:linear-gradient(90deg,rgba(76,161,222,.84),#fff0a2 47%,rgba(76,161,222,.88))!important;box-shadow:0 0 8px rgba(66,161,228,.5),0 0 3px rgba(255,244,179,.9)!important;border-radius:999px!important;translate:0 -50%;pointer-events:none}
+.cinematic-stage .cin-route-cargo i{animation:none!important;transform:none!important;will-change:left,top,opacity;z-index:6}
+
+/* Generic archipelago trees now use the same material vocabulary and three-crown silhouette as canonical Little Home. */
+.cin-island-prop.prop-tree[data-detailed-tree="true"]{width:38px!important;height:45px!important;top:-2%!important;background:none!important;overflow:visible;filter:drop-shadow(0 4px 3px rgba(38,62,49,.16))}
+.cin-island-prop.prop-tree[data-detailed-tree="true"]:before,.cin-island-prop.prop-tree[data-detailed-tree="true"]:after{display:none!important}
+.cin-tree-trunk{position:absolute;left:16px;bottom:1px;width:8px;height:27px;border-radius:5px 5px 4px 4px;background-image:linear-gradient(90deg,rgba(255,255,255,.16),rgba(58,35,20,.16)),var(--cin-wood);background-size:cover,38px 38px;box-shadow:inset -2px 0 rgba(55,33,18,.13);z-index:2}
+.cin-tree-trunk .branch{position:absolute;display:block;width:4px;height:17px;border-radius:4px;background-image:linear-gradient(90deg,rgba(255,255,255,.12),rgba(58,35,20,.15)),var(--cin-wood);background-size:cover,34px 34px;transform-origin:50% 100%;bottom:12px}.cin-tree-trunk .branch.b1{left:-3px;rotate:-42deg}.cin-tree-trunk .branch.b2{right:-3px;rotate:43deg}
+.cin-tree-crown{position:absolute;border-radius:50%;background-image:linear-gradient(145deg,rgba(207,238,191,.38),rgba(53,116,63,.18)),var(--cin-grass);background-size:cover,34px 34px;background-blend-mode:screen,multiply;box-shadow:inset -3px -4px 6px rgba(31,78,42,.14),0 2px 3px rgba(53,77,55,.1);z-index:3}
+.cin-tree-crown.c1{width:27px;height:25px;left:3px;top:2px}.cin-tree-crown.c2{width:23px;height:22px;left:17px;top:9px}.cin-tree-crown.c3{width:21px;height:21px;left:0;top:13px}
+
+/* One aligned speech band. Bubble dimensions are normalized in JS to the tallest line in each beat. */
+.cin-dialogue-speaker{bottom:7px!important}
+.cin-dialogue-speaker .cin-speech-bubble,.cin-intro-person .cin-speech-bubble{height:var(--cin-bubble-height,auto)!important;min-height:0!important;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden}
+.cin-dialogue-speaker .cin-speech-bubble{bottom:55px!important}
+.cin-speech-bubble:after{left:var(--cin-tail-x,50%)!important}
+.speaker-count-3.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:55px!important}
+.cin-dialogue-speaker .dialogue-portrait{width:41px!important;height:41px!important;flex-basis:41px!important}.cin-dialogue-speaker .dialogue-portrait.child{width:36px!important;height:36px!important;flex-basis:36px!important}
+.speaker-count-4 .dialogue-portrait{width:36px!important;height:36px!important;flex-basis:36px!important}.speaker-count-4 .dialogue-portrait.child{width:32px!important;height:32px!important;flex-basis:32px!important}
+.speaker-count-4.speaker-1{left:13%!important}.speaker-count-4.speaker-2{left:37.5%!important}.speaker-count-4.speaker-3{left:62.5%!important}.speaker-count-4.speaker-4{left:87%!important}
+
+/* Cast introduction is a deliberate identification dock below the Little Home focal area. */
+.cin-cast-intro{align-items:end!important;padding:0 5px 6px!important;gap:1px!important}
+.cin-intro-person{justify-content:flex-end!important}.cin-intro-person .dialogue-portrait{width:38px!important;height:38px!important;flex-basis:38px!important}.cin-intro-person .dialogue-portrait.child{width:34px!important;height:34px!important;flex-basis:34px!important}.cin-intro-person .intro-bubble{bottom:58px!important;left:50%!important;translate:-50% 0!important;max-width:88px!important;min-width:78px!important;font-size:8.5px!important;padding:5px 6px!important}.cin-intro-person .intro-bubble:after{left:var(--cin-tail-x,50%)!important}.cin-intro-person.intro-4 .intro-bubble,.cin-intro-person.intro-5 .intro-bubble{left:50%!important;translate:-50% 0!important}.cin-intro-person.intro-4 .intro-bubble:after,.cin-intro-person.intro-5 .intro-bubble:after{left:var(--cin-tail-x,50%)!important}
+
+/* Opening beat safe zones. Dialogue gets its own lower dock; scene focal objects move above it rather than being covered. */
+.cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-home-reference-wrap{transform:translateY(-37px) scale(.79);transform-origin:50% 48%}
+.cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-cast-intro{background:linear-gradient(180deg,transparent 0 53%,rgba(222,238,237,.28) 72%,rgba(249,242,220,.45) 100%)}
+.cinematic-overlay[data-cinematic="opening"][data-beat="4"] .cin-islands.waykeeper-map{transform:translateY(-21px) scale(.88);transform-origin:50% 42%}.cinematic-overlay[data-cinematic="opening"][data-beat="4"] .cin-compass{top:40%!important;scale:.86!important}
+.cinematic-overlay[data-cinematic="opening"][data-beat="5"] .cin-helper-story{inset:-9px 13px 55px!important;margin:11px!important;transform:scale(.9);transform-origin:50% 30%}
+.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{transform:translateY(-22px) scale(.89);transform-origin:50% 25%}
+.cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-home-reference-wrap{transform:translateY(-48px) scale(.73);transform-origin:50% 45%}.cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-breakfast-route{transform:translateY(-40px) scale(.76);transform-origin:50% 42%}
+
+/* Keep dialogue dock readable without becoming an opaque curtain across scenery. */
+.cinematic-overlay[data-cinematic="opening"] .cin-dialogue-layer:not(.cin-cast-intro){background:linear-gradient(180deg,transparent 0 54%,rgba(232,244,242,.1) 67%,rgba(250,244,226,.22) 100%)!important}
+
+@media(max-width:430px){
+ .cin-dialogue-speaker{bottom:5px!important}.cin-dialogue-speaker .cin-speech-bubble{bottom:50px!important}.speaker-count-3.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:50px!important}
+ .speaker-count-4 .cin-speech-bubble{max-width:88px!important;min-width:70px!important;padding:5px 6px!important;font-size:8.5px!important;line-height:1.16!important}.speaker-count-4.speaker-1{left:12.7%!important}.speaker-count-4.speaker-4{left:87.3%!important}
+ .cin-intro-person .intro-bubble{bottom:54px!important;max-width:84px!important;min-width:72px!important;font-size:8.2px!important}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-home-reference-wrap{transform:translateY(-40px) scale(.76)}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="5"] .cin-helper-story{inset:-5px 9px 51px!important;transform:scale(.88)}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{transform:translateY(-24px) scale(.86)}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-home-reference-wrap{transform:translateY(-51px) scale(.69)}
+}
+@media(max-height:720px){
+ .cin-dialogue-speaker{bottom:2px!important}.cin-dialogue-speaker .cin-speech-bubble{bottom:43px!important}.speaker-count-3.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-2 .cin-speech-bubble,.speaker-count-4.speaker-4 .cin-speech-bubble{bottom:43px!important}.cin-dialogue-speaker .dialogue-portrait{width:34px!important;height:34px!important;flex-basis:34px!important}.cin-dialogue-speaker .dialogue-portrait.child{width:30px!important;height:30px!important;flex-basis:30px!important}.cin-speaker-name{font-size:6.8px!important;margin-top:2px!important}
+ .cin-cast-intro{padding-bottom:3px!important}.cin-intro-person .dialogue-portrait{width:31px!important;height:31px!important;flex-basis:31px!important}.cin-intro-person .dialogue-portrait.child{width:28px!important;height:28px!important;flex-basis:28px!important}.cin-intro-person .intro-bubble{bottom:44px!important;font-size:7.7px!important;max-width:80px!important;min-width:68px!important}.cin-intro-person>small{display:none!important}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="2"] .cin-home-reference-wrap{transform:translateY(-33px) scale(.68)}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="4"] .cin-islands.waykeeper-map{transform:translateY(-19px) scale(.8)}.cinematic-overlay[data-cinematic="opening"][data-beat="4"] .cin-compass{top:36%!important;scale:.74!important}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="5"] .cin-helper-story{inset:-12px 8px 45px!important;transform:scale(.79)}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{transform:translateY(-29px) scale(.76)}
+ .cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-home-reference-wrap{transform:translateY(-44px) scale(.61)}.cinematic-overlay[data-cinematic="opening"][data-beat="7"] .cin-breakfast-route{transform:translateY(-37px) scale(.66)}
+}
+@media(prefers-reduced-motion:reduce){.cinematic-stage .cin-route-cargo i,.cin-tree-crown,.cin-tree-trunk{transition:none!important;animation:none!important}}
