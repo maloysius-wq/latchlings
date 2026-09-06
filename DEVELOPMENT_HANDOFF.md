@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-05 — Nest and victory SFX loudness normalization
+
+**Status: IN PROGRESS**
+
+**User goal:** Normalize the successful-nest and level-win sound effects because they are extremely loud and piercing relative to the rest of the game mix.
+
+**Implementation plan:** Tune only the event-specific playback for the nest-capture and ordinary level-clear cues in `sfx400.js`, preserving the master Sound Effects setting and every unrelated cue. Account for the fact that the final nest currently triggers `capture.wav` and then `level-clear.wav` shortly afterward, so the win moment can stack two bright confirmation sounds. Reduce their event gains to sit near the restrained movement/UI mix and increase the level-clear delay enough to avoid piling its main transient directly on top of the nest-capture transient. Do not alter source WAV files, pitch, playback rate, campaign rules, or gameplay timing.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and `sfx400.js`; a temporary self-removing GitHub Actions validation workflow if needed. No campaign, story, visual, music, or source-audio asset changes are expected.
+
+**Validation plan:** Verify the exact runtime definitions and call sequence, statically assert the reduced capture/clear gains and non-overlapping clear delay, run a browser smoke test that loads production scripts without console/page errors and exercises the exposed `LatchlingsSFX` methods, and confirm no unrelated SFX definitions changed. Because headless CI cannot make a trustworthy psychoacoustic judgment, use the existing mix levels and the known 324 ms capture duration as the engineering reference, with conservative gain reductions rather than muting either cue.
+
+**Deployment plan:** Deploy the accepted product commit through GitHub Pages, verify the deployment succeeds, remove every temporary workflow, confirm `validate-repository-access-guard.yml` is the only durable workflow, then close this same handoff entry as COMPLETED/PARTIAL/BLOCKED with exact values, commits, validation, deployment run, remaining risk, and next action.
+
+---
+
 ### 2026-09-05 — Opening cinematic geometry, player-facing story rail, and board-first visual variety
 
 **Status: COMPLETED**
