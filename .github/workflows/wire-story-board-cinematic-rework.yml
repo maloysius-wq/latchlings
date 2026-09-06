@@ -1,0 +1,56 @@
+name: Wire Story Board and Cinematic Rework
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Wire replacement presentation and clean player copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def repl(path, old, new, count=1):
+              p=Path(path); text=p.read_text()
+              if old not in text:
+                  raise SystemExit(f'missing replacement target in {path}: {old[:90]!r}')
+              text=text.replace(old,new,count)
+              p.write_text(text)
+
+          repl('index.html','<link rel="stylesheet" href="style400-story-theme.css">\n<link rel="stylesheet" href="style400-level-variation.css">','<link rel="stylesheet" href="style400-story-theme.css">\n<link rel="stylesheet" href="style400-story-rail-board.css">')
+          repl('index.html','<link rel="stylesheet" href="style400-cinematics-dialogue.css">','<link rel="stylesheet" href="style400-cinematics-dialogue.css">\n<link rel="stylesheet" href="style400-cinematics-geometry.css">')
+          repl('index.html','<script src="story-theme400.js"></script>\n<script src="level-variation400.js"></script>','<script src="story-theme400.js"></script>\n<script src="gameplay-story-rail400.js"></script>\n<script src="cinematic-geometry400.js"></script>')
+
+          repl('game400-a.js',"function showError(e){const d=document.getElementById('debug');d.style.display='block';d.textContent='Prototype error: '+(e&&e.stack?e.stack:e)}","function showError(e){const d=document.getElementById('debug');d.style.display='block';d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}")
+
+          repl('cinematic-dialogue400.js',"['Narrator','Little Home is the first place where the odd little failures get compared instead of shrugged off: Pippa tracks broken routines, Rowan tracks the island’s drift, Bramble carries reports between neighbors, and Pip and Tansy keep noticing the clues adults step past. Together, their notes reveal one shared problem.'],\n  ['Pippa','We can tell you what keeps going wrong.'],\n  ['Rowan','You can help us read the route underneath it.']","['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.'],\n  ['Pippa','We can show you where the routes keep slipping.'],\n  ['Rowan','You can help us find where they should go now.']")
+          repl('cinematic-dialogue400.js',"['Narrator','Little Home becomes a coordination point, not a command post. Every community knows its own paths best. Neighbors volunteer observations, route crews, travel windows, and hands on their own Skyway hardware because every repaired route helps somebody get home.'],\n  ['Bramble','We connect the reports. Everybody brings the part they know.']","['Narrator','Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.'],\n  ['Bramble','Everybody knows a piece of the route. We just need to put the pieces together.']")
+          repl('cinematic-dialogue400.js',"['Narrator','Start small, Waykeeper. Fix the morning route. Then help Little Home compare what it learns with the neighbors who are already working on their own pieces of the Skyway.'],","['Narrator','Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.'],")
+
+          repl('cinematics400.js',"{label:'Little Home',visual:'little-home',lines:[['Narrator','This is Little Home. Pippa keeps the garden organized. Bramble carries half the errands on the island. Rowan watches the island itself. Pip and Tansy turn almost anything into an expedition.'],['Tansy','It was one basket.'],['Pip','It was an expedition basket.']]}","{label:'Little Home',visual:'little-home',lines:[['Narrator','This is Little Home, a shared household where five very different sets of eyes keep catching different parts of the same day.'],['Tansy','It was one basket.'],['Pip','It was an expedition basket.']]}")
+          repl('cinematics400.js',"{label:'You Are the Waykeeper',visual:'waykeeper',lines:[['Pippa','That is where you come in. You are the Waykeeper.'],['Rowan','You do not tell the islands where to be. You watch where they are, then find a route that works now.']]}","{label:'You Are the Waykeeper',visual:'waykeeper',lines:[['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.'],['Pippa','We can show you where the routes keep slipping.'],['Rowan','You can help us find where they should go now.']]}")
+          repl('cinematics400.js',"{label:'The Helper Crew',visual:'helper-crew',lines:[['Bramble','When somebody needs a route fixed, the whole island pitches in. The Latchlings on your board are the helper crew working that route with you.'],['Narrator','The person in the story gives the route its reason. The Latchlings on the board are the crew helping make it possible.']]}","{label:'The Helper Crew',visual:'helper-crew',lines:[['Narrator','Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.'],['Bramble','Everybody knows a piece of the route. We just need to put the pieces together.']]}")
+          repl('cinematics400.js',"['Narrator','Start small, Waykeeper. Fix the morning route. Then find out why the Skyway stopped keeping up.']","['Narrator','Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.']")
+
+          repl('CINEMATICS_SCRIPT.md',"> Little Home is the first place where the odd little failures get compared instead of shrugged off: Pippa tracks broken routines, Rowan tracks the island’s drift, Bramble carries reports between neighbors, and Pip and Tansy keep noticing the clues adults step past. Together, their notes reveal one shared problem.","> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.")
+          repl('CINEMATICS_SCRIPT.md',"> We can tell you what keeps going wrong.","> We can show you where the routes keep slipping.")
+          repl('CINEMATICS_SCRIPT.md',"> You can help us read the route underneath it.","> You can help us find where they should go now.")
+          repl('CINEMATICS_SCRIPT.md',"> Little Home becomes a coordination point, not a command post. Every community knows its own paths best. Neighbors volunteer observations, route crews, travel windows, and hands on their own Skyway hardware because every repaired route helps somebody get home.","> Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.")
+          repl('CINEMATICS_SCRIPT.md',"> We connect the reports. Everybody brings the part they know.","> Everybody knows a piece of the route. We just need to put the pieces together.")
+          repl('CINEMATICS_SCRIPT.md',"> Start small, Waykeeper. Fix the morning route. Then help Little Home compare what it learns with the neighbors who are already working on their own pieces of the Skyway.","> Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.")
+          PY
+          rm -f .github/workflows/wire-story-board-cinematic-rework.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html game400-a.js cinematic-dialogue400.js cinematics400.js CINEMATICS_SCRIPT.md .github/workflows/wire-story-board-cinematic-rework.yml
+          git commit -m "Wire player story rail and cinematic geometry"
+          git push
