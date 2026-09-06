@@ -1,0 +1,174 @@
+name: Final Visual Story Board Audit
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Static scope checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find .github/workflows -maxdepth 1 -type f | sed 's#^./##' | sort | wc -l)" -ge 2
+          ! grep -Eq 'style400-level-variation\.css|level-variation400\.js' index.html
+          ! grep -Eiq 'prototype error|command post|command center|implementation choice|development choice|requester|you did.?n.t want|we are not going to' index.html story-grounding400.js cinematics400.js cinematic-dialogue400.js gameplay-story-rail400.js game400-a.js game400-b.js
+          git diff --exit-code d8db67e06c63c22a6caef83d124d8856deaf91c6 -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js game400-b.js
+      - name: Install browser tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python3 -m pip install --quiet pillow
+      - name: Start server
+        shell: bash
+        run: |
+          python3 -m http.server 8080 >/tmp/latchlings-server.log 2>&1 &
+          sleep 2
+      - name: Run final browser audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/final-audit.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const OUT='final-visual-audit';
+          fs.mkdirSync(`${OUT}/gameplay`,{recursive:true});
+          fs.mkdirSync(`${OUT}/cinematic`,{recursive:true});
+          const fail=m=>{throw new Error(m)};
+          const rect=r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height});
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:390,height:844}});
+          await context.addInitScript(()=>{
+            const storySeen={};for(let i=1;i<=400;i++)storySeen[i]=1;
+            localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(storySeen));
+            localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));
+            localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{}}));
+          });
+          const page=await context.newPage();
+          page.setDefaultTimeout(12000);
+          const errors=[];
+          page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+          page.on('console',m=>{if(m.type()==='error'&&!/favicon|ERR_ABORTED|Failed to load resource/i.test(m.text()))errors.push('console: '+m.text())});
+          await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>window.LatchlingsStoryRail&&window.LatchlingsCinematicGeometry&&window.LatchlingsCinematicDialogue&&window.LatchlingsCinematics&&typeof startLevel==='function');
+
+          const phaseLooks=new Map(),gameplay=[];let railHeight=null;
+          for(let level=1;level<=50;level++){
+            await page.evaluate(n=>{
+              if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true);
+              window.LatchlingsStoryTheme?.close(false);
+              startLevel(n);
+            },level);
+            await page.waitForFunction(n=>document.body.dataset.screen==='game'&&document.getElementById('mechanicNote')?.dataset.storyRailLevel===String(n),level);
+            const d=await page.evaluate(()=>{
+              const game=document.getElementById('game'),rail=document.querySelector('.story-level-rail'),board=document.getElementById('board'),cell=board.querySelector('.cell'),props=document.getElementById('levelProps'),br=board.getBoundingClientRect();
+              return {level:+document.getElementById('levelTitle').textContent.replace(/\D/g,''),phase:+game.dataset.storyPhase,slot:+game.dataset.storySlot,milestone:game.dataset.storyMilestone,railHeight:rail?.getBoundingClientRect().height||0,speaker:document.querySelector('.story-rail-person>strong')?.textContent||'',line:document.querySelector('.story-rail-main p')?.innerText||'',count:document.querySelector('.story-rail-count')?.textContent||'',movement:document.querySelector('.story-rail-movement')?.textContent||'',boardColor:getComputedStyle(board).backgroundColor,border:getComputedStyle(board).borderColor,shadow:getComputedStyle(board).boxShadow,bg:getComputedStyle(board).backgroundImage,cellRadius:getComputedStyle(cell).borderRadius,cellBorder:getComputedStyle(cell).borderColor,overflow:document.documentElement.scrollWidth-window.innerWidth,board:{left:br.left,right:br.right,top:br.top,bottom:br.bottom},oldEnv:!!document.getElementById('levelEnvironment'),propsVisible:!!props&&getComputedStyle(props).display!=='none'&&!props.hidden,medallions:document.querySelectorAll('.lv-subject-medallion,.level-prop').length,tip:!!document.querySelector('.mechanic-chip-label'),text:game.innerText};
+            });
+            const phase=Math.floor((level-1)/10)+1,slot=(level-1)%10+1;
+            if(d.level!==level||d.phase!==phase||d.slot!==slot)fail(`state mismatch ${level}: ${JSON.stringify(d)}`);
+            if(d.milestone!==(level%10===0?'true':'false'))fail(`milestone mismatch ${level}`);
+            if(d.oldEnv||d.propsVisible||d.medallions||d.tip)fail(`rejected presentation visible ${level}: ${JSON.stringify(d)}`);
+            if(!d.speaker||!d.line||!d.movement||d.count!==`${level} / 50`)fail(`rail incomplete ${level}: ${JSON.stringify(d)}`);
+            railHeight??=d.railHeight;if(Math.abs(d.railHeight-railHeight)>1.5)fail(`rail height drift ${level}: ${d.railHeight} vs ${railHeight}`);
+            if(d.overflow>1||d.board.left<0||d.board.right>390.5)fail(`gameplay overflow ${level}: ${JSON.stringify(d)}`);
+            if(/prototype error|command post|command center|implementation choice|development choice|requester|you did.?n.t want|we are not going to/i.test(d.text))fail(`development copy visible ${level}: ${d.text}`);
+            if([1,11,21,31,41].includes(level))phaseLooks.set(phase,`${d.boardColor}|${d.border}|${d.shadow}|${d.bg}|${d.cellRadius}|${d.cellBorder}`);
+            if([1,10,11,20,21,30,31,40,41,50].includes(level))await page.screenshot({path:`${OUT}/gameplay/level-${String(level).padStart(2,'0')}.png`,fullPage:false,animations:'disabled'});
+            gameplay.push(d);
+          }
+          if(new Set(phaseLooks.values()).size!==5)fail(`Sunpetal phases not visually distinct: ${JSON.stringify([...phaseLooks])}`);
+          for(const level of [51,101,151,201,251,301,351]){
+            await page.evaluate(n=>{if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true);window.LatchlingsStoryTheme?.close(false);startLevel(n)},level);
+            await page.waitForFunction(n=>document.body.dataset.screen==='game'&&document.getElementById('mechanicNote')?.dataset.storyRailLevel===String(n),level);
+            const ch=Math.ceil(level/50);const t=await page.locator('.story-level-rail').innerText();if(!t||!/\d+ \/ 50/.test(t))fail(`chapter ${ch} story rail missing`);
+            await page.screenshot({path:`${OUT}/gameplay/chapter-${ch}.png`,fullPage:false,animations:'disabled'});
+          }
+          fs.writeFileSync(`${OUT}/gameplay-manifest.json`,JSON.stringify({phaseLooks:[...phaseLooks],levels:gameplay},null,2));
+
+          await page.evaluate(()=>{if(window.LatchlingsCinematics.active)window.LatchlingsCinematics.finish(true);window.LatchlingsCinematics.show('opening',{markSeen:false})});
+          await page.waitForFunction(()=>document.getElementById('cinematicOverlay')?.classList.contains('show'));
+          const opening=[];
+          for(let idx=0;idx<7;idx++){
+            if(idx)await page.evaluate(()=>window.LatchlingsCinematics.next());
+            await page.waitForFunction(n=>window.LatchlingsCinematics.beat===n&&document.getElementById('cinematicOverlay')?.dataset.beat===String(n+1),idx);
+            await page.waitForTimeout(650);
+            const d=await page.evaluate(()=>{
+              const stage=document.getElementById('cinematicStage'),sr=stage.getBoundingClientRect(),pairs=window.LatchlingsCinematicGeometry.ROUTE_PAIRS;
+              const groups=[...stage.querySelectorAll(':scope > .cin-dialogue-layer')].map(layer=>[...layer.querySelectorAll('.cin-speech-bubble')].map(b=>{const r=b.getBoundingClientRect(),p=b.closest('[data-speaker]')?.querySelector('.dialogue-portrait')?.getBoundingClientRect(),tail=parseFloat(getComputedStyle(b).getPropertyValue('--cin-tail-x'))||50,px=p?p.left+p.width/2:null,tailX=r.left+r.width*tail/100;return {speaker:b.closest('[data-speaker]')?.dataset.speaker||'',rect:rect(r),portrait:p?rect(p):null,tailX,tailError:px==null?999:Math.abs(tailX-px)}}));
+              const routeSets=[...stage.querySelectorAll('.cin-islands')].map(islands=>{const geoms=islands.__latchRouteGeometry||[];return geoms.map((g,i)=>{if(!g)return null;const a=islands.querySelector(`:scope > .cin-island.${pairs[i][0]}`)?.getBoundingClientRect(),b=islands.querySelector(`:scope > .cin-island.${pairs[i][1]}`)?.getBoundingClientRect(),p1={x:sr.left+g.x1,y:sr.top+g.y1},p2={x:sr.left+g.x2,y:sr.top+g.y2},inside=(p,r)=>!!r&&p.x>=r.left-2&&p.x<=r.right+2&&p.y>=r.top-2&&p.y<=r.bottom+2;return {startInside:inside(p1,a),endInside:inside(p2,b),g}}).filter(Boolean)});
+              const trees=[...stage.querySelectorAll('.prop-tree[data-detailed-tree="true"]')].map(t=>({crowns:t.querySelectorAll('.cin-tree-crown').length,wood:getComputedStyle(t.querySelector('.cin-tree-trunk')).backgroundImage,grass:getComputedStyle(t.querySelector('.cin-tree-crown')).backgroundImage}));
+              const bubbles=[...stage.querySelectorAll('.cin-speech-bubble')].map(x=>rect(x.getBoundingClientRect()));
+              return {beat:window.LatchlingsCinematics.beat+1,groups,routeSets,trees,bubbles,stage:rect(sr),overflow:document.documentElement.scrollWidth-window.innerWidth,narratorLabel:/Narrator/i.test(document.getElementById('cinematicLines')?.textContent||''),copy:document.getElementById('cinematicOverlay')?.innerText||''};
+            });
+            if(d.overflow>1||d.narratorLabel)fail(`opening overflow/narrator ${idx+1}: ${JSON.stringify(d)}`);
+            if(/prototype error|command post|command center|implementation choice|development choice|requester|you did.?n.t want|we are not going to/i.test(d.copy))fail(`opening development copy ${idx+1}`);
+            for(const group of d.groups){if(group.length>1){const hs=group.map(x=>x.rect.height),tops=group.map(x=>x.rect.top),bottoms=group.map(x=>x.rect.bottom);if(Math.max(...hs)-Math.min(...hs)>1.5||Math.max(...tops)-Math.min(...tops)>2||Math.max(...bottoms)-Math.min(...bottoms)>2)fail(`speech band mismatch beat ${idx+1}: ${JSON.stringify(group)}`)}if(group.some(x=>x.tailError>3.5))fail(`speech tail misses speaker beat ${idx+1}: ${JSON.stringify(group)}`)}
+            if(d.routeSets.flat().some(x=>!x.startInside||!x.endInside))fail(`detached route beat ${idx+1}: ${JSON.stringify(d.routeSets)}`);
+            if([0,2,3].includes(idx)&&(!d.trees.length||d.trees.some(t=>t.crowns!==3||!/wood\.jpg/.test(t.wood)||!/grass\.jpg/.test(t.grass))))fail(`tree material regression beat ${idx+1}: ${JSON.stringify(d.trees)}`);
+            if(d.bubbles.some(r=>r.left<d.stage.left-1||r.right>d.stage.right+1||r.top<d.stage.top-1||r.bottom>d.stage.bottom+1))fail(`bubble outside stage beat ${idx+1}: ${JSON.stringify(d)}`);
+            if(idx===2){
+              const samples=[];
+              for(let s=0;s<3;s++){await page.waitForTimeout(300);samples.push(await page.evaluate(()=>{const stage=document.getElementById('cinematicStage'),sr=stage.getBoundingClientRect(),cargo=stage.querySelector('.cin-route-cargo'),geoms=cargo?.__latchRouteGeometry||[],dist=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l)),x=a.x+t*dx,y=a.y+t*dy;return Math.hypot(p.x-x,p.y-y)};return [...(cargo?.querySelectorAll('i')||[])].map((el,j)=>{const r=el.getBoundingClientRect(),g=geoms[j],p={x:r.left+r.width/2-sr.left,y:r.top+r.height/2-sr.top};return {x:p.x,y:p.y,d:g?dist(p,{x:g.x1,y:g.y1},{x:g.x2,y:g.y2}):999}})}));}
+              if(samples.flat().some(x=>x.d>3))fail(`cargo left route: ${JSON.stringify(samples)}`);
+              if(!samples[0].some((p,j)=>Math.hypot(p.x-samples[2][j].x,p.y-samples[2][j].y)>5))fail(`cargo did not move: ${JSON.stringify(samples)}`);
+              d.cargoSamples=samples;
+            }
+            await page.screenshot({path:`${OUT}/cinematic/opening-${String(idx+1).padStart(2,'0')}.png`,fullPage:false,animations:'disabled'});
+            opening.push(d);
+          }
+          fs.writeFileSync(`${OUT}/opening-manifest.json`,JSON.stringify(opening,null,2));
+          await page.evaluate(()=>window.LatchlingsCinematics.finish(false));
+
+          const compact=await browser.newContext({viewport:{width:390,height:700},reducedMotion:'reduce'});
+          await compact.addInitScript(()=>{localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1}));localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(Object.fromEntries(Array.from({length:400},(_,i)=>[i+1,1]))));localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{}}))});
+          const cp=await compact.newPage();cp.setDefaultTimeout(12000);await cp.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});await cp.waitForFunction(()=>window.LatchlingsCinematics&&window.LatchlingsCinematicGeometry&&typeof startLevel==='function');await cp.evaluate(()=>window.LatchlingsCinematics.show('opening',{markSeen:false}));for(let i=0;i<6;i++){await cp.evaluate(()=>window.LatchlingsCinematics.next());await cp.waitForTimeout(120)}await cp.waitForFunction(()=>document.getElementById('cinematicOverlay')?.dataset.beat==='7');await cp.waitForTimeout(500);const compactData=await cp.evaluate(()=>{const stage=document.getElementById('cinematicStage').getBoundingClientRect(),b=[...document.querySelectorAll('#cinematicStage .cin-speech-bubble')].map(x=>rect(x.getBoundingClientRect()));return {stage:rect(stage),b,overflow:document.documentElement.scrollWidth-window.innerWidth}});if(compactData.overflow>1||compactData.b.some(r=>r.left<compactData.stage.left-1||r.right>compactData.stage.right+1||r.top<compactData.stage.top-1||r.bottom>compactData.stage.bottom+1))fail(`compact opening regression: ${JSON.stringify(compactData)}`);await cp.screenshot({path:`${OUT}/cinematic/opening-07-compact.png`,fullPage:false,animations:'disabled'});await compact.close();
+          if(errors.length)fail(errors.join('\n'));
+          await browser.close();
+          console.log('FINAL_VISUAL_AUDIT_OK');
+          EOF
+          node /tmp/final-audit.mjs
+      - name: Build contact sheets
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          import glob,os,math
+          os.makedirs('final-visual-audit/contact-sheets',exist_ok=True)
+          def sheet(files,out,cols,w):
+              if not files:return
+              h=int(w*844/390);rows=math.ceil(len(files)/cols);canvas=Image.new('RGB',(cols*w,rows*(h+18)),'white');draw=ImageDraw.Draw(canvas)
+              for i,f in enumerate(files):
+                  im=Image.open(f).convert('RGB');im.thumbnail((w,h));x=(i%cols)*w;y=(i//cols)*(h+18);canvas.paste(im,(x,y));draw.text((x+3,y+h+2),os.path.basename(f).replace('.png',''),fill='black')
+              canvas.save(out,quality=92)
+          sheet(sorted(glob.glob('final-visual-audit/gameplay/level-*.png')),'final-visual-audit/contact-sheets/sunpetal-boundaries.jpg',5,156)
+          sheet(sorted(glob.glob('final-visual-audit/gameplay/chapter-*.png')),'final-visual-audit/contact-sheets/chapter-rails.jpg',4,156)
+          sheet(sorted(glob.glob('final-visual-audit/cinematic/opening-??.png')),'final-visual-audit/contact-sheets/opening.jpg',4,195)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-visual-story-board-audit
+          path: final-visual-audit
+          if-no-files-found: warn
+      - name: Self-remove audit workflow
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/final-visual-story-board-audit.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/final-visual-story-board-audit.yml
+          if ! git diff --cached --quiet; then git commit -m "Remove final visual story board audit" && git push; fi
