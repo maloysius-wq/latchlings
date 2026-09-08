@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-07 — Remove supplemental green phase copy from level story rail
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Remove the green supplemental sentence from the plot/story description at the top of every level, including the recurring Chapter 1 line about the route/detour moving again. Keep the actual level-specific character line and the rest of the story rail intact.
 
@@ -50,6 +50,17 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Staticaly confirm the story rail no longer emits a `<small>` phase sentence or appends `phaseLine` to its aria-label, while level-specific character copy remains. Run a browser smoke check on representative levels across multiple chapters to confirm the green supplemental text is absent and the rail still renders correctly without overflow or console errors.
 
 **Deployment plan:** Deploy the clean accepted state through GitHub Pages, verify success, remove all temporary workflows, confirm `validate-repository-access-guard.yml` is again the only durable workflow, then close this same entry with exact commit/run details.
+
+
+#### Completion summary
+
+**Implementation:** Removed the supplemental per-phase `PHASE_LINES` system from `gameplay-story-rail400.js`, including the Chapter 1 sentence `The detour moved again; we’ll work around it.` and all equivalent green phase sentences in every chapter. The visible plot line now contains only the authored level-specific character sentence from `LINES`; the accessibility label likewise contains only that character sentence plus chapter progress. The named speaker portrait, story title, level count, movement label, five-step progress rail, chapter theming, and all gameplay/campaign behavior remain unchanged. Product commit: `f61ef6910553ebdb8d81b68be34faad1cfe58bb0` (`Remove supplemental phase copy from story rail`).
+
+**Validation:** The first implementation-helper run `34174511840` failed before committing product code because its final assertion correctly noticed that `PHASE_LINES` was still exported by `window.LatchlingsStoryRail`; no partial product change was pushed. The corrected helper run `34174564092` removed the data, render binding, visible `<small>` phase copy, aria-label copy, and stale export, then self-cleaned. Dedicated validation run `34174657896` passed static assertions and a Chromium sweep of **all 400 levels**. Every level rendered a story rail whose plot paragraph exactly matched the intended level-specific character line, contained no supplemental `<small>` element, contained neither the removed detour sentence nor `work around it`, and had no horizontal rail overflow. Artifact `10036842372` (`story-rail-copy-removal-spot-checks`) captured Levels 11 and 211 at 390×844. Manual inspection confirmed both rails are clean and balanced: only the main character sentence remains in the plot area, with the movement/progress row intact beneath it.
+
+**Deployment and hygiene:** Validation self-removed on clean accepted commit `b87dfd48f5ee23b1751ee82f80e19ad94dd7d0a4`. GitHub Pages run `34174703073` completed successfully for that exact clean state. `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow before this closeout helper was created; this helper self-removes after recording the completion.
+
+**Remaining risk / next action:** No known functional or visual blocker remains. The removal is global across the story rail renderer, so future levels continue to show only their level-specific character line unless a new supplemental copy element is intentionally introduced later.
 
 ---
 
