@@ -1,0 +1,79 @@
+name: Refine Early Story Cadence
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refine-early-story-cadence.yml'
+permissions:
+  contents: write
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Update in-progress scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          old='Levels 17–20 confirm the route markers themselves are intact while the old map is stale, then point naturally toward Lanternwood and Chapter 2.'
+          new='Levels 17–20 confirm the route markers themselves are intact while the old map is stale, ending with a firm diagnosis and a clear next objective: stabilize the rest of Sunpetal using routes based on where the islands are now. Lanternwood remains a later chapter transition rather than being announced prematurely at Level 20.'
+          assert old in s
+          s=s.replace(old,new,1)
+          old='`style400-story-rail-board.css`, `cinematics400.js`, `CINEMATICS_SCRIPT.md`, `story400.js`, and `STORY_BIBLE.md`.'
+          new='`style400-story-rail-board.css`, `cinematics400.js`, `cinematic-dialogue400.js`, `CINEMATICS_SCRIPT.md`, `story400.js`, and `STORY_BIBLE.md`.'
+          assert old in s
+          s=s.replace(old,new,1)
+          note='\n**Scope refinement:** Visual review of the first implementation caught two narrative issues before acceptance: the production cinematic dialogue layer was still overriding the strengthened opening copy, and the initial Level 19–20 draft jumped toward Lanternwood too early despite Chapter 1 continuing through Level 50. The runtime override is now included in scope, and Levels 19–20 will instead close the investigation by diagnosing a stale map and committing to stabilize Sunpetal.\n'
+          anchor='**Validation plan:**'
+          assert anchor in s
+          s=s.replace(anchor,note+'\n'+anchor,1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Refine early story progression scope"
+          git push
+      - name: Refine Levels 19 and 20
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('gameplay-story-rail400.js')
+          s=p.read_text()
+          old=" {speaker:'Pip',line:'Lanternwood sent a request. Their paths only work when neighbors help each other stop.'},\n {speaker:'Tansy',line:'Sunpetal is connected again. Lanternwood is waiting, and now we know what to bring.',report:true}"
+          new=" {speaker:'Pip',line:'I checked three more old markers. Every one points to where an island used to be, never where it is now.'},\n {speaker:'Tansy',line:'We have our answer: the Skyway is not broken. Its map is old. Now we can rebuild Sunpetal around where everyone is today.',report:true}"
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          p=Path('STORY_BIBLE.md')
+          s=p.read_text()
+          old="- **17–20:** the household realizes the hardware is intact but the map is stale. Shared reports make repair faster, and Lanternwood's request points directly toward the neighbor-as-stopper idea of Chapter 2."
+          new="- **17–20:** the household proves the hardware is intact but the map is stale. Shared reports make repair faster, more old markers confirm the diagnosis, and Level 20 turns the mystery into a concrete objective: stabilize Sunpetal using routes based on where the islands are now."
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gameplay-story-rail400.js STORY_BIBLE.md
+          git commit -m "Keep early story focused on Sunpetal"
+          git push
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/refine-early-story-cadence.yml
+          git add .github/workflows/refine-early-story-cadence.yml
+          git commit -m "Remove early story cadence helper"
+          git push
