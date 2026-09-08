@@ -1,0 +1,102 @@
+name: Audit Early Story Final Visual Fit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-early-story-final-visual.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          rail=Path('gameplay-story-rail400.js').read_text()
+          assert 'Three more old markers point to where the islands used to be. Yesterday’s map is the problem.' in rail
+          assert 'We have our answer: the Skyway works, but its map is old. Now we rebuild Sunpetal for today.' in rail
+          assert rail.count('report:true') == 5
+          assert 'one strange morning or something much larger' in Path('cinematics400.js').read_text()
+          assert 'one strange morning or something much larger' in Path('cinematic-dialogue400.js').read_text()
+          print('EARLY_STORY_FINAL_INTEGRITY_OK')
+          PY
+          if git diff --name-only 4054bf95a337b888be11e9af92e81e100771a03d HEAD | grep -Eq '^campaign400-[1-8]\.js$'; then
+            echo 'Campaign data changed unexpectedly'; exit 1
+          fi
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Audit all first twenty story rails
+        shell: bash
+        run: |
+          python3 -m http.server 4173 >/tmp/story-fit-http.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          mkdir -p early-story-final-visual
+          cat > early-story-final-visual/audit.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+          const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+          await page.addInitScript(()=>{
+            localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{}}));
+            localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1}));
+          });
+          await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+          await page.evaluate(()=>{try{document.startViewTransition=undefined}catch(_){}});
+          const reportLevels=new Set([4,8,12,16,20]);
+          const manifest=[];
+          for(let level=1;level<=21;level++){
+            await page.evaluate(l=>window.startLevel(l),level);await page.waitForTimeout(120);
+            await page.evaluate(()=>{const o=document.getElementById('storyCardOverlay');if(o){o.classList.remove('show');o.setAttribute('aria-hidden','true');o.style.display='none'}});
+            const d=await page.evaluate((l)=>{
+              const host=document.getElementById('mechanicNote'),rail=host.querySelector('.story-level-rail'),span=host.querySelector('.story-rail-main p span'),p=span?.parentElement;
+              const rr=rail?.getBoundingClientRect(),sr=span?.getBoundingClientRect(),pr=p?.getBoundingClientRect();
+              const range=document.createRange();if(span){range.selectNodeContents(span)}const tr=span?range.getBoundingClientRect():null;
+              const expected=l<=20?window.LatchlingsStoryRail.EARLY_STORY[l-1]:null;
+              return {level:l,line:span?.textContent?.trim()||'',expected:expected?.line||null,speaker:host.querySelector('.story-rail-person>strong')?.textContent?.trim()||'',expectedSpeaker:expected?.speaker||null,report:!!host.querySelector('.story-rail-report'),railH:rr?.height||0,railLeft:rr?.left||0,railRight:rr?.right||0,spanH:sr?.height||0,textH:tr?.height||0,pH:pr?.height||0,scrollW:document.documentElement.scrollWidth,w:innerWidth};
+            },level);
+            if(level<=20){
+              if(d.line!==d.expected||d.speaker!==d.expectedSpeaker)throw new Error(`Level ${level} story mismatch`);
+              if(d.report!==reportLevels.has(level))throw new Error(`Level ${level} report state mismatch`);
+              if(d.textH>d.spanH+1.25)throw new Error(`Level ${level} story text clipped: text ${d.textH} > span ${d.spanH}`);
+            }else if(d.report)throw new Error('Level 21 inherited report state');
+            if(d.railH<90||d.railH>98||d.railLeft<-1||d.railRight>d.w+1||d.scrollW>d.w)throw new Error(`Level ${level} rail geometry regression ${JSON.stringify(d)}`);
+            manifest.push(d);
+            if(level<=20)await page.locator('#mechanicNote').screenshot({path:`early-story-final-visual/rail-${String(level).padStart(2,'0')}.png`});
+          }
+          fs.writeFileSync('early-story-final-visual/manifest.json',JSON.stringify(manifest,null,2));
+          if(errors.length)throw new Error('Page errors: '+errors.join(' | '));
+          console.log('EARLY_STORY_FIRST20_VISUAL_FIT_OK');
+          await browser.close();
+          JS
+          node early-story-final-visual/audit.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: early-story-first20-final-visual
+          path: early-story-final-visual
+          if-no-files-found: error
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --ff-only origin main
+          rm -f .github/workflows/audit-early-story-final-visual.yml
+          git add .github/workflows/audit-early-story-final-visual.yml
+          git commit -m "Remove final early story visual auditor"
+          git push
