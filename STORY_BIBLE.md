@@ -232,7 +232,7 @@ The first twenty levels should not feel like twenty unrelated errands. They are 
 - **5–8:** neighboring notes arrive with the same problem. By Level 8, Little Home becomes the obvious place to leave route reports because its residents are already comparing several kinds of evidence.
 - **9–12:** the Waykeeper builds a temporary circuit and proves a current route can work. New drift arrives almost immediately, establishing that this cannot be a one-time repair.
 - **13–16:** the route mailbox opens, Pip finds an old marker, social stakes become visible, and local crews begin testing safe stops using their own knowledge.
-- **17–20:** the household realizes the hardware is intact but the map is stale. Shared reports make repair faster, and Lanternwood's request points directly toward the neighbor-as-stopper idea of Chapter 2.
+- **17–20:** the household proves the hardware is intact but the map is stale. Shared reports make repair faster, more old markers confirm the diagnosis, and Level 20 turns the mystery into a concrete objective: stabilize Sunpetal using routes based on where the islands are now.
 
 Levels **4, 8, 12, 16, and 20** are `ROUTE REPORT` beats in the fixed story rail. They are stronger visual punctuation, not extra blocking dialogue.
 
