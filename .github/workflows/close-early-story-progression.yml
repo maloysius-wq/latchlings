@@ -1,0 +1,60 @@
+name: Close Early Story Progression Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/close-early-story-progression.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete handoff and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          title='### 2026-09-08 — Strengthen the opening story and first-20-level plot progression'
+          start=s.index(title)
+          end=s.index('\n---\n',start)
+          section=s[start:end]
+          assert '**Status: IN PROGRESS**' in section
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary='''
+
+#### Completion summary
+
+**Story progression:** Chapter 1 Levels 1–20 now use a unique authored investigation arc instead of the repeating ten-line Chapter 1 story loop. The sequence escalates from ordinary missed stops, to matching failures, to neighbor reports, to a temporary current-route repair, to continued drift, a route mailbox, old Skyway markers, visible social stakes, local volunteer testing, and finally the diagnosis that the Skyway hardware still works but its map describes yesterday’s island positions. Levels 4, 8, 12, 16, and 20 are visually punctuated as in-world `ROUTE REPORT` beats. The final Level 20 line is: `We have our answer: the Skyway works, but its map is old. Now we rebuild Sunpetal for today.` Level 21 cleanly returns to the ordinary Chapter 1 rail cadence, leaving Levels 21–50 to stabilize Sunpetal rather than prematurely jumping to another chapter.
+
+**Opening story:** The opening cinematic now states the central problem more clearly: the Skyway is using routes for islands that have already moved. Its final beat gives the player a concrete first objective: repair Little Home’s morning routes, compare those repairs with incoming Sunpetal reports, and determine whether the strange morning is part of something larger. `cinematics400.js`, the production override in `cinematic-dialogue400.js`, and `CINEMATICS_SCRIPT.md` are synchronized. `story400.js` and `STORY_BIBLE.md` were also updated so the durable canon matches the runtime progression.
+
+**Implementation and refinements:** Primary product implementation commit `d660b01a5819b18cc77b2d6506118d5f0c515f32` added the first-20 progression, route-report treatment, stronger opening copy, and canon updates. Browser validation then exposed that `cinematic-dialogue400.js` separately overrode the opening copy; that runtime duplication was corrected in `2ae1c2312b59da560dc1d36c0e1bb9dffd5c9cf4`, followed by the HTML-escaping repair `83e77ee001dc9933ccdd7defc24b0fcf12652e7f`. Manual review rejected the first Level 19–20 draft for pointing to Lanternwood too early, so `176e553083ec6e5a7a9d6555668ea8fda4df10a0` kept the conclusion focused on Sunpetal. A later screenshot review found the revised Level 19–20 lines visually too long for the fixed rail; `f4f3e62c11879def5fa4d207e51c86bc156ef90f` tightened both lines without weakening the plot payoff.
+
+**Validation:** The first implementation workflow run `34270874501` had invalid YAML and made no product change. The corrected implementation run `34271015867` succeeded. Validation run `34271172560` correctly failed because the production cinematic override still held old copy and the audit used an outdated narrator selector; the product override and harness were both corrected. Full validation run `34271549837` then passed Levels 1–21 plus all seven opening beats and produced artifact `10074033325` (`early-story-progression-audit`). Rail-only visual run `34271868651`, artifact `10074140250`, enabled manual review of the five route-report beats and drove the narrative cadence refinement. Final runtime acceptance run `34272177703`, artifact `10074262681`, passed but its screenshots exposed the Level 19–20 copy-fit issue. After tightening those lines, final visual-fit run `34272449526` passed all Levels 1–21, exact speaker/copy and route-report state, rail geometry, no horizontal overflow, unchanged campaign files, and DOM text-range checks proving that none of the first 20 story lines is clipped. Artifact `10074369770` (`early-story-first20-final-visual`) contains all 20 final rail screenshots. Manual inspection accepted the finished contact set and the strengthened opening Beat 4 / Beat 7 compositions.
+
+**Deployment and hygiene:** No `campaign400-*.js` file, solver logic, puzzle rule, audio, control, progression rule, or Level 400 ending changed. The final visual auditor self-removed on clean accepted commit `e1c07f05034ce0ce8adc0ed3f516b6ad2b1fe891`, and GitHub Pages run `34272527725` successfully deployed that exact product state. All temporary implementation/validation workflows were removed; `.github/workflows/validate-repository-access-guard.yml` was again the only durable workflow before this closeout helper was created.
+
+**Remaining risk / next action:** No known blocker remains for the requested opening/first-20 story pass. The strongest next narrative improvement, if desired later, would be to author similarly deliberate escalation points through Levels 21–50 while preserving the now-established mystery, community-reporting logic, and Sunpetal stabilization objective.
+'''
+          section += summary
+          s=s[:start]+section+s[end:]
+          s=s.replace('Last updated: 2026-09-05','Last updated: 2026-09-08',1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Complete early story progression handoff"
+          git push
+          git pull --ff-only origin main
+          rm -f .github/workflows/close-early-story-progression.yml
+          git add .github/workflows/close-early-story-progression.yml
+          git commit -m "Remove early story closeout helper"
+          git push
