@@ -116,16 +116,6 @@ const LINES=[
   'Home is moving. Good thing we know how to find it.'
  ]
 ];
-const PHASE_LINES=[
- ['Let’s start with the route we know.','The detour moved again; we’ll work around it.','The roundabout is longer, but it still gets us there.','Time to reroute this one from scratch.','One more stop and the morning circuit is ours.'],
- ['First we learn how to stop for one another.','More neighbors are joining the route now.','Two stops can solve what one cannot.','The grove is darker, so every safe stop matters.','Let’s bring the whole neighborhood home together.'],
- ['The first anchor gives us somewhere certain to land.','We are going deeper, where the old stops still remember their job.','The anchors can move with the route; let’s use that.','The cavern shifted again. We adjust with it.','Hold this line long enough for everyone to get through.'],
- ['Open the first lane and let the market breathe.','The gate marks are doing more of the talking now.','Crowds change the route; we change with them.','Last call. Make every lane count.','The market is almost connected end to end.'],
- ['Start with the colors close to home.','The light bends, but the route can still be read.','Everything is farther out now. Keep the connection alive.','The old coordinates are wrong. We can write new ones.','Across the drift, the route only matters if it reaches someone.'],
- ['Let’s put the first old line back to work.','The bend is part of the route, not a mistake.','Every revision tells us what the drift was doing.','The old map ends here. Our route does not.','A new line can be just as real as an old one.'],
- ['Start one switch at a time and watch what answers.','The system changes when we change it.','Sequence matters now. Let’s keep everyone in step.','Several regions are working this route together.','The network is awake. Keep the signals moving.'],
- ['Begin with the connections already answering us.','Under the aurora, every region is visible at once.','Reconnect what moved, not what the old map remembers.','This is a living route. It should keep changing.','Homeward means we keep finding one another.']
-];
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
  if(s==='heart')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg>';
@@ -141,13 +131,13 @@ function render(){
  const note=document.getElementById('mechanicNote'),game=document.getElementById('game');if(!note||!game)return;
  const level=levelFromDom();if(!level||document.body.dataset.screen!=='game')return;
  if(note.dataset.storyRailLevel===String(level)&&note.querySelector('.story-level-rail'))return;
- const meta=STORY.levelMeta(level),chapter=meta.chapter,local=meta.local,slot=(local-1)%10,phase=Math.floor((local-1)/10),speaker=SPEAKERS[chapter-1][slot],base=LINES[chapter-1][slot],phaseLine=PHASE_LINES[chapter-1][phase],movement=movementLabel(chapter,phase),milestone=local%10===0;
+ const meta=STORY.levelMeta(level),chapter=meta.chapter,local=meta.local,slot=(local-1)%10,phase=Math.floor((local-1)/10),speaker=SPEAKERS[chapter-1][slot],base=LINES[chapter-1][slot],movement=movementLabel(chapter,phase),milestone=local%10===0;
  game.dataset.storyChapter=String(chapter);game.dataset.storyPhase=String(phase+1);game.dataset.storySlot=String(slot+1);game.dataset.storyMilestone=milestone?'true':'false';game.style.setProperty('--chapter-progress',`${(local/50*100).toFixed(2)}%`);
  const props=document.getElementById('levelProps');if(props){props.innerHTML='';props.hidden=true;props.setAttribute('aria-hidden','true')}
  const env=document.getElementById('levelEnvironment');if(env)env.remove();
- note.className='mechanic-note story-level-rail-host';note.dataset.storyRailLevel=String(level);note.setAttribute('aria-label',`${speaker}: ${base} ${phaseLine}. Chapter progress ${local} of 50.`);
+ note.className='mechanic-note story-level-rail-host';note.dataset.storyRailLevel=String(level);note.setAttribute('aria-label',`${speaker}: ${base}. Chapter progress ${local} of 50.`);
  const segments=Array.from({length:5},(_,i)=>`<i class="${i<phase?'done':i===phase?'active':''}" aria-hidden="true"></i>`).join('');
- note.innerHTML=`<section class="story-level-rail story-rail-ch${chapter}"><div class="story-rail-person">${portrait(speaker)}<strong>${escapeHtml(speaker)}</strong></div><div class="story-rail-main"><div class="story-rail-meta"><span class="story-rail-title">${escapeHtml(meta.title)}</span><span class="story-rail-count">${local} / 50</span></div><p><span>${escapeHtml(base)}</span> <small>${escapeHtml(phaseLine)}</small></p><div class="story-rail-foot"><span class="story-rail-movement">${escapeHtml(movement)}</span><span class="story-rail-progress"><b></b>${segments}</span></div></div></section>`;
+ note.innerHTML=`<section class="story-level-rail story-rail-ch${chapter}"><div class="story-rail-person">${portrait(speaker)}<strong>${escapeHtml(speaker)}</strong></div><div class="story-rail-main"><div class="story-rail-meta"><span class="story-rail-title">${escapeHtml(meta.title)}</span><span class="story-rail-count">${local} / 50</span></div><p><span>${escapeHtml(base)}</span></p><div class="story-rail-foot"><span class="story-rail-movement">${escapeHtml(movement)}</span><span class="story-rail-progress"><b></b>${segments}</span></div></div></section>`;
 }
 function sanitizeDebug(){const d=document.getElementById('debug');if(!d||d.dataset.playerSafe==='true'||getComputedStyle(d).display==='none')return;d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}
 let queued=false;function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;render();sanitizeDebug()})}
@@ -160,5 +150,5 @@ function install(){
  document.addEventListener('click',schedule,true);schedule();
 }
 install();
-window.LatchlingsStoryRail={render,SPEAKERS,LINES,PHASE_LINES};
+window.LatchlingsStoryRail={render,SPEAKERS,LINES};
 })();
