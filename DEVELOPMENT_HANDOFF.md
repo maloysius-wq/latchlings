@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-07 — Remove supplemental green phase copy from level story rail
+
+**Status: IN PROGRESS**
+
+**User goal:** Remove the green supplemental sentence from the plot/story description at the top of every level, including the recurring Chapter 1 line about the route/detour moving again. Keep the actual level-specific character line and the rest of the story rail intact.
+
+**Implementation plan:** Update `gameplay-story-rail400.js` so the per-phase `PHASE_LINES` sentence is no longer rendered in the visible story description or repeated in its accessibility label. Preserve the named speaker, level-specific `LINES` copy, title, level count, movement label, progress bar, chapter theming, and gameplay behavior. No campaign/story progression data will change.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and `gameplay-story-rail400.js`. A temporary self-removing validation workflow may be used. No campaign, solver, audio, cinematic, or visual-layout files are expected to change.
+
+**Validation plan:** Staticaly confirm the story rail no longer emits a `<small>` phase sentence or appends `phaseLine` to its aria-label, while level-specific character copy remains. Run a browser smoke check on representative levels across multiple chapters to confirm the green supplemental text is absent and the rail still renders correctly without overflow or console errors.
+
+**Deployment plan:** Deploy the clean accepted state through GitHub Pages, verify success, remove all temporary workflows, confirm `validate-repository-access-guard.yml` is again the only durable workflow, then close this same entry with exact commit/run details.
+
+---
+
 ### 2026-09-05 — Nest and victory SFX loudness normalization
 
 **Status: COMPLETED**
