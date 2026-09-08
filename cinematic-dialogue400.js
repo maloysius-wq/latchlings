@@ -18,9 +18,9 @@ if(opening){
  ];
  opening.beats[2].lines=[['Narrator','For generations, the Skyway has kept homes, gardens, markets, and neighbors connected while the islands drift. A good route does not hold the world still. It keeps working while the world moves.']];
  opening.beats[3].lines=[
-  ['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.'],
-  ['Pippa','We can show you where the routes keep slipping.'],
-  ['Rowan','You can help us find where they should go now.']
+  ['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s missed deliveries, and Pip and Tansy’s finds all point to one pattern: the Skyway is using routes for islands that have already moved.'],
+  ['Pippa','We can show you every place yesterday stopped working.'],
+  ['Rowan','You can help us find where those routes should go now.']
  ];
  opening.beats[4].lines=[
   ['Narrator','Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.'],
@@ -31,14 +31,14 @@ if(opening){
   ['Rowan','Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.']
  ];
  opening.beats[6].lines=[
-  ['Narrator','Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.'],
+  ['Narrator','Start here. Fix Little Home’s morning routes, compare each repair with the reports arriving from Sunpetal, and find out whether this is one strange morning or something much larger.'],
   ['Pippa','That route worked yesterday.'],
   ['Rowan','Little Home moved farther than usual overnight.'],
   ['Pip','So breakfast is a puzzle now?'],
   ['Tansy','Breakfast is urgently a puzzle now.']
  ];
 }
-function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
+function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot',"'":'&#39;'}[c]))}
 function suitSvg(s){
  if(s==='heart')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg>';
  if(s==='diamond')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 7 88 50 50 93 12 50Z"/></svg>';
