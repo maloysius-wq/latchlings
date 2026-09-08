@@ -25,6 +25,7 @@ jobs:
           from pathlib import Path
           rail=Path('gameplay-story-rail400.js').read_text()
           cin=Path('cinematics400.js').read_text()
+          dialogue=Path('cinematic-dialogue400.js').read_text()
           script=Path('CINEMATICS_SCRIPT.md').read_text()
           bible=Path('STORY_BIBLE.md').read_text()
           story=Path('story400.js').read_text()
@@ -38,8 +39,10 @@ jobs:
           ]:
               assert phrase in rail
           assert 'story-rail-report' in rail and 'EARLY_STORY' in rail
-          assert 'one strange morning or something much larger' in cin
-          assert 'one strange morning or something much larger' in script
+          for text in [cin,dialogue,script]:
+              assert 'routes for islands that have already moved' in text
+              assert 'one strange morning or something much larger' in text
+          assert "'\\\"':'&quot;'" in dialogue
           assert 'Early progression cadence, Levels 1–20' in bible
           assert 'Little Home opens a route mailbox' in story
           print('EARLY_STORY_STATIC_OK')
@@ -93,12 +96,8 @@ jobs:
                 reportBadge:host?.querySelector('.story-rail-report')?.textContent?.trim()||'',
                 reportClass:rail?.classList.contains('story-report')||false,
                 reportDataset:document.getElementById('game')?.dataset.storyReport||'',
-                width:rect?.width||0,
-                left:rect?.left||0,
-                right:rect?.right||0,
-                height:rect?.height||0,
-                scrollWidth:document.documentElement.scrollWidth,
-                viewport:innerWidth,
+                width:rect?.width||0,left:rect?.left||0,right:rect?.right||0,height:rect?.height||0,
+                scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,
               };
             },level);
             if(level<=20){
@@ -108,9 +107,7 @@ jobs:
               if(data.reportClass!==shouldReport)throw new Error(`Level ${level} report class mismatch`);
               if((data.reportBadge==='Route report')!==shouldReport)throw new Error(`Level ${level} report badge mismatch`);
               if((data.reportDataset==='true')!==shouldReport)throw new Error(`Level ${level} report dataset mismatch`);
-            } else {
-              if(data.reportClass||data.reportBadge||data.reportDataset==='true')throw new Error('Level 21 inherited early report state');
-            }
+            } else if(data.reportClass||data.reportBadge||data.reportDataset==='true')throw new Error('Level 21 inherited early report state');
             if(data.left < -1 || data.right > data.viewport+1)throw new Error(`Level ${level} rail overflow`);
             if(data.height < 90 || data.height > 98)throw new Error(`Level ${level} rail height changed: ${data.height}`);
             if(data.scrollWidth > data.viewport)throw new Error(`Level ${level} page horizontal overflow`);
@@ -120,7 +117,7 @@ jobs:
           fs.writeFileSync('early-story-audit/rails.json',JSON.stringify(railManifest,null,2));
 
           await page.evaluate(()=>window.LatchlingsCinematics.show('opening',{markSeen:false}));
-          await page.waitForTimeout(180);
+          await page.waitForTimeout(220);
           const cinManifest=[];
           for(let beat=1;beat<=7;beat++){
             const data=await page.evaluate(()=>{
@@ -128,28 +125,31 @@ jobs:
               const overlay=document.getElementById('cinematicOverlay');
               const copy=document.querySelector('.cinematic-copy');
               const sr=shell?.getBoundingClientRect(),cr=copy?.getBoundingClientRect();
+              const sourceBeat=window.LatchlingsCinematics.CINEMATICS.opening.beats[window.LatchlingsCinematics.beat];
               return {
                 beat:(window.LatchlingsCinematics?.beat||0)+1,
                 label:document.getElementById('cinematicBeat')?.textContent?.trim()||'',
-                narration:[...document.querySelectorAll('#cinematicLines .narrator span')].map(x=>x.textContent.trim()).join(' '),
+                visibleNarration:[...document.querySelectorAll('#cinematicLines .narrator-only span')].map(x=>x.textContent.trim()).join(' '),
+                sourceNarration:(sourceBeat?.lines||[]).filter(x=>x?.[0]==='Narrator').map(x=>x[1]).join(' '),
                 shellTop:sr?.top||0,shellBottom:sr?.bottom||0,copyTop:cr?.top||0,copyBottom:cr?.bottom||0,
                 viewportH:innerHeight,scrollWidth:document.documentElement.scrollWidth,viewportW:innerWidth,
                 shown:overlay?.classList.contains('show')||false
               };
             });
             if(!data.shown)throw new Error(`Opening beat ${beat} not shown`);
+            if(data.visibleNarration!==data.sourceNarration)throw new Error(`Opening beat ${beat} narration DOM/source mismatch`);
             if(data.shellTop < -1 || data.shellBottom > data.viewportH+1)throw new Error(`Opening beat ${beat} shell vertical overflow ${data.shellTop}/${data.shellBottom}/${data.viewportH}`);
             if(data.scrollWidth > data.viewportW)throw new Error(`Opening beat ${beat} horizontal overflow`);
-            if(beat===4 && !data.narration.includes('routes for islands that have already moved'))throw new Error('Opening Beat 4 did not receive stronger premise');
-            if(beat===7 && !data.narration.includes('one strange morning or something much larger'))throw new Error('Opening Beat 7 did not receive campaign objective');
+            if(beat===4 && !data.sourceNarration.includes('routes for islands that have already moved'))throw new Error('Opening Beat 4 did not receive stronger premise');
+            if(beat===7 && !data.sourceNarration.includes('one strange morning or something much larger'))throw new Error('Opening Beat 7 did not receive campaign objective');
             cinManifest.push(data);
             await page.screenshot({path:`early-story-audit/opening-beat-${beat}.png`,fullPage:true});
-            if(beat<7){await page.evaluate(()=>window.LatchlingsCinematics.next());await page.waitForTimeout(150);}
+            if(beat<7){await page.evaluate(()=>window.LatchlingsCinematics.next());await page.waitForTimeout(180);}
           }
           fs.writeFileSync('early-story-audit/cinematics.json',JSON.stringify(cinManifest,null,2));
 
           await page.setViewportSize({width:390,height:700});
-          await page.waitForTimeout(120);
+          await page.waitForTimeout(150);
           const compact=await page.evaluate(()=>{
             const shell=document.querySelector('.cinematic-shell')?.getBoundingClientRect();
             return {top:shell?.top||0,bottom:shell?.bottom||0,h:innerHeight,w:innerWidth,scrollWidth:document.documentElement.scrollWidth};
