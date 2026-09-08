@@ -1,0 +1,125 @@
+name: Validate Story Rail Phase Copy Removal
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/validate-story-rail-phase-copy-removal.yml'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Static copy assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('gameplay-story-rail400.js').read_text()
+          assert 'PHASE_LINES' not in s
+          assert 'phaseLine' not in s
+          assert 'detour moved again' not in s.lower()
+          assert 'work around it' not in s.lower()
+          assert '<small>${escapeHtml(' not in s
+          assert '<p><span>${escapeHtml(base)}</span></p>' in s
+          assert "note.setAttribute('aria-label',`${speaker}: ${base}. Chapter progress ${local} of 50.`);" in s
+          print('STORY_RAIL_STATIC_COPY_REMOVAL_OK')
+          PY
+      - name: Install browser tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        shell: bash
+        run: |
+          python3 -m http.server 8080 >/tmp/latchlings-story-rail-server.log 2>&1 &
+          sleep 2
+      - name: Verify all 400 levels and capture rails
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          cat > story-rail-copy-smoke.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844}});
+          await page.emulateMedia({reducedMotion:'reduce'});
+          const errors=[];
+          page.on('pageerror',e=>errors.push(String(e)));
+          await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>typeof startLevel==='function' && !!window.LatchlingsStoryRail && Array.isArray(window.LEVELS) && window.LEVELS.length===400);
+          await page.evaluate(()=>{
+            if(window.LatchlingsCinematics) window.LatchlingsCinematics.maybeShowBeforeLevel=()=>false;
+            if(window.LatchlingsStoryTheme) window.LatchlingsStoryTheme.enterLevel=()=>{};
+          });
+          for(let level=1;level<=400;level++){
+            const result=await page.evaluate((level)=>{
+              startLevel(level);
+              window.LatchlingsStoryRail.render();
+              const rail=document.querySelector('#mechanicNote .story-level-rail');
+              const p=rail?.querySelector('.story-rail-main p');
+              const chapter=Math.ceil(level/50);
+              const local=((level-1)%50)+1;
+              const slot=(local-1)%10;
+              const expected=window.LatchlingsStoryRail.LINES?.[chapter-1]?.[slot]||'';
+              const visible=(p?.textContent||'').trim();
+              const aria=document.getElementById('mechanicNote')?.getAttribute('aria-label')||'';
+              const note=document.getElementById('mechanicNote');
+              return {
+                hasRail:!!rail,
+                visible,
+                expected,
+                hasSmall:!!p?.querySelector('small'),
+                childCount:p?.children?.length||0,
+                aria,
+                overflow:note ? note.scrollWidth-note.clientWidth : 999
+              };
+            },level);
+            if(!result.hasRail) throw new Error(`Level ${level}: story rail missing`);
+            if(result.hasSmall) throw new Error(`Level ${level}: supplemental small phase copy still rendered`);
+            if(result.childCount!==1) throw new Error(`Level ${level}: plot line contains unexpected supplemental elements (${result.childCount})`);
+            if(result.visible!==result.expected) throw new Error(`Level ${level}: visible plot line is not exactly the authored character line`);
+            const combined=(result.visible+' '+result.aria).toLowerCase();
+            if(combined.includes('detour moved again')||combined.includes('work around it')) throw new Error(`Level ${level}: removed phase sentence still present`);
+            if(result.overflow>2) throw new Error(`Level ${level}: story rail horizontal overflow ${result.overflow}px`);
+          }
+          if(errors.length) throw new Error('Page errors: '+errors.join(' | '));
+          for(const level of [11,211]){
+            await page.evaluate((level)=>{startLevel(level);window.LatchlingsStoryRail.render();const o=document.getElementById('storyCardOverlay');if(o)o.style.display='none';},level);
+            await page.locator('#mechanicNote').screenshot({path:`artifacts/level-${level}-story-rail.png`});
+          }
+          console.log('STORY_RAIL_ALL_400_COPY_REMOVAL_OK');
+          await browser.close();
+          EOF
+          node story-rail-copy-smoke.mjs
+          rm -f story-rail-copy-smoke.mjs
+      - name: Upload visual spot checks
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: story-rail-copy-removal-spot-checks
+          path: artifacts
+      - name: Self-remove
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f story-rail-copy-smoke.mjs
+          git pull --ff-only origin main
+          rm -f .github/workflows/validate-story-rail-phase-copy-removal.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/validate-story-rail-phase-copy-removal.yml
+          if ! git diff --cached --quiet; then
+            git commit -m "Remove story rail copy validator"
+            git push
+          fi
