@@ -1,0 +1,55 @@
+name: Apply Story Rail Phase Copy Removal
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-story-rail-phase-copy-removal.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove supplemental phase copy and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('gameplay-story-rail400.js')
+          s=p.read_text()
+          original=s
+          s,n=re.subn(r"const PHASE_LINES=\[\n.*?\n\];\nfunction escapeHtml", "function escapeHtml", s, count=1, flags=re.S)
+          assert n==1, 'PHASE_LINES block not found exactly once'
+          old="speaker=SPEAKERS[chapter-1][slot],base=LINES[chapter-1][slot],phaseLine=PHASE_LINES[chapter-1][phase],movement=movementLabel(chapter,phase),milestone=local%10===0;"
+          new="speaker=SPEAKERS[chapter-1][slot],base=LINES[chapter-1][slot],movement=movementLabel(chapter,phase),milestone=local%10===0;"
+          assert old in s, 'render phaseLine binding not found'
+          s=s.replace(old,new,1)
+          old="note.setAttribute('aria-label',`${speaker}: ${base} ${phaseLine}. Chapter progress ${local} of 50.`);"
+          new="note.setAttribute('aria-label',`${speaker}: ${base}. Chapter progress ${local} of 50.`);"
+          assert old in s, 'aria label phaseLine text not found'
+          s=s.replace(old,new,1)
+          old='<p><span>${escapeHtml(base)}</span> <small>${escapeHtml(phaseLine)}</small></p>'
+          new='<p><span>${escapeHtml(base)}</span></p>'
+          assert old in s, 'visible phaseLine markup not found'
+          s=s.replace(old,new,1)
+          assert s != original
+          assert 'PHASE_LINES' not in s
+          assert 'phaseLine' not in s
+          assert '<small>${escapeHtml(' not in s
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gameplay-story-rail400.js
+          git commit -m "Remove supplemental phase copy from story rail"
+          git push
+          git pull --ff-only origin main
+          rm -f .github/workflows/apply-story-rail-phase-copy-removal.yml
+          git add .github/workflows/apply-story-rail-phase-copy-removal.yml
+          git commit -m "Remove story rail copy helper"
+          git push
