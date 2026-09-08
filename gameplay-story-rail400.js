@@ -116,6 +116,28 @@ const LINES=[
   'Home is moving. Good thing we know how to find it.'
  ]
 ];
+const EARLY_STORY=[
+ {speaker:'Pippa',line:'Breakfast first. The basket missed a stop that worked perfectly yesterday.'},
+ {speaker:'Rowan',line:'The watering marker is off by a whole garden bed. Little Home moved farther overnight.'},
+ {speaker:'Pip',line:'My kite missed the same crossing. That makes two routes, not one bad basket.'},
+ {speaker:'Bramble',line:'Bread from East Sunpetal missed us by the same distance. This is a pattern.',report:true},
+ {speaker:'Tansy',line:'The morning mail brought three notes from neighbors whose crossings shifted too.'},
+ {speaker:'Pippa',line:'I laid today’s stops over yesterday’s map. None of the endpoints line up anymore.'},
+ {speaker:'Rowan',line:'The islands are where they should be. The routes are the part that fell behind.'},
+ {speaker:'Bramble',line:'Five households sent the same kind of report. Leave the next one at Little Home.',report:true},
+ {speaker:'Pippa',line:'Let’s build one temporary circuit from where everyone actually is this morning.'},
+ {speaker:'Tansy',line:'The new circuit works. For the first time today, people are arriving where they meant to.'},
+ {speaker:'Rowan',line:'Another drift check just came in. The repair held, but the islands kept moving.'},
+ {speaker:'Pippa',line:'Then one repair is not enough. We need a way to keep rewriting the route.',report:true},
+ {speaker:'Bramble',line:'The route mailbox is open. Send coordinates, missed stops, and very specific complaints.'},
+ {speaker:'Pip',line:'I found an old Skyway marker under the grass. It points to where this island used to be.'},
+ {speaker:'Tansy',line:'A family across the meadow missed visiting hour when their crossing vanished. This is bigger than errands.'},
+ {speaker:'Rowan',line:'The marker stones still work. Local crews are testing new stops around them now.',report:true},
+ {speaker:'Pippa',line:'The hardware is not broken. The old map is simply describing yesterday’s Latchlands.'},
+ {speaker:'Bramble',line:'With everyone’s reports together, we can fix routes faster than each island can alone.'},
+ {speaker:'Pip',line:'Lanternwood sent a request. Their paths only work when neighbors help each other stop.'},
+ {speaker:'Tansy',line:'Sunpetal is connected again. Lanternwood is waiting, and now we know what to bring.',report:true}
+];
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
  if(s==='heart')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg>';
@@ -131,13 +153,13 @@ function render(){
  const note=document.getElementById('mechanicNote'),game=document.getElementById('game');if(!note||!game)return;
  const level=levelFromDom();if(!level||document.body.dataset.screen!=='game')return;
  if(note.dataset.storyRailLevel===String(level)&&note.querySelector('.story-level-rail'))return;
- const meta=STORY.levelMeta(level),chapter=meta.chapter,local=meta.local,slot=(local-1)%10,phase=Math.floor((local-1)/10),speaker=SPEAKERS[chapter-1][slot],base=LINES[chapter-1][slot],movement=movementLabel(chapter,phase),milestone=local%10===0;
- game.dataset.storyChapter=String(chapter);game.dataset.storyPhase=String(phase+1);game.dataset.storySlot=String(slot+1);game.dataset.storyMilestone=milestone?'true':'false';game.style.setProperty('--chapter-progress',`${(local/50*100).toFixed(2)}%`);
+ const meta=STORY.levelMeta(level),chapter=meta.chapter,local=meta.local,slot=(local-1)%10,phase=Math.floor((local-1)/10);const early=chapter===1&&local<=20?EARLY_STORY[local-1]:null,speaker=early?.speaker||SPEAKERS[chapter-1][slot],base=early?.line||LINES[chapter-1][slot],report=!!early?.report,movement=movementLabel(chapter,phase),milestone=local%10===0;
+ game.dataset.storyChapter=String(chapter);game.dataset.storyPhase=String(phase+1);game.dataset.storySlot=String(slot+1);game.dataset.storyMilestone=milestone?'true':'false';game.dataset.storyReport=report?'true':'false';game.style.setProperty('--chapter-progress',`${(local/50*100).toFixed(2)}%`);
  const props=document.getElementById('levelProps');if(props){props.innerHTML='';props.hidden=true;props.setAttribute('aria-hidden','true')}
  const env=document.getElementById('levelEnvironment');if(env)env.remove();
  note.className='mechanic-note story-level-rail-host';note.dataset.storyRailLevel=String(level);note.setAttribute('aria-label',`${speaker}: ${base}. Chapter progress ${local} of 50.`);
  const segments=Array.from({length:5},(_,i)=>`<i class="${i<phase?'done':i===phase?'active':''}" aria-hidden="true"></i>`).join('');
- note.innerHTML=`<section class="story-level-rail story-rail-ch${chapter}"><div class="story-rail-person">${portrait(speaker)}<strong>${escapeHtml(speaker)}</strong></div><div class="story-rail-main"><div class="story-rail-meta"><span class="story-rail-title">${escapeHtml(meta.title)}</span><span class="story-rail-count">${local} / 50</span></div><p><span>${escapeHtml(base)}</span></p><div class="story-rail-foot"><span class="story-rail-movement">${escapeHtml(movement)}</span><span class="story-rail-progress"><b></b>${segments}</span></div></div></section>`;
+ note.innerHTML=`<section class="story-level-rail story-rail-ch${chapter} ${report?'story-report':''}"><div class="story-rail-person">${portrait(speaker)}<strong>${escapeHtml(speaker)}</strong></div><div class="story-rail-main"><div class="story-rail-meta"><span class="story-rail-title">${escapeHtml(meta.title)}</span>${report?'<span class="story-rail-report">Route report</span>':''}<span class="story-rail-count">${local} / 50</span></div><p><span>${escapeHtml(base)}</span></p><div class="story-rail-foot"><span class="story-rail-movement">${escapeHtml(movement)}</span><span class="story-rail-progress"><b></b>${segments}</span></div></div></section>`;
 }
 function sanitizeDebug(){const d=document.getElementById('debug');if(!d||d.dataset.playerSafe==='true'||getComputedStyle(d).display==='none')return;d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}
 let queued=false;function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;render();sanitizeDebug()})}
@@ -150,5 +172,5 @@ function install(){
  document.addEventListener('click',schedule,true);schedule();
 }
 install();
-window.LatchlingsStoryRail={render,SPEAKERS,LINES};
+window.LatchlingsStoryRail={render,SPEAKERS,LINES,EARLY_STORY};
 })();

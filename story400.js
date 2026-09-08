@@ -13,11 +13,11 @@ const CHAPTERS=[
   name:'Morning Routes',theme:'Sunpetal Meadows',mechanic:'Edges, rocks, and clean continuous snaps',color:'#b9dcf4',
   desc:'Little Home wakes to ordinary errands behaving strangely. Breakfast, watering, mail, and play routes no longer line up quite the way they did yesterday.',
   tip:'Use the whole board. Sometimes the useful stopping point is several snaps away from the nest.',
-  opening:'Morning begins with tiny inconveniences. By breakfast, the Waykeeper has enough evidence to know the routes themselves are shifting.',
+  opening:'Morning begins with tiny inconveniences. Within a few routes, matching failures become evidence; by the second movement, Little Home is comparing neighbor reports instead of treating each miss as a separate chore.',
   homeReward:'A route mailbox appears beside the cottage.',
   beats:[
-   'The household compares notes and realizes the bad routes are not individual mistakes. Little Home itself has shifted farther than normal.',
-   'Neighboring meadow islands report the same trouble. The morning-route problem is wider than one household.',
+   'Little Home’s errands fail in matching ways. Neighbor reports turn coincidence into a pattern, and the household begins logging route misses.',
+   'A temporary circuit works, but new drift arrives immediately. Little Home opens a route mailbox and local crews begin sharing coordinates and safe stops.',
    'Old route markers sit just slightly out of alignment, as if the map stayed still while the islands kept moving.',
    'The Waykeeper builds a dependable temporary morning circuit. For the first time all day, everyone gets where they meant to go.',
    'The meadow routes are working again, but Rowan confirms the drift has not stopped. A little route mailbox goes up at Little Home.'

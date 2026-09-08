@@ -67,13 +67,13 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 **Visual:** A Waykeeper compass motif appears over the moving islands. Old route lines fade, new lines sketch themselves between the islands’ current positions. Pippa and Rowan appear as the speakers, each with a named speech bubble.
 
 **Narration:**  
-> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.
+> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s missed deliveries, and Pip and Tansy’s finds all point to one pattern: the Skyway is using routes for islands that have already moved.
 
 **Pippa:**  
-> We can show you where the routes keep slipping.
+> We can show you every place yesterday stopped working.
 
 **Rowan:**  
-> You can help us find where they should go now.
+> You can help us find where those routes should go now.
 
 **Meaning:** Little Home matters because this household is the first to connect several ordinary failures into one pattern. The Waykeeper supplies specialized route-reading skill; the residents supply observations and lived context.
 
@@ -106,7 +106,7 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 **Visual:** The miniature board dissolves back into Little Home. A breakfast basket follows an old glowing route, misses its intended connection because the islands have shifted, and lands at an awkward stop. Pippa, Rowan, Pip, and Tansy each speak from their own on-stage bubbles.
 
 **Narration:**  
-> Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.
+> Start here. Fix Little Home’s morning routes, compare each repair with the reports arriving from Sunpetal, and find out whether this is one strange morning or something much larger.
 
 **Pippa:**  
 > That route worked yesterday.

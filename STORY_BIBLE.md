@@ -224,14 +224,24 @@ No story beat should make the player wait through a long scene to reach the next
 
 Morning begins with tiny inconveniences. A breakfast basket takes the wrong crossing. Pippa's watering route no longer lines up cleanly. Pip and Tansy cannot reach a play spot using yesterday's path. Bramble blames "a particularly opinionated breeze."
 
-At first the problems seem unrelated.
+The first twenty levels should not feel like twenty unrelated errands. They are the investigation that turns an odd morning into the campaign's first clear question.
 
-By the end of the chapter, Rowan has compared enough routes to establish that Little Home has shifted farther than normal overnight.
+### Early progression cadence, Levels 1–20
+
+- **1–4:** ordinary failures repeat in matching ways. By Level 4, a delivery from another Sunpetal island misses by the same amount and coincidence becomes a pattern.
+- **5–8:** neighboring notes arrive with the same problem. By Level 8, Little Home becomes the obvious place to leave route reports because its residents are already comparing several kinds of evidence.
+- **9–12:** the Waykeeper builds a temporary circuit and proves a current route can work. New drift arrives almost immediately, establishing that this cannot be a one-time repair.
+- **13–16:** the route mailbox opens, Pip finds an old marker, social stakes become visible, and local crews begin testing safe stops using their own knowledge.
+- **17–20:** the household realizes the hardware is intact but the map is stale. Shared reports make repair faster, and Lanternwood's request points directly toward the neighbor-as-stopper idea of Chapter 2.
+
+Levels **4, 8, 12, 16, and 20** are `ROUTE REPORT` beats in the fixed story rail. They are stronger visual punctuation, not extra blocking dialogue.
+
+By Level 20, the player should understand the central early mystery: the islands are behaving normally, but the Skyway is using yesterday's routes. The rest of Chapter 1 deepens that evidence and stabilizes Sunpetal.
 
 ### Milestone beats
 
-- **10:** The household realizes the bad routes are not individual mistakes.
-- **20:** Neighboring meadow islands report the same problem.
+- **10:** The first temporary morning circuit holds long enough to prove a current route can solve the problem.
+- **20:** Neighbor reports, the route mailbox, and local crews turn Little Home into a voluntary coordination point for the meadow.
 - **30:** Old route markers are found slightly out of alignment.
 - **40:** The Waykeeper successfully builds a reliable temporary morning circuit.
 - **50:** The morning is finally running again, but Rowan confirms the drift has not stopped.
