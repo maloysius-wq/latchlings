@@ -1,0 +1,151 @@
+name: Implement Early Story Progression Pass
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/implement-early-story-progression.yml'
+permissions:
+  contents: write
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Strengthen opening and first twenty levels
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # gameplay-story-rail400.js
+          p=Path('gameplay-story-rail400.js')
+          s=p.read_text()
+          assert 'const EARLY_STORY=' not in s
+          block="""const EARLY_STORY=[
+ {speaker:'Pippa',line:'Breakfast first. The basket missed a stop that worked perfectly yesterday.'},
+ {speaker:'Rowan',line:'The watering marker is off by a whole garden bed. Little Home moved farther overnight.'},
+ {speaker:'Pip',line:'My kite missed the same crossing. That makes two routes, not one bad basket.'},
+ {speaker:'Bramble',line:'Bread from East Sunpetal missed us by the same distance. This is a pattern.',report:true},
+ {speaker:'Tansy',line:'The morning mail brought three notes from neighbors whose crossings shifted too.'},
+ {speaker:'Pippa',line:'I laid today’s stops over yesterday’s map. None of the endpoints line up anymore.'},
+ {speaker:'Rowan',line:'The islands are where they should be. The routes are the part that fell behind.'},
+ {speaker:'Bramble',line:'Five households sent the same kind of report. Leave the next one at Little Home.',report:true},
+ {speaker:'Pippa',line:'Let’s build one temporary circuit from where everyone actually is this morning.'},
+ {speaker:'Tansy',line:'The new circuit works. For the first time today, people are arriving where they meant to.'},
+ {speaker:'Rowan',line:'Another drift check just came in. The repair held, but the islands kept moving.'},
+ {speaker:'Pippa',line:'Then one repair is not enough. We need a way to keep rewriting the route.',report:true},
+ {speaker:'Bramble',line:'The route mailbox is open. Send coordinates, missed stops, and very specific complaints.'},
+ {speaker:'Pip',line:'I found an old Skyway marker under the grass. It points to where this island used to be.'},
+ {speaker:'Tansy',line:'A family across the meadow missed visiting hour when their crossing vanished. This is bigger than errands.'},
+ {speaker:'Rowan',line:'The marker stones still work. Local crews are testing new stops around them now.',report:true},
+ {speaker:'Pippa',line:'The hardware is not broken. The old map is simply describing yesterday’s Latchlands.'},
+ {speaker:'Bramble',line:'With everyone’s reports together, we can fix routes faster than each island can alone.'},
+ {speaker:'Pip',line:'Lanternwood sent a request. Their paths only work when neighbors help each other stop.'},
+ {speaker:'Tansy',line:'Sunpetal is connected again. Lanternwood is waiting, and now we know what to bring.',report:true}
+];
+"""
+          s=s.replace('function escapeHtml(v){',block+'function escapeHtml(v){',1)
+          old="const meta=STORY.levelMeta(level),chapter=meta.chapter,local=meta.local,slot=(local-1)%10,phase=Math.floor((local-1)/10),speaker=SPEAKERS[chapter-1][slot],base=LINES[chapter-1][slot],movement=movementLabel(chapter,phase),milestone=local%10===0;"
+          new="const meta=STORY.levelMeta(level),chapter=meta.chapter,local=meta.local,slot=(local-1)%10,phase=Math.floor((local-1)/10);const early=chapter===1&&local<=20?EARLY_STORY[local-1]:null,speaker=early?.speaker||SPEAKERS[chapter-1][slot],base=early?.line||LINES[chapter-1][slot],report=!!early?.report,movement=movementLabel(chapter,phase),milestone=local%10===0;"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="game.dataset.storyChapter=String(chapter);game.dataset.storyPhase=String(phase+1);game.dataset.storySlot=String(slot+1);game.dataset.storyMilestone=milestone?'true':'false';game.style.setProperty('--chapter-progress',`${(local/50*100).toFixed(2)}%`);"
+          new="game.dataset.storyChapter=String(chapter);game.dataset.storyPhase=String(phase+1);game.dataset.storySlot=String(slot+1);game.dataset.storyMilestone=milestone?'true':'false';game.dataset.storyReport=report?'true':'false';game.style.setProperty('--chapter-progress',`${(local/50*100).toFixed(2)}%`);"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="note.innerHTML=`<section class=\"story-level-rail story-rail-ch${chapter}\"><div class=\"story-rail-person\">${portrait(speaker)}<strong>${escapeHtml(speaker)}</strong></div><div class=\"story-rail-main\"><div class=\"story-rail-meta\"><span class=\"story-rail-title\">${escapeHtml(meta.title)}</span><span class=\"story-rail-count\">${local} / 50</span></div><p><span>${escapeHtml(base)}</span></p><div class=\"story-rail-foot\"><span class=\"story-rail-movement\">${escapeHtml(movement)}</span><span class=\"story-rail-progress\"><b></b>${segments}</span></div></div></section>`;"
+          new="note.innerHTML=`<section class=\"story-level-rail story-rail-ch${chapter} ${report?'story-report':''}\"><div class=\"story-rail-person\">${portrait(speaker)}<strong>${escapeHtml(speaker)}</strong></div><div class=\"story-rail-main\"><div class=\"story-rail-meta\"><span class=\"story-rail-title\">${escapeHtml(meta.title)}</span>${report?'<span class=\"story-rail-report\">Route report</span>':''}<span class=\"story-rail-count\">${local} / 50</span></div><p><span>${escapeHtml(base)}</span></p><div class=\"story-rail-foot\"><span class=\"story-rail-movement\">${escapeHtml(movement)}</span><span class=\"story-rail-progress\"><b></b>${segments}</span></div></div></section>`;"
+          assert old in s
+          s=s.replace(old,new,1)
+          old='window.LatchlingsStoryRail={render,SPEAKERS,LINES};'
+          new='window.LatchlingsStoryRail={render,SPEAKERS,LINES,EARLY_STORY};'
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # style400-story-rail-board.css
+          p=Path('style400-story-rail-board.css')
+          s=p.read_text()
+          assert 'Early campaign route-report beats' not in s
+          s += """
+
+/* Early campaign route-report beats: a stronger in-world punctuation mark without interrupting play. */
+.story-level-rail.story-report{border-color:color-mix(in srgb,var(--railAccent2) 74%,var(--railAccent));box-shadow:0 8px 18px rgba(36,58,73,.17),inset 0 1px rgba(255,255,255,.78),inset 5px 0 0 var(--railAccent2),0 0 0 2px color-mix(in srgb,var(--railAccent2) 14%,transparent)}
+.story-level-rail.story-report:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--railAccent),var(--railAccent2),var(--railAccent));opacity:.9;z-index:2}
+.story-rail-report{flex:0 0 auto;padding:2px 5px;border-radius:999px;background:color-mix(in srgb,var(--railAccent2) 82%,#fff3ce);border:1px solid color-mix(in srgb,var(--railAccent) 34%,transparent);color:color-mix(in srgb,var(--railInk) 90%,#3c2d23);font-size:6.7px;font-weight:1000;letter-spacing:.065em;text-transform:uppercase;white-space:nowrap;box-shadow:inset 0 1px rgba(255,255,255,.55)}
+@media(max-width:355px){.story-rail-report{font-size:6.1px;padding:2px 4px}.story-rail-meta{gap:4px}}
+"""
+          p.write_text(s)
+
+          # cinematics400.js
+          p=Path('cinematics400.js')
+          s=p.read_text()
+          old="{label:'You Are the Waykeeper',visual:'waykeeper',lines:[['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.'],['Pippa','We can show you where the routes keep slipping.'],['Rowan','You can help us find where they should go now.']]},"
+          new="{label:'You Are the Waykeeper',visual:'waykeeper',lines:[['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s missed deliveries, and Pip and Tansy’s finds all point to one pattern: the Skyway is using routes for islands that have already moved.'],['Pippa','We can show you every place yesterday stopped working.'],['Rowan','You can help us find where those routes should go now.']]},"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="['Narrator','Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.']"
+          new="['Narrator','Start here. Fix Little Home’s morning routes, compare each repair with the reports arriving from Sunpetal, and find out whether this is one strange morning or something much larger.']"
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # CINEMATICS_SCRIPT.md
+          p=Path('CINEMATICS_SCRIPT.md')
+          s=p.read_text()
+          old='> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s deliveries, and Pip and Tansy’s questions all point to the same thing: the Skyway is falling behind the islands.'
+          new='> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s missed deliveries, and Pip and Tansy’s finds all point to one pattern: the Skyway is using routes for islands that have already moved.'
+          assert old in s
+          s=s.replace(old,new,1)
+          s=s.replace('> We can show you where the routes keep slipping.','> We can show you every place yesterday stopped working.',1)
+          s=s.replace('> You can help us find where they should go now.','> You can help us find where those routes should go now.',1)
+          old='> Start with the morning route. What Little Home learns here can travel with the next report, the next crew, and the next island.'
+          new='> Start here. Fix Little Home’s morning routes, compare each repair with the reports arriving from Sunpetal, and find out whether this is one strange morning or something much larger.'
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # story400.js: strengthen Chapter 1 summary and first two ten-level movement beats.
+          p=Path('story400.js')
+          s=p.read_text()
+          old="opening:'Morning begins with tiny inconveniences. By breakfast, the Waykeeper has enough evidence to know the routes themselves are shifting.',"
+          new="opening:'Morning begins with tiny inconveniences. Within a few routes, matching failures become evidence; by the second movement, Little Home is comparing neighbor reports instead of treating each miss as a separate chore.',"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="   'The household compares notes and realizes the bad routes are not individual mistakes. Little Home itself has shifted farther than normal.',\n   'Neighboring meadow islands report the same trouble. The morning-route problem is wider than one household.',"
+          new="   'Little Home’s errands fail in matching ways. Neighbor reports turn coincidence into a pattern, and the household begins logging route misses.',\n   'A temporary circuit works, but new drift arrives immediately. Little Home opens a route mailbox and local crews begin sharing coordinates and safe stops.',"
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # STORY_BIBLE.md: establish the first-20 cadence as durable writing guidance.
+          p=Path('STORY_BIBLE.md')
+          s=p.read_text()
+          old="Morning begins with tiny inconveniences. A breakfast basket takes the wrong crossing. Pippa's watering route no longer lines up cleanly. Pip and Tansy cannot reach a play spot using yesterday's path. Bramble blames \"a particularly opinionated breeze.\"\n\nAt first the problems seem unrelated.\n\nBy the end of the chapter, Rowan has compared enough routes to establish that Little Home has shifted farther than normal overnight.\n\n### Milestone beats\n\n- **10:** The household realizes the bad routes are not individual mistakes.\n- **20:** Neighboring meadow islands report the same problem."
+          new="Morning begins with tiny inconveniences. A breakfast basket takes the wrong crossing. Pippa's watering route no longer lines up cleanly. Pip and Tansy cannot reach a play spot using yesterday's path. Bramble blames \"a particularly opinionated breeze.\"\n\nThe first twenty levels should not feel like twenty unrelated errands. They are the investigation that turns an odd morning into the campaign's first clear question.\n\n### Early progression cadence, Levels 1–20\n\n- **1–4:** ordinary failures repeat in matching ways. By Level 4, a delivery from another Sunpetal island misses by the same amount and coincidence becomes a pattern.\n- **5–8:** neighboring notes arrive with the same problem. By Level 8, Little Home becomes the obvious place to leave route reports because its residents are already comparing several kinds of evidence.\n- **9–12:** the Waykeeper builds a temporary circuit and proves a current route can work. New drift arrives almost immediately, establishing that this cannot be a one-time repair.\n- **13–16:** the route mailbox opens, Pip finds an old marker, social stakes become visible, and local crews begin testing safe stops using their own knowledge.\n- **17–20:** the household realizes the hardware is intact but the map is stale. Shared reports make repair faster, and Lanternwood's request points directly toward the neighbor-as-stopper idea of Chapter 2.\n\nLevels **4, 8, 12, 16, and 20** are `ROUTE REPORT` beats in the fixed story rail. They are stronger visual punctuation, not extra blocking dialogue.\n\nBy Level 20, the player should understand the central early mystery: the islands are behaving normally, but the Skyway is using yesterday's routes. The rest of Chapter 1 deepens that evidence and stabilizes Sunpetal.\n\n### Milestone beats\n\n- **10:** The first temporary morning circuit holds long enough to prove a current route can solve the problem.\n- **20:** Neighbor reports, the route mailbox, and local crews turn Little Home into a voluntary coordination point for the meadow."
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # Sanity checks before committing.
+          rail=Path('gameplay-story-rail400.js').read_text()
+          assert rail.count("report:true") == 5
+          assert "Sunpetal is connected again. Lanternwood is waiting" in rail
+          assert "story-rail-report" in rail
+          assert "EARLY_STORY" in rail
+          assert "one strange morning or something much larger" in Path('cinematics400.js').read_text()
+          assert "Early progression cadence, Levels 1–20" in Path('STORY_BIBLE.md').read_text()
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gameplay-story-rail400.js style400-story-rail-board.css cinematics400.js CINEMATICS_SCRIPT.md story400.js STORY_BIBLE.md
+          git commit -m "Strengthen opening and early story progression"
+          git push
+          git pull --ff-only origin main
+          rm -f .github/workflows/implement-early-story-progression.yml
+          git add .github/workflows/implement-early-story-progression.yml
+          git commit -m "Remove early story implementation helper"
+          git push
