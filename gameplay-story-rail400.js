@@ -135,8 +135,8 @@ const EARLY_STORY=[
  {speaker:'Rowan',line:'The marker stones still work. Local crews are testing new stops around them now.',report:true},
  {speaker:'Pippa',line:'The hardware is not broken. The old map is simply describing yesterday’s Latchlands.'},
  {speaker:'Bramble',line:'With everyone’s reports together, we can fix routes faster than each island can alone.'},
- {speaker:'Pip',line:'I checked three more old markers. Every one points to where an island used to be, never where it is now.'},
- {speaker:'Tansy',line:'We have our answer: the Skyway is not broken. Its map is old. Now we can rebuild Sunpetal around where everyone is today.',report:true}
+ {speaker:'Pip',line:'Three more old markers point to where the islands used to be. Yesterday’s map is the problem.'},
+ {speaker:'Tansy',line:'We have our answer: the Skyway works, but its map is old. Now we rebuild Sunpetal for today.',report:true}
 ];
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
