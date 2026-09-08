@@ -1,0 +1,40 @@
+name: Close Story Rail Phase Copy Removal Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/close-story-rail-phase-copy-removal.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close handoff and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-07 — Remove supplemental green phase copy from level story rail'
+          start=s.index(heading)
+          end=s.index('\n---', start)
+          section=s[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary='''\n\n#### Completion summary\n\n**Implementation:** Removed the supplemental per-phase `PHASE_LINES` system from `gameplay-story-rail400.js`, including the Chapter 1 sentence `The detour moved again; we’ll work around it.` and all equivalent green phase sentences in every chapter. The visible plot line now contains only the authored level-specific character sentence from `LINES`; the accessibility label likewise contains only that character sentence plus chapter progress. The named speaker portrait, story title, level count, movement label, five-step progress rail, chapter theming, and all gameplay/campaign behavior remain unchanged. Product commit: `f61ef6910553ebdb8d81b68be34faad1cfe58bb0` (`Remove supplemental phase copy from story rail`).\n\n**Validation:** The first implementation-helper run `34174511840` failed before committing product code because its final assertion correctly noticed that `PHASE_LINES` was still exported by `window.LatchlingsStoryRail`; no partial product change was pushed. The corrected helper run `34174564092` removed the data, render binding, visible `<small>` phase copy, aria-label copy, and stale export, then self-cleaned. Dedicated validation run `34174657896` passed static assertions and a Chromium sweep of **all 400 levels**. Every level rendered a story rail whose plot paragraph exactly matched the intended level-specific character line, contained no supplemental `<small>` element, contained neither the removed detour sentence nor `work around it`, and had no horizontal rail overflow. Artifact `10036842372` (`story-rail-copy-removal-spot-checks`) captured Levels 11 and 211 at 390×844. Manual inspection confirmed both rails are clean and balanced: only the main character sentence remains in the plot area, with the movement/progress row intact beneath it.\n\n**Deployment and hygiene:** Validation self-removed on clean accepted commit `b87dfd48f5ee23b1751ee82f80e19ad94dd7d0a4`. GitHub Pages run `34174703073` completed successfully for that exact clean state. `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow before this closeout helper was created; this helper self-removes after recording the completion.\n\n**Remaining risk / next action:** No known functional or visual blocker remains. The removal is global across the story rail renderer, so future levels continue to show only their level-specific character line unless a new supplemental copy element is intentionally introduced later.\n'''
+          if '#### Completion summary' not in section:
+              section += summary
+          s=s[:start]+section+s[end:]
+          p.write_text(s)
+          PY
+          rm -f .github/workflows/close-story-rail-phase-copy-removal.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md .github/workflows/close-story-rail-phase-copy-removal.yml
+          git commit -m "Complete story rail phase-copy removal handoff"
+          git push
