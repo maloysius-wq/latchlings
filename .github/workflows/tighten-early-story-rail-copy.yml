@@ -1,0 +1,43 @@
+name: Tighten Early Story Rail Copy
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tighten-early-story-rail-copy.yml'
+permissions:
+  contents: write
+jobs:
+  tighten:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Shorten visually clipped final investigation lines
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('gameplay-story-rail400.js')
+          s=p.read_text()
+          old="I checked three more old markers. Every one points to where an island used to be, never where it is now."
+          new="Three more old markers point to where the islands used to be. Yesterday’s map is the problem."
+          assert old in s
+          s=s.replace(old,new,1)
+          old="We have our answer: the Skyway is not broken. Its map is old. Now we can rebuild Sunpetal around where everyone is today."
+          new="We have our answer: the Skyway works, but its map is old. Now we rebuild Sunpetal for today."
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gameplay-story-rail400.js
+          git commit -m "Fit early story conclusions in the rail"
+          git push
+          git pull --ff-only origin main
+          rm -f .github/workflows/tighten-early-story-rail-copy.yml
+          git add .github/workflows/tighten-early-story-rail-copy.yml
+          git commit -m "Remove early story copy helper"
+          git push
