@@ -37,6 +37,24 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-08 — Strengthen the opening story and first-20-level plot progression
+
+**Status: IN PROGRESS**
+
+**User goal:** Make the initial story introduction and plot progression feel more complete. Strengthen the opening setup and use the first 20 levels to turn the early errands into a clear escalating narrative, with noticeable plot hardening every few levels rather than twenty mostly interchangeable chores.
+
+**Implementation plan:** Preserve the cozy everyday tone and current puzzle rules, but give Levels 1–20 a unique authored progression instead of relying on the Chapter 1 ten-line loop. Levels 1–4 establish ordinary route failures and the first evidence that Little Home moved unusually far; Levels 5–8 confirm neighboring reports and make Little Home a natural report-gathering point; Levels 9–12 prove a temporary repair works but the drift continues; Levels 13–16 establish the route mailbox / shared reporting process and local volunteer crews; Levels 17–20 confirm the route markers themselves are intact while the old map is stale, then point naturally toward Lanternwood and Chapter 2. Levels 4, 8, 12, 16, and 20 will receive an in-world `ROUTE REPORT` treatment in the fixed story rail so the player can feel the plot beats without opening another panel or sitting through extra mandatory scenes.
+
+The opening cinematic will also receive a concise story-strength pass so its final beat explicitly gives the first campaign objective: solve Little Home's morning routes, compare what happens with incoming reports, and determine whether the problem is local or part of the wider Skyway. Runtime and durable cinematic/story documentation must stay synchronized.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `gameplay-story-rail400.js`, `style400-story-rail-board.css`, `cinematics400.js`, `CINEMATICS_SCRIPT.md`, `story400.js`, and `STORY_BIBLE.md`. No campaign boards, solver logic, audio, controls, progression rules, or Level 400 ending should change.
+
+**Validation plan:** Statically assert unique Level 1–20 story lines and the five route-report milestones; browser-render Levels 1–20 at phone size and confirm each rail has the intended speaker/copy, Levels 4/8/12/16/20 visibly read as route reports, no rail overflows, and Levels 21+ retain their existing chapter-line behavior. Re-render all seven opening cinematic beats and manually inspect the final beat after the copy adjustment. Run a representative later-chapter regression check and confirm no campaign data changed.
+
+**Deployment plan:** Use self-removing temporary GitHub Actions validation, manually inspect produced screenshots, deploy the accepted clean product state through GitHub Pages, confirm the repository-access guard is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, run/artifact IDs, visual findings, deployment, and remaining risk.
+
+---
+
 ### 2026-09-07 — Remove supplemental green phase copy from level story rail
 
 **Status: COMPLETED**
