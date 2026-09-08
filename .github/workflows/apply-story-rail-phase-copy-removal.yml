@@ -37,6 +37,10 @@ jobs:
           new='<p><span>${escapeHtml(base)}</span></p>'
           assert old in s, 'visible phaseLine markup not found'
           s=s.replace(old,new,1)
+          old='window.LatchlingsStoryRail={render,SPEAKERS,LINES,PHASE_LINES};'
+          new='window.LatchlingsStoryRail={render,SPEAKERS,LINES};'
+          assert old in s, 'PHASE_LINES export not found'
+          s=s.replace(old,new,1)
           assert s != original
           assert 'PHASE_LINES' not in s
           assert 'phaseLine' not in s
