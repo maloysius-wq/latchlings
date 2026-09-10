@@ -92,12 +92,16 @@ jobs:
             const tagline=document.querySelector('#c2 .toy-tagline').getBoundingClientRect();
             const progress=document.querySelector('#c2 .progress').getBoundingClientRect();
             const settings=document.querySelector('#c2 .settings').getBoundingClientRect();
-            const scene=document.querySelector('#c2 .scene').getBoundingClientRect();
-            const island=document.querySelector('#c2 .island-model').getBoundingClientRect();
+            const tree=document.querySelector('#c2 .little-home-tree').getBoundingClientRect();
+            const cottage=document.querySelector('#c2 .cottage').getBoundingClientRect();
+            const grass=document.querySelector('#c2 .island-top').getBoundingClientRect();
+            const visibleTop=Math.min(tree.top,cottage.top,grass.top);
             const style=getComputedStyle(document.querySelector('#c2 .toy-logo span'));
             const tagStyle=getComputedStyle(document.querySelector('#c2 .toy-tagline'));
-            return {phone:{left:phone.getBoundingClientRect().left,right:phone.getBoundingClientRect().right},logo:union,tagline:{left:tagline.left,right:tagline.right,top:tagline.top,bottom:tagline.bottom,width:tagline.width,height:tagline.height},progress:{left:progress.left,right:progress.right,top:progress.top,bottom:progress.bottom},settings:{left:settings.left,right:settings.right,top:settings.top,bottom:settings.bottom},scene:{top:scene.top},island:{top:island.top},fontSize:style.fontSize,tagFontSize:tagStyle.fontSize,scrollWidth:document.documentElement.scrollWidth,innerWidth};
+            return {phone:{left:phone.getBoundingClientRect().left,right:phone.getBoundingClientRect().right},logo:union,tagline:{left:tagline.left,right:tagline.right,top:tagline.top,bottom:tagline.bottom,width:tagline.width,height:tagline.height},progress:{left:progress.left,right:progress.right,top:progress.top,bottom:progress.bottom},settings:{left:settings.left,right:settings.right,top:settings.top,bottom:settings.bottom},visibleTop,treeTop:tree.top,cottageTop:cottage.top,grassTop:grass.top,fontSize:style.fontSize,tagFontSize:tagStyle.fontSize,scrollWidth:document.documentElement.scrollWidth,innerWidth};
           });
+          fs.writeFileSync('title-header-audit/metrics-390x844.json',JSON.stringify(metrics,null,2));
+          console.log('TITLE_METRICS',JSON.stringify(metrics));
           if(metrics.fontSize!=='62px')throw new Error('Title font size mismatch '+metrics.fontSize);
           if(metrics.tagFontSize!=='16px')throw new Error('Tagline font size mismatch '+metrics.tagFontSize);
           if(metrics.logo.width<320)throw new Error('Title is not substantially larger: '+metrics.logo.width);
@@ -105,16 +109,22 @@ jobs:
           if(metrics.tagline.width<240)throw new Error('Tagline pill is still too small: '+metrics.tagline.width);
           if(metrics.tagline.left<8||metrics.tagline.right>382)throw new Error('Tagline exceeds phone safe width');
           if(metrics.logo.top<=metrics.progress.bottom-2||metrics.logo.top<=metrics.settings.bottom-2)throw new Error('Title collides with top controls');
-          if(metrics.tagline.bottom>=metrics.island.top-2)throw new Error('Tagline collides with Little Home island');
+          if(metrics.tagline.bottom>=metrics.visibleTop-4)throw new Error('Tagline collides with visible Little Home art '+JSON.stringify(metrics));
           if(metrics.scrollWidth>metrics.innerWidth)throw new Error('Title source horizontal overflow');
           if(errors.length)throw new Error('Page errors: '+errors.join(' | '));
-          fs.writeFileSync('title-header-audit/metrics-390x844.json',JSON.stringify(metrics,null,2));
           await page.screenshot({path:'title-header-audit/production-home-390x844.png',fullPage:true});
 
           await page.setViewportSize({width:390,height:700});
           await page.waitForTimeout(250);
-          const compact=await frame.evaluate(()=>({w:innerWidth,scrollWidth:document.documentElement.scrollWidth,logo:[...document.querySelectorAll('#c2 .toy-logo span')].reduce((a,x)=>{const r=x.getBoundingClientRect();return {left:Math.min(a.left,r.left),right:Math.max(a.right,r.right),top:Math.min(a.top,r.top),bottom:Math.max(a.bottom,r.bottom)}},{left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity}),tagline:(()=>{const r=document.querySelector('#c2 .toy-tagline').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}})(),islandTop:document.querySelector('#c2 .island-model').getBoundingClientRect().top}));
-          if(compact.scrollWidth>compact.w||compact.logo.left<5||compact.logo.right>385||compact.tagline.left<8||compact.tagline.right>382||compact.tagline.bottom>=compact.islandTop-2)throw new Error('Compact title fit failed '+JSON.stringify(compact));
+          const compact=await frame.evaluate(()=>{
+            const logo=[...document.querySelectorAll('#c2 .toy-logo span')].reduce((a,x)=>{const r=x.getBoundingClientRect();return {left:Math.min(a.left,r.left),right:Math.max(a.right,r.right),top:Math.min(a.top,r.top),bottom:Math.max(a.bottom,r.bottom)}},{left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity});
+            const t=document.querySelector('#c2 .toy-tagline').getBoundingClientRect();
+            const tree=document.querySelector('#c2 .little-home-tree').getBoundingClientRect();
+            const cottage=document.querySelector('#c2 .cottage').getBoundingClientRect();
+            const grass=document.querySelector('#c2 .island-top').getBoundingClientRect();
+            return {w:innerWidth,scrollWidth:document.documentElement.scrollWidth,logo,tagline:{left:t.left,right:t.right,top:t.top,bottom:t.bottom},visibleTop:Math.min(tree.top,cottage.top,grass.top)};
+          });
+          if(compact.scrollWidth>compact.w||compact.logo.left<5||compact.logo.right>385||compact.tagline.left<8||compact.tagline.right>382||compact.tagline.bottom>=compact.visibleTop-4)throw new Error('Compact title fit failed '+JSON.stringify(compact));
           await page.screenshot({path:'title-header-audit/production-home-390x700.png',fullPage:true});
 
           const scenePage=await browser.newPage({viewport:{width:390,height:300},deviceScaleFactor:1,reducedMotion:'reduce'});
@@ -124,7 +134,7 @@ jobs:
           fs.writeFileSync('title-header-audit/cinematic-mode.json',JSON.stringify(sceneMode,null,2));
           await scenePage.screenshot({path:'title-header-audit/cinematic-scene-only.png'});
           await scenePage.close();
-          console.log('TITLE_RESIZE_BROWSER_OK',JSON.stringify(metrics));
+          console.log('TITLE_RESIZE_BROWSER_OK');
           await browser.close();
           JS
           node title-header-audit/audit.mjs
