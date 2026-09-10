@@ -1,0 +1,51 @@
+name: Close Atlas chapter blurb fit handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/close-atlas-blurb-fit.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close work in handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-10 — Make Skyway Atlas chapter story blurbs fully readable'
+          start=s.index(heading)
+          nxt=s.index('\n### ',start+len(heading))
+          section=s[start:nxt]
+          if '**Status: IN PROGRESS**' not in section:
+              raise SystemExit('target handoff entry is not IN PROGRESS')
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary='''\n\n#### Completion summary\n\n- **Result:** COMPLETED. The Skyway Atlas chapter header no longer truncates canonical story copy with CSS line clamps or hides the description on very short screens. Instead, the Atlas now owns eight concise chapter blurbs plus eight tighter low-height variants, each written as a complete thought. The fuller canonical chapter descriptions in `story400.js` remain unchanged for Story & Residents and other narrative surfaces.\n- **Responsive behavior:** Viewports above 720px show the richer concise Atlas blurb; viewports at 720px and below show the compact complete variant. The paragraph no longer uses `-webkit-line-clamp`, clipped overflow, or the previous sub-600px `display:none` behavior. Short-screen typography was tuned so the header can grow naturally without crowding the route map.\n- **Product files and commits:** `game400-a.js` and `style400-skyway-atlas.css` changed in accepted product commit `ed4dfbf1cfa5c557387389a045aca7bd375561bf` (`Keep Atlas chapter blurbs fully readable`). The temporary validator self-removed in clean-state commit `973f305c3e4730ac0f6bb5c4d1c508771e865dda` (`Remove Atlas chapter blurb validator`).\n- **Acceptance:** GitHub Actions run `34528862439` (`Fix Atlas chapter blurb fit`) completed successfully and printed `ATLAS_BLURB_FIT_ACCEPTED views=32`. It rendered all eight chapter headers at 390×844, 390×700, 360×640, and 320×568; asserted exact visible copy/variant selection, no clipping or line clamp, no vertical component overlap, no shell or horizontal overflow, preserved map height, chapter/waypoint navigation, and Continue launch behavior.\n- **Scope protection:** SHA-256 checks confirmed `story400.js`, `story-grounding400.js`, `cinematics400.js`, `cinematic-dialogue400.js`, and all eight `campaign400-*.js` files were unchanged.\n- **Artifact / visual review:** Acceptance artifact `atlas-chapter-blurb-renders`, artifact ID `10172686083`, contains 32 screenshots plus the JSON report. Manual contact-sheet review at all four tested sizes confirmed all chapter blurbs read as complete thoughts, maintain visual hierarchy, and do not squeeze the Atlas route area; the 320×568 layouts remain especially clean.\n- **Deployment:** GitHub Pages run `34528960586` completed successfully for clean accepted state `973f305c3e4730ac0f6bb5c4d1c508771e865dda`.\n- **Remaining risk / next action:** No known blocker remains. Future Atlas header copy should be added through the dedicated full/compact blurb pair and checked at the same short-phone breakpoint so narrative copy is never silently clipped again.\n'''
+          if '#### Completion summary' in section:
+              raise SystemExit('completion summary already exists')
+          section=section.rstrip()+summary+'\n\n'
+          s=s[:start]+section+s[nxt+1:]
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Complete Atlas chapter blurb fit handoff"
+          git push
+      - name: Self-remove closeout
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/close-atlas-blurb-fit.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remove Atlas chapter blurb closeout"
+          git push
