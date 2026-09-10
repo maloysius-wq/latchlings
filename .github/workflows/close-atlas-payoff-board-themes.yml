@@ -1,0 +1,47 @@
+name: Close Atlas payoff and board theme handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/close-atlas-payoff-board-themes.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close work in handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          title='### 2026-09-10 — Restore Atlas level-to-level journey payoff and deeply theme puzzle-board squares'
+          start=s.index(title)
+          end=s.find('\n### ',start+len(title))
+          if end<0: end=len(s)
+          section=s[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary='''\n#### Completion summary\n\n- **Result:** COMPLETED. Newly cleared campaign levels now produce a visible Skyway progression payoff instead of jumping directly from the win modal into the next puzzle. The just-cleared stop celebrates, the restored route lights, the resident guide visibly travels along the Atlas geometry, the destination remains clouded long enough to read as locked space, its cloud disperses, and the newly available stop lands as the current destination. `Next Level` waits for this reward before launching the next board; `Level Select` plays the same reward and then leaves the player on the newly revealed Atlas stop. Replaying an already-cleared level does not manufacture a false unlock reward.\n- **Boundary behavior:** Same-stretch travel uses the actual route curve between consecutive islands. Ten-level crossings such as 10→11 now use a two-stage waypoint sequence: the outgoing milestone celebrates, the traveler exits the old stretch, the new stretch appears with its first stop still clouded, then the traveler arrives and the cloud clears. Chapter crossings such as 50→51 use the same structure while changing region/theme and presenting a `New region` arrival beat. Reduced-motion users get a shorter non-motion version that preserves the state change and arrival information.\n- **Board visual system:** The puzzle grid itself now has a chapter × ten-level-range surface system, producing 40 distinct board identities. Each chapter contributes location-specific physical marks/material language directly to `.cell` squares: meadow/petal seams, Lanternwood grain and glow, Lodestone crystal fractures, Masquerade inlays, Prism refracted bands, Copperline rivets/engraved routes, Stormswitch circuit traces, and Aurora star/crystal accents. The five ten-level stretches add progressively different square geometry/material structures: hand-laid stitched paths, angled woven routework, stamped civic/waypoint tiles, engineered intersection plates, and faceted luminous landmark surfaces. Range treatment also coordinates board framing, nests, rocks/anchors, and fixture accents without changing puzzle geometry or solutions.\n- **Product files and commits:** Accepted product commit `0984fa7963be9f886fddaa1451e109b0c50a649f` (`Restore Atlas journey payoff and theme board surfaces`) changed `index.html`, `game400-a.js`, `game400-b.js`, and added `style400-atlas-progression.css` plus `style400-board-surfaces.css`. Temporary workflow/helper files self-removed in clean-state commit `44d20b893f94815bb30af4cb8ea24a6b0325c91c` (`Remove Atlas payoff validation helpers`).\n- **Acceptance:** GitHub Actions run `34533865039` completed successfully and printed `ATLAS_PAYOFF_BOARD_THEMES_ACCEPTED boardSignatures=40`. It exercised ordinary 1→2 progression, 10→11 waypoint crossing, 50→51 chapter crossing, and reduced-motion 1→2 behavior. It verified source celebration, traveler/route restoration, staged clouded destination, cloud-clearing/current arrival, correct auto-continuation for Next Level, correct stay-on-Atlas behavior for Level Select, board geometry, responsive containment, and 40 unique computed board-surface signatures.\n- **Scope protection:** SHA-256 verification confirmed `story400.js`, `story-grounding400.js`, `cinematics400.js`, `cinematic-dialogue400.js`, and all eight `campaign400-*.js` files were unchanged. No puzzle definitions, solver/solution data, story canon, cinematic scripts, title-screen behavior, or audio were modified.\n- **Artifact / visual review:** Acceptance artifact `atlas-payoff-board-theme-renders`, artifact ID `10174625841`, SHA-256 `c1d31305ef758f087226887d700cf7145945c5a2dc9b877c91548904b9876dd9`, contains 64 files including progression-state frames, 40 chapter/range board renders, compact/tall responsive renders, and `report.json`. Manual review of the progression contact sheet confirmed a readable source → travel → arrival rhythm, including a visibly clouded new stretch/region before reveal. Manual review of the full 8×5 board matrix plus larger Chapter 1, Copperline, and Stormswitch range strips confirmed that range changes are visible on the real cells rather than only in the outer background while pieces, nests, gates, rails, and other mechanics remain readable.\n- **Diagnostics / iteration:** The first oversized implementation workflow run `34533298829` was rejected by GitHub before a job was created, so it made no product changes. The next real candidate run `34533570183` passed same-range progression and all 40 board signatures but rejected the cross-waypoint/chapter timing because the clouded arrival state was too brief to observe reliably. No product commit was made from that run. The accepted pass deliberately lengthened/staged those crossings and deepened the board-cell treatment before rerunning the full matrix.\n- **Deployment / hygiene:** GitHub Pages run `34533976637` completed successfully for clean accepted state `44d20b893f94815bb30af4cb8ea24a6b0325c91c`. After validation cleanup, `.github/workflows` again contains only `validate-repository-access-guard.yml`.\n- **Remaining risk / next action:** No known blocker remains. The new board system is deliberately CSS/material driven so future plot-specific props or authored per-level decorations can be layered on without changing puzzle data. If further visual differentiation is desired later, the safest next expansion is authored environmental props for individual story situations, while keeping the 40-surface system as the baseline.\n'''
+          if '#### Completion summary' not in section:
+              section=section.rstrip()+"\n"+summary+"\n\n"
+          s=s[:start]+section+s[end:]
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m 'Complete Atlas payoff and board theme handoff'
+          git push
+      - name: Self-remove closeout
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/close-atlas-payoff-board-themes.yml
+          git commit -m 'Remove Atlas payoff closeout workflow'
+          git push
