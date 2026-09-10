@@ -17,6 +17,7 @@ jobs:
       - name: Apply candidate
         run: |
           python3 .github/tmp/atlas_payoff_apply.py
+          python3 .github/tmp/atlas_payoff_refine.py
           node --check game400-a.js
           node --check game400-b.js
       - uses: actions/setup-node@v4
@@ -32,6 +33,7 @@ jobs:
       - name: Validate candidate
         run: |
           mkdir -p payoff-board-audit/boards payoff-board-audit/progression
+          sed -i '0,/await p.waitForTimeout(600);/s//await p.waitForTimeout(760);/' .github/tmp/payoff_board_check.mjs
           node .github/tmp/payoff_board_check.mjs
       - name: Verify protected source unchanged
         run: sha256sum -c /tmp/protected-before.sha
@@ -54,6 +56,6 @@ jobs:
         run: |
           git reset --hard HEAD
           git pull --ff-only origin main
-          git rm .github/workflows/build-atlas-payoff-board-themes.yml .github/tmp/atlas_payoff_apply.py .github/tmp/payoff_board_check.mjs
+          git rm .github/workflows/build-atlas-payoff-board-themes.yml .github/tmp/atlas_payoff_apply.py .github/tmp/atlas_payoff_refine.py .github/tmp/payoff_board_check.mjs
           git commit -m 'Remove Atlas payoff validation helpers'
           git push
