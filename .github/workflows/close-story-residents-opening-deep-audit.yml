@@ -1,0 +1,66 @@
+name: Close Story Residents Opening Deep Audit Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/close-story-residents-opening-deep-audit.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close handoff entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-10 — Deep audit Story/Residents Latchling faces and opening cinematic clipping'
+          start=s.index(heading)
+          end=s.find('\n### ', start+len(heading))
+          if end < 0: end=len(s)
+          block=s[start:end]
+          block=block.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary=r'''
+
+#### Completion summary
+
+- Restored the Story & Residents portrait face anatomy so all five named residents render visible dark glossy eyes with catchlights, cheeks, suit marks, and intentional expression-specific mouths at phone-scale portrait sizes.
+- Reworked cinematic speech bubble sizing so text uses content-safe geometry rather than being visually clipped by the old fixed-height rules; normalized simultaneous speaker heights from actual text geometry, kept bubble bodies inside stage bounds, and recalculated tails toward the speaking portrait.
+- Prevented cinematic Continue focus/rendering from auto-scrolling the copy panel and hiding the heading on short screens.
+- Rebuilt the opening snap demonstration into a responsive two-row layout that stays fully inside its card and stage instead of being translated partly out of view.
+- Added a narrow 320px four-speaker treatment so the final opening beat remains inside the stage without overlapping the shell edges.
+- Product files changed: `style400-story-theme.css`, `style400-cinematics-geometry.css`, `cinematic-geometry400.js`, and `cinematics400.js`. Campaign puzzle data, level solutions, story progression, audio, title-screen typography/layout, and dialogue wording were not changed.
+- Accepted product commit: `10219f7b3648d809c99c5677db4f74690cec745e` (`Repair Story Residents faces and opening cinematic clipping`). Temporary validation workflow cleanup commit: `8316cf5e76167f2856a4cd55525107808e94e082`.
+- Acceptance run: GitHub Actions `34518581769` (`Fix Story Residents Opening Deep Audit V4`) completed successfully. It rendered Story & Residents plus the Story modal at 320x568, 360x640, 390x700, 390x844, and 430x932; rendered all seven opening beats at all five sizes; verified resident eyes/catchlights and mouth geometry; verified actual dialogue text bounds, bubble/stage bounds, tail-to-speaker alignment, copy scroll position, title/Continue visibility, snap-demo containment, and document overflow; and ran shared-bubble regressions across `across-drift`, `old-maps`, and `homeward`.
+- Acceptance artifact: `story-residents-opening-deep-fix-v4`, artifact ID `10168721977`. Manual inspection confirmed the 320x568 Story & Residents page and opening beats 2, 6, and 7 are visually clean, with complete speech text and the tutorial board fully visible; the broader v3 contact sheets were also manually inspected before the corrected pseudo-tail-aware v4 acceptance harness was run.
+- Earlier v1/v2/v3 attempts were diagnostic/test-harness iterations. They did not commit rejected product changes. V3 revealed that `scrollHeight` was counting the speech-bubble tail pseudo-element as overflow, so V4 validates the actual `<b>`/`<span>` text rectangles instead of treating the decorative tail as clipped text.
+- GitHub Pages run `34518711131` for the clean post-validation commit completed successfully. After cleanup, `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow.
+- Remaining risk: no known functional or responsive clipping issue remains in the audited Story & Residents/opening cinematic surfaces. Future dialogue copy that is substantially longer than current authored lines should still be re-run through the same responsive screenshot matrix.
+'''
+          if '#### Completion summary' not in block:
+              block=block.rstrip()+summary+'\n'
+          s=s[:start]+block+s[end:]
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Close Story Residents opening deep audit handoff"
+          git push
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/close-story-residents-opening-deep-audit.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remove Story Residents handoff closeout workflow"
+          git push
