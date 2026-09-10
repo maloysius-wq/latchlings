@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Keep only the animated Atlas traveler
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Remove the duplicate static Latchling/guide that appears beside the current or newly reached Atlas island during the level-to-level journey. Keep only the guide that actually animates along the restored Skyway route.
 
@@ -50,6 +50,19 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Exercise ordinary 1→2 progression and a 10→11 crossing. Assert zero static `.atlas-guide` elements on a normal Atlas view, exactly one guide during active movement and that it is nested inside `.atlas-travel-token`, no second guide on source/destination nodes, and no guide left behind after a Level Select reward finishes. Recheck Next Level auto-continuation, reduced-motion behavior, responsive containment, JS syntax, and protected story/campaign hashes. Capture progression screenshots for manual visual review.
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits, implement and validate through a self-removing workflow, inspect the render artifact, verify GitHub Pages for the accepted clean state, then close this entry with exact commits/run/artifact/deployment details and confirm the permanent repository-access guard is again the only workflow.
+
+#### Completion summary
+
+- **Result:** COMPLETED. Removed the static Latchling/guide that the normal Atlas renderer attached beside the current destination. The Skyway progression sequence now shows only the single guide created by `atlasTraveler()` inside `.atlas-travel-token`; normal Atlas views and completed post-arrival states contain no extra guide figure. The current-stop pennant text remains intact.
+- **Implementation:** Only `game400-a.js` changed. The current-node `pennant` renderer no longer appends `atlasGuideHtml(chapterView)`. `atlasGuideHtml()` itself remains available exclusively to the animated traveler path, so route travel, cloud clearing, arrival timing, unlock behavior, board themes, story, cinematics, and puzzle data are unchanged.
+- **Product / cleanup commits:** Accepted product commit `9cc3009c3d8be680f74439d861df726f4a7d6821` (`Keep only animated Atlas traveler`). Temporary validator cleanup commit `05f7fd98df47ee8d144549f44de05a9db0f9c44c` (`Remove single Atlas traveler validator`).
+- **Acceptance:** GitHub Actions run `34539537908` completed successfully and printed `SINGLE_ATLAS_TRAVELER_ACCEPTED`. Browser assertions verified zero static `.atlas-guide` elements on a normal Atlas, exactly one guide during ordinary 1→2 travel and 10→11 boundary travel, that the one guide is nested under `.atlas-travel-token`, zero node-attached guides during movement, zero guide left behind after Level Select arrival, preserved Next Level auto-continuation to Level 2, and no static guide in the reduced-motion path.
+- **Scope protection:** SHA-256 checks confirmed `story400.js`, `story-grounding400.js`, `cinematics400.js`, `cinematic-dialogue400.js`, and all eight `campaign400-*.js` files were unchanged.
+- **Artifact / visual review:** Acceptance artifact `single-atlas-traveler-renders`, artifact ID `10176738362`, SHA-256 `b9540380627b6a60a153b8b011a1ab55bda7c62c94b7c03d69c50a1289aed83b`, contains progression screenshots plus `report.json` with `accepted: true`. Manual review of the 1→2 and 10→11 moving frames confirmed one visible moving Latchling only, with no second static copy beside the source or destination.
+- **Diagnostics / iteration:** Run `34539351305` failed only because its Playwright validation script was created under `/tmp` and therefore could not resolve the repository-installed package; no product commit occurred. Run `34539439021` passed every duplicate-traveler assertion but rejected an unrelated 2.45-second screen-transition timing assertion even though `currentLevel` had already advanced to 2; no product commit occurred. The accepted run moved the test into the repository and widened only that screen-transition observation window.
+- **Deployment / hygiene:** GitHub Pages run `34539625836` completed successfully for clean accepted product state `05f7fd98df47ee8d144549f44de05a9db0f9c44c`. After validator cleanup, `.github/workflows` contained only `validate-repository-access-guard.yml`.
+- **Remaining risk / next action:** No known blocker remains. Future Atlas current-stop decorations should not call `atlasGuideHtml()` outside `atlasTraveler()` unless a second visible character is explicitly intended.
+
 
 
 ### 2026-09-10 — Restore Atlas level-to-level journey payoff and deeply theme puzzle-board squares
