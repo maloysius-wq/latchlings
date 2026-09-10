@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Remove stray green caps from cinematic floating islands
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Remove the green circles/pills visibly floating above the islands during the opening cinematic.
 
@@ -50,6 +50,17 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render opening beats 1, 3, and 4 at phone size, assert the legacy `.cin-island::after` cap is not rendered while `.cin-island-top` remains visible, verify route/prop/island counts are unchanged, and manually inspect screenshots for the reported floating green artifacts. Run a representative later island-based cinematic regression to ensure the shared primitive remains visually intact.
 
 **Deployment plan:** Commit this IN PROGRESS handoff before the CSS edit, implement and screenshot-test the cleanup, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm the repository-access guard is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commit/run/artifact details and remaining risk.
+
+
+#### Completion summary
+
+**Result:** COMPLETED. The reported green circles were a legacy `.cin-island::after` grass-cap pseudo-element from the original floating-island prototype that remained active underneath the newer textured island construction. `style400-cinematics-polish.css` now explicitly disables that obsolete pseudo-element with `display:none` / `content:none`, while preserving the real textured `.cin-island-top`, island side/rim geometry, props, routes, and all cinematic behavior. Product commit: `af425448316e2e19e41ba8fe9d9a8c3f1068a659` (`Remove stray cinematic island caps`).
+
+**Validation and visual acceptance:** Workflow run `34499576277` passed browser validation. It rendered opening beats 1, 3, and 4 and verified all five islands and four route lines remained present, all five island props remained present, the legacy pseudo-element no longer rendered, and the textured grass top remained visible with its grass material. Artifact `10161276305` (`cinematic-island-cap-audit`) contains the three opening screenshots plus a representative later Prism cinematic regression. Manual inspection of opening beats 1, 3, and 4 confirmed the stray green floating caps are gone and the islands still read as finished textured landforms.
+
+**Deployment and hygiene:** The implementation helper self-removed on clean product state `1d88646c56b0bd2c40de0eaa624100372f62b2e3`. GitHub Pages run `34499649243` completed successfully for that state. This closeout helper removes itself after committing the completed handoff.
+
+**Remaining risk / next action:** No known blocker remains. The fix applies to the shared cinematic island primitive, so the obsolete cap cannot reappear in later island-based cinematics; the actual textured grass surfaces remain intact.
 
 ---
 
