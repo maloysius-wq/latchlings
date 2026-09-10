@@ -1,0 +1,153 @@
+name: Implement Larger Little Home Title Header
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/implement-title-header-resize.yml'
+permissions:
+  contents: write
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enlarge title and tagline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('title-island-concepts/index.html')
+          s=p.read_text()
+          changes={
+            '#c2 .toy-brand{top:67px;left:15px;right:15px}':'#c2 .toy-brand{top:62px;left:8px;right:8px}',
+            '#c2 .toy-logo span{display:inline-block;font-size:45px;font-weight:950;color:#fff0c9;-webkit-text-stroke:6px var(--navy);':'#c2 .toy-logo span{display:inline-block;font-size:62px;font-weight:950;color:#fff0c9;-webkit-text-stroke:7px var(--navy);',
+            '#c2 .toy-tagline{display:inline-block;margin:14px 0 0;padding:7px 14px;':'#c2 .toy-tagline{display:inline-block;margin:13px 0 0;padding:10px 20px;',
+            'font-size:10px;font-weight:900;line-height:1;letter-spacing:.05em;text-transform:none;white-space:nowrap}':'font-size:16px;font-weight:900;line-height:1;letter-spacing:.025em;text-transform:none;white-space:nowrap}'
+          }
+          for old,new in changes.items():
+              if old not in s:
+                  raise SystemExit('Expected title CSS not found: '+old[:80])
+              s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git diff -- title-island-concepts/index.html
+      - name: Static title assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('title-island-concepts/index.html').read_text()
+          assert '#c2 .toy-brand{top:62px;left:8px;right:8px}' in s
+          assert 'font-size:62px' in s
+          assert '-webkit-text-stroke:7px var(--navy)' in s
+          assert 'margin:13px 0 0;padding:10px 20px' in s
+          assert 'font-size:16px;font-weight:900;line-height:1;letter-spacing:.025em' in s
+          assert 'Small friends. Smart puzzles.' in s
+          assert '@keyframes littleHomeTitleDrop' in s
+          assert 'body.cinematic-mode #c2 .topline,body.cinematic-mode #c2 .toy-brand' in s
+          print('TITLE_RESIZE_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser tooling
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        shell: bash
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-title-http.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/latchlings-title-http.log
+          exit 1
+      - name: Render and verify title header
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p title-header-audit
+          cat > title-header-audit/audit.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const errors=[];
+          const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+          page.on('pageerror',e=>errors.push(String(e)));
+          await page.addInitScript(()=>localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1})));
+          await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+          await page.waitForTimeout(1700);
+          const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+          if(!frame)throw new Error('Production title iframe did not load');
+          const metrics=await frame.evaluate(()=>{
+            const phone=document.querySelector('#c2 .phone');
+            const spans=[...document.querySelectorAll('#c2 .toy-logo span')].map(x=>x.getBoundingClientRect());
+            const union={left:Math.min(...spans.map(r=>r.left)),right:Math.max(...spans.map(r=>r.right)),top:Math.min(...spans.map(r=>r.top)),bottom:Math.max(...spans.map(r=>r.bottom))};
+            union.width=union.right-union.left; union.height=union.bottom-union.top;
+            const tagline=document.querySelector('#c2 .toy-tagline').getBoundingClientRect();
+            const progress=document.querySelector('#c2 .progress').getBoundingClientRect();
+            const settings=document.querySelector('#c2 .settings').getBoundingClientRect();
+            const scene=document.querySelector('#c2 .scene').getBoundingClientRect();
+            const island=document.querySelector('#c2 .island-model').getBoundingClientRect();
+            const style=getComputedStyle(document.querySelector('#c2 .toy-logo span'));
+            const tagStyle=getComputedStyle(document.querySelector('#c2 .toy-tagline'));
+            return {phone:{left:phone.getBoundingClientRect().left,right:phone.getBoundingClientRect().right},logo:union,tagline:{left:tagline.left,right:tagline.right,top:tagline.top,bottom:tagline.bottom,width:tagline.width,height:tagline.height},progress:{left:progress.left,right:progress.right,top:progress.top,bottom:progress.bottom},settings:{left:settings.left,right:settings.right,top:settings.top,bottom:settings.bottom},scene:{top:scene.top},island:{top:island.top},fontSize:style.fontSize,tagFontSize:tagStyle.fontSize,scrollWidth:document.documentElement.scrollWidth,innerWidth};
+          });
+          if(metrics.fontSize!=='62px')throw new Error('Title font size mismatch '+metrics.fontSize);
+          if(metrics.tagFontSize!=='16px')throw new Error('Tagline font size mismatch '+metrics.tagFontSize);
+          if(metrics.logo.width<320)throw new Error('Title is not substantially larger: '+metrics.logo.width);
+          if(metrics.logo.left<5||metrics.logo.right>385)throw new Error('Title exceeds phone safe width '+JSON.stringify(metrics.logo));
+          if(metrics.tagline.width<240)throw new Error('Tagline pill is still too small: '+metrics.tagline.width);
+          if(metrics.tagline.left<8||metrics.tagline.right>382)throw new Error('Tagline exceeds phone safe width');
+          if(metrics.logo.top<=metrics.progress.bottom-2||metrics.logo.top<=metrics.settings.bottom-2)throw new Error('Title collides with top controls');
+          if(metrics.tagline.bottom>=metrics.island.top-2)throw new Error('Tagline collides with Little Home island');
+          if(metrics.scrollWidth>metrics.innerWidth)throw new Error('Title source horizontal overflow');
+          if(errors.length)throw new Error('Page errors: '+errors.join(' | '));
+          fs.writeFileSync('title-header-audit/metrics-390x844.json',JSON.stringify(metrics,null,2));
+          await page.screenshot({path:'title-header-audit/production-home-390x844.png',fullPage:true});
+
+          await page.setViewportSize({width:390,height:700});
+          await page.waitForTimeout(250);
+          const compact=await frame.evaluate(()=>({w:innerWidth,scrollWidth:document.documentElement.scrollWidth,logo:[...document.querySelectorAll('#c2 .toy-logo span')].reduce((a,x)=>{const r=x.getBoundingClientRect();return {left:Math.min(a.left,r.left),right:Math.max(a.right,r.right),top:Math.min(a.top,r.top),bottom:Math.max(a.bottom,r.bottom)}},{left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity}),tagline:(()=>{const r=document.querySelector('#c2 .toy-tagline').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}})(),islandTop:document.querySelector('#c2 .island-model').getBoundingClientRect().top}));
+          if(compact.scrollWidth>compact.w||compact.logo.left<5||compact.logo.right>385||compact.tagline.left<8||compact.tagline.right>382||compact.tagline.bottom>=compact.islandTop-2)throw new Error('Compact title fit failed '+JSON.stringify(compact));
+          await page.screenshot({path:'title-header-audit/production-home-390x700.png',fullPage:true});
+
+          const scenePage=await browser.newPage({viewport:{width:390,height:300},deviceScaleFactor:1,reducedMotion:'reduce'});
+          await scenePage.goto('http://127.0.0.1:4173/title-island-concepts/?c=2&embed=1&cinematic=1',{waitUntil:'networkidle'});
+          const sceneMode=await scenePage.evaluate(()=>({brand:getComputedStyle(document.querySelector('#c2 .toy-brand')).display,scene:getComputedStyle(document.querySelector('#c2 .scene')).transform,overflow:document.documentElement.scrollWidth>innerWidth}));
+          if(sceneMode.brand!=='none'||sceneMode.overflow)throw new Error('Cinematic scene-only mode regression '+JSON.stringify(sceneMode));
+          fs.writeFileSync('title-header-audit/cinematic-mode.json',JSON.stringify(sceneMode,null,2));
+          await scenePage.screenshot({path:'title-header-audit/cinematic-scene-only.png'});
+          await scenePage.close();
+          console.log('TITLE_RESIZE_BROWSER_OK',JSON.stringify(metrics));
+          await browser.close();
+          JS
+          node title-header-audit/audit.mjs
+      - name: Commit product change
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add title-island-concepts/index.html
+          git commit -m "Enlarge Little Home title and tagline"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-larger-title-render
+          path: title-header-audit
+          if-no-files-found: error
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/implement-title-header-resize.yml
+          git add .github/workflows/implement-title-header-resize.yml
+          git commit -m "Remove title resize implementation workflow"
+          git push
