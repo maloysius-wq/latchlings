@@ -1,0 +1,43 @@
+name: Start single Atlas traveler fix
+on:
+  push:
+    paths:
+      - '.github/workflows/start-single-atlas-traveler.yml'
+permissions:
+  contents: write
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record IN PROGRESS handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          title='### 2026-09-10 — Keep only the animated Atlas traveler'
+          if title not in s:
+              marker='## Current Work\n'
+              entry='''\n### 2026-09-10 — Keep only the animated Atlas traveler\n\n**Status: IN PROGRESS**\n\n**User goal:** Remove the duplicate static Latchling/guide that appears beside the current or newly reached Atlas island during the level-to-level journey. Keep only the guide that actually animates along the restored Skyway route.\n\n**Implementation plan:** Remove the normal current-stop `atlasGuideHtml()` injection from the Atlas node pennant while preserving the helper function for `atlasTraveler()`. Do not change route travel, cloud clearing, arrival timing, current-stop pennant text, unlock logic, board themes, story, cinematics, or puzzle data.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `game400-a.js`, and temporary self-removing GitHub Actions validation workflow/helper files only.\n\n**Validation plan:** Exercise ordinary 1→2 progression and a 10→11 crossing. Assert zero static `.atlas-guide` elements on a normal Atlas view, exactly one guide during active movement and that it is nested inside `.atlas-travel-token`, no second guide on source/destination nodes, and no guide left behind after a Level Select reward finishes. Recheck Next Level auto-continuation, reduced-motion behavior, responsive containment, JS syntax, and protected story/campaign hashes. Capture progression screenshots for manual visual review.\n\n**Deployment plan:** Commit this IN PROGRESS entry before product edits, implement and validate through a self-removing workflow, inspect the render artifact, verify GitHub Pages for the accepted clean state, then close this entry with exact commits/run/artifact/deployment details and confirm the permanent repository-access guard is again the only workflow.\n\n'''
+              if marker not in s: raise SystemExit('Current Work marker missing')
+              s=s.replace(marker,marker+entry,1)
+              p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m 'Start single Atlas traveler work'
+          git push
+      - name: Self-remove starter
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/start-single-atlas-traveler.yml
+          git commit -m 'Remove single Atlas traveler starter'
+          git push
