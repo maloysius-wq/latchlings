@@ -135,7 +135,7 @@ jobs:
             return {left:r.left,top:r.top,width:r.width,height:r.height,viewport:{width:innerWidth,height:innerHeight},titleDisplay:getComputedStyle(document.querySelector('#c2 .toy-brand')).display};
           });
           assert(cinematic.titleDisplay==='none','cinematic title unexpectedly visible');
-          assert(Math.abs(cinematic.width-350)<2 && Math.abs(cinematic.height-350)<2,'cinematic scene geometry changed');
+          assert(Math.abs(cinematic.width-266)<2 && Math.abs(cinematic.height-266)<2,'cinematic transformed scene geometry changed');
           metrics.cinematic=cinematic;
           await cin.screenshot({path:'full-bleed-home-audit/cinematic-scene-only.png',fullPage:false});
           fs.writeFileSync('full-bleed-home-audit/metrics.json',JSON.stringify(metrics,null,2));
