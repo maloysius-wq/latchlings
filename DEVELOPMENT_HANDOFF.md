@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Make Skyway Atlas chapter story blurbs fully readable
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Fix the little story descriptions above the Atlas level selector because their text is visibly cut off. Preserve the strong Atlas layout while ensuring every displayed blurb is a complete thought rather than an abruptly clamped fragment.
 
@@ -50,6 +50,17 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render all eight chapter headers at 390x844, 390x700, 360x640, and 320x568. Assert the visible Atlas blurb has no line clamp, hidden overflow, ellipsis, or clipped text; verify the intended normal/compact variant is selected at the correct breakpoint, the chapter header remains within the viewport, the Atlas map retains useful height, and there is no horizontal/vertical shell overflow. Recheck chapter navigation, waypoint navigation, Continue, and source hashes for story/campaign files. Manually inspect contact sheets for readability and visual balance.
 
 **Deployment plan:** Commit this IN PROGRESS handoff before product edits, implement and validate through a self-removing workflow, inspect renders, verify GitHub Pages on the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, run/artifact details, and any remaining risk.
+
+#### Completion summary
+
+- **Result:** COMPLETED. The Skyway Atlas chapter header no longer truncates canonical story copy with CSS line clamps or hides the description on very short screens. Instead, the Atlas now owns eight concise chapter blurbs plus eight tighter low-height variants, each written as a complete thought. The fuller canonical chapter descriptions in `story400.js` remain unchanged for Story & Residents and other narrative surfaces.
+- **Responsive behavior:** Viewports above 720px show the richer concise Atlas blurb; viewports at 720px and below show the compact complete variant. The paragraph no longer uses `-webkit-line-clamp`, clipped overflow, or the previous sub-600px `display:none` behavior. Short-screen typography was tuned so the header can grow naturally without crowding the route map.
+- **Product files and commits:** `game400-a.js` and `style400-skyway-atlas.css` changed in accepted product commit `ed4dfbf1cfa5c557387389a045aca7bd375561bf` (`Keep Atlas chapter blurbs fully readable`). The temporary validator self-removed in clean-state commit `973f305c3e4730ac0f6bb5c4d1c508771e865dda` (`Remove Atlas chapter blurb validator`).
+- **Acceptance:** GitHub Actions run `34528862439` (`Fix Atlas chapter blurb fit`) completed successfully and printed `ATLAS_BLURB_FIT_ACCEPTED views=32`. It rendered all eight chapter headers at 390×844, 390×700, 360×640, and 320×568; asserted exact visible copy/variant selection, no clipping or line clamp, no vertical component overlap, no shell or horizontal overflow, preserved map height, chapter/waypoint navigation, and Continue launch behavior.
+- **Scope protection:** SHA-256 checks confirmed `story400.js`, `story-grounding400.js`, `cinematics400.js`, `cinematic-dialogue400.js`, and all eight `campaign400-*.js` files were unchanged.
+- **Artifact / visual review:** Acceptance artifact `atlas-chapter-blurb-renders`, artifact ID `10172686083`, contains 32 screenshots plus the JSON report. Manual contact-sheet review at all four tested sizes confirmed all chapter blurbs read as complete thoughts, maintain visual hierarchy, and do not squeeze the Atlas route area; the 320×568 layouts remain especially clean.
+- **Deployment:** GitHub Pages run `34528960586` completed successfully for clean accepted state `973f305c3e4730ac0f6bb5c4d1c508771e865dda`.
+- **Remaining risk / next action:** No known blocker remains. Future Atlas header copy should be added through the dedicated full/compact blurb pair and checked at the same short-phone breakpoint so narrative copy is never silently clipped again.
 
 
 ### 2026-09-10 — Diversify Skyway Atlas route geometry
