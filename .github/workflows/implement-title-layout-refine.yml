@@ -1,0 +1,169 @@
+name: Implement Little Home Layout Refinement
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/implement-title-layout-refine.yml'
+permissions:
+  contents: write
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Refine title island and controls layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('title-island-concepts/index.html')
+          s=p.read_text()
+          changes={
+            '#c2 .toy-brand{top:62px;left:8px;right:8px}':'#c2 .toy-brand{top:70px;left:8px;right:8px}',
+            '#c2 .toy-brand{left:4px;right:4px}':'#c2 .toy-brand{top:68px;left:4px;right:4px}',
+            '.scene{position:absolute;left:10px;right:10px;top:174px;height:399px;z-index:5}':'.scene{position:absolute;left:10px;right:10px;top:174px;height:399px;z-index:5}\n#c2 .scene{top:196px}',
+            '#c2 .play{left:28px;right:28px;top:590px;height:60px;border:2px solid #c8a76a;border-radius:22px;clip-path:none;background:#F5DEAC;box-shadow:inset 0 2px 0 rgba(255,255,255,.62),inset 0 -3px 0 rgba(139,104,53,.12),0 5px 0 #b98e4e,0 11px 18px rgba(99,76,40,.14);filter:none;color:#29445c;font-size:23px;font-weight:950;letter-spacing:.018em;text-shadow:0 1px 0 rgba(255,250,235,.70);gap:9px;transition:translate .14s ease,box-shadow .14s ease,filter .14s ease;overflow:hidden}':'#c2 .play{left:22px;right:22px;top:608px;height:72px;border:2px solid #c8a76a;border-radius:24px;clip-path:none;background:#F5DEAC;box-shadow:inset 0 2px 0 rgba(255,255,255,.62),inset 0 -3px 0 rgba(139,104,53,.12),0 5px 0 #b98e4e,0 11px 18px rgba(99,76,40,.14);filter:none;color:#29445c;font-size:25px;font-weight:950;letter-spacing:.018em;text-shadow:0 1px 0 rgba(255,250,235,.70);gap:10px;transition:translate .14s ease,box-shadow .14s ease,filter .14s ease;overflow:hidden}',
+            '#c2 .play:before{content:"";position:absolute;inset:5px;border:1px solid rgba(145,110,60,.30);border-radius:16px;box-shadow:inset 0 1px rgba(255,255,255,.46);pointer-events:none}':'#c2 .play:before{content:"";position:absolute;inset:6px;border:1px solid rgba(145,110,60,.30);border-radius:18px;box-shadow:inset 0 1px rgba(255,255,255,.46);pointer-events:none}',
+            '#c2 .play svg{width:27px;height:27px;padding:6px;border-radius:50%;fill:#29445c;background:rgba(255,255,255,.36);box-shadow:inset 0 1px 2px rgba(133,98,48,.13),0 1px 0 rgba(255,255,255,.56)}':'#c2 .play svg{width:31px;height:31px;padding:7px;border-radius:50%;fill:#29445c;background:rgba(255,255,255,.36);box-shadow:inset 0 1px 2px rgba(133,98,48,.13),0 1px 0 rgba(255,255,255,.56)}',
+            '#c2 .secondary{left:28px;right:28px;top:663px;gap:9px}':'#c2 .secondary{left:22px;right:22px;top:694px;gap:10px}',
+            '#c2 .secondary button{height:78px;border:2px solid #c8a76a;border-radius:20px;clip-path:none;padding:10px 11px 10px 14px;background:#F5DEAC;box-shadow:inset 0 2px 0 rgba(255,255,255,.58),inset 0 -3px 0 rgba(139,104,53,.11),0 4px 0 #b98e4e,0 9px 14px rgba(99,76,40,.13);filter:none;color:#29445c;text-shadow:0 1px 0 rgba(255,250,235,.68);grid-template-columns:1fr 34px;column-gap:7px;transition:translate .14s ease,box-shadow .14s ease,filter .14s ease;position:relative;overflow:hidden}':'#c2 .secondary button{height:96px;border:2px solid #c8a76a;border-radius:22px;clip-path:none;padding:13px 13px 13px 16px;background:#F5DEAC;box-shadow:inset 0 2px 0 rgba(255,255,255,.58),inset 0 -3px 0 rgba(139,104,53,.11),0 4px 0 #b98e4e,0 9px 14px rgba(99,76,40,.13);filter:none;color:#29445c;text-shadow:0 1px 0 rgba(255,250,235,.68);grid-template-columns:1fr 38px;column-gap:8px;transition:translate .14s ease,box-shadow .14s ease,filter .14s ease;position:relative;overflow:hidden}',
+            '#c2 .secondary button:before{content:"";position:absolute;inset:5px;border:1px solid rgba(145,110,60,.27);border-radius:14px;box-shadow:inset 0 1px rgba(255,255,255,.42);pointer-events:none}':'#c2 .secondary button:before{content:"";position:absolute;inset:6px;border:1px solid rgba(145,110,60,.27);border-radius:16px;box-shadow:inset 0 1px rgba(255,255,255,.42);pointer-events:none}',
+            '#c2 .secondary strong{font-size:15px;line-height:1;color:#29445c;letter-spacing:.006em}':'#c2 .secondary strong{font-size:17px;line-height:1;color:#29445c;letter-spacing:.006em}',
+            '#c2 .secondary span{font-size:9.5px;line-height:1.16;color:#705f45;margin-top:5px;font-weight:800}':'#c2 .secondary span{font-size:10.5px;line-height:1.18;color:#705f45;margin-top:6px;font-weight:800}',
+            '#c2 .secondary svg{width:31px;height:31px;padding:5px;border-radius:50%;stroke:#29445c;background:rgba(255,255,255,.34);box-shadow:inset 0 1px 2px rgba(133,98,48,.12),0 1px 0 rgba(255,255,255,.54);stroke-width:1.8}':'#c2 .secondary svg{width:35px;height:35px;padding:6px;border-radius:50%;stroke:#29445c;background:rgba(255,255,255,.34);box-shadow:inset 0 1px 2px rgba(133,98,48,.12),0 1px 0 rgba(255,255,255,.54);stroke-width:1.8}'
+          }
+          for old,new in changes.items():
+              if old not in s:
+                  raise SystemExit('Expected CSS not found: '+old[:100])
+              s=s.replace(old,new,1)
+          compact='''\n@media(max-width:350px){\n#c2 .scene{top:190px}\n#c2 .play{left:16px;right:16px;top:546px;height:68px;font-size:24px;border-radius:22px}\n#c2 .play:before{inset:5px;border-radius:16px}\n#c2 .play svg{width:29px;height:29px;padding:6px}\n#c2 .secondary{left:16px;right:16px;top:626px;gap:8px}\n#c2 .secondary button{height:68px;border-radius:18px;padding:8px 9px 8px 11px;grid-template-columns:1fr 30px;column-gap:5px}\n#c2 .secondary button:before{inset:4px;border-radius:13px}\n#c2 .secondary strong{font-size:15px}\n#c2 .secondary span{font-size:9px;line-height:1.08;margin-top:4px}\n#c2 .secondary svg{width:29px;height:29px;padding:5px}\n}\n'''
+          anchor='#c2 .play:active,#c2 .secondary button:active{translate:0 3px;filter:brightness(.99);box-shadow:inset 0 2px 0 rgba(255,255,255,.52),inset 0 -2px 0 rgba(139,104,53,.12),0 2px 0 #b98e4e,0 5px 8px rgba(99,76,40,.12)}\n'
+          if compact.strip() not in s:
+              if anchor not in s:
+                  raise SystemExit('Compact insertion anchor not found')
+              s=s.replace(anchor,anchor+compact,1)
+          p.write_text(s)
+          PY
+          git diff -- title-island-concepts/index.html
+      - name: Static assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('title-island-concepts/index.html').read_text()
+          for needle in [
+            '#c2 .toy-brand{top:70px;left:8px;right:8px}',
+            '#c2 .scene{top:196px}',
+            '#c2 .play{left:22px;right:22px;top:608px;height:72px',
+            '#c2 .secondary{left:22px;right:22px;top:694px;gap:10px}',
+            '#c2 .secondary button{height:96px',
+            '#c2 .toy-brand{top:68px;left:4px;right:4px}',
+            '#c2 .scene{top:190px}',
+            '#c2 .play{left:16px;right:16px;top:546px;height:68px',
+            '#c2 .secondary{left:16px;right:16px;top:626px;gap:8px}',
+            'body.cinematic-mode #c2 .scene{left:50%!important;right:auto!important;top:50%!important'
+          ]:
+              assert needle in s, needle
+          print('LAYOUT_REFINEMENT_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser tooling
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        shell: bash
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-layout-http.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/latchlings-layout-http.log
+          exit 1
+      - name: Render and verify production layouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p title-layout-audit
+          cat > title-layout-audit/audit.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          async function audit(width,height,label){
+            const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
+            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+            await page.addInitScript(()=>localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1})));
+            await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+            await page.waitForTimeout(1700);
+            const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+            if(!frame)throw new Error(label+': production title iframe did not load');
+            const m=await frame.evaluate(()=>{
+              const r=s=>document.querySelector(s).getBoundingClientRect();
+              const spans=[...document.querySelectorAll('#c2 .toy-logo span')].map(x=>x.getBoundingClientRect());
+              const logo={left:Math.min(...spans.map(x=>x.left)),right:Math.max(...spans.map(x=>x.right)),top:Math.min(...spans.map(x=>x.top)),bottom:Math.max(...spans.map(x=>x.bottom))};
+              const tag=r('#c2 .toy-tagline'), progress=r('#c2 .progress'), settings=r('#c2 .settings'), tree=r('#c2 .little-home-tree'), cottage=r('#c2 .cottage'), grass=r('#c2 .island-top'), side=r('#c2 .island-side'), play=r('#c2 .play'), secondary=r('#c2 .secondary'), secButtons=[...document.querySelectorAll('#c2 .secondary button')].map(x=>x.getBoundingClientRect()), phone=r('#c2 .phone');
+              return {innerWidth,innerHeight,scrollWidth:document.documentElement.scrollWidth,phone:{top:phone.top,bottom:phone.bottom,left:phone.left,right:phone.right},logo,tag:{left:tag.left,right:tag.right,top:tag.top,bottom:tag.bottom},progress:{top:progress.top,bottom:progress.bottom},settings:{top:settings.top,bottom:settings.bottom},visibleTop:Math.min(tree.top,cottage.top,grass.top),islandBottom:side.bottom,play:{left:play.left,right:play.right,top:play.top,bottom:play.bottom,width:play.width,height:play.height},secondary:{left:secondary.left,right:secondary.right,top:secondary.top,bottom:secondary.bottom,width:secondary.width,height:secondary.height},secButtons:secButtons.map(x=>({left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height})),titleSize:getComputedStyle(document.querySelector('#c2 .toy-logo span')).fontSize,tagSize:getComputedStyle(document.querySelector('#c2 .toy-tagline')).fontSize};
+            });
+            fs.writeFileSync(`title-layout-audit/metrics-${label}.json`,JSON.stringify(m,null,2));
+            console.log(label,JSON.stringify(m));
+            if(errors.length)throw new Error(label+': page errors '+errors.join(' | '));
+            if(m.scrollWidth>m.innerWidth)throw new Error(label+': horizontal overflow');
+            if(m.logo.top<m.progress.bottom+6||m.logo.top<m.settings.bottom+6)throw new Error(label+': title still cramped against top controls');
+            if(m.tag.bottom>m.visibleTop-14)throw new Error(label+': tagline/island breathing room too small');
+            if(m.play.top<m.islandBottom+18)throw new Error(label+': island/play gap too small');
+            if(m.play.bottom>m.phone.bottom-4)throw new Error(label+': Play clipped');
+            for(const b of m.secButtons){if(b.bottom>m.phone.bottom-4)throw new Error(label+': secondary button clipped'); if(b.height<64)throw new Error(label+': secondary button not enlarged enough');}
+            if(label==='390x844'){
+              if(m.titleSize!=='62px'||m.tagSize!=='16px')throw new Error(label+': approved title hierarchy changed');
+              if(m.play.height<70||m.play.width<340)throw new Error(label+': Play not enlarged enough');
+              if(m.secButtons.some(b=>b.height<94))throw new Error(label+': standard secondary controls not enlarged enough');
+              if(m.phone.bottom-Math.max(...m.secButtons.map(b=>b.bottom))>65)throw new Error(label+': too much unused lower space remains');
+            } else {
+              if(m.titleSize!=='56px'||m.tagSize!=='14px')throw new Error(label+': compact title fallback changed');
+              if(m.phone.bottom-Math.max(...m.secButtons.map(b=>b.bottom))>12)throw new Error(label+': compact bottom controls do not fill lower screen');
+            }
+            await page.screenshot({path:`title-layout-audit/production-home-${label}.png`,fullPage:true});
+            await page.close();
+          }
+          await audit(390,844,'390x844');
+          await audit(390,700,'390x700');
+          const scenePage=await browser.newPage({viewport:{width:390,height:300},deviceScaleFactor:1,reducedMotion:'reduce'});
+          await scenePage.goto('http://127.0.0.1:4173/title-island-concepts/?c=2&embed=1&cinematic=1',{waitUntil:'networkidle'});
+          const scene=await scenePage.evaluate(()=>({brand:getComputedStyle(document.querySelector('#c2 .toy-brand')).display,sceneTop:getComputedStyle(document.querySelector('#c2 .scene')).top,transform:getComputedStyle(document.querySelector('#c2 .scene')).transform,overflow:document.documentElement.scrollWidth>innerWidth}));
+          if(scene.brand!=='none'||scene.overflow)throw new Error('cinematic scene-only regression '+JSON.stringify(scene));
+          fs.writeFileSync('title-layout-audit/cinematic-mode.json',JSON.stringify(scene,null,2));
+          await scenePage.screenshot({path:'title-layout-audit/cinematic-scene-only.png'});
+          await scenePage.close();
+          console.log('LAYOUT_REFINEMENT_BROWSER_OK');
+          await browser.close();
+          JS
+          node title-layout-audit/audit.mjs
+      - name: Commit product change
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add title-island-concepts/index.html
+          git commit -m "Refine Little Home title screen spacing and controls"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: little-home-layout-refinement-render
+          path: title-layout-audit
+          if-no-files-found: error
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/implement-title-layout-refine.yml
+          git add .github/workflows/implement-title-layout-refine.yml
+          git commit -m "Remove layout refinement implementation workflow"
+          git push
