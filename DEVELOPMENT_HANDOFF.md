@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Diversify Skyway Atlas route geometry
+
+**Status: IN PROGRESS**
+
+**User goal:** Keep the approved Skyway Atlas direction, but remove the repetitive feeling caused by the same island zig-zag geometry recurring across most chapter and ten-level progressions. Make different stretches feel like distinct journeys rather than the same route wearing a new chapter palette.
+
+**Implementation plan:** Replace the current five range-only coordinate layouts with a substantially larger deterministic route-layout system keyed by both chapter and waypoint stretch. Author visibly distinct path families including arcs, hooks, S-curves, ridge traverses, center climbs, side climbs, clustered hops, broad diagonals, shallow valleys, and selective switchbacks. Vary route curvature as well as island positions so mirrored or related layouts do not read as identical. Preserve bottom-to-top progression readability, node ordering, current/completed/locked semantics, milestone emphasis, chapter scenery, and all level-launch/progress behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `game400-a.js`, and a temporary self-removing GitHub Actions validation workflow. `style400-skyway-atlas.css` should remain unchanged unless responsive validation exposes a geometry-specific need. Campaign puzzle files, story/cinematics, title screen, audio, progression storage, and gameplay are out of scope.
+
+**Validation plan:** Render all 40 chapter/range combinations at 390x844 and representative compact/tall viewports. Programmatically verify ten nodes and nine route segments per stretch, 44px+ targets, map containment, no horizontal overflow, unchanged launch/progression semantics, and no campaign/story source changes. Add a route-signature audit to ensure layouts do not collapse back to the old five-repeat pattern and manually inspect contact sheets for meaningful visual variety, avoiding excessive crossings or illegible clustering.
+
+**Deployment plan:** Commit this IN PROGRESS handoff before product edits. Implement and validate through a self-removing workflow, inspect the resulting renders, refine if needed, verify GitHub Pages on the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, run/artifact details, repository hygiene, and remaining risk.
+
+
 
 ### 2026-09-10 — Rebuild Level Select as the Skyway Atlas
 
