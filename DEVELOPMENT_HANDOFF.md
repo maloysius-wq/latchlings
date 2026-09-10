@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Refine Little Home title spacing, island placement, and bottom controls
+
+**Status: IN PROGRESS**
+
+**User goal:** Give the enlarged Little Home title screen more breathing room. Move the title block slightly downward so it is less cramped against the top progress/settings controls, move the floating island down enough to open space beneath the tagline, and enlarge/rebalance the Play, Daily Puzzle, and Level Select controls so they occupy more of the lower screen instead of leaving a large empty bottom area.
+
+**Implementation plan:** Refine only the canonical `#c2` Little Home title layout in `title-island-concepts/index.html`. Keep the approved 62px normal title / 16px tagline hierarchy and Wobbly Toy Letters treatment, but lower the brand block modestly and lower the island scene more substantially. Increase the primary and secondary control footprints and typography/icon scale on the standard production frame. Add narrow-frame overrides so the 390×700 production shell remains usable without bottom clipping or island/button collision. Preserve the title-drop animation, Little Home art/residents, progress/settings controls, button actions, story-stage props, cinematic scene-only mode, textures, and gameplay/story/campaign behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and `title-island-concepts/index.html`; temporary self-removing screenshot-validation workflow(s) may be used. No gameplay, campaign, solver, audio, cinematic dialogue, story, or interaction behavior changes are intended.
+
+**Validation plan:** Render the actual production shell at 390×844 and 390×700, measure title/top-control clearance, tagline-to-visible-island clearance, island-to-Play clearance, button bounds, and bottom safe area. Assert no horizontal overflow or bottom clipping, verify all three controls remain fully visible/clickable, verify cinematic scene-only mode is unchanged, and manually inspect the rendered screenshots for balance rather than relying only on geometry.
+
+**Deployment plan:** Commit this IN PROGRESS handoff before product edits, implement and visually validate the spacing/control refinement, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm `validate-repository-access-guard.yml` is again the only durable workflow, then close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits, validation run/artifact IDs, deployment, and any remaining risk.
+
+---
+
 ### 2026-09-10 — Enlarge the Little Home title and tagline
 
 **Status: COMPLETED**
