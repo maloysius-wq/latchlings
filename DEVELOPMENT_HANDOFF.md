@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Restore Atlas level-to-level journey payoff and deeply theme puzzle-board squares
+
+**Status: IN PROGRESS**
+
+**User goal:** Make level completion visibly continue through the Skyway Atlas instead of silently unlocking the next level. After a clear, show the completed stop, the resident/guide traveling onward, the newly restored route lighting up, the next island cloud clearing, and the next destination arriving as a real progression reward. Also push visual uniqueness much farther inside the puzzle itself by styling the actual board squares, materials, patterns, and fixtures so each ten-level stretch has its own recognizable surface treatment while still belonging to its chapter and plot/location.
+
+**Implementation plan:** Add a transient Atlas journey-reward state to the runtime and route both Next Level and Level Select actions from a newly cleared level through it. For normal level-to-level travel, render the just-cleared stop as the temporary source state, animate the restored route and a Latchling/guide along the actual Atlas geometry, dissolve the destination cloud, and land on the newly current stop with a chapter-specific travel line. For ten-level and chapter boundaries, use a two-stage waypoint/region crossing so the outgoing milestone celebrates before the next stretch/region reveals its first stop. Respect reduced motion and allow the player to remain on the Atlas when they chose Level Select; Next Level should continue automatically only after the reward has visibly played. Separately, add a maintainable board-surface system keyed by chapter plus ten-level range. The actual `.cell` squares will combine chapter-specific motifs/material language with five distinct range-pattern families, per-tile variation, range-specific shape/detail changes, and coordinated board-frame/nest/fixture treatment, producing 40 visually distinct chapter/range combinations without touching puzzle geometry or solution data.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `game400-a.js`, `game400-b.js`, `index.html`, new `style400-atlas-progression.css`, new `style400-board-surfaces.css`, and temporary self-removing GitHub Actions validation workflow(s). Existing campaign level definitions, solution data, story canon, cinematic scripts, audio, and title-screen work are out of scope.
+
+**Validation plan:** Exercise three completion paths: an ordinary same-range clear (1→2), a ten-level crossing (10→11), and a chapter crossing (50→51). Assert progression persistence, source celebration, journey token visibility/movement, route-restoration state, destination cloud-clearing class/state, destination becoming current, Next Level auto-continuation only after the payoff, Level Select staying on the Atlas, and reduced-motion fallback. Render representative boards for all 40 chapter/range combinations at phone size plus compact/tall spot checks; verify 40 distinct computed surface signatures, actual `.cell` background/pattern differences, readable Latchlings/nests/mechanics, safe contrast, no overflow, and unchanged campaign/story/cinematic hashes. Generate contact sheets and manually inspect both the Atlas payoff moments and board-surface matrix before acceptance.
+
+**Deployment plan:** Commit this IN PROGRESS journal entry before product changes. Implement through a self-removing workflow, iterate if automated or visual review finds weak spots, verify GitHub Pages on the accepted clean state, close this same entry with exact product/cleanup commits, run/artifact IDs, visual findings, remaining risk, and confirm the durable repository-access guard is again the only workflow.
+
+
 ### 2026-09-10 — Make Skyway Atlas chapter story blurbs fully readable
 
 **Status: COMPLETED**
