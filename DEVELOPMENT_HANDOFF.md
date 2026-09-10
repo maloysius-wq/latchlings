@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Make the Little Home sky full-bleed to the screen edges
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Remove the visible inner scene boundary on the initial Little Home title screen. Clouds should only clip at the physical screen edge, and the sky scene should extend continuously to the full viewport instead of ending at a centered portrait frame with plain light-blue gutters.
 
@@ -50,6 +50,19 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render the actual production shell at 390×844 and 390×700. Assert the home wrapper and iframe span the viewport, the embedded phone matches the iframe dimensions, no horizontal overflow exists, no solid-color side gutters remain, edge clouds clip only against the viewport, the title/island/buttons remain within accepted geometry, all three buttons remain visible on the compact screen, and cinematic scene-only composition is unchanged. Manually inspect both screenshots.
 
 **Deployment plan:** Commit this IN PROGRESS state before product edits, implement and screenshot-test the full-bleed treatment, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm `validate-repository-access-guard.yml` is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commit/run/artifact details and remaining risk.
+
+
+#### Completion summary
+
+**Result:** COMPLETED. The visible inner portrait-frame boundary on Little Home has been removed. The production home wrapper now fills `100vw × 100svh` instead of preserving a centered 390:844 aspect-ratio box, and the embedded Little Home `.phone` likewise fills the iframe viewport. The sky gradient, skywash, and animated clouds therefore continue to the physical screen edges; edge clouds are clipped only by the actual viewport rather than by a narrower internal frame. Product commit: `70df99d0cbb565eeb6f8e96f6da15c8e91f7bba1` (`Make Little Home sky full bleed`). Files changed: `style400-ui.css` and `title-island-concepts/index.html`.
+
+**Compact behavior:** The former 390×700 compact appearance had been triggered accidentally because the aspect-ratio-constrained iframe shrank to roughly 323px wide. With the iframe now truly full width, that compact layout is preserved intentionally through a `max-height:740px` production rule. The approved compact title/tagline, island position, Play button, and Daily Puzzle / Level Select sizing remain intact while the sky now fills the entire 390px width. No button action, Little Home art, story, gameplay, campaign, solver, audio, or cinematic dialogue behavior changed.
+
+**Validation and visual acceptance:** Successful acceptance run `34498020576` passed static checks and Chromium geometry/overflow tests at 390×844, 390×700, and 430×932, plus cinematic scene-only regression coverage. Artifact `10160634925` (`full-bleed-home-sky-render`) contains the three production renders, cinematic regression image, and measured geometry. At both 390-wide production targets, wrapper, iframe, and inner phone measure the full viewport width; the left and right edge clouds extend beyond x=0 / x=viewport and therefore clip naturally at the physical screen edge; there is no horizontal overflow; and title, tagline, island, Play, and secondary controls remain inside the viewport. Manual inspection of the 390×844 and 390×700 screenshots confirmed that the plain side gutters and visible inner scene boundary are gone and the existing composition remains balanced. The first two implementation-helper attempts committed no product files: run `34497685505` failed because its test script was placed outside the Node module path, and run `34497853561` failed because the regression assertion measured the cinematic scene before accounting for its existing `.76` transform. Both were validation-harness issues only and were corrected before product commit.
+
+**Deployment and hygiene:** The successful implementation helper self-removed on clean product state `80029f73dff18d62edaa67916dc7541b1557f11a`. GitHub Pages run `34498099572` completed successfully for that clean state. Before this documentation-only closeout helper, `.github/workflows/validate-repository-access-guard.yml` was the only durable workflow. This helper self-removes after recording completion.
+
+**Remaining risk / next action:** No known blocker remains. The actual compact and standard 390px-wide shells were visually reviewed, and a 430×932 geometry regression also passed. Future substantially different viewport shapes should receive their own visual acceptance pass, but the home sky is now structurally full-bleed rather than dependent on a portrait iframe width.
 
 ---
 
