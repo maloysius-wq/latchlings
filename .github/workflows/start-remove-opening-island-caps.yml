@@ -1,0 +1,44 @@
+name: Start Opening Island Cap Cleanup Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/start-remove-opening-island-caps.yml'
+permissions:
+  contents: write
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record current work
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          marker='## Current Work\n'
+          entry='''\n### 2026-09-10 — Remove stray green caps from cinematic floating islands\n\n**Status: IN PROGRESS**\n\n**User goal:** Remove the green circles/pills visibly floating above the islands during the opening cinematic.\n\n**Implementation plan:** Inspect the shared floating-island styling and remove the obsolete legacy island pseudo-element that survived the newer textured island construction. Preserve the actual textured grass top, island geometry, route lines, props, characters, and all cinematic/story behavior. Because the stray cap is part of the shared island primitive rather than authored story content, remove the artifact from that primitive so it cannot reappear in later island-based cinematics either.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and cinematic CSS only; temporary self-removing screenshot validation workflow may be used. No dialogue, story, gameplay, campaign, audio, route logic, or title-screen behavior changes are intended.\n\n**Validation plan:** Render opening beats 1, 3, and 4 at phone size, assert the legacy `.cin-island::after` cap is not rendered while `.cin-island-top` remains visible, verify route/prop/island counts are unchanged, and manually inspect screenshots for the reported floating green artifacts. Run a representative later island-based cinematic regression to ensure the shared primitive remains visually intact.\n\n**Deployment plan:** Commit this IN PROGRESS handoff before the CSS edit, implement and screenshot-test the cleanup, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm the repository-access guard is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commit/run/artifact details and remaining risk.\n\n---\n'''
+          if '### 2026-09-10 — Remove stray green caps from cinematic floating islands' not in s:
+              if marker not in s: raise SystemExit('Current Work marker missing')
+              s=s.replace(marker, marker+entry, 1)
+              p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Start cinematic island cap cleanup handoff"
+          git push
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/start-remove-opening-island-caps.yml
+          git add .github/workflows/start-remove-opening-island-caps.yml
+          git commit -m "Remove island cap handoff starter"
+          git push
