@@ -1,0 +1,106 @@
+name: Deep Story Residents Opening Diagnostic
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-story-residents-opening-clipping.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Start local server
+        shell: bash
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-http.log 2>&1 &
+      - name: Deep diagnostic renders
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deep-audit/story deep-audit/opening
+          cat > deep-audit.mjs <<'JS'
+          import {chromium} from 'playwright';
+          import fs from 'fs';
+          const browser=await chromium.launch({headless:true});
+          const sizes=[[320,568],[360,640],[390,700],[390,844],[430,932]];
+          const report={story:{},opening:{}};
+          const rect=o=>o?{x:+o.x.toFixed(1),y:+o.y.toFixed(1),width:+o.width.toFixed(1),height:+o.height.toFixed(1),right:+o.right.toFixed(1),bottom:+o.bottom.toFixed(1)}:null;
+          for(const [width,height] of sizes){
+            const key=`${width}x${height}`;
+            const page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});
+            await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+            await page.waitForFunction(()=>window.LatchlingsStoryTheme&&window.LatchlingsCinematics);
+            await page.evaluate(()=>{localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{}})); if(typeof openStoryScreen==='function')openStoryScreen();});
+            await page.waitForTimeout(180);
+            report.story[key]=await page.evaluate(()=>({
+              doc:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth},
+              people:[...document.querySelectorAll('#storyCast .story-person-portrait')].map(card=>{
+                const avatar=card.querySelector('.story-character-avatar'),eyes=[...card.querySelectorAll('.story-character-avatar-eyes i')],mouth=card.querySelector('.story-character-avatar-mouth');
+                const ar=avatar?.getBoundingClientRect(),er=eyes.map(e=>e.getBoundingClientRect()),mr=mouth?.getBoundingClientRect();
+                return {name:card.dataset.character,avatar:ar&&{x:ar.x,y:ar.y,width:ar.width,height:ar.height},eyes:eyes.map((e,i)=>{const cs=getComputedStyle(e),r=er[i];return {display:cs.display,visibility:cs.visibility,opacity:cs.opacity,bg:cs.backgroundColor,width:r.width,height:r.height,x:r.x,y:r.y}}),mouth:mouth?{class:avatar.className,display:getComputedStyle(mouth).display,width:mr.width,height:mr.height,borderTop:getComputedStyle(mouth).borderTopWidth,borderBottom:getComputedStyle(mouth).borderBottomWidth,bg:getComputedStyle(mouth).backgroundColor}:null};
+              })
+            }));
+            await page.screenshot({path:`deep-audit/story/story-${key}.png`,fullPage:true});
+            await page.evaluate(()=>{if(typeof storyModal==='function')storyModal();});
+            await page.waitForTimeout(100);
+            await page.locator('#modal').screenshot({path:`deep-audit/story/story-modal-${key}.png`});
+            await page.evaluate(()=>{if(typeof closeModal==='function')closeModal(); if(window.LatchlingsCinematics.active)window.LatchlingsCinematics.finish(true); window.LatchlingsCinematics.show('opening',{markSeen:false});});
+            await page.waitForTimeout(250);
+            report.opening[key]=[];
+            for(let beat=0;beat<7;beat++){
+              if(beat>0){await page.evaluate(()=>window.LatchlingsCinematics.next());await page.waitForTimeout(180)}
+              const metrics=await page.evaluate(()=>{
+                const stage=document.getElementById('cinematicStage'),sr=stage.getBoundingClientRect();
+                const R=e=>{if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom}};
+                const within=(r,pad=0)=>r&&r.left>=sr.left-pad&&r.right<=sr.right+pad&&r.top>=sr.top-pad&&r.bottom<=sr.bottom+pad;
+                const bubbles=[...stage.querySelectorAll('.cin-speech-bubble')].map(b=>{const r=b.getBoundingClientRect();return{speaker:b.closest('[data-speaker]')?.dataset.speaker||'',text:b.innerText,rect:R(b),scrollHeight:b.scrollHeight,clientHeight:b.clientHeight,scrollWidth:b.scrollWidth,clientWidth:b.clientWidth,clippedY:b.scrollHeight>b.clientHeight+1,clippedX:b.scrollWidth>b.clientWidth+1,insideStage:within(r,2)}});
+                const portraits=[...stage.querySelectorAll('.dialogue-portrait')].map(p=>({name:p.dataset.character,rect:R(p),insideStage:within(p.getBoundingClientRect(),2)}));
+                const demo=stage.querySelector('.cin-demo-board'),dr=demo?.getBoundingClientRect();
+                const demoChildren=demo?[...demo.querySelectorAll('.cin-demo-label,.cin-demo-track,.demo-mover,.demo-rock,.demo-blocker,.demo-nest,.cin-demo-arrow')].map(e=>{const r=e.getBoundingClientRect();return{cls:e.className||e.tagName,rect:R(e),insideBoard:dr? r.left>=dr.left-2&&r.right<=dr.right+2&&r.top>=dr.top-2&&r.bottom<=dr.bottom+2:true}}):[];
+                const copy=document.querySelector('.cinematic-copy'),next=document.getElementById('cinematicNext'),cr=copy?.getBoundingClientRect(),nr=next?.getBoundingClientRect();
+                return{beat:window.LatchlingsCinematics.beat+1,visual:document.getElementById('cinematicOverlay')?.dataset.visual,stage:R(stage),bubbles,portraits,demo:demo?{rect:R(demo),insideStage:within(dr,2),children:demoChildren}:null,copy:copy?{scrollHeight:copy.scrollHeight,clientHeight:copy.clientHeight}:null,next:next?{rect:R(next),insideCopy:cr?nr.bottom<=cr.bottom+copy.scrollTop+2:true}:null,doc:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth}};
+              });
+              report.opening[key].push(metrics);
+              await page.locator('.cinematic-shell').screenshot({path:`deep-audit/opening/opening-${key}-beat-${beat+1}.png`});
+            }
+            await page.close();
+          }
+          fs.writeFileSync('deep-audit/report.json',JSON.stringify(report,null,2));
+          const summary={story:{},opening:{}};
+          for(const [size,s] of Object.entries(report.story))summary.story[size]={people:s.people.map(p=>({name:p.name,eyes:p.eyes.map(e=>({display:e.display,opacity:e.opacity,width:e.width,height:e.height,bg:e.bg})),mouth:p.mouth}))};
+          for(const [size,beats] of Object.entries(report.opening))summary.opening[size]=beats.map(b=>({beat:b.beat,visual:b.visual,clippedBubbles:b.bubbles.filter(x=>x.clippedX||x.clippedY).map(x=>x.speaker),outsideBubbles:b.bubbles.filter(x=>!x.insideStage).map(x=>x.speaker),outsidePortraits:b.portraits.filter(x=>!x.insideStage).map(x=>x.name),demoOutside:!!b.demo&&!b.demo.insideStage,demoChildrenOutside:b.demo?.children.filter(x=>!x.insideBoard).map(x=>x.cls)||[],docOverflow:b.doc.scrollWidth>b.doc.clientWidth}));
+          fs.writeFileSync('deep-audit/summary.json',JSON.stringify(summary,null,2));
+          console.log(JSON.stringify(summary,null,2));
+          await browser.close();
+          JS
+          node deep-audit.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: story-residents-opening-baseline-deep-audit
+          path: deep-audit
+      - name: Self-remove
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f deep-audit.mjs package.json package-lock.json
+          git rm .github/workflows/audit-story-residents-opening-clipping.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remove Story Residents opening diagnostic"
+          git push
