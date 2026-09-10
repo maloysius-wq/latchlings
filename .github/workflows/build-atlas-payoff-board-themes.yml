@@ -13,305 +13,31 @@ jobs:
         with:
           fetch-depth: 0
       - name: Preserve protected source hashes
-        shell: bash
+        run: sha256sum story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js campaign400-*.js > /tmp/protected-before.sha
+      - name: Apply candidate
         run: |
-          set -euo pipefail
-          sha256sum story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js campaign400-*.js > /tmp/protected-before.sha
-      - name: Implement Atlas journey payoff and board surfaces
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          # Add the two modular presentation layers last so they can safely refine existing styles.
-          p=Path('index.html')
-          s=p.read_text()
-          needle='<link rel="stylesheet" href="style400-cinematics-geometry.css">'
-          addition=needle+'\n<link rel="stylesheet" href="style400-atlas-progression.css">\n<link rel="stylesheet" href="style400-board-surfaces.css">'
-          if 'style400-atlas-progression.css' not in s:
-              if needle not in s: raise SystemExit('index stylesheet insertion point missing')
-              s=s.replace(needle,addition,1)
-              p.write_text(s)
-
-          # game400-a.js: transient Atlas progression state + visual rendering hooks + board range metadata.
-          p=Path('game400-a.js')
-          s=p.read_text()
-          if 'let atlasRewardState=null' not in s:
-              s=s.replace('let progress=loadProgress();','let progress=loadProgress();\nlet atlasRewardState=null,atlasRewardTimers=[];',1)
-
-          travel='''const ATLAS_TRAVEL_LINES=[
- ["A fresh line of light stitches the meadow route back together.","The next island drifts into reach as the morning path brightens.","Another ordinary errand has a dependable way home."],
- ["Lanterns answer one another as the next shared path opens.","A neighbor-held stop turns into a route everyone can use.","Warm lights gather along the newly connected grove."],
- ["The anchor line hums, catches, and gives the drifting route a dependable stop.","Crystal light runs ahead through the cavern markers.","Another old Waykeeper stop wakes beneath the stone."],
- ["A suit-mark lane clicks into place and the market flow opens ahead.","Gold route inlays brighten beneath the next busy crossing.","Another market lane remembers how to carry a crowd."],
- ["Prism light bends across the gap and finds the next island.","The living route redraws itself in color instead of clinging to yesterday's map.","A new coordinate glows where the old route used to end."],
- ["Copper route lines tick forward and settle into a brand-new useful path.","A turner answers down the line and the next platform wakes.","The old maps make room for one more correct route."],
- ["A relay flashes, another answers, and the Foundry sends the route onward.","The next switchbank lights because someone else kept their part of the network moving.","Storm-blue current races ahead through the shared line."],
- ["Aurora light gathers around a route that did not exist yesterday.","The living Skyway shifts with the islands and opens the next way home.","Another drifting island returns to the same shared map."],
-];
-'''
-          if 'const ATLAS_TRAVEL_LINES=' not in s:
-              marker='const ATLAS_ROUTE_PATTERNS=['
-              if marker not in s: raise SystemExit('Atlas travel insertion marker missing')
-              s=s.replace(marker,travel+marker,1)
-
-          reward_funcs=r'''function atlasRewardChapter(L){return Math.max(1,Math.min(8,Math.ceil(L/50)))}
-function atlasRewardRange(L){return Math.max(0,Math.min(4,Math.floor(((L-1)%50)/10)))}
-function clearAtlasRewardTimers(){atlasRewardTimers.forEach(clearTimeout);atlasRewardTimers=[]}
-function atlasRewardTimer(fn,ms){const id=setTimeout(fn,ms);atlasRewardTimers.push(id);return id}
-function queueAtlasReward(from,to,stars){clearAtlasRewardTimers();atlasRewardState={from,to,stars,phase:'queued',autoAdvance:false,sourceChapter:atlasRewardChapter(from),sourceRange:atlasRewardRange(from),destChapter:atlasRewardChapter(to),destRange:atlasRewardRange(to)};return atlasRewardState}
-function cancelAtlasReward(){clearAtlasRewardTimers();atlasRewardState=null;const levels=document.getElementById('levels');if(levels)levels.classList.remove('atlas-reward-mode')}
-function atlasRewardCopy(r){if(r.destChapter!==r.sourceChapter)return {kicker:'Region restored',text:`${CHAPTERS[r.sourceChapter-1].theme} settles into the living map. ${CHAPTERS[r.destChapter-1].theme} glimmers into reach.`};if(r.destRange!==r.sourceRange)return {kicker:'Waypoint restored',text:`${ATLAS_WAYPOINTS[r.sourceChapter-1][r.sourceRange]} is connected. The Skyway bends toward ${ATLAS_WAYPOINTS[r.destChapter-1][r.destRange]}.`};const lines=ATLAS_TRAVEL_LINES[r.sourceChapter-1];return {kicker:'Skyway restored',text:lines[(r.from-1)%lines.length]}}
-function atlasRewardBanner(r,arrival=false){const map=document.getElementById('levelGrid');if(!map)return;map.querySelectorAll('.atlas-reward-banner').forEach(x=>x.remove());const copy=atlasRewardCopy(r),el=document.createElement('div');el.className='atlas-reward-banner'+(arrival?' arrival':'');el.innerHTML=`<span>${arrival?(r.destChapter!==r.sourceChapter?'New region':'Next stop'):copy.kicker}</span><b>${arrival?(r.destChapter!==r.sourceChapter?CHAPTERS[r.destChapter-1].theme:ATLAS_WAYPOINTS[r.destChapter-1][r.destRange]):copy.text}</b>`;map.appendChild(el)}
-function atlasCurveControl(a,b,i,profile=0){const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.max(1,Math.hypot(dx,dy)),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,bend=ATLAS_CURVE_PROFILES[profile][i%9];return [mx+(-dy/len)*bend,my+(dx/len)*bend]}
-function atlasTraveler(ch,a,b,profile=0,index=0,duration=1100){const map=document.getElementById('levelGrid');if(!map)return null;const token=document.createElement('div');token.className='atlas-travel-token';token.innerHTML=atlasGuideHtml(ch);token.style.left=a[0]+'%';token.style.top=a[1]+'%';map.appendChild(token);const c=atlasCurveControl(a,b,index,profile),anim=token.animate([{left:a[0]+'%',top:a[1]+'%',transform:'translate(-50%,-50%) scale(.86) rotate(-5deg)',offset:0},{left:c[0]+'%',top:c[1]+'%',transform:'translate(-50%,-50%) scale(1.08) rotate(4deg)',offset:.52},{left:b[0]+'%',top:b[1]+'%',transform:'translate(-50%,-50%) scale(.96) rotate(0deg)',offset:1}],{duration,easing:'cubic-bezier(.25,.72,.2,1)',fill:'forwards'});anim.onfinish=()=>token.classList.add('landed');return token}
-function atlasRevealDestination(r){const map=document.getElementById('levelGrid'),node=map&&map.querySelector(`.atlas-node[data-level="${r.to}"]`);if(!node)return;node.disabled=false;node.classList.remove('locked','reward-destination');node.classList.add('current','new-current','cloud-clearing');node.setAttribute('aria-label',`Level ${r.to}, current destination`);const route=map.querySelector(`.atlas-route[data-target="${r.to}"]`);if(route)route.classList.add('reward-restoring')}
-function finishAtlasReward(r){clearAtlasRewardTimers();const auto=!!r.autoAdvance,to=r.to;atlasRewardState=null;chapterView=r.destChapter;rangeView=r.destRange;renderChapter();const levels=document.getElementById('levels');if(levels)levels.classList.remove('atlas-reward-mode');if(auto)atlasRewardTimer(()=>startLevel(to),260)}
-function runAtlasRewardSame(r,reduced=false){const map=document.getElementById('levelGrid'),source=map&&map.querySelector(`.atlas-node[data-level="${r.from}"]`),dest=map&&map.querySelector(`.atlas-node[data-level="${r.to}"]`);if(source)source.classList.add('just-completed');atlasRewardBanner(r,false);if(reduced){atlasRevealDestination(r);atlasRewardTimer(()=>finishAtlasReward(r),420);return}const first=r.sourceChapter*50-49+r.sourceRange*10,points=atlasLayout(r.sourceChapter,r.sourceRange),a=points[r.from-first],b=points[r.to-first],routeIndex=Math.max(0,r.from-first),route=map&&map.querySelector(`.atlas-route[data-target="${r.to}"]`);atlasRewardTimer(()=>{if(route)route.classList.add('reward-restoring')},280);atlasRewardTimer(()=>atlasTraveler(r.sourceChapter,a,b,atlasRouteSpec(r.sourceChapter,r.sourceRange).curve,routeIndex,1180),430);atlasRewardTimer(()=>atlasRevealDestination(r),900);atlasRewardTimer(()=>{if(dest)dest.classList.add('reward-landed')},1580);atlasRewardTimer(()=>finishAtlasReward(r),2080)}
-function runAtlasRewardCross(r,reduced=false){const map=document.getElementById('levelGrid'),source=map&&map.querySelector(`.atlas-node[data-level="${r.from}"]`);if(source)source.classList.add('just-completed','waypoint-complete');atlasRewardBanner(r,false);if(reduced){atlasRewardTimer(()=>{r.phase='destination';chapterView=r.destChapter;rangeView=r.destRange;renderChapter();atlasRewardBanner(r,true);atlasRevealDestination(r)},150);atlasRewardTimer(()=>finishAtlasReward(r),620);return}const sourcePoints=atlasLayout(r.sourceChapter,r.sourceRange),sourceFirst=r.sourceChapter*50-49+r.sourceRange*10,a=sourcePoints[r.from-sourceFirst]||[50,24];atlasRewardTimer(()=>atlasTraveler(r.sourceChapter,a,[50,2],atlasRouteSpec(r.sourceChapter,r.sourceRange).curve,8,760),260);atlasRewardTimer(()=>{r.phase='destination';chapterView=r.destChapter;rangeView=r.destRange;renderChapter();atlasRewardBanner(r,true);const destPoints=atlasLayout(r.destChapter,r.destRange),destFirst=r.destChapter*50-49+r.destRange*10,b=destPoints[r.to-destFirst]||destPoints[0];atlasTraveler(r.destChapter,[50,103],b,atlasRouteSpec(r.destChapter,r.destRange).curve,0,900)},930);atlasRewardTimer(()=>atlasRevealDestination(r),1340);atlasRewardTimer(()=>finishAtlasReward(r),2260)}
-function playQueuedAtlasReward(autoAdvance=false){if(!atlasRewardState){if(autoAdvance&&currentLevel<400){startLevel(currentLevel+1);return}chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);screen('levels');renderChapter();return}clearAtlasRewardTimers();const r=atlasRewardState;r.autoAdvance=!!autoAdvance;r.phase='source';chapterView=r.sourceChapter;rangeView=r.sourceRange;screen('levels');renderChapter();const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches),same=r.sourceChapter===r.destChapter&&r.sourceRange===r.destRange;atlasRewardTimer(()=>same?runAtlasRewardSame(r,reduced):runAtlasRewardCross(r,reduced),90)}
-'''
-          if 'function atlasRewardChapter(' not in s:
-              marker='function renderChapter(){'
-              if marker not in s: raise SystemExit('renderChapter marker missing')
-              s=s.replace(marker,reward_funcs+marker,1)
-
-          lines=s.splitlines()
-          out=[]
-          for line in lines:
-              if line.strip()=="chapterView=Math.max(1,Math.min(8,chapterView));rangeView=Math.max(0,Math.min(4,rangeView));applyTheme(chapterView);":
-                  out.append(line)
-                  out.append(" const reward=atlasRewardState,rewardSourceView=!!(reward&&reward.phase==='source'&&chapterView===reward.sourceChapter&&rangeView===reward.sourceRange),rewardDestView=!!(reward&&reward.phase==='destination'&&chapterView===reward.destChapter&&rangeView===reward.destRange),visualUnlocked=rewardSourceView?reward.from:progress.unlocked;const levelsScreen=document.getElementById('levels');if(levelsScreen)levelsScreen.classList.toggle('atlas-reward-mode',rewardSourceView||rewardDestView);")
-              elif line.startswith(' const first=chapterStart+rangeView*10,route='):
-                  out.append(" const first=chapterStart+rangeView*10,sameRewardView=rewardSourceView&&reward.to>=first&&reward.to<=first+9,route=points.slice(0,-1).map((a,i)=>{const b=points[i+1],target=first+i+1,rewardTarget=sameRewardView&&target===reward.to,state=rewardTarget?'future':target<visualUnlocked?'restored':target===visualUnlocked?'active':'future',d=atlasCurve(a,b,i,routeSpec.curve);return `<path class=\"atlas-route-shadow\" data-target=\"${target}\" d=\"${d}\"/><path class=\"atlas-route ${state}\" data-target=\"${target}\" d=\"${d}\"/>`}).join('');")
-              elif line.startswith(' const nodes=Array.from({length:10}'):
-                  out.append(" const nodes=Array.from({length:10},(_,j)=>{const L=first+j,stars=progress.stars[L]||0,hiddenArrival=!!((sameRewardView||rewardDestView)&&reward&&L===reward.to),rewardSource=!!(rewardSourceView&&reward&&L===reward.from),locked=hiddenArrival||L>visualUnlocked,done=stars>0,current=rewardSource||(!hiddenArrival&&L===visualUnlocked),milestone=j===9,p=points[j],variant=(rangeView+j)%5,pennant=current?`<span class=\"atlas-pennant\">${rewardSource?'Route restored':done?'Latest stop':'Next stop'}</span>${atlasGuideHtml(chapterView)}`:'';return `<button class=\"level-node atlas-node ${locked?'locked':''} ${done?'done':''} ${current?'current':''} ${milestone?'milestone':''} ${rewardSource?'reward-source':''} ${hiddenArrival?'reward-destination':''}\" style=\"--x:${p[0]}%;--y:${p[1]}%;--float-time:${(4.1+(j%4)*.43).toFixed(2)}s;--float-delay:-${(j*.37).toFixed(2)}s\" data-level=\"${L}\" data-variant=\"${variant}\" aria-label=\"Level ${L}${locked?', locked':current?', current destination':done?`, completed with ${stars} star${stars===1?'':'s'}`:', available'}\" ${locked?'disabled':''}><span class=\"atlas-island\" aria-hidden=\"true\"><span class=\"atlas-island-side\"></span><span class=\"atlas-island-top\"></span><span class=\"atlas-prop\" data-variant=\"${variant}\"><i></i><b></b></span></span><span class=\"atlas-level-number\">${L}</span><span class=\"atlas-stars\" aria-hidden=\"true\">${[1,2,3].map(n=>`<i class=\"${n<=stars?'on':''}\"></i>`).join('')}</span><span class=\"atlas-cloud-cover\" aria-hidden=\"true\"></span>${pennant}</button>`}).join('');")
-              elif line.startswith(" const map=document.getElementById('levelGrid');map.className="):
-                  out.append(" const map=document.getElementById('levelGrid');map.className=`atlas-map atlas-range-${rangeView+1} ${(rewardSourceView||rewardDestView)?'atlas-reward-playing':''}`;map.dataset.routeShape=routeSpec.name;map.dataset.curveProfile=routeSpec.curve;map.setAttribute('aria-label',`${ch.theme}, ${waypoints[rangeView]}, levels ${first} through ${first+9}`);map.innerHTML=`<div class=\"atlas-scene\" aria-hidden=\"true\"><i></i><b></b><em></em></div><div class=\"atlas-route-caption\"><b>${waypoints[rangeView]}</b><span>Levels ${first}–${first+9} · Skyway stretch ${rangeView+1} of 5</span></div><svg class=\"atlas-route-svg\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"none\" aria-hidden=\"true\">${route}</svg>${nodes}`;")
-              elif line.startswith('function renderGame(full=false){'):
-                  out.append("function boardRangeForLevel(L){return Math.floor(((L-1)%50)/10)+1}")
-                  out.append("function renderGame(full=false){const lev=LEVELS[currentLevel-1],chapter=Math.ceil(currentLevel/50),boardRange=boardRangeForLevel(currentLevel);applyTheme(chapter);const storyMeta=STORY?STORY.levelMeta(currentLevel):null;document.getElementById('levelTitle').textContent='Level '+currentLevel;document.getElementById('movesLeft').textContent=Math.max(0,lev.moveLimit-movesUsed);const note=document.getElementById('mechanicNote');note.classList.remove('story-note');note.classList.add('mechanic-chip');note.innerHTML=`<span class=\"mechanic-chip-label\">Route tip</span><span class=\"mechanic-chip-copy\">${chapterNote(currentLevel)}</span>`;if(window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.decorateLevel(currentLevel,storyMeta);const board=document.getElementById('board');board.style.setProperty('--n',lev.size);board.dataset.boardRange=String(boardRange);board.dataset.boardStyle=`ch${chapter}-r${boardRange}`;if(full){board.querySelectorAll('.cell').forEach(x=>x.remove());for(let r=0;r<lev.size;r++)for(let c=0;c<lev.size;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.dataset.tileVariant=String((r*3+c*5+currentLevel+boardRange)%4);board.insertBefore(cell,document.getElementById('pieceLayer'));decorateCell(cell,lev,r,c)}}renderPieces(lev)}")
-              else:
-                  out.append(line)
-          s='\n'.join(out)+'\n'
-          p.write_text(s)
-
-          # game400-b.js: only newly unlocked levels get the Atlas reward; Next Level plays it before starting the next board.
-          p=Path('game400-b.js')
-          s=p.read_text()
-          old="function winLevel(){if(window.LatchlingsSFX)window.LatchlingsSFX.levelClear();const lev=LEVELS[currentLevel-1],stars=starsFor(lev);progress.stars[currentLevel]=Math.max(progress.stars[currentLevel]||0,stars);if(currentLevel<400)progress.unlocked=Math.max(progress.unlocked,currentLevel+1);saveProgress();"
-          new="function winLevel(){if(window.LatchlingsSFX)window.LatchlingsSFX.levelClear();const lev=LEVELS[currentLevel-1],stars=starsFor(lev),previousUnlocked=progress.unlocked;progress.stars[currentLevel]=Math.max(progress.stars[currentLevel]||0,stars);if(currentLevel<400)progress.unlocked=Math.max(progress.unlocked,currentLevel+1);saveProgress();if(currentLevel<400&&progress.unlocked>previousUnlocked)queueAtlasReward(currentLevel,currentLevel+1,stars);"
-          if old not in s: raise SystemExit('winLevel prefix not found')
-          s=s.replace(old,new,1)
-          old="document.getElementById('nextLevelBtn').onclick=()=>{closeModal();if(currentLevel===400){if(window.LatchlingsSFX)window.LatchlingsSFX.campaignComplete();screen('complete')}else startLevel(currentLevel+1)};document.getElementById('replayBtn').onclick=()=>{closeModal();startLevel(currentLevel)};document.getElementById('toLevelsBtn').onclick=()=>{closeModal();chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);screen('levels');renderChapter()}"
-          new="document.getElementById('nextLevelBtn').onclick=()=>{closeModal();if(currentLevel===400){if(window.LatchlingsSFX)window.LatchlingsSFX.campaignComplete();screen('complete')}else if(atlasRewardState&&atlasRewardState.from===currentLevel)playQueuedAtlasReward(true);else startLevel(currentLevel+1)};document.getElementById('replayBtn').onclick=()=>{closeModal();cancelAtlasReward();startLevel(currentLevel)};document.getElementById('toLevelsBtn').onclick=()=>{closeModal();if(atlasRewardState&&atlasRewardState.from===currentLevel)playQueuedAtlasReward(false);else{chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);screen('levels');renderChapter()}}"
-          if old not in s: raise SystemExit('win buttons block not found')
-          s=s.replace(old,new,1)
-          p.write_text(s)
-          PY
-
-          cat > style400-atlas-progression.css <<'CSS'
-          /* Level-clear reward loop: make progression itself visible on the Skyway Atlas. */
-          #levels.atlas-reward-mode .atlas-chapter-nav,
-          #levels.atlas-reward-mode .atlas-waypoint-nav,
-          #levels.atlas-reward-mode .atlas-top .atlas-round-btn,
-          #levels.atlas-reward-mode .atlas-footer{pointer-events:none}
-          #levels.atlas-reward-mode .atlas-map{box-shadow:inset 0 1px rgba(255,255,255,.38),0 12px 34px rgba(16,36,54,.18),0 0 0 1px color-mix(in srgb,var(--atlas-accent) 24%,transparent)}
-          .atlas-reward-banner{position:absolute;z-index:30;left:50%;top:48%;translate:-50% -50%;width:min(78%,300px);padding:10px 14px 11px;border-radius:17px;text-align:center;background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(255,244,206,.91));color:#17334d;border:1px solid rgba(255,255,255,.9);box-shadow:0 12px 28px rgba(20,45,65,.24),inset 0 1px #fff;backdrop-filter:blur(9px);pointer-events:none;animation:atlasRewardBannerIn .4s cubic-bezier(.2,.82,.2,1) both}
-          .atlas-reward-banner.arrival{top:19%;width:min(68%,260px);padding:8px 12px 9px}
-          .atlas-reward-banner span{display:block;font-size:7px;font-weight:1000;letter-spacing:.16em;text-transform:uppercase;color:var(--atlas-accent-deep,#426a45);margin-bottom:3px}
-          .atlas-reward-banner b{display:block;font-family:Georgia,"Times New Roman",serif;font-size:13px;line-height:1.18;font-weight:800}
-          .atlas-travel-token{position:absolute;z-index:28;width:34px;height:34px;pointer-events:none;filter:drop-shadow(0 5px 7px rgba(22,39,58,.28)) drop-shadow(0 0 8px color-mix(in srgb,var(--atlas-accent) 55%,transparent));will-change:left,top,transform}
-          .atlas-travel-token .atlas-guide{position:absolute;inset:0;right:auto;bottom:auto;width:100%;height:100%;animation:atlasTravelerBob .42s ease-in-out infinite alternate;box-shadow:0 4px 8px rgba(22,39,58,.23),0 0 0 3px rgba(255,255,255,.28),0 0 14px color-mix(in srgb,var(--atlas-accent) 58%,transparent)}
-          .atlas-travel-token .atlas-guide-suit{width:9px;height:9px;top:3px}.atlas-travel-token .atlas-guide-eyes{top:12px;left:7px;right:7px}.atlas-travel-token .atlas-guide-mouth{top:22px;width:8px}
-          .atlas-node.just-completed .atlas-island{animation:atlasStopCelebrate .72s cubic-bezier(.2,.8,.2,1) both}
-          .atlas-node.just-completed .atlas-level-number{animation:atlasNumberCelebrate .72s ease-out both;background:linear-gradient(#fffbd1,#ffd96e);box-shadow:0 3px 8px rgba(31,43,50,.22),0 0 14px #ffe77e,inset 0 1px #fff}
-          .atlas-node.just-completed .atlas-stars{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 0 12px rgba(255,225,105,.78)}
-          .atlas-route.reward-restoring{stroke:#fff5a9!important;stroke-width:3!important;stroke-dasharray:2 4!important;opacity:1!important;filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 8px color-mix(in srgb,var(--atlas-accent) 85%,#8bdfff))!important;animation:atlasRouteRestore .72s linear infinite!important}
-          .atlas-node.reward-destination .atlas-cloud-cover{display:block;opacity:1}
-          .atlas-node.current.cloud-clearing .atlas-cloud-cover,.atlas-node.cloud-clearing .atlas-cloud-cover{display:block!important;animation:atlasCloudClear .86s cubic-bezier(.2,.7,.25,1) forwards}
-          .atlas-node.new-current .atlas-island{animation:atlasNewStopLand .8s cubic-bezier(.16,.84,.24,1) both}
-          .atlas-node.new-current .atlas-island-top{box-shadow:inset 0 2px rgba(255,255,255,.55),inset 0 -6px color-mix(in srgb,var(--atlas-top) 72%,#314f3e),0 0 0 4px rgba(255,255,255,.25),0 0 18px var(--atlas-accent)!important}
-          .atlas-node.waypoint-complete .atlas-prop{filter:drop-shadow(0 0 9px #fff3a4) drop-shadow(0 0 12px var(--atlas-accent))}
-          @keyframes atlasRewardBannerIn{from{opacity:0;scale:.84;translate:-50% calc(-50% + 10px)}to{opacity:1;scale:1;translate:-50% -50%}}
-          @keyframes atlasTravelerBob{from{translate:0 -1px;rotate:-3deg}to{translate:0 2px;rotate:3deg}}
-          @keyframes atlasStopCelebrate{0%{scale:1}38%{scale:1.2;filter:drop-shadow(0 0 16px #fff3a3)}72%{scale:.96}100%{scale:1}}
-          @keyframes atlasNumberCelebrate{0%{scale:1}42%{scale:1.2}100%{scale:1}}
-          @keyframes atlasRouteRestore{to{stroke-dashoffset:-18}}
-          @keyframes atlasCloudClear{0%{opacity:1;scale:1;filter:blur(.15px)}45%{opacity:.8;scale:1.25 .88;filter:blur(1px)}100%{opacity:0;scale:2.1 .42;filter:blur(5px)}}
-          @keyframes atlasNewStopLand{0%{scale:.72;filter:brightness(1.5) drop-shadow(0 0 18px #fff)}58%{scale:1.12}100%{scale:1}}
-          @media(max-height:600px){.atlas-reward-banner{top:45%;padding:7px 10px 8px}.atlas-reward-banner b{font-size:11px}.atlas-reward-banner.arrival{top:17%}.atlas-travel-token{width:29px;height:29px}.atlas-travel-token .atlas-guide-eyes{top:10px}.atlas-travel-token .atlas-guide-mouth{top:19px}}
-          @media(prefers-reduced-motion:reduce){.atlas-reward-banner,.atlas-node.just-completed .atlas-island,.atlas-node.just-completed .atlas-level-number,.atlas-route.reward-restoring,.atlas-node.current.cloud-clearing .atlas-cloud-cover,.atlas-node.cloud-clearing .atlas-cloud-cover,.atlas-node.new-current .atlas-island,.atlas-travel-token .atlas-guide{animation:none!important}.atlas-node.current.cloud-clearing .atlas-cloud-cover,.atlas-node.cloud-clearing .atlas-cloud-cover{opacity:0!important}}
-          CSS
-
-          cat > style400-board-surfaces.css <<'CSS'
-          /* Forty board identities: chapter material language x five ten-level journey surfaces. */
-          .board[data-board-range]{--cell-radius:10px;--cell-range-pattern:none;--cell-range-size:100% 100%;--cell-chapter-motif:none;--cell-motif-size:24px 24px;--board-range-pattern:none;--board-range-size:42px 42px;--board-chapter-motif:none;--board-motif-size:72px 72px;background-image:var(--board-range-pattern),var(--board-chapter-motif),linear-gradient(var(--boardA),var(--boardB));background-size:var(--board-range-size),var(--board-motif-size),auto;background-blend-mode:soft-light,soft-light,normal;box-shadow:0 16px 34px rgba(44,66,86,.24),inset 0 2px rgba(255,255,255,.82),inset 0 0 0 2px color-mix(in srgb,var(--themeAccent) 14%,transparent)}
-          .board[data-board-range] .cell{border-radius:var(--cell-radius);background-image:var(--cell-range-pattern),var(--cell-chapter-motif),linear-gradient(145deg,var(--cellA),var(--cellB));background-size:var(--cell-range-size),var(--cell-motif-size),auto;background-position:center,var(--motif-pos,0 0),center;background-blend-mode:soft-light,multiply,normal;box-shadow:inset 0 1px rgba(255,255,255,.38),inset 0 -2px color-mix(in srgb,var(--themeAccent) 8%,transparent);overflow:hidden}
-          .board[data-board-range] .cell[data-tile-variant="0"]{--motif-pos:0 0}.board[data-board-range] .cell[data-tile-variant="1"]{--motif-pos:7px -4px}.board[data-board-range] .cell[data-tile-variant="2"]{--motif-pos:-5px 8px}.board[data-board-range] .cell[data-tile-variant="3"]{--motif-pos:10px 7px}
-          .board[data-board-range] .nest{background:linear-gradient(145deg,rgba(255,255,255,.86),color-mix(in srgb,var(--themeAccent) 12%,#fff4df));box-shadow:inset 0 0 0 3px rgba(255,255,255,.62),0 0 0 1px color-mix(in srgb,var(--themeAccent) 24%,transparent)}
-          .board[data-board-range] .rail,.board[data-board-range] .turner,.board[data-board-range] .switch-tile,.board[data-board-range] .door-tile,.board[data-board-range] .anchor{outline:1px solid color-mix(in srgb,var(--themeAccent) 20%,transparent);outline-offset:1px}
-
-          /* Five distinct surface chapters inside every story chapter. */
-          .board[data-board-range="1"]{--cell-radius:12px;--cell-range-pattern:repeating-linear-gradient(90deg,rgba(255,255,255,.13) 0 1px,transparent 1px 9px);--cell-range-size:18px 100%;--board-range-pattern:repeating-linear-gradient(0deg,rgba(255,255,255,.09) 0 2px,transparent 2px 18px);--board-range-size:100% 22px}
-          .board[data-board-range="2"]{--cell-radius:9px;--cell-range-pattern:repeating-linear-gradient(135deg,color-mix(in srgb,var(--themeAccent) 12%,transparent) 0 2px,transparent 2px 11px);--cell-range-size:20px 20px;--board-range-pattern:repeating-linear-gradient(135deg,rgba(255,255,255,.08) 0 3px,transparent 3px 19px);--board-range-size:28px 28px}
-          .board[data-board-range="3"]{--cell-radius:7px;--cell-range-pattern:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--themeAccent) 17%,transparent) 0 13%,transparent 14% 100%);--cell-range-size:32px 32px;--board-range-pattern:radial-gradient(circle at 50% 50%,rgba(255,255,255,.12) 0 2px,transparent 2.5px);--board-range-size:19px 19px}
-          .board[data-board-range="4"]{--cell-radius:6px;--cell-range-pattern:linear-gradient(90deg,transparent 0 43%,color-mix(in srgb,var(--themeAccent) 15%,transparent) 44% 48%,transparent 49%),linear-gradient(0deg,transparent 0 43%,rgba(255,255,255,.12) 44% 48%,transparent 49%);--cell-range-size:100% 100%;--board-range-pattern:repeating-linear-gradient(90deg,color-mix(in srgb,var(--themeAccent) 9%,transparent) 0 1px,transparent 1px 24px);--board-range-size:25px 100%}
-          .board[data-board-range="5"]{--cell-radius:11px;--cell-range-pattern:conic-gradient(from 45deg at 50% 50%,rgba(255,255,255,.15) 0 12.5%,transparent 12.5% 37.5%,color-mix(in srgb,var(--themeAccent) 15%,transparent) 37.5% 62.5%,transparent 62.5% 87.5%,rgba(255,255,255,.15) 87.5%);--cell-range-size:34px 34px;--board-range-pattern:radial-gradient(circle,rgba(255,255,255,.16) 0 1.2px,transparent 1.8px);--board-range-size:17px 17px;box-shadow:0 16px 34px rgba(44,66,86,.24),0 0 22px color-mix(in srgb,var(--themeAccent) 23%,transparent),inset 0 2px rgba(255,255,255,.82),inset 0 0 0 2px color-mix(in srgb,var(--themeAccent) 24%,transparent)}
-
-          /* Chapter motifs live on the squares themselves, not just behind the board. */
-          #app.theme-ch1 .board{--cell-chapter-motif:radial-gradient(circle at 25% 28%,rgba(238,170,76,.16) 0 1.7px,transparent 2.1px),radial-gradient(circle at 73% 68%,rgba(111,177,83,.16) 0 1.5px,transparent 2px);--cell-motif-size:26px 26px;--board-chapter-motif:linear-gradient(90deg,transparent 47%,rgba(112,151,75,.08) 48% 52%,transparent 53%);--board-motif-size:64px 100%}
-          #app.theme-ch2 .board{--cell-chapter-motif:repeating-linear-gradient(7deg,rgba(64,74,47,.09) 0 1px,transparent 1px 7px),radial-gradient(circle at 78% 22%,rgba(255,190,73,.11) 0 2px,transparent 2.8px);--cell-motif-size:30px 30px;--board-chapter-motif:repeating-linear-gradient(4deg,rgba(48,55,38,.08) 0 2px,transparent 2px 13px);--board-motif-size:100% 44px}
-          #app.theme-ch3 .board{--cell-chapter-motif:linear-gradient(125deg,transparent 0 39%,rgba(105,210,231,.13) 40% 45%,transparent 46% 100%),linear-gradient(42deg,transparent 0 61%,rgba(141,111,214,.09) 62% 66%,transparent 67%);--cell-motif-size:32px 32px;--board-chapter-motif:linear-gradient(130deg,transparent 0 46%,rgba(105,210,231,.09) 47% 49%,transparent 50%);--board-motif-size:53px 53px}
-          #app.theme-ch4 .board{--cell-chapter-motif:conic-gradient(from 45deg at 50% 50%,rgba(91,60,92,.12) 0 25%,transparent 0 75%,rgba(201,162,95,.10) 0);--cell-motif-size:22px 22px;--board-chapter-motif:linear-gradient(45deg,rgba(201,162,95,.08) 25%,transparent 25% 75%,rgba(201,162,95,.08) 75%);--board-motif-size:31px 31px}
-          #app.theme-ch5 .board{--cell-chapter-motif:linear-gradient(60deg,rgba(239,95,102,.08) 0 12%,transparent 13% 43%,rgba(76,143,244,.10) 44% 56%,transparent 57%),linear-gradient(120deg,transparent 0 55%,rgba(102,189,114,.09) 56% 64%,transparent 65%);--cell-motif-size:34px 34px;--board-chapter-motif:conic-gradient(from 20deg,rgba(239,95,102,.05),rgba(246,183,55,.06),rgba(102,189,114,.06),rgba(76,143,244,.06),rgba(154,114,223,.06),rgba(239,95,102,.05));--board-motif-size:100% 100%}
-          #app.theme-ch6 .board{--cell-chapter-motif:radial-gradient(circle at 14% 14%,rgba(91,55,32,.23) 0 1.3px,transparent 1.8px),radial-gradient(circle at 86% 86%,rgba(91,55,32,.17) 0 1.2px,transparent 1.8px),linear-gradient(90deg,transparent 47%,rgba(109,67,38,.08) 48% 52%,transparent 53%);--cell-motif-size:27px 27px;--board-chapter-motif:repeating-linear-gradient(90deg,rgba(92,53,31,.08) 0 1px,transparent 1px 38px);--board-motif-size:39px 100%}
-          #app.theme-ch7 .board{--cell-chapter-motif:linear-gradient(90deg,transparent 0 35%,rgba(86,184,226,.14) 36% 40%,transparent 41% 100%),radial-gradient(circle at 72% 32%,rgba(198,243,255,.16) 0 1.4px,transparent 2px);--cell-motif-size:29px 29px;--board-chapter-motif:linear-gradient(90deg,transparent 0 47%,rgba(95,195,233,.10) 48% 50%,transparent 51%);--board-motif-size:46px 100%}
-          #app.theme-ch8 .board{--cell-chapter-motif:radial-gradient(circle at 22% 24%,rgba(232,255,255,.22) 0 1px,transparent 1.6px),radial-gradient(circle at 75% 67%,rgba(146,233,215,.16) 0 1.2px,transparent 1.8px),linear-gradient(155deg,transparent 0 43%,rgba(126,224,208,.09) 44% 50%,rgba(139,139,225,.08) 51% 57%,transparent 58%);--cell-motif-size:31px 31px;--board-chapter-motif:linear-gradient(165deg,transparent 10%,rgba(99,238,205,.08) 11% 25%,rgba(102,177,245,.07) 26% 39%,rgba(173,102,232,.07) 40% 53%,transparent 54%);--board-motif-size:100% 100%}
-
-          /* Range-specific micro-details keep the five stretches recognizable even at a glance. */
-          .board[data-board-range="2"] .nest{border-style:dotted}.board[data-board-range="3"] .nest{border-style:solid}.board[data-board-range="4"] .nest{border-width:4px}.board[data-board-range="5"] .nest{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--themeAccent) 25%,transparent))}
-          .board[data-board-range="3"] .rock{border-radius:24% 41% 23% 39%}.board[data-board-range="4"] .rock{filter:contrast(1.06) saturate(.88)}.board[data-board-range="5"] .anchor{box-shadow:0 0 0 3px color-mix(in srgb,var(--themeAccent) 16%,transparent),0 0 16px color-mix(in srgb,var(--themeAccent) 28%,transparent),inset 0 1px rgba(255,255,255,.18)}
-          @media(max-height:600px){.board[data-board-range] .cell{box-shadow:inset 0 1px rgba(255,255,255,.3),inset 0 -1px color-mix(in srgb,var(--themeAccent) 7%,transparent)}}
-          CSS
-
+          python3 .github/tmp/atlas_payoff_apply.py
           node --check game400-a.js
           node --check game400-b.js
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install Chromium
-        shell: bash
         run: |
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0 >/dev/null 2>&1
           npx playwright install --with-deps chromium >/dev/null 2>&1
       - name: Serve candidate
-        shell: bash
         run: python3 -m http.server 4173 >/tmp/latchlings-payoff-http.log 2>&1 &
-      - name: Validate progression payoff and 40 board identities
-        shell: bash
+      - name: Validate candidate
         run: |
-          set -euo pipefail
           mkdir -p payoff-board-audit/boards payoff-board-audit/progression
-          cat > payoff-board-check.mjs <<'JS'
-          import {chromium} from 'playwright';
-          import fs from 'fs';
-          const browser=await chromium.launch({headless:true});
-          const failures=[],boardReport=[],progressionReport=[];
-          const fail=m=>{failures.push(m);console.error('FAIL',m)};
-          async function freshPage(viewport={width:390,height:844},reducedMotion='no-preference'){
-            const p=await browser.newPage({viewport,reducedMotion});
-            await p.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
-            await p.evaluate(()=>{localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:1,stars:{}}));if(window.LatchlingsCinematics&&window.LatchlingsCinematics.reset)window.LatchlingsCinematics.reset()});
-            await p.reload({waitUntil:'networkidle'});
-            return p;
-          }
-          async function forceWin(page,level){
-            await page.evaluate(L=>{closeModal();cancelAtlasReward();progress={unlocked:L,stars:{}};saveProgress();currentLevel=L;movesUsed=LEVELS[L-1].optimal;screen('game');winLevel()},level);
-            await page.waitForSelector('#overlay.show #nextLevelBtn');
-          }
-
-          // Ordinary clear 1 -> 2: source, route, moving guide, cloud clear, then automatic Level 2.
-          {
-            const p=await freshPage();await forceWin(p,1);await p.locator('#nextLevelBtn').click();
-            await p.waitForSelector('#levels.active.atlas-reward-mode');
-            await p.waitForTimeout(180);
-            let s=await p.evaluate(()=>({source:!!document.querySelector('.atlas-node[data-level="1"].just-completed'),destLocked:!!document.querySelector('.atlas-node[data-level="2"].locked'),banner:!!document.querySelector('.atlas-reward-banner')}));
-            if(!s.source||!s.destLocked||!s.banner)fail('1->2 did not begin from completed source with clouded destination');
-            await p.screenshot({path:'payoff-board-audit/progression/01-source.png'});
-            await p.waitForTimeout(520);
-            s=await p.evaluate(()=>({traveler:!!document.querySelector('.atlas-travel-token'),route:!!document.querySelector('.atlas-route[data-target="2"].reward-restoring')}));
-            if(!s.traveler||!s.route)fail('1->2 missing traveler or restoring route');
-            await p.screenshot({path:'payoff-board-audit/progression/02-travel.png'});
-            await p.waitForTimeout(500);
-            s=await p.evaluate(()=>({cloud:!!document.querySelector('.atlas-node[data-level="2"].cloud-clearing'),current:!!document.querySelector('.atlas-node[data-level="2"].new-current')}));
-            if(!s.cloud||!s.current)fail('1->2 destination did not clear cloud/become current');
-            await p.screenshot({path:'payoff-board-audit/progression/03-arrival.png'});
-            await p.waitForSelector('#game.active',{timeout:5000});
-            const title=(await p.locator('#levelTitle').textContent()).trim();if(title!=='Level 2')fail('1->2 Next Level did not auto-continue after reward');
-            progressionReport.push({case:'1->2',title});await p.close();
-          }
-
-          // Waypoint crossing 10 -> 11: Level Select plays reward but stays on newly revealed second stretch.
-          {
-            const p=await freshPage();await forceWin(p,10);await p.locator('#toLevelsBtn').click();await p.waitForSelector('#levels.active.atlas-reward-mode');await p.waitForTimeout(240);
-            if(!(await p.locator('.atlas-node[data-level="10"].waypoint-complete').count()))fail('10->11 outgoing waypoint did not celebrate');
-            await p.screenshot({path:'payoff-board-audit/progression/10-waypoint-source.png'});
-            await p.waitForTimeout(1000);
-            if(!(await p.locator('.atlas-node[data-level="11"].reward-destination').count()))fail('10->11 destination stretch did not stage a clouded arrival');
-            await p.screenshot({path:'payoff-board-audit/progression/11-new-stretch.png'});
-            await p.waitForTimeout(600);
-            if(!(await p.locator('.atlas-node[data-level="11"].cloud-clearing').count()))fail('10->11 destination cloud did not clear');
-            await p.waitForTimeout(1000);
-            const stay=await p.evaluate(()=>({levels:document.getElementById('levels').classList.contains('active'),range:document.getElementById('levelGrid').getAttribute('aria-label'),current:!!document.querySelector('.atlas-node[data-level="11"].current'),rewardMode:document.getElementById('levels').classList.contains('atlas-reward-mode')}));
-            if(!stay.levels||!stay.current||stay.rewardMode||!stay.range.includes('levels 11 through 20'))fail('10->11 Level Select did not settle on Level 11 stretch');
-            progressionReport.push({case:'10->11',...stay});await p.close();
-          }
-
-          // Chapter crossing 50 -> 51: outgoing milestone, destination region reveal, then auto Level 51.
-          {
-            const p=await freshPage();await forceWin(p,50);await p.locator('#nextLevelBtn').click();await p.waitForSelector('#levels.active.atlas-reward-mode');await p.waitForTimeout(260);
-            if(!(await p.locator('.atlas-node[data-level="50"].waypoint-complete').count()))fail('50->51 chapter milestone did not celebrate');
-            await p.screenshot({path:'payoff-board-audit/progression/50-region-source.png'});
-            await p.waitForTimeout(1050);
-            const dest=await p.evaluate(()=>({chapter:(document.querySelector('#chapterHead h2')?.textContent||'').trim(),node:!!document.querySelector('.atlas-node[data-level="51"].reward-destination'),banner:(document.querySelector('.atlas-reward-banner b')?.textContent||'').trim()}));
-            if(dest.chapter!=='Neighbors'||!dest.node)fail('50->51 did not reveal chapter 2 destination');
-            await p.screenshot({path:'payoff-board-audit/progression/51-region-arrival.png'});
-            await p.waitForSelector('#game.active',{timeout:5000});
-            const title=(await p.locator('#levelTitle').textContent()).trim();if(title!=='Level 51')fail('50->51 did not auto-continue to Level 51');
-            progressionReport.push({case:'50->51',...dest,title});await p.close();
-          }
-
-          // Reduced motion still exposes the reward state but completes quickly without motion dependency.
-          {
-            const p=await freshPage({width:390,height:700},'reduce');await forceWin(p,1);await p.locator('#nextLevelBtn').click();await p.waitForSelector('#levels.active.atlas-reward-mode');await p.waitForTimeout(180);
-            if(!(await p.locator('.atlas-node[data-level="2"].cloud-clearing').count()))fail('reduced-motion reward did not expose destination reveal');
-            await p.waitForSelector('#game.active',{timeout:2500});
-            if((await p.locator('#levelTitle').textContent()).trim()!=='Level 2')fail('reduced-motion reward did not continue');
-            progressionReport.push({case:'reduced-1->2',ok:true});await p.close();
-          }
-
-          // All 40 chapter/range surfaces must be materially distinct on the actual grid cells.
-          {
-            const p=await freshPage();
-            for(let ch=1;ch<=8;ch++)for(let r=1;r<=5;r++){
-              const L=(ch-1)*50+(r-1)*10+1;
-              await p.evaluate(L=>{closeModal();cancelAtlasReward();currentLevel=L;chapterView=Math.ceil(L/50);rangeView=Math.floor(((L-1)%50)/10);positions=LEVELS[L-1].pieces.map(x=>x.pos.slice());doorMask=0;movesUsed=0;selected=0;screen('game');renderGame(true)},L);
-              await p.waitForTimeout(40);
-              const m=await p.evaluate(()=>{const board=document.getElementById('board'),cell=board.querySelector('.cell'),piece=board.querySelector('.latchling'),br=board.getBoundingClientRect(),cr=cell.getBoundingClientRect(),cs=getComputedStyle(cell),bs=getComputedStyle(board);return{style:board.dataset.boardStyle,range:board.dataset.boardRange,cellBg:cs.backgroundImage,cellRadius:cs.borderRadius,cellBorder:cs.borderColor,boardBg:bs.backgroundImage,boardBorder:bs.borderColor,boardW:br.width,boardH:br.height,cellW:cr.width,pieceCount:board.querySelectorAll('.latchling').length,overflowX:document.documentElement.scrollWidth>document.documentElement.clientWidth}});
-              if(m.pieceCount<1||m.boardW<260||m.cellW<35||m.overflowX)fail(`board geometry failure ${m.style}`);
-              boardReport.push({chapter:ch,range:r,level:L,...m,signature:[m.cellBg,m.cellRadius,m.cellBorder,m.boardBg,m.boardBorder].join('|')});
-              await p.screenshot({path:`payoff-board-audit/boards/ch${ch}-r${r}-L${L}.png`,fullPage:true});
-            }
-            const unique=new Set(boardReport.map(x=>x.signature));if(unique.size!==40)fail(`expected 40 distinct board signatures, got ${unique.size}`);
-            // Spot-check compact and tall boards from every chapter.
-            for(const [w,h,suffix] of [[320,568,'compact'],[430,932,'tall']]){
-              await p.setViewportSize({width:w,height:h});
-              for(let ch=1;ch<=8;ch++){
-                const L=(ch-1)*50+(suffix==='compact'?21:41);
-                await p.evaluate(L=>{currentLevel=L;positions=LEVELS[L-1].pieces.map(x=>x.pos.slice());doorMask=0;movesUsed=0;selected=0;screen('game');renderGame(true)},L);await p.waitForTimeout(30);
-                const ok=await p.evaluate(()=>{const b=document.getElementById('board').getBoundingClientRect();return b.left>=-1&&b.right<=innerWidth+1&&b.top>=0&&b.bottom<=innerHeight+2});if(!ok)fail(`${suffix} board overflow ch${ch}`);
-                await p.screenshot({path:`payoff-board-audit/boards/${suffix}-ch${ch}.png`});
-              }
-            }
-            await p.close();
-          }
-          fs.writeFileSync('payoff-board-audit/report.json',JSON.stringify({failures,progressionReport,boardReport},null,2));
-          await browser.close();
-          if(failures.length)throw new Error(`payoff/board validation failed: ${failures.length}`);
-          console.log(`ATLAS_PAYOFF_BOARD_THEMES_ACCEPTED boardSignatures=${new Set(boardReport.map(x=>x.signature)).size}`);
-          JS
-          node payoff-board-check.mjs
+          node .github/tmp/payoff_board_check.mjs
       - name: Verify protected source unchanged
-        shell: bash
         run: sha256sum -c /tmp/protected-before.sha
       - name: Commit accepted product
-        shell: bash
         run: |
-          set -euo pipefail
-          rm -f package.json package-lock.json payoff-board-check.mjs
+          rm -f package.json package-lock.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html game400-a.js game400-b.js style400-atlas-progression.css style400-board-surfaces.css
@@ -323,13 +49,11 @@ function playQueuedAtlasReward(autoAdvance=false){if(!atlasRewardState){if(autoA
           name: atlas-payoff-board-theme-renders
           path: payoff-board-audit
           if-no-files-found: warn
-      - name: Self-remove validator
+      - name: Self-remove temporary validation files
         if: success()
-        shell: bash
         run: |
-          set -euo pipefail
           git reset --hard HEAD
           git pull --ff-only origin main
-          git rm .github/workflows/build-atlas-payoff-board-themes.yml
-          git commit -m 'Remove Atlas payoff board-theme validator'
+          git rm .github/workflows/build-atlas-payoff-board-themes.yml .github/tmp/atlas_payoff_apply.py .github/tmp/payoff_board_check.mjs
+          git commit -m 'Remove Atlas payoff validation helpers'
           git push
