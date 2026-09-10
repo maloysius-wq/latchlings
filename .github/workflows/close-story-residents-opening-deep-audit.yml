@@ -14,40 +14,25 @@ jobs:
         with:
           fetch-depth: 0
       - name: Close handoff entry
+        env:
+          SUMMARY_B64: IyMjIyBDb21wbGV0aW9uIHN1bW1hcnkKCi0gUmVzdG9yZWQgdGhlIFN0b3J5ICYgUmVzaWRlbnRzIHBvcnRyYWl0IGZhY2UgYW5hdG9teSBzbyBhbGwgZml2ZSBuYW1lZCByZXNpZGVudHMgcmVuZGVyIHZpc2libGUgZGFyayBnbG9zc3kgZXllcyB3aXRoIGNhdGNobGlnaHRzLCBjaGVla3MsIHN1aXQgbWFya3MsIGFuZCBpbnRlbnRpb25hbCBleHByZXNzaW9uLXNwZWNpZmljIG1vdXRocyBhdCBwaG9uZS1zY2FsZSBwb3J0cmFpdCBzaXplcy4KLSBSZXdvcmtlZCBjaW5lbWF0aWMgc3BlZWNoIGJ1YmJsZSBzaXppbmcgc28gdGV4dCB1c2VzIGNvbnRlbnQtc2FmZSBnZW9tZXRyeSByYXRoZXIgdGhhbiBiZWluZyB2aXN1YWxseSBjbGlwcGVkIGJ5IHRoZSBvbGQgZml4ZWQtaGVpZ2h0IHJ1bGVzOyBub3JtYWxpemVkIHNpbXVsdGFuZW91cyBzcGVha2VyIGhlaWdodHMgZnJvbSBhY3R1YWwgdGV4dCBnZW9tZXRyeSwga2VwdCBidWJibGUgYm9kaWVzIGluc2lkZSBzdGFnZSBib3VuZHMsIGFuZCByZWNhbGN1bGF0ZWQgdGFpbHMgdG93YXJkIHRoZSBzcGVha2luZyBwb3J0cmFpdC4KLSBQcmV2ZW50ZWQgY2luZW1hdGljIENvbnRpbnVlIGZvY3VzL3JlbmRlcmluZyBmcm9tIGF1dG8tc2Nyb2xsaW5nIHRoZSBjb3B5IHBhbmVsIGFuZCBoaWRpbmcgdGhlIGhlYWRpbmcgb24gc2hvcnQgc2NyZWVucy4KLSBSZWJ1aWx0IHRoZSBvcGVuaW5nIHNuYXAgZGVtb25zdHJhdGlvbiBpbnRvIGEgcmVzcG9uc2l2ZSB0d28tcm93IGxheW91dCB0aGF0IHN0YXlzIGZ1bGx5IGluc2lkZSBpdHMgY2FyZCBhbmQgc3RhZ2UgaW5zdGVhZCBvZiBiZWluZyB0cmFuc2xhdGVkIHBhcnRseSBvdXQgb2Ygdmlldy4KLSBBZGRlZCBhIG5hcnJvdyAzMjBweCBmb3VyLXNwZWFrZXIgdHJlYXRtZW50IHNvIHRoZSBmaW5hbCBvcGVuaW5nIGJlYXQgcmVtYWlucyBpbnNpZGUgdGhlIHN0YWdlIHdpdGhvdXQgb3ZlcmxhcHBpbmcgdGhlIHNoZWxsIGVkZ2VzLgotIFByb2R1Y3QgZmlsZXMgY2hhbmdlZDogYHN0eWxlNDAwLXN0b3J5LXRoZW1lLmNzc2AsIGBzdHlsZTQwMC1jaW5lbWF0aWNzLWdlb21ldHJ5LmNzc2AsIGBjaW5lbWF0aWMtZ2VvbWV0cnk0MDAuanNgLCBhbmQgYGNpbmVtYXRpY3M0MDAuanNgLiBDYW1wYWlnbiBwdXp6bGUgZGF0YSwgbGV2ZWwgc29sdXRpb25zLCBzdG9yeSBwcm9ncmVzc2lvbiwgYXVkaW8sIHRpdGxlLXNjcmVlbiB0eXBvZ3JhcGh5L2xheW91dCwgYW5kIGRpYWxvZ3VlIHdvcmRpbmcgd2VyZSBub3QgY2hhbmdlZC4KLSBBY2NlcHRlZCBwcm9kdWN0IGNvbW1pdDogYDEwMjE5ZjdiMzY0OGQ4MDljOTljNTY3N2RiNGY3NDY5MGNlYzc0NWVgIChgUmVwYWlyIFN0b3J5IFJlc2lkZW50cyBmYWNlcyBhbmQgb3BlbmluZyBjaW5lbWF0aWMgY2xpcHBpbmdgKS4gVGVtcG9yYXJ5IHZhbGlkYXRpb24gd29ya2Zsb3cgY2xlYW51cCBjb21taXQ6IGA4MzE2Y2Y1ZTc2MTY3ZjI4NTZhNGNkNTU1MjUxMDc4MDhlOTRlMDgyYC4KLSBBY2NlcHRhbmNlIHJ1bjogR2l0SHViIEFjdGlvbnMgYDM0NTE4NTgxNzY5YCAoYEZpeCBTdG9yeSBSZXNpZGVudHMgT3BlbmluZyBEZWVwIEF1ZGl0IFY0YCkgY29tcGxldGVkIHN1Y2Nlc3NmdWxseS4gSXQgcmVuZGVyZWQgU3RvcnkgJiBSZXNpZGVudHMgcGx1cyB0aGUgU3RvcnkgbW9kYWwgYXQgMzIweDU2OCwgMzYweDY0MCwgMzkweDcwMCwgMzkweDg0NCwgYW5kIDQzMHg5MzI7IHJlbmRlcmVkIGFsbCBzZXZlbiBvcGVuaW5nIGJlYXRzIGF0IGFsbCBmaXZlIHNpemVzOyB2ZXJpZmllZCByZXNpZGVudCBleWVzL2NhdGNobGlnaHRzIGFuZCBtb3V0aCBnZW9tZXRyeTsgdmVyaWZpZWQgYWN0dWFsIGRpYWxvZ3VlIHRleHQgYm91bmRzLCBidWJibGUvc3RhZ2UgYm91bmRzLCB0YWlsLXRvLXNwZWFrZXIgYWxpZ25tZW50LCBjb3B5IHNjcm9sbCBwb3NpdGlvbiwgdGl0bGUvQ29udGludWUgdmlzaWJpbGl0eSwgc25hcC1kZW1vIGNvbnRhaW5tZW50LCBhbmQgZG9jdW1lbnQgb3ZlcmZsb3c7IGFuZCByYW4gc2hhcmVkLWJ1YmJsZSByZWdyZXNzaW9ucyBhY3Jvc3MgYGFjcm9zcy1kcmlmdGAsIGBvbGQtbWFwc2AsIGFuZCBgaG9tZXdhcmRgLgotIEFjY2VwdGFuY2UgYXJ0aWZhY3Q6IGBzdG9yeS1yZXNpZGVudHMtb3BlbmluZy1kZWVwLWZpeC12NGAsIGFydGlmYWN0IElEIGAxMDE2ODcyMTk3N2AuIE1hbnVhbCBpbnNwZWN0aW9uIGNvbmZpcm1lZCB0aGUgMzIweDU2OCBTdG9yeSAmIFJlc2lkZW50cyBwYWdlIGFuZCBvcGVuaW5nIGJlYXRzIDIsIDYsIGFuZCA3IGFyZSB2aXN1YWxseSBjbGVhbiwgd2l0aCBjb21wbGV0ZSBzcGVlY2ggdGV4dCBhbmQgdGhlIHR1dG9yaWFsIGJvYXJkIGZ1bGx5IHZpc2libGU7IHRoZSBicm9hZGVyIHYzIGNvbnRhY3Qgc2hlZXRzIHdlcmUgYWxzbyBtYW51YWxseSBpbnNwZWN0ZWQgYmVmb3JlIHRoZSBjb3JyZWN0ZWQgcHNldWRvLXRhaWwtYXdhcmUgdjQgYWNjZXB0YW5jZSBoYXJuZXNzIHdhcyBydW4uCi0gRWFybGllciB2MS92Mi92MyBhdHRlbXB0cyB3ZXJlIGRpYWdub3N0aWMvdGVzdC1oYXJuZXNzIGl0ZXJhdGlvbnMuIFRoZXkgZGlkIG5vdCBjb21taXQgcmVqZWN0ZWQgcHJvZHVjdCBjaGFuZ2VzLiBWM3QgcmV2ZWFsZWQgdGhhdCBgc2Nyb2xsSGVpZ2h0YCB3YXMgY291bnRpbmcgdGhlIHNwZWVjaC1idWJibGUgdGFpbCBwc2V1ZG8tZWxlbWVudCBhcyBvdmVyZmxvdywgc28gVjQgdmFsaWRhdGVzIHRoZSBhY3R1YWwgYDxiPmAvYDxzcGFuPmAgdGV4dCByZWN0YW5nbGVzIGluc3RlYWQgb2YgdHJlYXRpbmcgdGhlIGRlY29yYXRpdmUgdGFpbCBhcyBjbGlwcGVkIHRleHQuCi0gR2l0SHViIFBhZ2VzIHJ1biBgMzQ1MTg3MTExMzFgIGZvciB0aGUgY2xlYW4gcG9zdC12YWxpZGF0aW9uIGNvbW1pdCBjb21wbGV0ZWQgc3VjY2Vzc2Z1bGx5LiBBZnRlciBjbGVhbnVwLCBgLmdpdGh1Yi93b3JrZmxvd3MvdmFsaWRhdGUtcmVwb3NpdG9yeS1hY2Nlc3MtZ3VhcmQueW1sYCB3YXMgY29uZmlybWVkIGFzIHRoZSBvbmx5IGR1cmFibGUgd29ya2Zsb3cuCi0gUmVtYWluaW5nIHJpc2s6IG5vIGtub3duIGZ1bmN0aW9uYWwgb3IgcmVzcG9uc2l2ZSBjbGlwcGluZyBpc3N1ZSByZW1haW5zIGluIHRoZSBhdWRpdGVkIFN0b3J5ICYgUmVzaWRlbnRzL29wZW5pbmcgY2luZW1hdGljIHN1cmZhY2VzLiBGdXR1cmUgZGlhbG9ndWUgY29weSB0aGF0IGlzIHN1YnN0YW50aWFsbHkgbG9uZ2VyIHRoYW4gY3VycmVudCBhdXRob3JlZCBsaW5lcyBzaG91bGQgc3RpbGwgYmUgcmUtcnVuIHRocm91Z2ggdGhlIHNhbWUgcmVzcG9uc2l2ZSBzY3JlZW5zaG90IG1hdHJpeC4K
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import os,base64
           from pathlib import Path
           p=Path('DEVELOPMENT_HANDOFF.md')
           s=p.read_text()
           heading='### 2026-09-10 — Deep audit Story/Residents Latchling faces and opening cinematic clipping'
           start=s.index(heading)
-          end=s.find('\n### ', start+len(heading))
-          if end < 0: end=len(s)
+          end=s.find('\n### ',start+len(heading))
+          if end<0:end=len(s)
           block=s[start:end]
           block=block.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
-          summary=r'''
-
-#### Completion summary
-
-- Restored the Story & Residents portrait face anatomy so all five named residents render visible dark glossy eyes with catchlights, cheeks, suit marks, and intentional expression-specific mouths at phone-scale portrait sizes.
-- Reworked cinematic speech bubble sizing so text uses content-safe geometry rather than being visually clipped by the old fixed-height rules; normalized simultaneous speaker heights from actual text geometry, kept bubble bodies inside stage bounds, and recalculated tails toward the speaking portrait.
-- Prevented cinematic Continue focus/rendering from auto-scrolling the copy panel and hiding the heading on short screens.
-- Rebuilt the opening snap demonstration into a responsive two-row layout that stays fully inside its card and stage instead of being translated partly out of view.
-- Added a narrow 320px four-speaker treatment so the final opening beat remains inside the stage without overlapping the shell edges.
-- Product files changed: `style400-story-theme.css`, `style400-cinematics-geometry.css`, `cinematic-geometry400.js`, and `cinematics400.js`. Campaign puzzle data, level solutions, story progression, audio, title-screen typography/layout, and dialogue wording were not changed.
-- Accepted product commit: `10219f7b3648d809c99c5677db4f74690cec745e` (`Repair Story Residents faces and opening cinematic clipping`). Temporary validation workflow cleanup commit: `8316cf5e76167f2856a4cd55525107808e94e082`.
-- Acceptance run: GitHub Actions `34518581769` (`Fix Story Residents Opening Deep Audit V4`) completed successfully. It rendered Story & Residents plus the Story modal at 320x568, 360x640, 390x700, 390x844, and 430x932; rendered all seven opening beats at all five sizes; verified resident eyes/catchlights and mouth geometry; verified actual dialogue text bounds, bubble/stage bounds, tail-to-speaker alignment, copy scroll position, title/Continue visibility, snap-demo containment, and document overflow; and ran shared-bubble regressions across `across-drift`, `old-maps`, and `homeward`.
-- Acceptance artifact: `story-residents-opening-deep-fix-v4`, artifact ID `10168721977`. Manual inspection confirmed the 320x568 Story & Residents page and opening beats 2, 6, and 7 are visually clean, with complete speech text and the tutorial board fully visible; the broader v3 contact sheets were also manually inspected before the corrected pseudo-tail-aware v4 acceptance harness was run.
-- Earlier v1/v2/v3 attempts were diagnostic/test-harness iterations. They did not commit rejected product changes. V3 revealed that `scrollHeight` was counting the speech-bubble tail pseudo-element as overflow, so V4 validates the actual `<b>`/`<span>` text rectangles instead of treating the decorative tail as clipped text.
-- GitHub Pages run `34518711131` for the clean post-validation commit completed successfully. After cleanup, `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow.
-- Remaining risk: no known functional or responsive clipping issue remains in the audited Story & Residents/opening cinematic surfaces. Future dialogue copy that is substantially longer than current authored lines should still be re-run through the same responsive screenshot matrix.
-'''
-          if '#### Completion summary' not in block:
-              block=block.rstrip()+summary+'\n'
-          s=s[:start]+block+s[end:]
-          p.write_text(s)
+          summary=base64.b64decode(os.environ['SUMMARY_B64']).decode()
+          if '#### Completion summary' not in block:block=block.rstrip()+'\n\n'+summary+'\n'
+          p.write_text(s[:start]+block+s[end:])
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
