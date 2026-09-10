@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Make the Little Home sky full-bleed to the screen edges
+
+**Status: IN PROGRESS**
+
+**User goal:** Remove the visible inner scene boundary on the initial Little Home title screen. Clouds should only clip at the physical screen edge, and the sky scene should extend continuously to the full viewport instead of ending at a centered portrait frame with plain light-blue gutters.
+
+**Implementation plan:** Fix the production home shell rather than painting over the seam. Make the embedded Little Home surface fill the entire home viewport width and height, then make the embedded `.phone` fill that viewport instead of preserving a 390:844 frame that narrows on shorter screens. Preserve the centered Little Home composition and approved title/button sizing. Convert the existing compact behavior from an accidental width-based trigger caused by the 323px iframe into an explicit short-viewport rule so 390×700 keeps the accepted compact title, island, and button layout while gaining full-bleed sky and clouds.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `style400-ui.css`, and `title-island-concepts/index.html`; temporary self-removing screenshot validation workflow(s) may be used. No gameplay, story, campaign, solver, audio, cinematic dialogue, button actions, Little Home art, or title wording changes are intended.
+
+**Validation plan:** Render the actual production shell at 390×844 and 390×700. Assert the home wrapper and iframe span the viewport, the embedded phone matches the iframe dimensions, no horizontal overflow exists, no solid-color side gutters remain, edge clouds clip only against the viewport, the title/island/buttons remain within accepted geometry, all three buttons remain visible on the compact screen, and cinematic scene-only composition is unchanged. Manually inspect both screenshots.
+
+**Deployment plan:** Commit this IN PROGRESS state before product edits, implement and screenshot-test the full-bleed treatment, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm `validate-repository-access-guard.yml` is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commit/run/artifact details and remaining risk.
+
+---
+
 ### 2026-09-10 — Refine Little Home title spacing, island placement, and bottom controls
 
 **Status: COMPLETED**
