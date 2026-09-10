@@ -1,0 +1,54 @@
+name: Close Little Home Title Resize Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/close-title-header-resize.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close current work entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-10 — Enlarge the Little Home title and tagline'
+          start=s.index(heading)
+          end=s.index('\n---\n',start)
+          section=s[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary=(
+          '\n\n#### Completion summary\n\n'
+          '**Result:** COMPLETED. The actual canonical Little Home HTML title screen now uses the larger approved header scale. On the normal production title frame, the Wobbly Toy Letters title increased from 45px to 62px with a 7px navy stroke, and the tagline increased from 10px to 16px with a larger pill. The brand block moved slightly upward and outward to preserve balance. A narrow-frame fallback at 350px and below uses 56px title text and 14px tagline text so compact layouts retain the same stronger hierarchy without clipping. The title-drop animation, wording, Little Home art, residents, controls, textures, and cinematic scene-only mode are unchanged. Product commit: `eb128c8aab13493514c05fae8d8bb4bca393bbf7` (`Enlarge Little Home title and tagline`).\n\n'
+          '**Validation and visual acceptance:** Implementation run `34493669044` passed static and Chromium validation and produced artifact `10158839936` (`little-home-larger-title-render`). At the standard 390x844 production view the rendered title measures about 339px wide, the tagline about 316px wide, both remain clear of the progress/settings controls and Little Home art, and there is no horizontal overflow. The production parent narrows the title iframe to about 323px on the 390x700 compact layout, so the responsive fallback was exercised and passed there as well. The standard and compact screenshots were manually inspected and accepted; the standard screen has the larger visual prominence requested, while the compact screen retains a clean scaled-down version. The cinematic scene-only screenshot was also manually checked and remains title-free and unchanged in composition. Earlier validator attempts intentionally did not commit product code when their collision/compact-fit checks failed, so no rejected intermediate title size was deployed.\n\n'
+          '**Deployment and hygiene:** The accepted implementation workflow self-removed on clean main commit `a389bbc94f153b5d0084e30f21459f3c646a3369`. GitHub Pages run `34493747014` completed successfully for that exact clean state. Before this documentation-only closeout helper was created, `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow. This helper removes itself after committing the completion.\n\n'
+          '**Remaining risk / next action:** No known visual or functional blocker remains. Extremely narrow embed widths below those exercised will use the same compact fallback; if a future shell constrains the title frame substantially below roughly 323px, that shell should receive its own responsive acceptance pass rather than shrinking the normal 62px title.\n'
+          )
+          if '#### Completion summary' not in section:
+              section += summary
+          s=s[:start]+section+s[end:]
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Complete Little Home title resize handoff"
+          git push
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/close-title-header-resize.yml
+          git add .github/workflows/close-title-header-resize.yml
+          git commit -m "Remove title resize handoff helper"
+          git push
