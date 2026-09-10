@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Make Skyway Atlas chapter story blurbs fully readable
+
+**Status: IN PROGRESS**
+
+**User goal:** Fix the little story descriptions above the Atlas level selector because their text is visibly cut off. Preserve the strong Atlas layout while ensuring every displayed blurb is a complete thought rather than an abruptly clamped fragment.
+
+**Implementation plan:** Keep the canonical full chapter descriptions in `story400.js` unchanged. Give the Skyway Atlas a dedicated set of concise chapter blurbs written to fit its compact header, plus shorter complete variants for low-height phone layouts. Remove the CSS behavior that truncates those Atlas blurbs mid-sentence or hides them entirely on very short screens. Preserve chapter title, progress, navigation, route geometry, progression, and gameplay behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `game400-a.js`, `style400-skyway-atlas.css`, and a temporary self-removing validation workflow. `story400.js` should remain unchanged so Story & Residents retains the fuller narrative copy.
+
+**Validation plan:** Render all eight chapter headers at 390x844, 390x700, 360x640, and 320x568. Assert the visible Atlas blurb has no line clamp, hidden overflow, ellipsis, or clipped text; verify the intended normal/compact variant is selected at the correct breakpoint, the chapter header remains within the viewport, the Atlas map retains useful height, and there is no horizontal/vertical shell overflow. Recheck chapter navigation, waypoint navigation, Continue, and source hashes for story/campaign files. Manually inspect contact sheets for readability and visual balance.
+
+**Deployment plan:** Commit this IN PROGRESS handoff before product edits, implement and validate through a self-removing workflow, inspect renders, verify GitHub Pages on the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, run/artifact details, and any remaining risk.
+
+
 ### 2026-09-10 — Diversify Skyway Atlas route geometry
 
 **Status: COMPLETED**
