@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p single-traveler-audit
-          cat > /tmp/single-traveler-check.mjs <<'JS'
+          cat > single-traveler-check.mjs <<'JS'
           import { chromium } from 'playwright';
           import fs from 'fs';
           const browser=await chromium.launch({headless:true});
@@ -99,14 +99,14 @@ jobs:
           if(failures.length)throw new Error(`single traveler validation failed: ${failures.length}`);
           console.log('SINGLE_ATLAS_TRAVELER_ACCEPTED');
           JS
-          node /tmp/single-traveler-check.mjs
+          node single-traveler-check.mjs
       - name: Verify protected source unchanged
         run: sha256sum -c /tmp/protected-before.sha
       - name: Commit accepted product
         shell: bash
         run: |
           set -euo pipefail
-          rm -f package.json package-lock.json
+          rm -f package.json package-lock.json single-traveler-check.mjs
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add game400-a.js
