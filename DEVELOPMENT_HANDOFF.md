@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Diversify Skyway Atlas route geometry
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Keep the approved Skyway Atlas direction, but remove the repetitive feeling caused by the same island zig-zag geometry recurring across most chapter and ten-level progressions. Make different stretches feel like distinct journeys rather than the same route wearing a new chapter palette.
 
@@ -51,6 +51,19 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 **Deployment plan:** Commit this IN PROGRESS handoff before product edits. Implement and validate through a self-removing workflow, inspect the resulting renders, refine if needed, verify GitHub Pages on the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, run/artifact details, repository hygiene, and remaining risk.
 
+
+
+#### Completion summary
+
+- **Result:** COMPLETED. The Atlas no longer reuses the same five zig-zag coordinate layouts across every chapter. `game400-a.js` now has 20 authored route families, including broad arcs, hooks, S-curves, ridge/valley traverses, terrace-like climbs, orbiting paths, diagonals, clustered hops, a crown arc, a long switchback, and a shallow spiral. Chapter/range selection now uses both chapter and ten-level stretch, with mirrored/warped variants and eight independent curve profiles so repeated families remain visibly distinct.
+- **Uniqueness:** All 40 chapter/range combinations produce distinct coordinate signatures. The same waypoint position across Chapters 1–8 no longer resolves to the same shape. Progression order, current/completed/locked state semantics, milestone styling, chapter scenery, level launch behavior, and progress storage were preserved.
+- **Product file and commit:** Only `game400-a.js` changed. Accepted product commit: `98c2852b93ce6c4a4c34f1464fd408a1709bde79` (`Vary Skyway Atlas route geometry`). The temporary validator self-removed in clean-state commit `36db4ede7985ea02199160e75d96c9b89fca40e5` (`Remove Atlas route variety workflow`). No Atlas CSS change was required.
+- **Acceptance:** GitHub Actions run `34527686268` (`Diversify Atlas Routes`, run 2) completed successfully and printed `ATLAS_ROUTE_VARIETY_ACCEPTED unique=40`. It rendered and inspected all 40 route combinations at 390×844, plus all five stretches for Chapters 1 and 8 at 320×568, Chapter 4 at 390×700, and Chapter 7 at 430×932. It verified ten nodes/nine route segments per stretch, unique route signatures, 44px+ targets, containment, no horizontal overflow, safe node spacing, Level 17 current-state behavior, direct Level 16 launch, and Continue launch to Level 17.
+- **Scope protection:** SHA-256 checks confirmed every `campaign400-*.js` file plus `story400.js`, `story-grounding400.js`, `cinematics400.js`, and `cinematic-dialogue400.js` were unchanged.
+- **Artifact and visual review:** Acceptance artifact `atlas-route-variety-renders`, artifact ID `10172241432`, contains 61 files: 40 standard screenshots, 20 responsive screenshots, and the JSON audit report. Manual review of a full 8×5 contact sheet confirmed visibly different silhouettes rather than palette-swapped repeats; a separate 320×568 review of Chapters 1 and 8 confirmed the varied paths remain readable on compact phones without collapsing into indistinct clusters.
+- **Diagnostic note:** Initial run `34527420821` reached the final interaction regression but Playwright timed out waiting for an intentionally animated completed island to become motionless before a physical click. No product change was committed from that run. Run 2 corrected the harness to invoke the existing click handlers programmatically and passed the unchanged candidate.
+- **Deployment:** GitHub Pages run `34527805751` completed successfully for clean accepted state `36db4ede7985ea02199160e75d96c9b89fca40e5`.
+- **Remaining risk / next action:** No known blocker remains. Some routes intentionally share broad thematic families, but the coordinate geometry and curve treatment are unique across all 40 stretches. Future changes to Atlas geometry should rerun the same full route-signature and compact-screen matrix.
 
 
 ### 2026-09-10 — Rebuild Level Select as the Skyway Atlas
