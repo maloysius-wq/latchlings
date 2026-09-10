@@ -38,6 +38,24 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 ## Current Work
 
 
+### 2026-09-10 — Rebuild Level Select as the Skyway Atlas
+
+**Status: IN PROGRESS**
+
+**User goal:** Replace the generic Level Select with the approved Skyway Atlas: a deeply authored Latchlings world map of drifting textured islands, restored and broken Skyway routes, regional landmarks, cloud-hidden locked destinations, an unmistakable current stop, milestone waypoints every ten levels, and chapter-specific art direction that feels like travel through the Latchlands rather than a recolored button grid.
+
+**Design/research basis:** Draw on the progression-map strengths of Candy Crush Saga, Two Dots, and Monument Valley without copying their art or layouts. The Latchlings fiction remains the organizing system. Floating islands drift, the Skyway connects them, and the Waykeeper restores routes. Vendor lightweight CC0 Poly Haven materials for each chapter and document the exact sources in the repository credits. Planned references: Leafy Grass, Bark Brown 01, Rock Surface, Plaster Stone Wall 01, Marble 01, Rusty Metal 02, Blue Metal Plate, and Snow 02.
+
+**Implementation plan:** Replace the current topbar/card/chapter-chip/range-chip/5x2-grid presentation with a full-height atlas surface. Keep the existing chapter/range/progress/launch semantics, but render each 10-level range as a winding ten-stop route with floating island waystations, star-route lights, completion/current/locked states, larger 10-level milestone landmarks, glowing repaired segments, flickering current segment, future cloud cover, a NEXT STOP pennant, and a small resident guide. Simplify navigation to previous/next chapter controls plus five waypoint tabs. Move Reset Progress out of the permanent footer into a secondary atlas utility control and make Continue the single strong bottom CTA. Add restrained island/cloud/route motion with reduced-motion support.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `index.html`, `game400-a.js`, possibly `game400-b.js`, new `style400-skyway-atlas.css`, optional `skyway-atlas400.js`, `ART_ASSET_CREDITS.md`, and new `assets/level-select/*.jpg` CC0 textures. Campaign definitions, solver data, story canon, title screen, cinematics, audio, gameplay board, progression semantics, and the Level 400 ending are out of scope.
+
+**Validation plan:** Use self-removing GitHub Actions/Chromium audits across 320x568, 360x640, 390x700, 390x844, and 430x932. Exercise fresh, mid-chapter, completed-chapter, Chapters 1–8, and Level 400 states. Verify 44px+ hit targets, state/accessibility clarity, chapter/waypoint navigation, Continue launch, Reset confirmation access, no clipping/overflow, reduced-motion behavior, successful local texture loading, and unchanged campaign files. Render all eight chapters and manually inspect composition, uniqueness, texture restraint, landmarks, hierarchy, and state readability. Reject/refine anything that looks like a palette swap or generic template.
+
+**Deployment plan:** This IN PROGRESS handoff commit must exist before product edits. Implement and visually validate through self-cleaning workflow(s), refine until accepted, verify only the durable repository-access guard workflow remains, confirm GitHub Pages deploys the exact accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact files, texture sources, commits, Actions runs/artifacts, manual findings, deployment SHA/run, and remaining risk.
+
+
+
 ### 2026-09-10 — Deep audit Story/Residents Latchling faces and opening cinematic clipping
 
 **Status: COMPLETED**
