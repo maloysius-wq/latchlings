@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Refine Little Home title spacing, island placement, and bottom controls
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Give the enlarged Little Home title screen more breathing room. Move the title block slightly downward so it is less cramped against the top progress/settings controls, move the floating island down enough to open space beneath the tagline, and enlarge/rebalance the Play, Daily Puzzle, and Level Select controls so they occupy more of the lower screen instead of leaving a large empty bottom area.
 
@@ -50,6 +50,19 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render the actual production shell at 390×844 and 390×700, measure title/top-control clearance, tagline-to-visible-island clearance, island-to-Play clearance, button bounds, and bottom safe area. Assert no horizontal overflow or bottom clipping, verify all three controls remain fully visible/clickable, verify cinematic scene-only mode is unchanged, and manually inspect the rendered screenshots for balance rather than relying only on geometry.
 
 **Deployment plan:** Commit this IN PROGRESS handoff before product edits, implement and visually validate the spacing/control refinement, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm `validate-repository-access-guard.yml` is again the only durable workflow, then close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits, validation run/artifact IDs, deployment, and any remaining risk.
+
+
+#### Completion summary
+
+**Result:** COMPLETED. The Little Home title screen was rebalanced around the enlarged header. The normal title block moved from 62px top offset to 70px, while the island scene moved from 174px to 196px, creating visible breathing room both above the title and between the tagline and island. The approved 62px title / 16px tagline scale and Wobbly Toy Letters treatment remain unchanged. On narrow embedded frames the title uses a 68px top offset and the island uses a 190px scene offset so the compact composition stays balanced.
+
+**Bottom controls:** The standard Play control grew from 60px to 72px tall and widened from 28px side insets to 22px; its text and icon were enlarged. Daily Puzzle and Level Select grew from 78px to 96px tall, moved lower, widened, and received larger text/icons. This brings the control group farther into the previously empty lower screen. The narrow-frame layout now explicitly repositions and sizes all three controls so the 390×700 production shell shows the entire Play/Daily/Level group instead of clipping the secondary row at the bottom. Button actions and interaction behavior are unchanged.
+
+**Validation and visual acceptance:** Product implementation run `34496068066` passed static assertions and Chromium geometry/overflow checks for the real production shell at 390×844 and 390×700, plus cinematic scene-only regression coverage. Artifact `10159842961` (`little-home-layout-refinement-render`) contains both production screenshots, metrics, and the cinematic screenshot. Manual inspection accepted both layouts: the standard frame has a less crowded header, a lower island, and materially larger bottom controls; the compact frame remains fully usable with all controls visible and no island/control collision. Cinematic scene-only composition remained unchanged. Product commit: `aa19a20153a3b93691ef06b8a341aa290063895b` (`Refine Little Home title screen spacing and controls`).
+
+**Deployment and hygiene:** The implementation helper self-removed on clean product state `7550e22308f18507baff7c2e43105b8c65c535e7`. GitHub Pages run `34496158565` completed successfully for that exact clean state. This documentation-only closeout helper removes itself after committing the completion.
+
+**Remaining risk / next action:** No known blocker remains. The standard and compact production shells exercised by the game are both accepted; if a future shell uses a substantially shorter or narrower iframe, give that shell its own responsive pass rather than compressing the approved standard composition.
 
 ---
 
