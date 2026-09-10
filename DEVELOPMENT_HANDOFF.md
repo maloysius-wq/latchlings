@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+
+### 2026-09-10 — Deep audit Story/Residents Latchling faces and opening cinematic clipping
+
+**Status: IN PROGRESS**
+
+**User goal:** Restore the missing eyes and normalize odd mouth rendering on every Latchling shown on the Story & Residents surfaces. Perform a full deep visual/responsive audit of the opening cinematic and fix clipping, including speech-bubble text and the how-to-play / snap-demo boxes, rather than patching only the examples already noticed.
+
+**Implementation plan:** Inspect the canonical Story & Residents portrait renderer and all CSS cascades affecting its face anatomy, then make those portraits consistently use the polished spherical Latchling face language: visible dark glossy eyes with catchlights, cheeks, suit mark, and clean expression-specific mouths. Audit all seven opening cinematic beats across compact through tall phone viewports, including speech bubble bodies/tails, stage characters, narration, helper-crew explanation, and the snap-demo board. Replace clipping-prone fixed dimensions/overflow behavior with responsive, content-safe geometry while preserving the established cinematic composition and story wording unless a tiny wording trim is absolutely necessary for fit. Keep later cinematics and gameplay unchanged.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `story-theme400.js`, `style400-story-theme.css`, `cinematic-dialogue400.js`, `style400-cinematics-dialogue.css`, `style400-cinematics.css`, `style400-cinematics-geometry.css`, and/or a narrowly scoped new refinement stylesheet if that is safer; temporary self-removing validation workflow(s) may be used. No campaign puzzle data, level solutions, audio, title-screen layout, or story progression changes are intended.
+
+**Validation plan:** Render the actual Story & Residents screen and Story modal at multiple phone sizes and verify all five named residents have visible eyes/catchlights and intentional mouths with no facial clipping. Render every one of the seven opening cinematic beats at representative tiny/compact/standard/tall portrait sizes (targeting at least 320x568, 360x640, 390x700, 390x844, and 430x932); assert speech-bubble text has no scroll/clipping, bubbles/portraits/tails remain inside safe stage bounds, narration remains readable/reachable, the snap-demo board and every internal label/helper/rock/nest remain within their boxes, no horizontal document overflow exists, and Continue remains reachable. Include a later-cinematic regression. Generate contact sheets and manually inspect them after automated geometry checks.
+
+**Deployment plan:** Commit this IN PROGRESS handoff state before product edits; implement only after the starter cleans itself up; run and visually review the deep audit, refining until accepted; self-remove temporary workflows; verify GitHub Pages succeeds on the accepted clean state; close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits/runs/artifacts/remaining risk; and confirm `.github/workflows/validate-repository-access-guard.yml` is again the only durable workflow.
+
 ### 2026-09-10 — Remove stray green caps from cinematic floating islands
 
 **Status: COMPLETED**
