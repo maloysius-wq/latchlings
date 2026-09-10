@@ -1,6 +1,6 @@
 # Latchlings Development Handoff
 
-Last updated: 2026-09-05
+Last updated: 2026-09-10
 
 ## Start here
 
@@ -37,9 +37,25 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
-### 2026-09-08 — Strengthen the opening story and first-20-level plot progression
+### 2026-09-10 — Enlarge the Little Home title and tagline
 
 **Status: IN PROGRESS**
+
+**User goal:** Make the actual initial Little Home title screen use the noticeably larger title and tagline scale from the approved visual mockup. Preserve the existing Wobbly Toy Letters title treatment and tagline wording/style; this is a scale and spacing refinement, not a logo redesign.
+
+**Implementation plan:** Modify the canonical title source in `title-island-concepts/index.html`. Increase the `#c2` Latchlings letter size substantially from the current 45px treatment and enlarge the tagline text/pill proportionally. Rebalance only the header-to-island spacing needed to prevent crowding or overlap. Preserve the title-drop animation, top progress/settings controls, Little Home island geometry, residents, play/menu controls, textures, and normal/embed behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and `title-island-concepts/index.html`; temporary self-removing visual validation workflow(s) may be used. No gameplay, story, campaign, solver, audio, cinematic, island-model, resident, or button behavior changes are intended.
+
+**Validation plan:** Render the real HTML title at the production 390×844 viewport and a compact 390×700 case, measure the title/tagline against the current baseline, assert no horizontal overflow or collision with the top controls/island scene, verify the title-drop animation still settles correctly, and manually inspect the rendered screenshots. Also verify cinematic scene-only mode is not visually changed by the title-header rules.
+
+**Deployment plan:** Commit this IN PROGRESS handoff state before product edits, implement the title-size change, run screenshot-based visual acceptance, refine if needed, self-remove temporary workflows, confirm `validate-repository-access-guard.yml` is the only durable workflow, verify GitHub Pages deploys the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, audit/deployment IDs, and remaining risk.
+
+---
+
+### 2026-09-08 — Strengthen the opening story and first-20-level plot progression
+
+**Status: COMPLETED**
 
 **User goal:** Make the initial story introduction and plot progression feel more complete. Strengthen the opening setup and use the first 20 levels to turn the early errands into a clear escalating narrative, with noticeable plot hardening every few levels rather than twenty mostly interchangeable chores.
 
@@ -55,6 +71,11 @@ The opening cinematic will also receive a concise story-strength pass so its fin
 **Validation plan:** Statically assert unique Level 1–20 story lines and the five route-report milestones; browser-render Levels 1–20 at phone size and confirm each rail has the intended speaker/copy, Levels 4/8/12/16/20 visibly read as route reports, no rail overflows, and Levels 21+ retain their existing chapter-line behavior. Re-render all seven opening cinematic beats and manually inspect the final beat after the copy adjustment. Run a representative later-chapter regression check and confirm no campaign data changed.
 
 **Deployment plan:** Use self-removing temporary GitHub Actions validation, manually inspect produced screenshots, deploy the accepted clean product state through GitHub Pages, confirm the repository-access guard is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, run/artifact IDs, visual findings, deployment, and remaining risk.
+
+
+#### Completion summary
+
+**Result:** COMPLETED. Levels 1–20 now form an authored escalating investigation with ROUTE REPORT beats at 4/8/12/16/20; the opening cinematic states that Skyway routes are using old island positions and gives the player a concrete first objective. Runtime cinematic copy, story rail copy, and durable story documentation were synchronized. Final visual-fit audit run `34272449526` passed all first-20 rails and produced artifact `10074369770`; accepted clean product state `e1c07f05034ce0ce8adc0ed3f516b6ad2b1fe891` deployed successfully in Pages run `34272527725`. No campaign boards, solver logic, puzzle rules, audio, controls, progression rules, or Level 400 ending changed.
 
 ---
 
