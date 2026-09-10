@@ -83,7 +83,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p full-bleed-home-audit
-          cat > /tmp/audit.mjs <<'JS'
+          cat > audit.mjs <<'JS'
           import { chromium } from 'playwright';
           import fs from 'fs';
           const browser=await chromium.launch({headless:true});
@@ -141,7 +141,7 @@ jobs:
           fs.writeFileSync('full-bleed-home-audit/metrics.json',JSON.stringify(metrics,null,2));
           await browser.close();
           JS
-          node /tmp/audit.mjs
+          node audit.mjs
       - name: Commit product change
         shell: bash
         run: |
