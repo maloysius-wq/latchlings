@@ -1,0 +1,58 @@
+name: Prepare Title Header Resize Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prepare-title-header-resize.yml'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repair prior handoff and open title resize
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          prior='### 2026-09-08 — Strengthen the opening story and first-20-level plot progression'
+          if prior in s:
+              start=s.index(prior)
+              end=s.index('\n---\n',start)
+              section=s[start:end]
+              if '**Status: IN PROGRESS**' in section:
+                  section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+              if '#### Completion summary' not in section:
+                  section += '''\n\n#### Completion summary\n\n**Result:** COMPLETED. Levels 1–20 now form an authored escalating investigation with ROUTE REPORT beats at 4/8/12/16/20; the opening cinematic states that Skyway routes are using old island positions and gives the player a concrete first objective. Runtime cinematic copy, story rail copy, and durable story documentation were synchronized. Final visual-fit audit run `34272449526` passed all first-20 rails and produced artifact `10074369770`; accepted clean product state `e1c07f05034ce0ce8adc0ed3f516b6ad2b1fe891` deployed successfully in Pages run `34272527725`. No campaign boards, solver logic, puzzle rules, audio, controls, progression rules, or Level 400 ending changed.\n'''
+              s=s[:start]+section+s[end:]
+          new='''### 2026-09-10 — Enlarge the Little Home title and tagline\n\n**Status: IN PROGRESS**\n\n**User goal:** Make the actual initial Little Home title screen use the noticeably larger title and tagline scale from the approved visual mockup. Preserve the existing Wobbly Toy Letters title treatment and tagline wording/style; this is a scale and spacing refinement, not a logo redesign.\n\n**Implementation plan:** Modify the canonical title source in `title-island-concepts/index.html`. Increase the `#c2` Latchlings letter size substantially from the current 45px treatment and enlarge the tagline text/pill proportionally. Rebalance only the header-to-island spacing needed to prevent crowding or overlap. Preserve the title-drop animation, top progress/settings controls, Little Home island geometry, residents, play/menu controls, textures, and normal/embed behavior.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and `title-island-concepts/index.html`; temporary self-removing visual validation workflow(s) may be used. No gameplay, story, campaign, solver, audio, cinematic, island-model, resident, or button behavior changes are intended.\n\n**Validation plan:** Render the real HTML title at the production 390×844 viewport and a compact 390×700 case, measure the title/tagline against the current baseline, assert no horizontal overflow or collision with the top controls/island scene, verify the title-drop animation still settles correctly, and manually inspect the rendered screenshots. Also verify cinematic scene-only mode is not visually changed by the title-header rules.\n\n**Deployment plan:** Commit this IN PROGRESS handoff state before product edits, implement the title-size change, run screenshot-based visual acceptance, refine if needed, self-remove temporary workflows, confirm `validate-repository-access-guard.yml` is the only durable workflow, verify GitHub Pages deploys the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, audit/deployment IDs, and remaining risk.\n\n---\n\n'''
+          marker='## Current Work\n\n'
+          if '### 2026-09-10 — Enlarge the Little Home title and tagline' not in s:
+              s=s.replace(marker,marker+new,1)
+          if 'Last updated: 2026-09-05' in s:
+              s=s.replace('Last updated: 2026-09-05','Last updated: 2026-09-10',1)
+          elif 'Last updated: 2026-09-08' in s:
+              s=s.replace('Last updated: 2026-09-08','Last updated: 2026-09-10',1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Open Little Home title resize handoff"
+          git push
+      - name: Remove stale and temporary helpers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/close-early-story-progression.yml
+          rm -f .github/workflows/prepare-title-header-resize.yml
+          git add -A .github/workflows
+          git commit -m "Clean title resize preparation helpers"
+          git push
