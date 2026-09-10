@@ -49,6 +49,16 @@ const ATLAS_WAYPOINTS=[
  ['Platform One','Bendworks','Map Room','Old Line','A New Line'],
  ['Foundry Gate','Switchbank','Relay Row','Shared Signal','Networked'],
  ['Crown Edge','Aurora Span','Reconnected','Living Route','Homeward']
+ ];
+const ATLAS_CHAPTER_BLURBS=[
+ {full:"Morning routes drift out of line, and Little Home realizes the misses form a pattern.",compact:"Morning routes have drifted out of line."},
+ {full:"Lanternwood reconnects when neighbors become part of one another’s routes.",compact:"Neighbors become part of one another’s routes."},
+ {full:"Old anchors reveal the Skyway was built for reliable stops in a moving world.",compact:"Anchors make moving routes reliable."},
+ {full:"Suit-mark lanes keep Masquerade Keep’s busy market moving through the drift.",compact:"Suit marks guide the market through the drift."},
+ {full:"From Prism Gardens, the household finally sees how far the Latchlands are drifting.",compact:"The wider Latchlands drift comes into view."},
+ {full:"Copperline’s old maps reveal the Skyway was always designed to keep changing.",compact:"The Skyway was always meant to change."},
+ {full:"Stormswitch turns restoration into shared work, with distant routes responding together.",compact:"Restoration becomes a shared network effort."},
+ {full:"Aurora Crown reveals there is no fixed master route; the Skyway survives by changing.",compact:"The Skyway lives by changing with the islands."}
 ];
 const ATLAS_ROUTE_PATTERNS=[
  {name:'gentle-arc',points:[[18,84],[27,73],[40,65],[55,61],[69,63],[79,55],[76,43],[64,34],[47,29],[28,21]]},
@@ -98,8 +108,8 @@ function atlasCurve(a,b,i,profile=0){const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.ma
 function atlasGuideHtml(chapter){if(!STORY||!STORY.cast?.length)return'';const c=STORY.cast[(chapter-1)%STORY.cast.length],color=c.color||'blue';return `<span class="atlas-guide" aria-hidden="true" style="--guide-light:${LIGHT[color]};--guide-color:${COLORS[color]};--guide-dark:${DARK[color]}"><span class="atlas-guide-suit">${suitSvg(c.suit)}</span><span class="atlas-guide-eyes"><i></i><i></i></span><i class="atlas-guide-mouth"></i></span>`}
 function renderChapter(){
  chapterView=Math.max(1,Math.min(8,chapterView));rangeView=Math.max(0,Math.min(4,rangeView));applyTheme(chapterView);
- const ch=CHAPTERS[chapterView-1],chapterStart=(chapterView-1)*50+1,chapterEnd=chapterView*50,chapterDone=Array.from({length:50},(_,i)=>progress.stars[chapterStart+i]>0).filter(Boolean).length,waypoints=ATLAS_WAYPOINTS[chapterView-1],routeSpec=atlasRouteSpec(chapterView,rangeView),points=atlasLayout(chapterView,rangeView);
- const head=document.getElementById('chapterHead');head.innerHTML=`<div class="atlas-chapter-medallion" aria-hidden="true">${chapterView}</div><div class="atlas-chapter-copy"><div class="theme-kicker">${ch.theme}</div><h2>${ch.name}</h2><p>${ch.desc}</p></div><div class="atlas-chapter-progress"><b>${chapterDone}</b>/ 50<br>restored</div>`;
+ const ch=CHAPTERS[chapterView-1],atlasBlurb=ATLAS_CHAPTER_BLURBS[chapterView-1],chapterStart=(chapterView-1)*50+1,chapterEnd=chapterView*50,chapterDone=Array.from({length:50},(_,i)=>progress.stars[chapterStart+i]>0).filter(Boolean).length,waypoints=ATLAS_WAYPOINTS[chapterView-1],routeSpec=atlasRouteSpec(chapterView,rangeView),points=atlasLayout(chapterView,rangeView);
+ const head=document.getElementById('chapterHead');head.innerHTML=`<div class="atlas-chapter-medallion" aria-hidden="true">${chapterView}</div><div class="atlas-chapter-copy"><div class="theme-kicker">${ch.theme}</div><h2>${ch.name}</h2><p class="atlas-chapter-blurb"><span class="atlas-blurb-full">${atlasBlurb.full}</span><span class="atlas-blurb-compact">${atlasBlurb.compact}</span></p></div><div class="atlas-chapter-progress"><b>${chapterDone}</b>/ 50<br>restored</div>`;
  const nav=document.getElementById('chapterNav');nav.innerHTML=`<button class="atlas-chapter-arrow" data-step="-1" aria-label="Previous chapter" ${chapterView===1?'disabled':''}>‹</button><div class="atlas-region-dots">${CHAPTERS.map((c,i)=>`<button class="atlas-region-dot ${i+1===chapterView?'active':''}" data-ch="${i+1}" aria-label="Chapter ${i+1}: ${c.theme}" title="${c.theme}"></button>`).join('')}</div><button class="atlas-chapter-arrow" data-step="1" aria-label="Next chapter" ${chapterView===8?'disabled':''}>›</button>`;
  nav.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{chapterView=+b.dataset.ch;const local=progress.unlocked-(chapterView-1)*50;rangeView=local>0?Math.min(4,Math.floor((local-1)/10)):0;renderChapter()});
  nav.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{chapterView=Math.max(1,Math.min(8,chapterView+(+b.dataset.step)));const local=progress.unlocked-(chapterView-1)*50;rangeView=local>0?Math.min(4,Math.floor((local-1)/10)):0;renderChapter()});
