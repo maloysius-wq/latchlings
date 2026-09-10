@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="style400-ui.css">
 <link rel="stylesheet" href="style400-game.css">
 <link rel="stylesheet" href="style400-themes.css">
+<link rel="stylesheet" href="style400-skyway-atlas.css">
 <link rel="stylesheet" href="style400-story-theme.css">
 <link rel="stylesheet" href="style400-story-rail-board.css">
 <link rel="stylesheet" href="style400-cinematics.css">
@@ -27,13 +28,19 @@
     </div>
   </main>
 
-  <main id="levels" class="screen">
-    <div class="topbar card"><button class="iconbtn" id="levelsBack" aria-label="Back"></button><div class="game-title" style="font-size:23px">Level Select</div><div class="spacer"></div></div>
-    <div id="chapterHead" class="chapter-head card"></div>
-    <div id="chapterNav" class="chapter-nav"></div>
-    <div id="rangeNav" class="range-nav"></div>
-    <div id="levelGrid" class="level-grid card"></div>
-    <div class="level-footer"><button class="secondary-btn" id="resetProgressBtn">Reset Progress</button><button class="secondary-btn" id="continueBtn">Continue</button></div>
+  <main id="levels" class="screen atlas-screen" aria-label="Skyway Atlas level select">
+    <section class="atlas-shell">
+      <header class="atlas-top">
+        <button class="atlas-round-btn" id="levelsBack" aria-label="Return to Little Home"></button>
+        <div class="atlas-title-lockup"><span class="atlas-kicker">Waykeeper's</span><strong>Skyway Atlas</strong></div>
+        <button class="atlas-round-btn atlas-tools" id="resetProgressBtn" aria-label="Reset campaign progress" title="Reset progress">•••</button>
+      </header>
+      <div id="chapterHead" class="atlas-chapter-head"></div>
+      <div id="chapterNav" class="atlas-chapter-nav" aria-label="Chapter navigation"></div>
+      <div id="rangeNav" class="atlas-waypoint-nav" aria-label="Chapter waypoints"></div>
+      <div id="levelGrid" class="atlas-map" aria-label="Current Skyway route"></div>
+      <div class="level-footer atlas-footer"><button class="atlas-continue" id="continueBtn"><span>Continue journey</span><b>Level 1</b></button></div>
+    </section>
   </main>
 
   <main id="story" class="screen story-screen" aria-label="Story and residents">
