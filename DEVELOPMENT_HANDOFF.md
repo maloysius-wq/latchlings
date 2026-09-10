@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Remove stray green caps from cinematic floating islands
+
+**Status: IN PROGRESS**
+
+**User goal:** Remove the green circles/pills visibly floating above the islands during the opening cinematic.
+
+**Implementation plan:** Inspect the shared floating-island styling and remove the obsolete legacy island pseudo-element that survived the newer textured island construction. Preserve the actual textured grass top, island geometry, route lines, props, characters, and all cinematic/story behavior. Because the stray cap is part of the shared island primitive rather than authored story content, remove the artifact from that primitive so it cannot reappear in later island-based cinematics either.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md` and cinematic CSS only; temporary self-removing screenshot validation workflow may be used. No dialogue, story, gameplay, campaign, audio, route logic, or title-screen behavior changes are intended.
+
+**Validation plan:** Render opening beats 1, 3, and 4 at phone size, assert the legacy `.cin-island::after` cap is not rendered while `.cin-island-top` remains visible, verify route/prop/island counts are unchanged, and manually inspect screenshots for the reported floating green artifacts. Run a representative later island-based cinematic regression to ensure the shared primitive remains visually intact.
+
+**Deployment plan:** Commit this IN PROGRESS handoff before the CSS edit, implement and screenshot-test the cleanup, self-remove temporary workflows, verify GitHub Pages deploys the accepted clean state, confirm the repository-access guard is again the only durable workflow, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commit/run/artifact details and remaining risk.
+
+---
+
 ### 2026-09-10 — Make the Little Home sky full-bleed to the screen edges
 
 **Status: COMPLETED**
