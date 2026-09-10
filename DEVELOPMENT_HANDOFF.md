@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Enlarge the Little Home title and tagline
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Make the actual initial Little Home title screen use the noticeably larger title and tagline scale from the approved visual mockup. Preserve the existing Wobbly Toy Letters title treatment and tagline wording/style; this is a scale and spacing refinement, not a logo redesign.
 
@@ -50,6 +50,17 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render the real HTML title at the production 390×844 viewport and a compact 390×700 case, measure the title/tagline against the current baseline, assert no horizontal overflow or collision with the top controls/island scene, verify the title-drop animation still settles correctly, and manually inspect the rendered screenshots. Also verify cinematic scene-only mode is not visually changed by the title-header rules.
 
 **Deployment plan:** Commit this IN PROGRESS handoff state before product edits, implement the title-size change, run screenshot-based visual acceptance, refine if needed, self-remove temporary workflows, confirm `validate-repository-access-guard.yml` is the only durable workflow, verify GitHub Pages deploys the accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits, audit/deployment IDs, and remaining risk.
+
+
+#### Completion summary
+
+**Result:** COMPLETED. The actual canonical Little Home HTML title screen now uses the larger approved header scale. On the normal production title frame, the Wobbly Toy Letters title increased from 45px to 62px with a 7px navy stroke, and the tagline increased from 10px to 16px with a larger pill. The brand block moved slightly upward and outward to preserve balance. A narrow-frame fallback at 350px and below uses 56px title text and 14px tagline text so compact layouts retain the same stronger hierarchy without clipping. The title-drop animation, wording, Little Home art, residents, controls, textures, and cinematic scene-only mode are unchanged. Product commit: `eb128c8aab13493514c05fae8d8bb4bca393bbf7` (`Enlarge Little Home title and tagline`).
+
+**Validation and visual acceptance:** Implementation run `34493669044` passed static and Chromium validation and produced artifact `10158839936` (`little-home-larger-title-render`). At the standard 390x844 production view the rendered title measures about 339px wide, the tagline about 316px wide, both remain clear of the progress/settings controls and Little Home art, and there is no horizontal overflow. The production parent narrows the title iframe to about 323px on the 390x700 compact layout, so the responsive fallback was exercised and passed there as well. The standard and compact screenshots were manually inspected and accepted; the standard screen has the larger visual prominence requested, while the compact screen retains a clean scaled-down version. The cinematic scene-only screenshot was also manually checked and remains title-free and unchanged in composition. Earlier validator attempts intentionally did not commit product code when their collision/compact-fit checks failed, so no rejected intermediate title size was deployed.
+
+**Deployment and hygiene:** The accepted implementation workflow self-removed on clean main commit `a389bbc94f153b5d0084e30f21459f3c646a3369`. GitHub Pages run `34493747014` completed successfully for that exact clean state. Before this documentation-only closeout helper was created, `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow. This helper removes itself after committing the completion.
+
+**Remaining risk / next action:** No known visual or functional blocker remains. Extremely narrow embed widths below those exercised will use the same compact fallback; if a future shell constrains the title frame substantially below roughly 323px, that shell should receive its own responsive acceptance pass rather than shrinking the normal 62px title.
 
 ---
 
