@@ -1,0 +1,161 @@
+name: Fix Atlas chapter blurb fit
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-atlas-blurb-fit.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve out-of-scope source hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js campaign400-*.js > /tmp/atlas-blurb-before.sha
+      - name: Add complete responsive Atlas blurbs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          js=Path('game400-a.js')
+          s=js.read_text()
+          needle="];\nconst ATLAS_ROUTE_PATTERNS=["
+          blurbs=''' ];\nconst ATLAS_CHAPTER_BLURBS=[\n {full:"Morning routes drift out of line, and Little Home realizes the misses form a pattern.",compact:"Morning routes have drifted out of line."},\n {full:"Lanternwood reconnects when neighbors become part of one another’s routes.",compact:"Neighbors become part of one another’s routes."},\n {full:"Old anchors reveal the Skyway was built for reliable stops in a moving world.",compact:"Anchors make moving routes reliable."},\n {full:"Suit-mark lanes keep Masquerade Keep’s busy market moving through the drift.",compact:"Suit marks guide the market through the drift."},\n {full:"From Prism Gardens, the household finally sees how far the Latchlands are drifting.",compact:"The wider Latchlands drift comes into view."},\n {full:"Copperline’s old maps reveal the Skyway was always designed to keep changing.",compact:"The Skyway was always meant to change."},\n {full:"Stormswitch turns restoration into shared work, with distant routes responding together.",compact:"Restoration becomes a shared network effort."},\n {full:"Aurora Crown reveals there is no fixed master route; the Skyway survives by changing.",compact:"The Skyway lives by changing with the islands."}\n];\nconst ATLAS_ROUTE_PATTERNS=['''
+          if needle not in s:
+              raise SystemExit('Atlas waypoint insertion point not found')
+          s=s.replace(needle,blurbs,1)
+          old="const ch=CHAPTERS[chapterView-1],chapterStart=(chapterView-1)*50+1,chapterEnd=chapterView*50,chapterDone=Array.from({length:50},(_,i)=>progress.stars[chapterStart+i]>0).filter(Boolean).length,waypoints=ATLAS_WAYPOINTS[chapterView-1],routeSpec=atlasRouteSpec(chapterView,rangeView),points=atlasLayout(chapterView,rangeView);"
+          new="const ch=CHAPTERS[chapterView-1],atlasBlurb=ATLAS_CHAPTER_BLURBS[chapterView-1],chapterStart=(chapterView-1)*50+1,chapterEnd=chapterView*50,chapterDone=Array.from({length:50},(_,i)=>progress.stars[chapterStart+i]>0).filter(Boolean).length,waypoints=ATLAS_WAYPOINTS[chapterView-1],routeSpec=atlasRouteSpec(chapterView,rangeView),points=atlasLayout(chapterView,rangeView);"
+          if old not in s:
+              raise SystemExit('renderChapter declaration not found')
+          s=s.replace(old,new,1)
+          old_head="const head=document.getElementById('chapterHead');head.innerHTML=`<div class=\"atlas-chapter-medallion\" aria-hidden=\"true\">${chapterView}</div><div class=\"atlas-chapter-copy\"><div class=\"theme-kicker\">${ch.theme}</div><h2>${ch.name}</h2><p>${ch.desc}</p></div><div class=\"atlas-chapter-progress\"><b>${chapterDone}</b>/ 50<br>restored</div>`;"
+          new_head="const head=document.getElementById('chapterHead');head.innerHTML=`<div class=\"atlas-chapter-medallion\" aria-hidden=\"true\">${chapterView}</div><div class=\"atlas-chapter-copy\"><div class=\"theme-kicker\">${ch.theme}</div><h2>${ch.name}</h2><p class=\"atlas-chapter-blurb\"><span class=\"atlas-blurb-full\">${atlasBlurb.full}</span><span class=\"atlas-blurb-compact\">${atlasBlurb.compact}</span></p></div><div class=\"atlas-chapter-progress\"><b>${chapterDone}</b>/ 50<br>restored</div>`;"
+          if old_head not in s:
+              raise SystemExit('chapter head renderer not found')
+          s=s.replace(old_head,new_head,1)
+          js.write_text(s)
+
+          css=Path('style400-skyway-atlas.css')
+          c=css.read_text()
+          old_css='.atlas-chapter-copy p{margin:0;font-size:10.5px;line-height:1.2;opacity:.79;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}'
+          new_css='.atlas-chapter-copy p{margin:0;font-size:10.5px;line-height:1.2;opacity:.79;display:block;overflow:visible}.atlas-blurb-compact{display:none}'
+          if old_css not in c:
+              raise SystemExit('base chapter blurb CSS not found')
+          c=c.replace(old_css,new_css,1)
+          old_720='.atlas-chapter-copy h2{font-size:16px}.atlas-chapter-copy p{font-size:9px;-webkit-line-clamp:1}.atlas-chapter-progress b{font-size:15px}'
+          new_720='.atlas-chapter-copy h2{font-size:16px}.atlas-chapter-copy p{font-size:9px;line-height:1.14}.atlas-blurb-full{display:none}.atlas-blurb-compact{display:inline}.atlas-chapter-progress b{font-size:15px}'
+          if old_720 not in c:
+              raise SystemExit('short-screen chapter blurb CSS not found')
+          c=c.replace(old_720,new_720,1)
+          old_600='.atlas-shell{gap:3px}.atlas-top{height:40px}.atlas-chapter-head{min-height:53px}.atlas-chapter-copy p{display:none}.atlas-chapter-nav{min-height:25px}'
+          new_600='.atlas-shell{gap:3px}.atlas-top{height:40px}.atlas-chapter-head{min-height:53px;padding-top:5px;padding-bottom:5px}.atlas-chapter-copy p{display:block;font-size:8.5px;line-height:1.12}.atlas-chapter-nav{min-height:25px}'
+          if old_600 not in c:
+              raise SystemExit('tiny-screen chapter blurb CSS not found')
+          c=c.replace(old_600,new_600,1)
+          css.write_text(c)
+          PY
+          node --check game400-a.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve candidate
+        shell: bash
+        run: python3 -m http.server 4173 >/tmp/atlas-blurb-http.log 2>&1 &
+      - name: Validate all responsive chapter blurbs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p atlas-blurb-audit
+          cat > atlas-blurb-check.mjs <<'JS'
+          import {chromium} from 'playwright';
+          import fs from 'fs';
+          const browser=await chromium.launch({headless:true});
+          const failures=[],report=[];
+          const fail=m=>{failures.push(m);console.error('FAIL',m)};
+          const full=[
+            'Morning routes drift out of line, and Little Home realizes the misses form a pattern.',
+            'Lanternwood reconnects when neighbors become part of one another’s routes.',
+            'Old anchors reveal the Skyway was built for reliable stops in a moving world.',
+            'Suit-mark lanes keep Masquerade Keep’s busy market moving through the drift.',
+            'From Prism Gardens, the household finally sees how far the Latchlands are drifting.',
+            'Copperline’s old maps reveal the Skyway was always designed to keep changing.',
+            'Stormswitch turns restoration into shared work, with distant routes responding together.',
+            'Aurora Crown reveals there is no fixed master route; the Skyway survives by changing.'
+          ];
+          const compact=[
+            'Morning routes have drifted out of line.',
+            'Neighbors become part of one another’s routes.',
+            'Anchors make moving routes reliable.',
+            'Suit marks guide the market through the drift.',
+            'The wider Latchlands drift comes into view.',
+            'The Skyway was always meant to change.',
+            'Restoration becomes a shared network effort.',
+            'The Skyway lives by changing with the islands.'
+          ];
+          async function openAtlas(page){await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await page.evaluate(()=>localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:1,stars:{}})));await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>window.LatchlingsHomeAction);await page.evaluate(()=>window.LatchlingsHomeAction('levels'));await page.waitForTimeout(250)}
+          for(const [w,h] of [[390,844],[390,700],[360,640],[320,568]]){
+            const page=await browser.newPage({viewport:{width:w,height:h}});await openAtlas(page);
+            for(let ch=1;ch<=8;ch++){
+              await page.locator(`.atlas-region-dot[data-ch="${ch}"]`).click();await page.waitForTimeout(80);
+              const m=await page.evaluate(()=>{const shell=document.querySelector('.atlas-shell'),head=document.getElementById('chapterHead'),nav=document.getElementById('chapterNav'),range=document.getElementById('rangeNav'),map=document.getElementById('levelGrid'),foot=document.querySelector('.atlas-footer'),p=head.querySelector('.atlas-chapter-blurb'),a=head.querySelector('.atlas-blurb-full'),b=head.querySelector('.atlas-blurb-compact'),pr=p.getBoundingClientRect(),hr=head.getBoundingClientRect(),nr=nav.getBoundingClientRect(),rr=range.getBoundingClientRect(),mr=map.getBoundingClientRect(),fr=foot.getBoundingClientRect(),cs=getComputedStyle(p);return{text:p.innerText.trim(),fullVisible:getComputedStyle(a).display!=='none',compactVisible:getComputedStyle(b).display!=='none',pClient:p.clientHeight,pScroll:p.scrollHeight,overflow:cs.overflow,lineClamp:cs.webkitLineClamp,headBottom:hr.bottom,navTop:nr.top,navBottom:nr.bottom,rangeTop:rr.top,rangeBottom:rr.bottom,mapTop:mr.top,mapBottom:mr.bottom,mapHeight:mr.height,footTop:fr.top,footBottom:fr.bottom,shellClient:shell.clientHeight,shellScroll:shell.scrollHeight,docOverflowX:document.documentElement.scrollWidth>document.documentElement.clientWidth||document.body.scrollWidth>document.body.clientWidth}});
+              const expected=h<=720?compact[ch-1]:full[ch-1];
+              if(m.text!==expected)fail(`${w}x${h} ch${ch} text mismatch: ${m.text}`);
+              if(h<=720&&(!m.compactVisible||m.fullVisible))fail(`${w}x${h} ch${ch} wrong compact visibility`);
+              if(h>720&&(!m.fullVisible||m.compactVisible))fail(`${w}x${h} ch${ch} wrong full visibility`);
+              if(m.pScroll>m.pClient+1)fail(`${w}x${h} ch${ch} blurb clipped ${m.pClient}/${m.pScroll}`);
+              if(m.overflow==='hidden'||m.lineClamp!=='none')fail(`${w}x${h} ch${ch} truncation CSS remains overflow=${m.overflow} clamp=${m.lineClamp}`);
+              if(m.headBottom>m.navTop+1||m.navBottom>m.rangeTop+1||m.rangeBottom>m.mapTop+1||m.mapBottom>m.footTop+1)fail(`${w}x${h} ch${ch} vertical overlap`);
+              if(m.shellScroll>m.shellClient+2)fail(`${w}x${h} ch${ch} shell overflow ${m.shellClient}/${m.shellScroll}`);
+              if(m.docOverflowX)fail(`${w}x${h} ch${ch} horizontal overflow`);
+              if(m.mapHeight<(h<=600?240:h<=720?260:300))fail(`${w}x${h} ch${ch} map too short ${m.mapHeight.toFixed(1)}`);
+              report.push({viewport:`${w}x${h}`,chapter:ch,...m});
+              await page.screenshot({path:`atlas-blurb-audit/${w}x${h}-ch${ch}.png`,fullPage:true});
+            }
+            await page.close();
+          }
+          const behavior=await browser.newPage({viewport:{width:390,height:700}});await openAtlas(behavior);await behavior.locator('.atlas-waypoint-tab[data-range="1"]').click();if(!(await behavior.locator('.atlas-node[data-level="11"]').count()))fail('waypoint navigation regression');await behavior.locator('.atlas-region-dot[data-ch="2"]').click();if((await behavior.locator('#chapterHead h2').textContent()).trim()!=='Neighbors')fail('chapter navigation regression');await behavior.locator('.atlas-region-dot[data-ch="1"]').click();await behavior.evaluate(()=>document.getElementById('continueBtn').click());await behavior.waitForTimeout(120);if(!(await behavior.locator('#game.active').count())||(await behavior.locator('#levelTitle').textContent()).trim()!=='Level 1')fail('Continue launch regression');await behavior.close();
+          fs.writeFileSync('atlas-blurb-audit/report.json',JSON.stringify({failures,report},null,2));await browser.close();if(failures.length)throw new Error(`Atlas blurb fit failed ${failures.length} checks`);console.log('ATLAS_BLURB_FIT_ACCEPTED views=32');
+          JS
+          node atlas-blurb-check.mjs
+      - name: Verify protected source unchanged
+        shell: bash
+        run: sha256sum -c /tmp/atlas-blurb-before.sha
+      - name: Commit accepted product
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f package.json package-lock.json atlas-blurb-check.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game400-a.js style400-skyway-atlas.css
+          git commit -m "Keep Atlas chapter blurbs fully readable"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-chapter-blurb-renders
+          path: atlas-blurb-audit
+      - name: Self-remove validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard HEAD
+          git pull --ff-only origin main
+          git rm .github/workflows/fix-atlas-blurb-fit.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remove Atlas chapter blurb validator"
+          git push
