@@ -1,0 +1,50 @@
+name: Close Cinematic Island Cap Cleanup Handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/close-opening-island-cap-cleanup.yml'
+permissions:
+  contents: write
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          start='### 2026-09-10 — Remove stray green caps from cinematic floating islands'
+          i=s.find(start)
+          if i<0: raise SystemExit('handoff entry missing')
+          j=s.find('\n---\n',i)
+          if j<0: raise SystemExit('handoff entry end missing')
+          block=s[i:j]
+          block=block.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary='''\n\n#### Completion summary\n\n**Result:** COMPLETED. The reported green circles were a legacy `.cin-island::after` grass-cap pseudo-element from the original floating-island prototype that remained active underneath the newer textured island construction. `style400-cinematics-polish.css` now explicitly disables that obsolete pseudo-element with `display:none` / `content:none`, while preserving the real textured `.cin-island-top`, island side/rim geometry, props, routes, and all cinematic behavior. Product commit: `af425448316e2e19e41ba8fe9d9a8c3f1068a659` (`Remove stray cinematic island caps`).\n\n**Validation and visual acceptance:** Workflow run `34499576277` passed browser validation. It rendered opening beats 1, 3, and 4 and verified all five islands and four route lines remained present, all five island props remained present, the legacy pseudo-element no longer rendered, and the textured grass top remained visible with its grass material. Artifact `10161276305` (`cinematic-island-cap-audit`) contains the three opening screenshots plus a representative later Prism cinematic regression. Manual inspection of opening beats 1, 3, and 4 confirmed the stray green floating caps are gone and the islands still read as finished textured landforms.\n\n**Deployment and hygiene:** The implementation helper self-removed on clean product state `1d88646c56b0bd2c40de0eaa624100372f62b2e3`. GitHub Pages run `34499649243` completed successfully for that state. This closeout helper removes itself after committing the completed handoff.\n\n**Remaining risk / next action:** No known blocker remains. The fix applies to the shared cinematic island primitive, so the obsolete cap cannot reappear in later island-based cinematics; the actual textured grass surfaces remain intact.\n'''
+          if '#### Completion summary' not in block:
+              block += summary
+          s=s[:i]+block+s[j:]
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Complete cinematic island cap cleanup handoff"
+          git push
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          rm -f .github/workflows/close-opening-island-cap-cleanup.yml
+          git add .github/workflows/close-opening-island-cap-cleanup.yml
+          git commit -m "Remove cinematic island cap closeout helper"
+          git push
