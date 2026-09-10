@@ -1,0 +1,133 @@
+name: Fix Story Residents Opening Deep Audit V4
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-story-residents-opening-deep-audit-v4.yml'
+permissions:
+  contents: write
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply product repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          story=Path('style400-story-theme.css'); s=story.read_text()
+          if '/* Deep audit: Story & Residents face anatomy repair. */' not in s:
+              s += r'''
+
+          /* Deep audit: Story & Residents face anatomy repair. */
+          .story-person-portrait>.story-character-avatar .story-character-avatar-face{left:11%!important;right:11%!important;top:27%!important;height:61%!important}
+          .story-person-portrait>.story-character-avatar .story-character-avatar-eyes{left:0!important;right:0!important;top:5%!important;height:38%!important;gap:20%!important;justify-content:center!important;align-items:center!important}
+          .story-person-portrait>.story-character-avatar .story-character-avatar-eyes i{display:block!important;width:24%!important;height:100%!important;min-width:6px!important;max-width:8px!important;border-radius:50%!important;background:#17253a!important;box-shadow:inset 0 -1px rgba(5,16,29,.18)!important;opacity:1!important}
+          .story-person-portrait>.story-character-avatar .story-character-avatar-eyes i:before{content:""!important;display:block!important;position:absolute!important;width:36%!important;height:36%!important;border-radius:50%!important;background:#fff!important;left:12%!important;top:9%!important;opacity:1!important}
+          .story-person-portrait>.story-character-avatar .story-character-avatar-eyes i:after{content:""!important;display:block!important;position:absolute!important;width:15%!important;height:15%!important;border-radius:50%!important;background:rgba(255,255,255,.78)!important;right:16%!important;bottom:17%!important;opacity:1!important}
+          .story-person-portrait>.story-character-avatar .story-character-avatar-mouth{left:50%!important;top:48%!important;translate:-50% 0!important;margin:0!important;border:0!important;background:transparent!important;rotate:0deg!important;box-sizing:border-box!important}
+          .story-person-portrait>.story-character-avatar.expr-happy .story-character-avatar-mouth{width:28%!important;height:20%!important;border-bottom:1.8px solid #28415f!important;border-radius:0 0 55% 55%!important}
+          .story-person-portrait>.story-character-avatar.expr-smug .story-character-avatar-mouth{width:29%!important;height:18%!important;border-bottom:1.8px solid #28415f!important;border-radius:0 0 72% 30%!important;rotate:-5deg!important}
+          .story-person-portrait>.story-character-avatar.expr-curious .story-character-avatar-mouth{width:23%!important;height:19%!important;border-bottom:1.8px solid #28415f!important;border-radius:0 0 58% 45%!important;rotate:5deg!important}
+          .story-person-portrait>.story-character-avatar.expr-determined .story-character-avatar-mouth{width:25%!important;height:16%!important;border-bottom:1.8px solid #28415f!important;border-radius:0 0 38% 38%!important}
+          .story-person-portrait>.story-character-avatar.expr-surprised .story-character-avatar-mouth{width:19%!important;height:22%!important;border:1.4px solid #17253a!important;border-radius:50%!important;background:#29415f!important}
+          '''
+              story.write_text(s)
+          geo=Path('style400-cinematics-geometry.css'); g=geo.read_text()
+          if '/* Deep audit: content-safe opening dialogue and tutorial geometry. */' not in g:
+              g += r'''
+
+          /* Deep audit: content-safe opening dialogue and tutorial geometry. */
+          .cin-dialogue-layer[data-dialogue-count] .cin-speech-bubble{height:auto!important;min-height:var(--cin-bubble-height,0px)!important;overflow:visible!important;box-sizing:border-box!important;left:calc(50% + var(--cin-bubble-shift,0px))!important;white-space:normal!important;overflow-wrap:anywhere!important}
+          .cin-dialogue-layer[data-dialogue-count] .cin-speech-bubble span{overflow:visible!important}
+          .cin-cast-intro .intro-bubble{width:clamp(60px,19vw,86px)!important;max-width:none!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.15!important;padding:5px 5px!important}
+          .cinematic-copy{scroll-padding-top:8px;overscroll-behavior:contain}
+          .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{inset:8px 16px auto!important;height:150px!important;transform:none!important;display:grid!important;grid-template-rows:12px 52px 12px 52px!important;gap:3px!important;padding:7px 14px!important;overflow:hidden!important;box-sizing:border-box!important}
+          .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-label{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;align-self:end!important;line-height:1!important;z-index:3!important}
+          .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;height:52px!important;box-sizing:border-box!important}
+          .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-arrow{display:none!important}
+          .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track .cin-character{width:30px!important;height:30px!important}
+          .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-mover{top:8px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-rock{width:32px!important;height:30px!important;top:8px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-blocker{top:7px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-nest{width:34px!important;height:34px!important;top:6px!important}
+          @media(max-height:720px){
+            .cinematic-shell{grid-template-rows:auto clamp(230px,38vh,260px) minmax(0,1fr)!important}.cinematic-stage{min-height:0!important}
+            .cin-cast-intro .intro-bubble{width:clamp(58px,18.5vw,78px)!important;font-size:7.5px!important;padding:4px 4px!important}
+            .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{inset:6px 14px auto!important;height:118px!important;grid-template-rows:8px 40px 8px 40px!important;gap:3px!important;padding:5px 12px!important}
+            .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-label{font-size:7px!important;letter-spacing:.08em!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track{height:40px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track .cin-character{width:26px!important;height:26px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-mover{top:5px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-rock{width:28px!important;height:26px!important;top:5px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-blocker{top:4px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-nest{width:29px!important;height:29px!important;top:3px!important;border-width:2px!important}
+          }
+          @media(max-height:600px){
+            .cinematic-shell{grid-template-rows:auto 230px minmax(0,1fr)!important}
+            .cin-cast-intro .intro-bubble{width:58px!important;font-size:7.1px!important;line-height:1.1!important}
+            .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{inset:5px 12px auto!important;height:106px!important;grid-template-rows:7px 36px 7px 36px!important;gap:2px!important;padding:4px 10px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-label{font-size:6.5px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track{height:36px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track .cin-character{width:24px!important;height:24px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-mover{top:4px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-rock{width:26px!important;height:24px!important;top:4px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-blocker{top:3px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-nest{width:27px!important;height:27px!important;top:2px!important}
+          }
+          @media(max-width:340px){
+            .speaker-count-4 .cin-speech-bubble{width:70px!important;max-width:70px!important;min-width:0!important;font-size:7.7px!important;line-height:1.12!important;padding:4px 5px!important}
+            .speaker-count-4.speaker-1{left:14%!important}.speaker-count-4.speaker-4{left:86%!important}
+          }
+          '''
+              geo.write_text(g)
+          js=Path('cinematic-geometry400.js'); j=js.read_text()
+          old="""function normalizeDialogue(stage){\n const layers=[...stage.querySelectorAll(':scope > .cin-dialogue-layer')];\n layers.forEach(layer=>{\n  const bubbles=[...layer.querySelectorAll('.cin-speech-bubble')];if(!bubbles.length)return;\n  layer.style.removeProperty('--cin-bubble-height');\n  let target=Math.max(...bubbles.map(b=>Math.ceil(b.scrollHeight)));const compact=stage.getBoundingClientRect().height<280;target=clamp(target,compact?46:50,compact?70:82);layer.style.setProperty('--cin-bubble-height',`${target}px`);\n  requestAnimationFrame(()=>bubbles.forEach(b=>{\n   const speaker=b.closest('[data-speaker]'),portrait=speaker?.querySelector('.dialogue-portrait'),br=b.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();if(!pr||!br.width)return;const px=pr.left+pr.width/2,tail=clamp((px-br.left)/br.width*100,12,88);b.style.setProperty('--cin-tail-x',`${tail.toFixed(2)}%`);\n  }));\n });\n}\n"""
+          new="""function normalizeDialogue(stage){\n const layers=[...stage.querySelectorAll(':scope > .cin-dialogue-layer')];\n layers.forEach(layer=>{\n  const bubbles=[...layer.querySelectorAll('.cin-speech-bubble')];if(!bubbles.length)return;\n  layer.style.removeProperty('--cin-bubble-height');bubbles.forEach(b=>b.style.removeProperty('--cin-bubble-shift'));\n  requestAnimationFrame(()=>{\n   const target=Math.max(...bubbles.map(b=>Math.max(...[...b.querySelectorAll(':scope>b,:scope>span')].map(x=>Math.ceil(x.getBoundingClientRect().bottom-b.getBoundingClientRect().top+6)),0)));layer.style.setProperty('--cin-bubble-height',`${target}px`);\n   requestAnimationFrame(()=>{const sr=stage.getBoundingClientRect(),pad=5;bubbles.forEach(b=>{const br=b.getBoundingClientRect();let shift=parseFloat(getComputedStyle(b).getPropertyValue('--cin-bubble-shift'))||0;if(br.left<sr.left+pad)shift+=sr.left+pad-br.left;if(br.right>sr.right-pad)shift-=br.right-(sr.right-pad);if(Math.abs(shift)>.25)b.style.setProperty('--cin-bubble-shift',`${shift.toFixed(2)}px`)});requestAnimationFrame(()=>bubbles.forEach(b=>{const speaker=b.closest('[data-speaker]'),portrait=speaker?.querySelector('.dialogue-portrait'),br=b.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();if(!pr||!br.width)return;const px=pr.left+pr.width/2,tail=clamp((px-br.left)/br.width*100,8,92);b.style.setProperty('--cin-tail-x',`${tail.toFixed(2)}%`)}))});\n  });\n });\n}\n"""
+          if old not in j: raise SystemExit('normalizeDialogue anchor missing')
+          js.write_text(j.replace(old,new,1))
+          cin=Path('cinematics400.js'); c=cin.read_text()
+          oldf="setTimeout(()=>document.getElementById('cinematicNext')?.focus(),50);return true"; newf="setTimeout(()=>{const b=document.getElementById('cinematicNext');if(b)try{b.focus({preventScroll:true})}catch(_){b.focus()}const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0},50);return true"
+          oldr="nextBtn.textContent=activeIndex===c.beats.length-1?c.finalLabel:'Continue';requestAnimationFrame(()=>o.classList.add('beat-ready'))"; newr="nextBtn.textContent=activeIndex===c.beats.length-1?c.finalLabel:'Continue';const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0;requestAnimationFrame(()=>o.classList.add('beat-ready'))"
+          if oldf not in c or oldr not in c: raise SystemExit('cinematic anchors missing')
+          cin.write_text(c.replace(oldf,newf,1).replace(oldr,newr,1))
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve
+        run: python3 -m http.server 4173 >/tmp/http.log 2>&1 &
+      - name: Validate actual text geometry and responsive composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p accepted/story accepted/opening accepted/later
+          cat > check.mjs <<'JS'
+          import {chromium} from 'playwright'; import fs from 'fs';
+          const browser=await chromium.launch({headless:true});const sizes=[[320,568],[360,640],[390,700],[390,844],[430,932]],failures=[],report={story:{},opening:{},later:[]};const fail=m=>{failures.push(m);console.error('FAIL',m)};
+          const inspectBubble=()=>{const stage=document.getElementById('cinematicStage'),sr=stage.getBoundingClientRect();return[...stage.querySelectorAll('.cin-speech-bubble')].map(b=>{const r=b.getBoundingClientRect(),sp=b.closest('[data-speaker]'),pr=sp?.querySelector('.dialogue-portrait')?.getBoundingClientRect(),tail=parseFloat(getComputedStyle(b).getPropertyValue('--cin-tail-x'))||50,kids=[...b.querySelectorAll(':scope>b,:scope>span')].map(x=>x.getBoundingClientRect()),textInside=kids.every(k=>k.left>=r.left+2&&k.right<=r.right-2&&k.top>=r.top+2&&k.bottom<=r.bottom-2);return{speaker:sp?.dataset.speaker||'',rect:{x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom},inside:r.left>=sr.left-2&&r.right<=sr.right+2&&r.top>=sr.top-2&&r.bottom<=sr.bottom+2,textInside,tailError:pr?Math.abs(r.left+r.width*tail/100-(pr.left+pr.width/2)):0}})};
+          for(const [width,height] of sizes){const key=`${width}x${height}`,page=await browser.newPage({viewport:{width,height},reducedMotion:'reduce'});await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await page.waitForFunction(()=>window.LatchlingsStoryTheme&&window.LatchlingsCinematics);await page.evaluate(()=>{localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{}}));openStoryScreen()});await page.waitForTimeout(180);const faces=await page.evaluate(()=>[...document.querySelectorAll('#storyCast .story-person-portrait')].map(card=>({name:card.dataset.character,eyes:[...card.querySelectorAll('.story-character-avatar-eyes i')].map(e=>{const r=e.getBoundingClientRect();return{w:r.width,h:r.height,opacity:+getComputedStyle(e).opacity,catchlight:getComputedStyle(e,'::before').content}}),mouth:(()=>{const m=card.querySelector('.story-character-avatar-mouth'),r=m.getBoundingClientRect(),cs=getComputedStyle(m);return{w:r.width,h:r.height,bottom:parseFloat(cs.borderBottomWidth),top:parseFloat(cs.borderTopWidth)}})()})));for(const f of faces){if(f.eyes.length!==2)fail(`${key} ${f.name} missing eye elements`);for(const e of f.eyes)if(!(e.w>=5&&e.h>=6&&e.opacity>.9&&e.catchlight!=='none'))fail(`${key} ${f.name} eye invisible`);if(!(f.mouth.w>=5&&f.mouth.h>=3))fail(`${key} ${f.name} mouth collapsed`);if(f.name!=='Tansy'&&f.mouth.bottom<=0)fail(`${key} ${f.name} mouth curve missing`)}report.story[key]=faces;await page.screenshot({path:`accepted/story/story-${key}.png`,fullPage:true});await page.evaluate(()=>storyModal());await page.waitForTimeout(100);await page.locator('#modal').screenshot({path:`accepted/story/story-modal-${key}.png`});await page.evaluate(()=>{closeModal();window.LatchlingsCinematics.show('opening',{markSeen:false})});await page.waitForTimeout(320);report.opening[key]=[];for(let i=0;i<7;i++){if(i){await page.evaluate(()=>window.LatchlingsCinematics.next());await page.waitForTimeout(300)}await page.locator('.cinematic-shell').screenshot({path:`accepted/opening/${key}-beat-${i+1}.png`});const m=await page.evaluate(inspectBubble);for(const b of m){if(!b.textInside)fail(`${key} beat${i+1} ${b.speaker} text outside bubble`);if(!b.inside)fail(`${key} beat${i+1} ${b.speaker} bubble outside stage ${JSON.stringify(b.rect)}`);if(b.tailError>Math.max(18,b.rect.w*.25))fail(`${key} beat${i+1} ${b.speaker} tail misses portrait ${b.tailError}`)}const shell=await page.evaluate(()=>{const copy=document.querySelector('.cinematic-copy'),cr=copy.getBoundingClientRect(),t=document.getElementById('cinematicTitle').getBoundingClientRect(),n=document.getElementById('cinematicNext').getBoundingClientRect(),demo=document.querySelector('.cin-demo-board'),stage=document.getElementById('cinematicStage').getBoundingClientRect();let demoOk=true;if(demo){const dr=demo.getBoundingClientRect();demoOk=dr.left>=stage.left-2&&dr.right<=stage.right+2&&dr.top>=stage.top-2&&dr.bottom<=stage.bottom+2&&[...demo.querySelectorAll('.cin-demo-label,.cin-demo-track,.demo-mover,.demo-rock,.demo-blocker,.demo-nest')].every(x=>{const r=x.getBoundingClientRect();return r.left>=dr.left-2&&r.right<=dr.right+2&&r.top>=dr.top-2&&r.bottom<=dr.bottom+2})}return{scrollTop:copy.scrollTop,title:t.top>=cr.top-1&&t.bottom<=cr.bottom+1,next:n.top>=cr.top-1&&n.bottom<=cr.bottom+1,demoOk,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth}});if(shell.scrollTop>1)fail(`${key} beat${i+1} copy auto-scrolled`);if(!shell.title)fail(`${key} beat${i+1} title clipped`);if(!shell.next)fail(`${key} beat${i+1} continue clipped`);if(!shell.demoOk)fail(`${key} beat${i+1} demo geometry clipped`);if(shell.overflow)fail(`${key} beat${i+1} document overflow`);report.opening[key].push({beat:i+1,bubbles:m,shell})}await page.close()}
+          const page=await browser.newPage({viewport:{width:390,height:700},reducedMotion:'reduce'});await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await page.waitForFunction(()=>window.LatchlingsCinematics);for(const id of ['across-drift','old-maps','homeward']){await page.evaluate(id=>window.LatchlingsCinematics.show(id,{markSeen:false}),id);await page.waitForTimeout(220);const n=await page.evaluate(id=>window.LatchlingsCinematics.CINEMATICS[id].beats.length,id);for(let i=0;i<n;i++){if(i){await page.evaluate(()=>window.LatchlingsCinematics.next());await page.waitForTimeout(180)}const m=await page.evaluate(inspectBubble);for(const b of m){if(!b.textInside||!b.inside)fail(`${id} beat${i+1} ${b.speaker} shared bubble regression`)}report.later.push({id,beat:i+1,bubbles:m})}await page.locator('.cinematic-shell').screenshot({path:`accepted/later/${id}.png`});await page.evaluate(()=>window.LatchlingsCinematics.finish(true))}await page.close();report.failures=failures;fs.writeFileSync('accepted/report.json',JSON.stringify(report,null,2));await browser.close();if(failures.length)throw new Error(`Deep audit failed with ${failures.length} issue(s)`);console.log('DEEP_STORY_RESIDENTS_OPENING_ACCEPTED');
+          JS
+          node check.mjs
+      - name: Commit product
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add style400-story-theme.css style400-cinematics-geometry.css cinematic-geometry400.js cinematics400.js
+          git commit -m "Repair Story Residents faces and opening cinematic clipping"
+          git push
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: story-residents-opening-deep-fix-v4
+          path: accepted
+      - name: Self-remove
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard HEAD
+          git pull --ff-only origin main
+          rm -f check.mjs package.json package-lock.json
+          git rm .github/workflows/fix-story-residents-opening-deep-audit-v4.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remove Story Residents opening fix v4 workflow"
+          git push
