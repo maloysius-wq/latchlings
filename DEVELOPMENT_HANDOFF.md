@@ -40,7 +40,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Deep audit Story/Residents Latchling faces and opening cinematic clipping
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Restore the missing eyes and normalize odd mouth rendering on every Latchling shown on the Story & Residents surfaces. Perform a full deep visual/responsive audit of the opening cinematic and fix clipping, including speech-bubble text and the how-to-play / snap-demo boxes, rather than patching only the examples already noticed.
 
@@ -51,6 +51,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render the actual Story & Residents screen and Story modal at multiple phone sizes and verify all five named residents have visible eyes/catchlights and intentional mouths with no facial clipping. Render every one of the seven opening cinematic beats at representative tiny/compact/standard/tall portrait sizes (targeting at least 320x568, 360x640, 390x700, 390x844, and 430x932); assert speech-bubble text has no scroll/clipping, bubbles/portraits/tails remain inside safe stage bounds, narration remains readable/reachable, the snap-demo board and every internal label/helper/rock/nest remain within their boxes, no horizontal document overflow exists, and Continue remains reachable. Include a later-cinematic regression. Generate contact sheets and manually inspect them after automated geometry checks.
 
 **Deployment plan:** Commit this IN PROGRESS handoff state before product edits; implement only after the starter cleans itself up; run and visually review the deep audit, refining until accepted; self-remove temporary workflows; verify GitHub Pages succeeds on the accepted clean state; close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits/runs/artifacts/remaining risk; and confirm `.github/workflows/validate-repository-access-guard.yml` is again the only durable workflow.
+
+#### Completion summary
+
+- Restored the Story & Residents portrait face anatomy so all five named residents render visible dark glossy eyes with catchlights, cheeks, suit marks, and intentional expression-specific mouths at phone-scale portrait sizes.
+- Reworked cinematic speech bubble sizing so text uses content-safe geometry rather than being visually clipped by the old fixed-height rules; normalized simultaneous speaker heights from actual text geometry, kept bubble bodies inside stage bounds, and recalculated tails toward the speaking portrait.
+- Prevented cinematic Continue focus/rendering from auto-scrolling the copy panel and hiding the heading on short screens.
+- Rebuilt the opening snap demonstration into a responsive two-row layout that stays fully inside its card and stage instead of being translated partly out of view.
+- Added a narrow 320px four-speaker treatment so the final opening beat remains inside the stage without overlapping the shell edges.
+- Product files changed: `style400-story-theme.css`, `style400-cinematics-geometry.css`, `cinematic-geometry400.js`, and `cinematics400.js`. Campaign puzzle data, level solutions, story progression, audio, title-screen typography/layout, and dialogue wording were not changed.
+- Accepted product commit: `10219f7b3648d809c99c5677db4f74690cec745e` (`Repair Story Residents faces and opening cinematic clipping`). Temporary validation workflow cleanup commit: `8316cf5e76167f2856a4cd55525107808e94e082`.
+- Acceptance run: GitHub Actions `34518581769` (`Fix Story Residents Opening Deep Audit V4`) completed successfully. It rendered Story & Residents plus the Story modal at 320x568, 360x640, 390x700, 390x844, and 430x932; rendered all seven opening beats at all five sizes; verified resident eyes/catchlights and mouth geometry; verified actual dialogue text bounds, bubble/stage bounds, tail-to-speaker alignment, copy scroll position, title/Continue visibility, snap-demo containment, and document overflow; and ran shared-bubble regressions across `across-drift`, `old-maps`, and `homeward`.
+- Acceptance artifact: `story-residents-opening-deep-fix-v4`, artifact ID `10168721977`. Manual inspection confirmed the 320x568 Story & Residents page and opening beats 2, 6, and 7 are visually clean, with complete speech text and the tutorial board fully visible; the broader v3 contact sheets were also manually inspected before the corrected pseudo-tail-aware v4 acceptance harness was run.
+- Earlier v1/v2/v3 attempts were diagnostic/test-harness iterations. They did not commit rejected product changes. V3t revealed that `scrollHeight` was counting the speech-bubble tail pseudo-element as overflow, so V4 validates the actual `<b>`/`<span>` text rectangles instead of treating the decorative tail as clipped text.
+- GitHub Pages run `34518711131` for the clean post-validation commit completed successfully. After cleanup, `.github/workflows/validate-repository-access-guard.yml` was confirmed as the only durable workflow.
+- Remaining risk: no known functional or responsive clipping issue remains in the audited Story & Residents/opening cinematic surfaces. Future dialogue copy that is substantially longer than current authored lines should still be re-run through the same responsive screenshot matrix.
+
 
 ### 2026-09-10 — Remove stray green caps from cinematic floating islands
 
