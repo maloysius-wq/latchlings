@@ -146,7 +146,7 @@ body.embed-mode .intro,body.embed-mode .switcher,body.embed-mode .label,body.emb
 body.embed-mode .viewer{display:block}
 body.embed-mode .concept{display:none!important;width:100%;margin:0}
 body.embed-mode #c2{display:block!important}
-body.embed-mode #c2 .phone{border-radius:0;box-shadow:none;width:100%}
+body.embed-mode #c2 .phone{border-radius:0;box-shadow:none;width:100%;height:100svh;min-height:100svh;aspect-ratio:auto}
 #c2 .story-distant-islands{display:none;position:absolute;inset:0;z-index:1;pointer-events:none}
 #c2 .story-distant-islands i{position:absolute;width:38px;height:16px;border-radius:50%;background:linear-gradient(#8fc879 0 38%,#966947 40% 100%);filter:drop-shadow(0 6px 5px rgba(47,63,77,.12));opacity:.72}
 #c2 .story-distant-islands i:after{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:#f7cf66;box-shadow:0 0 8px #fff2a2;top:3px;left:17px}
@@ -185,6 +185,23 @@ body.embed-mode #c2 .phone{border-radius:0;box-shadow:none;width:100%}
 @keyframes refinedBlink{0%,42%,47%,100%{scale:1 1}44.5%{scale:1 .07}}
 @keyframes refinedFaceFloat{0%,100%{translate:0 0}50%{translate:0 1px}}
 @media(prefers-reduced-motion:reduce){.latchling .face,.latchling .eyes{animation:none!important}}
+
+/* Full-bleed production home: compact height preserves the accepted short-screen composition. */
+@media(max-height:740px){
+#c2 .toy-brand{top:68px;left:4px;right:4px}
+#c2 .toy-logo span{font-size:56px;-webkit-text-stroke:6.5px var(--navy)}
+#c2 .toy-tagline{margin-top:12px;padding:8px 16px;font-size:14px;letter-spacing:.02em}
+#c2 .scene{top:190px}
+#c2 .play{left:16px;right:16px;top:546px;height:68px;font-size:24px;border-radius:22px}
+#c2 .play:before{inset:5px;border-radius:16px}
+#c2 .play svg{width:29px;height:29px;padding:6px}
+#c2 .secondary{left:16px;right:16px;top:626px;gap:8px}
+#c2 .secondary button{height:68px;border-radius:18px;padding:8px 9px 8px 11px;grid-template-columns:1fr 30px;column-gap:5px}
+#c2 .secondary button:before{inset:4px;border-radius:13px}
+#c2 .secondary strong{font-size:15px}
+#c2 .secondary span{font-size:9px;line-height:1.08;margin-top:4px}
+#c2 .secondary svg{width:29px;height:29px;padding:5px}
+}
 
 /* Cinematic scene-only reuse of the production Little Home */
 html.cinematic-mode,body.cinematic-mode{width:100vw;height:100vh;min-height:0!important;margin:0;background:transparent!important;overflow:hidden!important}
