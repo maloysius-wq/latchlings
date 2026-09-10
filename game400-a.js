@@ -50,26 +50,63 @@ const ATLAS_WAYPOINTS=[
  ['Foundry Gate','Switchbank','Relay Row','Shared Signal','Networked'],
  ['Crown Edge','Aurora Span','Reconnected','Living Route','Homeward']
 ];
-const ATLAS_LAYOUTS=[
- [[18,84],[34,74],[63,78],[80,67],[64,56],[35,59],[20,45],[38,34],[68,38],[80,22]],
- [[79,85],[62,76],[33,80],[18,68],[36,57],[67,61],[82,48],[64,36],[35,39],[18,23]],
- [[19,83],[46,78],[77,83],[67,67],[38,64],[18,53],[35,41],[68,45],[81,31],[57,20]],
- [[77,85],[49,79],[20,83],[28,67],[58,63],[81,53],[63,43],[33,47],[18,32],[43,20]],
- [[20,85],[39,76],[68,81],[82,67],[58,58],[29,61],[17,47],[43,39],[76,43],[69,22]]
+const ATLAS_ROUTE_PATTERNS=[
+ {name:'gentle-arc',points:[[18,84],[27,73],[40,65],[55,61],[69,63],[79,55],[76,43],[64,34],[47,29],[28,21]]},
+ {name:'right-hook',points:[[22,84],[40,80],[58,73],[73,64],[82,52],[78,40],[64,34],[49,37],[36,31],[25,21]]},
+ {name:'left-hook',points:[[78,84],[61,79],[43,72],[28,62],[18,50],[22,39],[37,34],[52,37],[65,31],[76,21]]},
+ {name:'center-climb',points:[[20,84],[36,78],[48,69],[55,58],[47,48],[57,39],[69,32],[80,26],[67,21],[49,24]]},
+ {name:'wide-s',points:[[18,84],[38,80],[61,81],[79,73],[75,62],[56,57],[33,59],[19,50],[27,37],[50,21]]},
+ {name:'reverse-s',points:[[82,84],[63,80],[40,81],[21,73],[25,62],[44,57],[67,59],[81,50],[73,37],[50,21]]},
+ {name:'ridge-run',points:[[17,84],[31,78],[45,72],[61,69],[78,70],[82,58],[67,50],[50,46],[34,36],[21,22]]},
+ {name:'shallow-valley',points:[[20,83],[38,78],[55,80],[74,77],[82,67],[69,57],[50,53],[31,57],[18,45],[27,21]]},
+ {name:'right-terraces',points:[[18,84],[37,80],[31,68],[52,64],[46,52],[68,48],[62,36],[82,32],[72,22],[52,20]]},
+ {name:'left-terraces',points:[[82,84],[63,80],[69,68],[48,64],[54,52],[32,48],[38,36],[18,32],[28,22],[48,20]]},
+ {name:'left-orbit',points:[[50,84],[32,80],[20,69],[18,55],[28,44],[44,40],[61,44],[76,38],[79,27],[65,20]]},
+ {name:'right-orbit',points:[[50,84],[68,80],[80,69],[82,55],[72,44],[56,40],[39,44],[24,38],[21,27],[35,20]]},
+ {name:'diagonal-left',points:[[80,84],[71,76],[63,68],[54,60],[45,52],[37,44],[29,36],[21,28],[33,24],[49,20]]},
+ {name:'diagonal-right',points:[[20,84],[29,76],[37,68],[46,60],[55,52],[63,44],[71,36],[79,28],[67,24],[51,20]]},
+ {name:'clustered-hops',points:[[19,84],[37,82],[51,73],[67,76],[81,66],[68,55],[52,58],[35,51],[22,37],[40,21]]},
+ {name:'broad-wave',points:[[17,84],[33,77],[56,75],[78,78],[82,65],[66,56],[43,55],[20,59],[24,42],[51,21]]},
+ {name:'needle-climb',points:[[18,84],[34,78],[47,70],[58,61],[67,51],[61,42],[51,35],[42,29],[54,24],[72,20]]},
+ {name:'crown-arc',points:[[22,84],[38,75],[56,78],[73,69],[80,57],[68,48],[51,50],[35,43],[22,32],[50,20]]},
+ {name:'long-switchback',points:[[17,84],[43,80],[76,77],[82,65],[54,61],[22,58],[18,46],[46,41],[77,34],[61,20]]},
+ {name:'shallow-spiral',points:[[50,84],[29,79],[18,67],[23,53],[39,47],[57,50],[75,45],[82,34],[70,24],[50,20]]}
 ];
-function atlasCurve(a,b,i){const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.max(1,Math.hypot(dx,dy)),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,bend=(i%2?3.1:-3.1),cx=mx+(-dy/len)*bend,cy=my+(dx/len)*bend;return `M ${a[0]} ${a[1]} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${b[0]} ${b[1]}`}
+const ATLAS_ROUTE_PLAN=[
+ [0,1,2,3,4],
+ [5,6,7,8,9],
+ [10,11,12,13,14],
+ [15,16,17,18,19],
+ [4,8,12,16,0],
+ [9,13,17,1,5],
+ [14,18,2,6,10],
+ [19,3,7,11,15]
+];
+const ATLAS_CURVE_PROFILES=[
+ [-3.2,2.4,-2.6,3.6,-2.2,2.9,-3.4,2.1,-2.8],
+ [1.2,1.8,2.7,3.4,2.4,.8,-1.2,-2.2,-2.8],
+ [-1.4,-2.5,-3.3,-2.1,.4,2.1,3.5,2.5,1.1],
+ [.8,-.6,1.1,-.8,.5,-1.0,.7,-.5,.9],
+ [3.8,2.9,1.8,.7,-1.0,-2.0,-3.1,-2.2,-1.1],
+ [-3.7,-2.8,-1.7,-.6,1.0,2.1,3.0,2.3,1.2],
+ [2.7,-1.0,-2.8,-1.2,2.5,3.1,-.8,-2.6,1.8],
+ [-1.8,3.0,1.0,-2.7,-2.0,2.6,1.4,-3.1,.9]
+];
+function atlasRouteSpec(ch,range){const idx=(ch-1)*5+range,patternIndex=ATLAS_ROUTE_PLAN[ch-1][range],pattern=ATLAS_ROUTE_PATTERNS[patternIndex],mirror=ch>=5,curve=(idx*3+range*2)%ATLAS_CURVE_PROFILES.length,drift=((idx*7)%5)-2,shear=((((idx*11)%7)-3)*.48);return {pattern,mirror,curve,drift,shear,name:`${pattern.name}${mirror?'-mirrored':''}`}}
+function atlasLayout(ch,range){const spec=atlasRouteSpec(ch,range);return spec.pattern.points.map(([x,y],i)=>{let px=spec.mirror?100-x:x;px+=spec.drift+spec.shear*((52-y)/32)+(((i+ch+range)%4)-1.5)*.34;const py=y+((((i*3+ch*2+range)%5)-2)*.28);return [Math.max(16,Math.min(84,+px.toFixed(2))),Math.max(19,Math.min(85,+py.toFixed(2)))]})}
+function atlasCurve(a,b,i,profile=0){const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.max(1,Math.hypot(dx,dy)),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,bend=ATLAS_CURVE_PROFILES[profile][i%9],cx=mx+(-dy/len)*bend,cy=my+(dx/len)*bend;return `M ${a[0]} ${a[1]} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${b[0]} ${b[1]}`}
 function atlasGuideHtml(chapter){if(!STORY||!STORY.cast?.length)return'';const c=STORY.cast[(chapter-1)%STORY.cast.length],color=c.color||'blue';return `<span class="atlas-guide" aria-hidden="true" style="--guide-light:${LIGHT[color]};--guide-color:${COLORS[color]};--guide-dark:${DARK[color]}"><span class="atlas-guide-suit">${suitSvg(c.suit)}</span><span class="atlas-guide-eyes"><i></i><i></i></span><i class="atlas-guide-mouth"></i></span>`}
 function renderChapter(){
  chapterView=Math.max(1,Math.min(8,chapterView));rangeView=Math.max(0,Math.min(4,rangeView));applyTheme(chapterView);
- const ch=CHAPTERS[chapterView-1],chapterStart=(chapterView-1)*50+1,chapterEnd=chapterView*50,chapterDone=Array.from({length:50},(_,i)=>progress.stars[chapterStart+i]>0).filter(Boolean).length,waypoints=ATLAS_WAYPOINTS[chapterView-1],points=ATLAS_LAYOUTS[rangeView];
+ const ch=CHAPTERS[chapterView-1],chapterStart=(chapterView-1)*50+1,chapterEnd=chapterView*50,chapterDone=Array.from({length:50},(_,i)=>progress.stars[chapterStart+i]>0).filter(Boolean).length,waypoints=ATLAS_WAYPOINTS[chapterView-1],routeSpec=atlasRouteSpec(chapterView,rangeView),points=atlasLayout(chapterView,rangeView);
  const head=document.getElementById('chapterHead');head.innerHTML=`<div class="atlas-chapter-medallion" aria-hidden="true">${chapterView}</div><div class="atlas-chapter-copy"><div class="theme-kicker">${ch.theme}</div><h2>${ch.name}</h2><p>${ch.desc}</p></div><div class="atlas-chapter-progress"><b>${chapterDone}</b>/ 50<br>restored</div>`;
  const nav=document.getElementById('chapterNav');nav.innerHTML=`<button class="atlas-chapter-arrow" data-step="-1" aria-label="Previous chapter" ${chapterView===1?'disabled':''}>‹</button><div class="atlas-region-dots">${CHAPTERS.map((c,i)=>`<button class="atlas-region-dot ${i+1===chapterView?'active':''}" data-ch="${i+1}" aria-label="Chapter ${i+1}: ${c.theme}" title="${c.theme}"></button>`).join('')}</div><button class="atlas-chapter-arrow" data-step="1" aria-label="Next chapter" ${chapterView===8?'disabled':''}>›</button>`;
  nav.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{chapterView=+b.dataset.ch;const local=progress.unlocked-(chapterView-1)*50;rangeView=local>0?Math.min(4,Math.floor((local-1)/10)):0;renderChapter()});
  nav.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{chapterView=Math.max(1,Math.min(8,chapterView+(+b.dataset.step)));const local=progress.unlocked-(chapterView-1)*50;rangeView=local>0?Math.min(4,Math.floor((local-1)/10)):0;renderChapter()});
  const range=document.getElementById('rangeNav');range.innerHTML=Array.from({length:5},(_,i)=>{const rs=chapterStart+i*10,re=rs+9,future=rs>progress.unlocked;return `<button class="atlas-waypoint-tab ${i===rangeView?'active':''} ${future?'future':''}" data-range="${i}" aria-label="${waypoints[i]}, levels ${rs} through ${re}"><span>${rs}–${re}</span><b>${waypoints[i]}</b></button>`}).join('');range.querySelectorAll('[data-range]').forEach(b=>b.onclick=()=>{rangeView=+b.dataset.range;renderChapter()});
- const first=chapterStart+rangeView*10,route=points.slice(0,-1).map((a,i)=>{const b=points[i+1],target=first+i+1,state=target<progress.unlocked?'restored':target===progress.unlocked?'active':'future',d=atlasCurve(a,b,i);return `<path class="atlas-route-shadow" d="${d}"/><path class="atlas-route ${state}" d="${d}"/>`}).join('');
+ const first=chapterStart+rangeView*10,route=points.slice(0,-1).map((a,i)=>{const b=points[i+1],target=first+i+1,state=target<progress.unlocked?'restored':target===progress.unlocked?'active':'future',d=atlasCurve(a,b,i,routeSpec.curve);return `<path class="atlas-route-shadow" d="${d}"/><path class="atlas-route ${state}" d="${d}"/>`}).join('');
  const nodes=Array.from({length:10},(_,j)=>{const L=first+j,stars=progress.stars[L]||0,locked=L>progress.unlocked,done=stars>0,current=L===progress.unlocked,milestone=j===9,p=points[j],variant=(rangeView+j)%5,pennant=current?`<span class="atlas-pennant">${done?'Latest stop':'Next stop'}</span>${atlasGuideHtml(chapterView)}`:'';return `<button class="level-node atlas-node ${locked?'locked':''} ${done?'done':''} ${current?'current':''} ${milestone?'milestone':''}" style="--x:${p[0]}%;--y:${p[1]}%;--float-time:${(4.1+(j%4)*.43).toFixed(2)}s;--float-delay:-${(j*.37).toFixed(2)}s" data-level="${L}" data-variant="${variant}" aria-label="Level ${L}${locked?', locked':current?', current destination':done?`, completed with ${stars} star${stars===1?'':'s'}`:', available'}" ${locked?'disabled':''}><span class="atlas-island" aria-hidden="true"><span class="atlas-island-side"></span><span class="atlas-island-top"></span><span class="atlas-prop" data-variant="${variant}"><i></i><b></b></span></span><span class="atlas-level-number">${L}</span><span class="atlas-stars" aria-hidden="true">${[1,2,3].map(n=>`<i class="${n<=stars?'on':''}"></i>`).join('')}</span><span class="atlas-cloud-cover" aria-hidden="true"></span>${pennant}</button>`}).join('');
- const map=document.getElementById('levelGrid');map.className=`atlas-map atlas-range-${rangeView+1}`;map.setAttribute('aria-label',`${ch.theme}, ${waypoints[rangeView]}, levels ${first} through ${first+9}`);map.innerHTML=`<div class="atlas-scene" aria-hidden="true"><i></i><b></b><em></em></div><div class="atlas-route-caption"><b>${waypoints[rangeView]}</b><span>Levels ${first}–${first+9} · Skyway stretch ${rangeView+1} of 5</span></div><svg class="atlas-route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${route}</svg>${nodes}`;
+ const map=document.getElementById('levelGrid');map.className=`atlas-map atlas-range-${rangeView+1}`;map.dataset.routeShape=routeSpec.name;map.dataset.curveProfile=routeSpec.curve;map.setAttribute('aria-label',`${ch.theme}, ${waypoints[rangeView]}, levels ${first} through ${first+9}`);map.innerHTML=`<div class="atlas-scene" aria-hidden="true"><i></i><b></b><em></em></div><div class="atlas-route-caption"><b>${waypoints[rangeView]}</b><span>Levels ${first}–${first+9} · Skyway stretch ${rangeView+1} of 5</span></div><svg class="atlas-route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${route}</svg>${nodes}`;
  map.querySelectorAll('.atlas-node:not(.locked)').forEach(b=>b.onclick=()=>startLevel(+b.dataset.level));
  const continueBtn=document.getElementById('continueBtn');if(continueBtn)continueBtn.innerHTML=`<span>${progress.stars[progress.unlocked]?'Return to latest stop':'Continue journey'}</span><b>Level ${progress.unlocked}</b>`;
 }
