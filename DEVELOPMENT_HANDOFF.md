@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Keep only the animated Atlas traveler
+
+**Status: IN PROGRESS**
+
+**User goal:** Remove the duplicate static Latchling/guide that appears beside the current or newly reached Atlas island during the level-to-level journey. Keep only the guide that actually animates along the restored Skyway route.
+
+**Implementation plan:** Remove the normal current-stop `atlasGuideHtml()` injection from the Atlas node pennant while preserving the helper function for `atlasTraveler()`. Do not change route travel, cloud clearing, arrival timing, current-stop pennant text, unlock logic, board themes, story, cinematics, or puzzle data.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `game400-a.js`, and temporary self-removing GitHub Actions validation workflow/helper files only.
+
+**Validation plan:** Exercise ordinary 1→2 progression and a 10→11 crossing. Assert zero static `.atlas-guide` elements on a normal Atlas view, exactly one guide during active movement and that it is nested inside `.atlas-travel-token`, no second guide on source/destination nodes, and no guide left behind after a Level Select reward finishes. Recheck Next Level auto-continuation, reduced-motion behavior, responsive containment, JS syntax, and protected story/campaign hashes. Capture progression screenshots for manual visual review.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, implement and validate through a self-removing workflow, inspect the render artifact, verify GitHub Pages for the accepted clean state, then close this entry with exact commits/run/artifact/deployment details and confirm the permanent repository-access guard is again the only workflow.
+
+
 ### 2026-09-10 — Restore Atlas level-to-level journey payoff and deeply theme puzzle-board squares
 
 **Status: COMPLETED**
