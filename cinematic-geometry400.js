@@ -44,11 +44,11 @@ function normalizeDialogue(stage){
  const layers=[...stage.querySelectorAll(':scope > .cin-dialogue-layer')];
  layers.forEach(layer=>{
   const bubbles=[...layer.querySelectorAll('.cin-speech-bubble')];if(!bubbles.length)return;
-  layer.style.removeProperty('--cin-bubble-height');
-  let target=Math.max(...bubbles.map(b=>Math.ceil(b.scrollHeight)));const compact=stage.getBoundingClientRect().height<280;target=clamp(target,compact?46:50,compact?70:82);layer.style.setProperty('--cin-bubble-height',`${target}px`);
-  requestAnimationFrame(()=>bubbles.forEach(b=>{
-   const speaker=b.closest('[data-speaker]'),portrait=speaker?.querySelector('.dialogue-portrait'),br=b.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();if(!pr||!br.width)return;const px=pr.left+pr.width/2,tail=clamp((px-br.left)/br.width*100,12,88);b.style.setProperty('--cin-tail-x',`${tail.toFixed(2)}%`);
-  }));
+  layer.style.removeProperty('--cin-bubble-height');bubbles.forEach(b=>b.style.removeProperty('--cin-bubble-shift'));
+  requestAnimationFrame(()=>{
+   const target=Math.max(...bubbles.map(b=>Math.max(...[...b.querySelectorAll(':scope>b,:scope>span')].map(x=>Math.ceil(x.getBoundingClientRect().bottom-b.getBoundingClientRect().top+6)),0)));layer.style.setProperty('--cin-bubble-height',`${target}px`);
+   requestAnimationFrame(()=>{const sr=stage.getBoundingClientRect(),pad=5;bubbles.forEach(b=>{const br=b.getBoundingClientRect();let shift=parseFloat(getComputedStyle(b).getPropertyValue('--cin-bubble-shift'))||0;if(br.left<sr.left+pad)shift+=sr.left+pad-br.left;if(br.right>sr.right-pad)shift-=br.right-(sr.right-pad);if(Math.abs(shift)>.25)b.style.setProperty('--cin-bubble-shift',`${shift.toFixed(2)}px`)});requestAnimationFrame(()=>bubbles.forEach(b=>{const speaker=b.closest('[data-speaker]'),portrait=speaker?.querySelector('.dialogue-portrait'),br=b.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();if(!pr||!br.width)return;const px=pr.left+pr.width/2,tail=clamp((px-br.left)/br.width*100,8,92);b.style.setProperty('--cin-tail-x',`${tail.toFixed(2)}%`)}))});
+  });
  });
 }
 function tick(time){
