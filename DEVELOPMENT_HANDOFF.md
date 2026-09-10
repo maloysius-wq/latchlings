@@ -40,7 +40,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Rebuild Level Select as the Skyway Atlas
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Replace the generic Level Select with the approved Skyway Atlas: a deeply authored Latchlings world map of drifting textured islands, restored and broken Skyway routes, regional landmarks, cloud-hidden locked destinations, an unmistakable current stop, milestone waypoints every ten levels, and chapter-specific art direction that feels like travel through the Latchlands rather than a recolored button grid.
 
@@ -54,6 +54,16 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 **Deployment plan:** This IN PROGRESS handoff commit must exist before product edits. Implement and visually validate through self-cleaning workflow(s), refine until accepted, verify only the durable repository-access guard workflow remains, confirm GitHub Pages deploys the exact accepted clean state, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact files, texture sources, commits, Actions runs/artifacts, manual findings, deployment SHA/run, and remaining risk.
 
+#### Completion summary
+
+- **Result:** COMPLETED. The generic Level Select was replaced by the Skyway Atlas while preserving the existing campaign/progression and level-launch semantics. The accepted product implementation is commit `2557e71a97431a32741082c5038b4fe627917ecf` (`Rebuild Level Select as Skyway Atlas`).
+- **Product files:** `index.html`, `game400-a.js`, new `style400-skyway-atlas.css`, new `LEVEL_SELECT_ART_DIRECTION.md`, `ART_ASSET_CREDITS.md`, plus eight local 512×512 WebP chapter textures under `assets/level-select/` (`sunpetal`, `lanternwood`, `lodestone`, `masquerade`, `prism`, `copperline`, `stormswitch`, `aurora`). Campaign, solver, story, cinematic, and Level 400 source files were intentionally left unchanged.
+- **Atlas behavior delivered:** 8 chapter regions × 5 ten-level waypoint stretches, winding ten-stop routes, restored/current/locked visual states, milestone landmarks, chapter-specific scenery/materials, region and waypoint navigation, NEXT STOP/current-stop emphasis, resident guide, reset utility access, strong Continue CTA, future-route cloud treatment, and reduced-motion support.
+- **Acceptance:** GitHub Actions run `34525488124` (`Build Skyway Atlas V4`) completed successfully and printed `SKYWAY_ATLAS_V4_ACCEPTED`. It rendered all 8 chapters and all 40 route stretches at 390×844, hero/current-state views for every chapter, responsive matrices at 320×568, 360×640, 390×700, and 430×932, plus fresh/mid-progress/reduced-motion states. It verified 44px+ level/CTA targets, route/node containment, accessible labels, no horizontal overflow, local texture decoding, Reset confirmation, direct level launch, Continue launch, and unchanged campaign/story/cinematic source.
+- **Acceptance artifact:** `skyway-atlas-v4-final-renders`, artifact ID `10171419801`, contains 71 rendered/audit files for visual review.
+- **Repository cleanup:** The temporary v4 workflow self-removed in commit `97e1bc6796f9e928836a591c4a0e96e5f297a658` (`Remove Skyway Atlas v4 workflow`). Earlier v1-v3 workflows were iterative validation/refinement attempts and were also removed; they are superseded by the passing v4 acceptance.
+- **Deployment:** GitHub Pages run `34525671622` for clean `main` at `97e1bc6796f9e928836a591c4a0e96e5f297a658` completed successfully.
+- **Remaining risk / next action:** No known critical Atlas blocker remains. Future changes to progression, navigation, copy length, or Atlas geometry should rerun the same responsive/state matrix.
 
 
 ### 2026-09-10 — Deep audit Story/Residents Latchling faces and opening cinematic clipping
