@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-11 — Add island dive / Atlas pullback transitions
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Make transitions between the Skyway Atlas level selector and an individual puzzle feel geographically connected: quickly zoom into the chosen island when entering a level, and zoom back out from the puzzle when returning to the Atlas. Keep the effect immersive but brief.
 
@@ -50,6 +50,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Browser-test Atlas → unlocked level and game → Atlas at phone dimensions. Capture transform/opacity telemetry to prove Atlas → game scales up around the selected island rather than sliding, game → Atlas scales down rather than sliding, each completes cleanly with no residual animation/styles, and unrelated transitions still use the existing 420 ms horizontal swipe. Test rapid cancellation, repeated round trips, reduced-motion, post-win/lose/pause returns to Level Select, and confirm no page errors.
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
+#### Completion summary
+
+- **Result:** COMPLETED. Atlas ↔ puzzle navigation now behaves like a short camera move between the Skyway map and an island instead of using the generic sideways screen swipe.
+- **Atlas → level:** The outgoing Atlas zooms from 1.0× to **1.34×** over **460 ms** while fading away. Its transform origin is calculated from the center of the exact unlocked `.atlas-node[data-level]` selected for `currentLevel`, so the camera appears to dive into the island the player actually chose rather than simply enlarging around screen center.
+- **Level → Atlas:** The outgoing puzzle screen pulls back from 1.0× to **0.76×** over **460 ms** while fading, revealing the already-active Atlas underneath. Pause/Level Select and other direct game → Atlas paths inherit the same pullback.
+- **Transition scope / safety:** Every unrelated screen pair retains the existing **420 ms** `translate3d(106vw,0,0)` horizontal transition. Reduced-motion still swaps immediately without the camera zoom. Existing `activeScreenTransition` cancellation and explicit `animation.cancel()` cleanup remain intact, preventing finished `fill:forwards` animations from sticking to reusable screens.
+- **Cache freshness:** `index.html` now loads `game400-a.js?v=20260911-atlaszoom1`. No CSS, gameplay rules, campaign data, audio, cinematics, Little Home, or Atlas reward pacing/music code changed.
+- **Changed files / product commit:** Accepted product commit `926fcb98158e2c051774614dc54491547210e2a3` (`Add immersive Atlas island zoom transitions`) changes only `game400-a.js` and `index.html`.
+- **Accepted browser validation:** GitHub Actions run `34634130678`, job `103377799224`, passed static validation and the full Chromium browser gate and printed `ATLAS_ISLAND_ZOOM_ACCEPTED`. Coverage verified the Level 3 node was used as the actual dive origin, the 460 ms / 1.34× dive contained no horizontal-swipe keyframe, the 460 ms / 0.76× pullback contained no horizontal-swipe keyframe, repeated Atlas ↔ puzzle round trips left zero outgoing classes or direct animations, Atlas → Home still used the original 420 ms sideways transition, and reduced-motion produced no screen animation. No browser/page errors were reported.
+- **Acceptance artifact:** `atlas-island-zoom-audit`, artifact ID `10277133081`, SHA-256 `6f433d86cd71bd020ef4da0f2cdff4e198aab022fef45cc0caf95d130b7d4e6f`, contains before/mid-transition screenshots plus transition telemetry and reduced-motion state.
+- **Validator hygiene note:** The accepted run's final helper self-removal step failed after product acceptance because the workflow's temporary `npm install` left unstaged runner changes, so `git pull --rebase` refused to proceed. This did **not** affect validation or the accepted product commit. The temporary browser helper was removed directly in `645e034287617d9b154910f1ffd83d754fd32370`, and the temporary workflow was removed directly in `41718805708f8c7404662adba2afb911d8182bba`. `.github/workflows` was then verified to contain only permanent `validate-repository-access-guard.yml`.
+- **Deployment:** GitHub Pages run `34634265078` successfully built and deployed clean accepted state `41718805708f8c7404662adba2afb911d8182bba` before this handoff closeout.
+- **Remaining risk / next action:** No known code blocker remains. Real-device viewing is the final subjective feel check; if the camera move should be punchier or gentler, the special Atlas ↔ puzzle duration and scale endpoints are isolated from the generic screen transition and can be tuned without disturbing other navigation.
 
 
 ### 2026-09-11 — Slow Atlas reward travel and smooth the music handoff
