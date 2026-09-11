@@ -29,7 +29,12 @@ async function inspectOpening(page,dpr){
       const sr=stage?.getBoundingClientRect(),dr=dock?.getBoundingClientRect();
       const beat=window.LatchlingsCinematics?.CINEMATICS?.opening?.beats?.[i];
       const expectedGroups=new Set((beat?.lines||[]).filter(x=>x?.[0]!=='Narrator').map(x=>x[0])).size;
-      const bubbles=[...(dock?.querySelectorAll('.cin-opening-bubble')||[])].map(b=>({clientHeight:b.clientHeight,scrollHeight:b.scrollHeight,text:b.textContent.trim()}));
+      const rows=[...(dock?.querySelectorAll('.cin-opening-dialogue-row')||[])].map(row=>{
+        const b=row.querySelector('.cin-opening-bubble'),portrait=row.querySelector('.opening-dialogue-portrait');
+        const br=b?.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();
+        return {bubbleWidth:br?.width||0,bubbleClientHeight:b?.clientHeight||0,bubbleScrollHeight:b?.scrollHeight||0,portraitWidth:pr?.width||0,portraitPosition:portrait?getComputedStyle(portrait).position:'',text:b?.textContent.trim()||''};
+      });
+      const castPortraits=[...(dock?.querySelectorAll('.opening-cast-portrait')||[])].map(p=>({width:p.getBoundingClientRect().width,position:getComputedStyle(p).position}));
       const next=document.getElementById('cinematicNext'),skip=document.getElementById('cinematicSkip');
       return {
         expectedGroups,
@@ -38,7 +43,7 @@ async function inspectOpening(page,dpr){
         dockGroups:dock?.querySelectorAll('.cin-opening-dialogue-row').length||0,
         castChips:dock?.querySelectorAll('.cin-opening-cast-chip').length||0,
         separated:!dock||!sr||!dr||dr.top>=sr.bottom-1,
-        bubbles,
+        rows,castPortraits,
         horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
         nextUsable:!!next&&!next.disabled&&getComputedStyle(next).display!=='none',
         skipUsable:!!skip&&!skip.disabled&&getComputedStyle(skip).display!=='none',
@@ -50,7 +55,10 @@ async function inspectOpening(page,dpr){
     assert(data.dock===Boolean(data.expectedGroups),`opening beat ${i+1} dock presence mismatch at DPR ${dpr}`);
     assert(data.dockGroups===data.expectedGroups,`opening beat ${i+1} speaker group mismatch at DPR ${dpr}`);
     assert(data.separated,`opening beat ${i+1} dialogue overlaps scenic stage at DPR ${dpr}`);
-    assert(data.bubbles.every(b=>b.scrollHeight<=b.clientHeight+1),`opening beat ${i+1} clipped dialogue at DPR ${dpr}`);
+    assert(data.rows.every(r=>r.bubbleScrollHeight<=r.bubbleClientHeight+1),`opening beat ${i+1} clipped dialogue at DPR ${dpr}`);
+    assert(data.rows.every(r=>r.bubbleWidth>180),`opening beat ${i+1} has a collapsed/narrow speech bubble at DPR ${dpr}`);
+    assert(data.rows.every(r=>r.portraitWidth>=27&&r.portraitPosition==='relative'),`opening beat ${i+1} has an out-of-flow speaker portrait at DPR ${dpr}`);
+    assert(data.castPortraits.every(p=>p.width>=20&&p.position==='relative'),`opening beat ${i+1} has an out-of-flow cast portrait at DPR ${dpr}`);
     assert(data.horizontalOverflow<=1,`opening beat ${i+1} horizontal overflow ${data.horizontalOverflow}px at DPR ${dpr}`);
     assert(data.nextUsable&&data.skipUsable,`opening beat ${i+1} lost cinematic controls at DPR ${dpr}`);
     if(i===1)assert(data.castChips===5,`opening beat 2 lost five-resident identity key at DPR ${dpr}`);
@@ -86,12 +94,19 @@ async function inspectRails(page){
     await page.locator('.story-rail-toggle').click();
     await page.waitForTimeout(60);
     const expanded=await page.evaluate(()=>{
-      const host=document.getElementById('mechanicNote'),rail=host?.querySelector('.story-level-rail'),p=rail?.querySelector('.story-rail-main p'),toggle=rail?.querySelector('.story-rail-toggle'),full=rail?.querySelector('.story-rail-full');
-      return {height:host?.getBoundingClientRect().height||0,railExpanded:rail?.classList.contains('is-expanded'),aria:toggle?.getAttribute('aria-expanded'),label:toggle?.textContent.trim(),pScroll:p?.scrollHeight||0,pClient:p?.clientHeight||0,overflow:getComputedStyle(p).overflow,fullVisible:!!full&&getComputedStyle(full).display!=='none',horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+      const host=document.getElementById('mechanicNote'),rail=host?.querySelector('.story-level-rail'),p=rail?.querySelector('.story-rail-main p'),toggle=rail?.querySelector('.story-rail-toggle'),full=rail?.querySelector('.story-rail-full'),quote=rail?.querySelector('.story-rail-quote'),thread=rail?.querySelector('.story-rail-thread');
+      const qs=quote?getComputedStyle(quote):null,ts=thread?getComputedStyle(thread):null;
+      return {height:host?.getBoundingClientRect().height||0,railExpanded:rail?.classList.contains('is-expanded'),aria:toggle?.getAttribute('aria-expanded'),label:toggle?.textContent.trim(),pScroll:p?.scrollHeight||0,pClient:p?.clientHeight||0,overflow:getComputedStyle(p).overflow,fullVisible:!!full&&getComputedStyle(full).display!=='none',horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,quoteWhiteSpace:qs?.whiteSpace||'',quoteOverflow:qs?.overflow||'',quoteTextOverflow:qs?.textOverflow||'',quoteScroll:quote?.scrollWidth||0,quoteClient:quote?.clientWidth||0,threadWhiteSpace:ts?.whiteSpace||'',threadOverflow:ts?.overflow||'',threadTextOverflow:ts?.textOverflow||'',threadScroll:thread?.scrollWidth||0,threadClient:thread?.clientWidth||0};
     });
     assert(expanded.railExpanded&&expanded.aria==='true'&&expanded.label==='Collapse',`level ${level} did not expand`);
     assert(expanded.height>collapsed.height,`level ${level} expanded rail did not grow`);
     assert(expanded.pScroll<=expanded.pClient+1||expanded.overflow==='visible',`level ${level} expanded text is clipped`);
+    assert(expanded.quoteWhiteSpace!=='nowrap'&&expanded.quoteOverflow==='visible'&&expanded.quoteTextOverflow!=='ellipsis',`level ${level} expanded quote still uses compact ellipsis styling`);
+    assert(expanded.quoteScroll<=expanded.quoteClient+1,`level ${level} expanded quote still overflows horizontally`);
+    if(expanded.threadClient){
+      assert(expanded.threadWhiteSpace!=='nowrap'&&expanded.threadOverflow==='visible'&&expanded.threadTextOverflow!=='ellipsis',`level ${level} expanded question still uses compact ellipsis styling`);
+      assert(expanded.threadScroll<=expanded.threadClient+1,`level ${level} expanded question still overflows horizontally`);
+    }
     assert(expanded.fullVisible,`level ${level} full-story action missing when expanded`);
     assert(expanded.horizontalOverflow<=1,`level ${level} expanded rail horizontal overflow`);
     const pseudo=await page.evaluate(()=>getComputedStyle(document.getElementById('storyCardBtn'),'::after').content);
