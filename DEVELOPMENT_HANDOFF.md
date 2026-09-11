@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Unclip Little Home carried props and calm adult movement
+
+**Status: IN PROGRESS**
+
+**User goal:** Fix the Little Home adults' carried tools/packages so they are not cut off by the Latchling circular outline, and make adult movement much less frequent because the current home scene feels too busy.
+
+**Diagnosis / implementation plan:** The Little Home carried items are CSS `::after` props positioned partly outside each adult resident, but the shared decorative `.latchling` sphere uses `overflow:hidden`, clipping those props at the circular body edge. Keep the spherical body/background/border circular while allowing external resident props to render outside the element. Adult choreography currently rests only 4.2–8.8 seconds normally and 9–13 seconds on occasional long rests; increase those rest windows substantially into a calm tens-of-seconds cadence and stagger initial outings so the three adults do not begin moving in quick succession. Preserve movement paths, prop art, children, play ball, faces, suits, home layout, and reduced-motion behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `title-island-concepts/index.html`, optionally `index.html` only for cache freshness, plus temporary self-removing browser-validation helpers. Puzzle gameplay, board-piece styling, Atlas, story/cinematics outside the home iframe, audio, and campaign data are out of scope.
+
+**Validation plan:** Render the exact production Little Home iframe at phone size and DPR 1/3; force each adult into an outing state and assert its carried prop extends beyond the resident border box without being clipped while the resident remains circular. Verify normal adult rest windows are at least 35 seconds, long-rest windows are substantially longer, initial moves are staggered, movement durations/paths are unchanged, reduced-motion still suppresses outings, children remain unchanged, and no page errors occur. Capture close-ups of all three adults carrying their props.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-11 — Revert puzzle rim and smooth home Latchling shading
 
 **Status: COMPLETED**
