@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Fix blank Level Select when leaving a level
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Fix the regression where choosing Level Select from an active level leaves only the themed background visible and the Skyway Atlas UI never appears.
 
@@ -50,6 +50,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Browser-reproduce from a live level through Pause → Level Select, lose modal → Level Select, and cleared-level → Level Select, then assert after transition completion that `body[data-screen="levels"]`, `#levels.active`, `.atlas-shell`, populated chapter/range/map content, and clickable unlocked nodes are all visible. Also retest Home → Level Select, Level Select → Game, rapid navigation, reduced motion, no console/page errors, and no leftover `.screen-transition-outgoing` element. Reject any candidate that merely masks the blank state or breaks the 420ms smooth-transition fix.
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits, reproduce and patch through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, close this same entry with exact files/commits/runs/results, and verify only the permanent repository-access guard remains.
+
+
+#### Completion summary
+
+- **Result:** COMPLETED. Returning to Level Select after it had previously animated out to a game now restores the Skyway Atlas at full opacity and its normal on-screen position. The visible blank-background regression is fixed.
+- **Root cause:** The manual 420ms outgoing-screen transition uses a Web Animation with `fill: forwards`. When a screen finished animating out, `settle()` removed the temporary inline styles and class but did not cancel the finished Web Animation. The animation effect therefore remained attached to that DOM element. After Level Select had once been an outgoing screen, later visits reactivated a fully populated Atlas that was still visually held at the animation's final state: roughly `opacity: 0.1` and `translateX(106vw)`.
+- **Reproduction evidence:** Diagnostic run `34558950177`, job `103137502324`, reproduced the exact lifecycle. The first direct Game → Pause → Level Select was normal at opacity `1`, x `0`, width `390`, with 10 Atlas nodes. After Level Select animated out to a game once, subsequent Lose → Level Select and Win → Level Select states still contained the full Atlas DOM but measured opacity `0.1` with the shell displaced to approximately x `409.89`, matching the user's background-only symptom. No browser errors were present. Diagnostic artifact `level-select-regression-diagnostic`, artifact ID `10183616747`, SHA-256 `85234007f7bb7d298101dc82187b72c58a2501b334774816fef69a4cd7f28665`, captured the evidence.
+- **Implementation:** `game400-a.js` transition settlement now clears the Web Animation itself after detaching its finish/cancel handlers: `animation.cancel(); animation=null;`. This removes the `fill: forwards` effect before the outgoing screen is restored, so any screen can be safely reused later. No Atlas content, puzzle logic, navigation call sites, styles, audio, story, cinematics, or campaign data needed modification.
+- **Product / cleanup commits:** Accepted product commit `4ce93e5a09b662c01380e6709642b53be73fe94c` (`Clear completed screen transition effects`) changes only `game400-a.js` by one insertion/one deletion. Temporary validation helpers self-removed in clean-state commit `0ee6cbd6e42d62169cbcd5373f831b406bdec4b7` (`Remove Level Select fix validation helpers`).
+- **Acceptance:** GitHub Actions run `34559066233`, job `103137845326`, completed successfully and printed `LEVEL_SELECT_FIX_ACCEPTED`. It explicitly tested the formerly failing Level Select reuse sequence, Pause → Level Select, Lose → Level Select, cleared-level Atlas reward → Level Select, Home → Level Select after reuse, rapid navigation, and reduced motion. Every accepted Level Select state had opacity `1`, transform `none`, x `0`, full 390px viewport width, populated chapter/range content, 10 Atlas nodes, at least one clickable node, zero `.screen-transition-outgoing` leftovers, and zero completed direct animations still attached to `#levels`.
+- **Transition regression protection:** The accepted validator confirmed the smooth-transition contract remains exactly 420ms with two transform/opacity keyframes and no lingering animation effect after `finished`. The stutter fix from the prior task is therefore preserved rather than rolled back.
+- **Scope protection:** Hash verification confirmed `game400-b.js`, `sfx400.js`, `music400.js`, `index.html`, all relevant UI/game/theme/Atlas/board CSS files, story/cinematic sources, and all eight `campaign400-*.js` files were unchanged.
+- **Acceptance artifact:** `level-select-transition-fix-audit`, artifact ID `10183660475`, SHA-256 `3b20458fc28ca00f2231dcf80cc13bd810996eefcb7463195d2adaf1dbd91342`, contains the accepted final Level Select render and detailed browser-state report.
+- **Deployment:** GitHub Pages run `34559121908` successfully built and deployed clean accepted state `0ee6cbd6e42d62169cbcd5373f831b406bdec4b7`.
+- **Remaining risk / next action:** No known blocker remains. Device testing is still useful for subjective transition feel, but the exact stale-animation state responsible for the blank Atlas is now directly reproduced, asserted, and prevented.
 
 
 ### 2026-09-10 — Smooth the 420ms window transition
