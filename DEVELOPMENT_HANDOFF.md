@@ -37,6 +37,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+
+### 2026-09-11 — Unblock opening dialogue and make level story beats self-explanatory
+
+**Status: IN PROGRESS**
+
+**User goal:** Keep the richer opening cinematic readable without speech bubbles covering important scene art, and fix the compact story-beat rail at the top of gameplay so its text is not mysteriously cut off or disconnected from the full Story card in the top-right.
+
+**Implementation plan:** (1) Stop treating opening dialogue as free-floating bubbles layered over the same visual space as the cinematic focal art. Give opening character dialogue a dedicated presentation band/dock that remains visually speech-bubble-like, keeps speaker identity/portraits and full message text, and leaves the scenic stage unobstructed. Preserve narrator copy, Continue/Skip, all eight opening beats, and reduced-motion behavior. (2) Rework the in-level story rail so the compact state clearly signals that more story is available, never ends in an unexplained hard truncation, and can be expanded/collapsed in place for the full current beat/question. (3) Make the existing top-right Story book button and the rail behave as one story system by using explicit labels/affordances and routing the rail's deeper-story action to the same full Story card. Keep the puzzle board footprint stable in the default collapsed state.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`; `cinematic-dialogue400.js`, `style400-cinematics-dialogue.css`, `style400-cinematics-geometry.css` and/or `style400-cinematics.css`; `gameplay-story-rail400.js`, `style400-story-rail-board.css`; `story-theme400.js` only if a small public hook is needed; `index.html` for cache freshness; temporary self-removing validation helpers. Story content, puzzle definitions/solver rules, Atlas camera transitions, audio, and Little Home are out of scope.
+
+**Validation plan:** Browser-test all eight opening beats at phone dimensions and DPR 1/3, assert full dialogue remains readable, no dialogue box overlaps protected focal-art regions, no text clips/overflows, narrator copy still works, Continue/Skip remain usable, and reduced motion still completes. Test representative gameplay rails across chapters with short and long lines/questions, verify collapsed state stays board-friendly, expand/collapse reveals the complete current beat without clipping, the deeper Story action opens the existing full Story card for the same level, keyboard/focus behavior works, and no layout/page errors occur. Capture before/after screenshots and a machine-readable audit.
+
+**Deployment plan:** Commit this IN PROGRESS journal entry before product edits, implement through GitHub, validate in Chromium with temporary self-removing Actions helpers, deploy only an accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifact details and verify only the permanent repository-access guard workflow remains.
+
+
 ### 2026-09-11 — Campaign-wide narrative clarity overhaul
 
 **Status: COMPLETED**
