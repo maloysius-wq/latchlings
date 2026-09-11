@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Slow Atlas reward travel and smooth the music handoff
+
+**Status: IN PROGRESS**
+
+**User goal:** Keep the post-level Atlas progression animation on screen about 70% longer so the traveler/route-restoration effect has time to land, and make the accompanying music transition feel substantially less abrupt.
+
+**Diagnosis / implementation plan:** Measure the existing same-range and cross-waypoint/chapter reward choreography in `game400-a.js`, then scale the normal-motion Atlas reward timeline to approximately 1.7× as one coherent sequence rather than stretching only the traveler sprite. Preserve reduced-motion timing. Audit `music400.js` alongside the reward flow: while the Atlas reward is active, keep music tied to the current Atlas chapter instead of treating Level Select as the title screen; avoid any transient title-track switch while auto-advancing into the next level; on actual chapter crossings, change to the destination chapter track when the destination Atlas view appears and use a longer reward-specific fade. Preserve normal home/game music behavior outside the Atlas reward.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `game400-a.js` and `music400.js`, optionally `index.html` for cache freshness, plus temporary self-removing browser-validation helpers. Puzzle mechanics, level data, board surfaces, cinematics, Little Home choreography, and non-music SFX are out of scope.
+
+**Validation plan:** Browser-test normal-motion same-range and cross-chapter rewards at phone size. Measure traveler animation durations and source-to-finish reward timing against a 1.7× target; verify route restoration, destination reveal, cloud clear, landing, and auto-advance still happen in order. Instrument music requested/current track state to prove same-chapter rewards never request the title track and chapter crossings remain on the source chapter until the destination Atlas appears, then request the destination chapter with the longer reward fade. Check reduced-motion still completes promptly, next-level auto-advance works, no page errors occur, and protected gameplay/story/style sources stay byte-identical.
+
+**Deployment plan:** Commit this IN PROGRESS journal entry before product edits, validate the candidate in a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-11 — Remove opening-scene dialogue bubble flicker
 
 **Status: COMPLETED**
