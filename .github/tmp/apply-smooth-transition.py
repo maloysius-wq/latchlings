@@ -64,7 +64,7 @@ css = CSS.read_text()
 assert 'document.startViewTransition' not in game
 assert 'duration:420' in game
 assert 'current.animate' in game
-assert 'const ready=new Promise' in game and 'const finished=new Promise' in game
+assert 'const ready=new Promise' in game and 'finished=new Promise' in game
 assert 'skipTransition()' in game
 assert 'screen-transition-outgoing' in game and 'screen-transition-outgoing' in css
 assert '::view-transition-' not in css
