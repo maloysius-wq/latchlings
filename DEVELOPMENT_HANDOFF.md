@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Make Little Home adult movement discrete with 4–10 second gaps
+
+**Status: IN PROGRESS**
+
+**User goal:** The adults currently wait and then run through several rapid movement waypoints in one burst. Change the Little Home adult choreography so there is a randomized 4–10 second pause between every individual adult movement and there are never several rapid adult movements at once.
+
+**Diagnosis / implementation plan:** The current timer schedules a whole CSS `adult-outing` animation, and each outing keyframe contains 6–7 waypoints compressed into roughly five seconds. Replace that burst model with a single global adult movement scheduler. Preserve each adult's existing route points, but advance only one waypoint per scheduled turn. Allow only one adult movement to run at a time, then wait a fresh random 4–10 seconds before scheduling the next single movement. Use a short smooth step animation for the one waypoint transition, keep carried props attached, and preserve reduced-motion behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `title-island-concepts/index.html`, `index.html` for cache freshness, and temporary self-removing browser-validation helpers. Puzzle gameplay, puzzle-piece styling, children/play-ball choreography, Atlas, story/cinematics outside the home iframe, audio, and campaign data are out of scope.
+
+**Validation plan:** Run the production Little Home in Chromium, instrument adult transforms over time, and prove that each adult event changes only one route waypoint, only one adult moves at a time, and the quiet interval between completed adult movement events is always 4–10 seconds. Observe enough events to cover all three adults and multiple route steps. Verify props remain visible, reduced motion prevents adult movement, children remain unchanged, and protected gameplay/story files are byte-identical.
+
+**Deployment plan:** Commit this IN PROGRESS journal entry before product edits, implement and validate through a temporary self-removing GitHub Actions workflow, deploy the clean accepted state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-11 — Unclip Little Home carried props and calm adult movement
 
 **Status: COMPLETED**
