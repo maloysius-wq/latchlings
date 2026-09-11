@@ -60,7 +60,7 @@ function accessibleDialogueHtml(groups){if(!groups.length)return'';return `<span
 let scheduled=false,processing=false;
 function postProcess(){
  scheduled=false;if(processing)return;const id=API.active,index=API.beat,c=API.CINEMATICS[id],beat=c&&c.beats[index],overlay=document.getElementById('cinematicOverlay'),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines');
- if(!id||!beat||!overlay||!stage||!lines)return;
+ if(!id||!beat||!overlay||!stage||!lines)return;if(overlay.dataset.cinematic!==id||overlay.dataset.visual!==beat.visual)return;
  processing=true;
  try{
   const groups=dialogueGroups(beat);
@@ -73,6 +73,7 @@ function postProcess(){
   lines.hidden=!narration.length&&!groups.length;
   overlay.dataset.dialogueCount=String(groups.length);
   overlay.dataset.narratorCount=String(narration.length);
+  if(groups.length)window.LatchlingsCinematicGeometry?.normalizeDialogue(stage);
  }finally{processing=false}
 }
 function schedule(){if(processing||scheduled)return;scheduled=true;queueMicrotask(postProcess)}

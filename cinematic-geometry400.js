@@ -2,7 +2,7 @@
 (function(){
 const API=window.LatchlingsCinematics;if(!API)return;
 const ROUTE_PAIRS=[['i1','i2'],['i2','i3'],['i1','i4'],['i4','i5']];
-let raf=0,lastBeatKey='',cargoEpoch=performance.now(),lastDialoguePass=0;
+let raf=0,lastBeatKey='',cargoEpoch=performance.now(),lastDialogueLayer=null;
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function enhanceTrees(root=document){
  root.querySelectorAll('.cin-island-prop.prop-tree').forEach(tree=>{
@@ -44,24 +44,25 @@ function normalizeDialogue(stage){
  const layers=[...stage.querySelectorAll(':scope > .cin-dialogue-layer')];
  layers.forEach(layer=>{
   const bubbles=[...layer.querySelectorAll('.cin-speech-bubble')];if(!bubbles.length)return;
-  layer.style.removeProperty('--cin-bubble-height');bubbles.forEach(b=>b.style.removeProperty('--cin-bubble-shift'));
-  requestAnimationFrame(()=>{
-   const target=Math.max(...bubbles.map(b=>Math.max(...[...b.querySelectorAll(':scope>b,:scope>span')].map(x=>Math.ceil(x.getBoundingClientRect().bottom-b.getBoundingClientRect().top+6)),0)));layer.style.setProperty('--cin-bubble-height',`${target}px`);
-   requestAnimationFrame(()=>{const sr=stage.getBoundingClientRect(),pad=5;bubbles.forEach(b=>{const br=b.getBoundingClientRect();let shift=parseFloat(getComputedStyle(b).getPropertyValue('--cin-bubble-shift'))||0;if(br.left<sr.left+pad)shift+=sr.left+pad-br.left;if(br.right>sr.right-pad)shift-=br.right-(sr.right-pad);if(Math.abs(shift)>.25)b.style.setProperty('--cin-bubble-shift',`${shift.toFixed(2)}px`)});requestAnimationFrame(()=>bubbles.forEach(b=>{const speaker=b.closest('[data-speaker]'),portrait=speaker?.querySelector('.dialogue-portrait'),br=b.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();if(!pr||!br.width)return;const px=pr.left+pr.width/2,tail=clamp((px-br.left)/br.width*100,8,92);b.style.setProperty('--cin-tail-x',`${tail.toFixed(2)}%`)}))});
-  });
+  const target=Math.max(...bubbles.map(b=>{const br=b.getBoundingClientRect();return Math.max(...[...b.querySelectorAll(':scope>b,:scope>span')].map(x=>Math.ceil(x.getBoundingClientRect().bottom-br.top+6)),0)}));
+  const currentHeight=parseFloat(layer.style.getPropertyValue('--cin-bubble-height'))||0;if(Math.abs(currentHeight-target)>.25)layer.style.setProperty('--cin-bubble-height',`${target}px`);
+  const sr=stage.getBoundingClientRect(),pad=5;
+  bubbles.forEach(b=>{const br=b.getBoundingClientRect(),current=parseFloat(getComputedStyle(b).getPropertyValue('--cin-bubble-shift'))||0,baseLeft=br.left-current,baseRight=br.right-current;let desired=0;if(baseLeft<sr.left+pad)desired+=sr.left+pad-baseLeft;if(baseRight>sr.right-pad)desired-=baseRight-(sr.right-pad);if(Math.abs(desired-current)>.25)b.style.setProperty('--cin-bubble-shift',`${desired.toFixed(2)}px`)});
+  bubbles.forEach(b=>{const speaker=b.closest('[data-speaker]'),portrait=speaker?.querySelector('.dialogue-portrait'),br=b.getBoundingClientRect(),pr=portrait?.getBoundingClientRect();if(!pr||!br.width)return;const px=pr.left+pr.width/2,tail=clamp((px-br.left)/br.width*100,8,92),current=parseFloat(b.style.getPropertyValue('--cin-tail-x'))||50;if(Math.abs(current-tail)>.1)b.style.setProperty('--cin-tail-x',`${tail.toFixed(2)}%`)});
  });
 }
 function tick(time){
  raf=0;const overlay=document.getElementById('cinematicOverlay'),stage=document.getElementById('cinematicStage');if(!overlay||!stage||!overlay.classList.contains('show')||!API.active)return;
- const beat=API.beat+1,key=`${API.active}:${beat}`;overlay.dataset.beat=String(beat);if(key!==lastBeatKey){lastBeatKey=key;cargoEpoch=time;normalizeDialogue(stage);lastDialoguePass=time}
+ const beat=API.beat+1,key=`${API.active}:${beat}`;overlay.dataset.beat=String(beat);if(key!==lastBeatKey){lastBeatKey=key;cargoEpoch=time;lastDialogueLayer=null}
+ const dialogueLayer=stage.querySelector(':scope > .cin-dialogue-layer');if(dialogueLayer!==lastDialogueLayer){lastDialogueLayer=dialogueLayer;if(dialogueLayer)normalizeDialogue(stage)}
  enhanceTrees(stage);
  const stageRect=stage.getBoundingClientRect();let brightGeom=null;
  stage.querySelectorAll('.cin-islands').forEach(islands=>{const g=layoutIslandRoutes(islands,stageRect);if(islands.classList.contains('bright'))brightGeom=g});
  if(brightGeom)layoutCargo(stage,brightGeom,(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)?cargoEpoch+2200:time);
- if(time-lastDialoguePass>500){normalizeDialogue(stage);lastDialoguePass=time}
  raf=requestAnimationFrame(tick);
 }
 function start(){if(!raf)raf=requestAnimationFrame(tick)}
+window.addEventListener('resize',()=>{const stage=document.getElementById('cinematicStage');if(stage)normalizeDialogue(stage)},{passive:true});
 function observe(){const overlay=document.getElementById('cinematicOverlay');if(!overlay){requestAnimationFrame(observe);return}new MutationObserver(start).observe(overlay,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-cinematic','data-visual']});start()}
 observe();
 window.LatchlingsCinematicGeometry={enhanceTrees,layoutIslandRoutes,normalizeDialogue,start,ROUTE_PAIRS};
