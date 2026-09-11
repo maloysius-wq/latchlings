@@ -32,9 +32,12 @@ function screen(id){
  const current=document.querySelector('.screen.active');
  if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);return}
  const swap=()=>{document.body.dataset.screen=id;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));next.classList.add('active');if(id==='home')setTimeout(()=>updateHome(true),0)};
- const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches),canSlide=!!current&&!reduced&&typeof current.animate==='function';
- if(!canSlide){swap();return}
+ const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches),canAnimate=!!current&&!reduced&&typeof current.animate==='function';
+ if(!canAnimate){swap();return}
+ const atlasDive=current.id==='levels'&&id==='game',atlasPullback=current.id==='game'&&id==='levels';
  const priorStyle=current.getAttribute('style'),rect=current.getBoundingClientRect(),computedDisplay=getComputedStyle(current).display,display=computedDisplay==='none'?'flex':computedDisplay;
+ let transformOrigin='50% 50%';
+ if(atlasDive){const target=current.querySelector(`.atlas-node[data-level="${currentLevel}"]`)||current.querySelector('.atlas-node.current:not(.locked)')||current.querySelector('.atlas-node:not(.locked)');if(target){const tr=target.getBoundingClientRect(),ox=tr.left+tr.width/2-rect.left,oy=tr.top+tr.height/2-rect.top;transformOrigin=`${Math.round(ox)}px ${Math.round(oy)}px`}}
  let animation=null,rafA=0,rafB=0,settled=false,readySettled=false,resolveReady,resolveFinished,controller;
  const ready=new Promise(r=>resolveReady=r),finished=new Promise(r=>resolveFinished=r);
  const markReady=()=>{if(readySettled)return;readySettled=true;resolveReady()};
@@ -43,11 +46,11 @@ function screen(id){
  controller={ready,finished,skipTransition(){if(settled)return;if(animation)animation.cancel();settle()}};
  activeScreenTransition=controller;
  current.classList.add('screen-transition-outgoing');
- Object.assign(current.style,{display,position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',margin:'0',zIndex:'40',pointerEvents:'none',willChange:'transform,opacity',transform:'translate3d(0,0,0) scaleX(1)',opacity:'1'});
+ Object.assign(current.style,{display,position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',margin:'0',zIndex:'40',pointerEvents:'none',willChange:'transform,opacity',transformOrigin,transform:'translate3d(0,0,0) scale(1)',opacity:'1'});
  swap();
  if(window.LatchlingsSFX&&window.LatchlingsSFX.screenSwipe)window.LatchlingsSFX.screenSwipe();
  void next.offsetWidth;
- rafA=requestAnimationFrame(()=>{rafB=requestAnimationFrame(()=>{if(settled)return;markReady();animation=current.animate([{transform:'translate3d(0,0,0) scaleX(1)',opacity:1},{transform:'translate3d(106vw,0,0) scaleX(1.018)',opacity:.10}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'});animation.onfinish=settle;animation.oncancel=()=>{if(!settled)settle()}})});
+ rafA=requestAnimationFrame(()=>{rafB=requestAnimationFrame(()=>{if(settled)return;markReady();const frames=atlasDive?[{transform:'translate3d(0,0,0) scale(1)',opacity:1},{transform:'translate3d(0,0,0) scale(1.045)',opacity:1,offset:.18},{transform:'translate3d(0,0,0) scale(1.34)',opacity:.02}]:atlasPullback?[{transform:'translate3d(0,0,0) scale(1)',opacity:1},{transform:'translate3d(0,0,0) scale(.94)',opacity:.94,offset:.24},{transform:'translate3d(0,0,0) scale(.76)',opacity:0}]:[{transform:'translate3d(0,0,0) scaleX(1)',opacity:1},{transform:'translate3d(106vw,0,0) scaleX(1.018)',opacity:.10}],duration=atlasDive||atlasPullback?460:420,easing=atlasDive?'cubic-bezier(.18,.72,.2,1)':atlasPullback?'cubic-bezier(.24,.62,.24,1)':'cubic-bezier(.22,.61,.36,1)';animation=current.animate(frames,{duration,easing,fill:'forwards'});animation.onfinish=settle;animation.oncancel=()=>{if(!settled)settle()}})});
  return controller;
 }
 function icon(name){const paths={
