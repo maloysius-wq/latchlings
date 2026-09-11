@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Remove opening-scene dialogue bubble flicker
+
+**Status: IN PROGRESS**
+
+**User goal:** Fix weird flickering affecting some speech/chat bubbles in the opening scene while preserving the intended dialogue and cinematic pacing.
+
+**Diagnosis / implementation plan:** Audit the interaction between `cinematics400.js` beat rendering, `cinematic-dialogue400.js` mutation-driven dialogue injection, and the cinematic dialogue/geometry CSS. Reproduce the flicker in Chromium and instrument bubble DOM lifecycle, opacity, geometry, and computed animation/transition state across every opening beat. Make stable speech bubbles idempotent so they are not repeatedly recreated, hidden, or composition-jittered during one beat. Preserve dialogue content, beat timing, advance/skip behavior, character presentation, and reduced-motion handling.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, likely `cinematic-dialogue400.js` and/or cinematic dialogue/geometry CSS, optionally `index.html` only for cache freshness, plus temporary self-removing browser-validation helpers. Gameplay, audio, Little Home choreography, Atlas, board surfaces, and campaign data are out of scope.
+
+**Validation plan:** Run the exact opening cinematic at 390×844 at DPR 1 and DPR 3; observe every speech bubble through stable display windows and fail on duplicate visible bubbles, repeated node replacement during a beat, transient opacity drops, geometry jumps, or page errors. Capture timing/geometry telemetry and frame-strip screenshots around dialogue-heavy beats. Smoke-test Continue, Skip, and reduced-motion behavior, and verify protected non-cinematic sources remain byte-identical.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-11 — Make Little Home adult movement discrete with 4–10 second gaps
 
 **Status: COMPLETED**
