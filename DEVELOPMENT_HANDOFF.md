@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Fix blank Level Select when leaving a level
+
+**Status: IN PROGRESS**
+
+**User goal:** Fix the regression where choosing Level Select from an active level leaves only the themed background visible and the Skyway Atlas UI never appears.
+
+**Implementation plan:** Reproduce the active-level → Level Select path, including the Pause menu and post-level Level Select routes, against the current manual 420ms screen-transition controller. Identify whether the outgoing-screen overlay, transition settlement, destination activation, Atlas render timing, or an exception/race is suppressing the Atlas. Make the smallest robust transition/navigation fix that preserves the smooth 420ms glide and all existing Atlas progression behavior.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, likely `game400-a.js` and/or `game400-b.js`, possibly `style400-ui.css` only if the transition overlay itself is responsible, plus temporary self-removing validation helpers. Campaign data, puzzle rules, story/cinematics, board surface theming, SFX/music, and Atlas route/content data are out of scope.
+
+**Validation plan:** Browser-reproduce from a live level through Pause → Level Select, lose modal → Level Select, and cleared-level → Level Select, then assert after transition completion that `body[data-screen="levels"]`, `#levels.active`, `.atlas-shell`, populated chapter/range/map content, and clickable unlocked nodes are all visible. Also retest Home → Level Select, Level Select → Game, rapid navigation, reduced motion, no console/page errors, and no leftover `.screen-transition-outgoing` element. Reject any candidate that merely masks the blank state or breaks the 420ms smooth-transition fix.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, reproduce and patch through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, close this same entry with exact files/commits/runs/results, and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-10 — Smooth the 420ms window transition
 
 **Status: COMPLETED**
