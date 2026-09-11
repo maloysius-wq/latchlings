@@ -1,0 +1,86 @@
+name: Validate unmistakable Latchling rim
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-visible-latchling-rim.yml'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve protected source hashes
+        shell: bash
+        run: |
+          sha256sum game400-a.js game400-b.js sfx400.js music400.js style400-ui.css style400-themes.css style400-skyway-atlas.css style400-atlas-progression.css style400-board-surfaces.css style400-story-rail-board.css story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js campaign400-*.js > /tmp/visible-rim-protected.sha
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser validator
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0 pngjs@7.0.0 pixelmatch@7.1.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve baseline
+        shell: bash
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-visible-rim-http.log 2>&1 &
+      - name: Capture baseline
+        shell: bash
+        run: |
+          node .github/tmp/validate-visible-latchling-rim.mjs before
+      - name: Apply dedicated rim and cache bust
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          css=Path('style400-game.css')
+          s=css.read_text()
+          old='.latchling{padding:0;appearance:none;-webkit-appearance:none;border-radius:50%;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%),linear-gradient(180deg,var(--light) 0%,var(--piece-color) 56%,var(--dark) 100%);border:2px solid #274462;background-clip:padding-box;box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}'
+          new='.latchling{padding:0;appearance:none;-webkit-appearance:none;border-radius:50%;border:4px solid transparent;background:radial-gradient(circle at 34% 23%,rgba(255,255,255,.42) 0 6%,transparent 7%) padding-box,linear-gradient(180deg,var(--light) 0%,var(--piece-color) 56%,var(--dark) 100%) padding-box,linear-gradient(#17324d,#17324d) border-box;box-shadow:0 5px 9px rgba(22,39,58,.24),inset 0 -4px 7px rgba(30,32,40,.10),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}'
+          if old not in s: raise SystemExit('expected current latchling rule not found')
+          css.write_text(s.replace(old,new,1))
+          html=Path('index.html')
+          h=html.read_text()
+          old_link='<link rel="stylesheet" href="style400-game.css">'
+          new_link='<link rel="stylesheet" href="style400-game.css?v=20260911-rim2">'
+          if old_link not in h: raise SystemExit('expected game stylesheet link not found')
+          html.write_text(h.replace(old_link,new_link,1))
+          PY
+          git diff --check
+          git diff -- style400-game.css index.html
+      - name: Browser-check unmistakable rim
+        shell: bash
+        run: |
+          node .github/tmp/validate-visible-latchling-rim.mjs after
+      - name: Verify protected source unchanged
+        shell: bash
+        run: |
+          sha256sum -c /tmp/visible-rim-protected.sha
+      - name: Commit accepted visible rim
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style400-game.css index.html
+          git commit -m 'Make Latchling rim visually distinct'
+          git push
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visible-latchling-rim-audit
+          path: visible-latchling-rim-audit
+      - name: Self-remove validation helpers
+        if: always()
+        shell: bash
+        run: |
+          git reset --hard HEAD
+          git pull --ff-only origin main
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm -f .github/workflows/validate-visible-latchling-rim.yml .github/tmp/validate-visible-latchling-rim.mjs
+          git commit -m 'Remove visible Latchling rim validator'
+          git push
