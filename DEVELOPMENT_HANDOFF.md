@@ -37,6 +37,20 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Smooth the 420ms window transition
+
+**Status: IN PROGRESS**
+
+**User goal:** Keep the recently lengthened 420ms window/screen transition, but remove the visible mid-transition stutter/lag sensation and make the swipe feel consistently fluid.
+
+**Diagnosis / implementation plan:** The current outgoing View Transition snapshot uses four keyframe stops (0%, 24%, 58%, 100%) with the same easing restarting between segments, while also animating an increasingly expensive blur from 0px to 11px and scaling from 1 to 1.085. Replace that segmented blur-heavy animation with one continuous compositor-friendly transform/opacity motion from start to finish, remove animated blur/filter work, reduce the stretch amount, and use a single smooth easing curve over the full 420ms. Preserve the rightward swipe direction, destination-screen behavior, and reduced-motion bypass.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `style400-ui.css`, and temporary self-removing validation/helper workflow(s) only. Puzzle logic, Atlas progression, board surfaces, SFX/music, story/cinematics, and campaign data are out of scope.
+
+**Validation plan:** Assert the transition remains exactly 420ms; the outgoing snapshot has only start/end keyframes; no animated blur/filter remains in the transition; `will-change` is limited to compositor-friendly properties; reduced-motion still disables the transition. Run browser navigation through representative screen changes at phone size, collect animation frame positions/timestamps with `requestAnimationFrame`, verify monotonic movement with no large mid-sequence velocity discontinuity, check no page errors/overflow, and capture a frame strip for manual visual review.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, implement the CSS-only transition change, validate in-browser through a temporary self-removing workflow, deploy the accepted clean state to GitHub Pages, close this entry with exact commit/run details, and confirm only the permanent repository-access guard remains.
+
 ### 2026-09-10 — Quieter SFX, slower screen transitions, and stronger puzzle-square identity
 
 **Status: COMPLETED**
