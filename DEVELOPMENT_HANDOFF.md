@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-10 — Restore complete circular Latchling outlines
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Make the playable Latchling models completely round, with the dark circular outline visibly intact around the full circumference instead of appearing cut off at the bottom while the colored body continues.
 
@@ -51,6 +51,19 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this same entry with exact files/commits/runs/results and verify only the permanent repository-access guard remains.
 
+
+#### Completion summary
+
+- **Result:** COMPLETED. Playable board Latchlings now render as true circular spheres with a continuous dark rim around the entire circumference, including the bottom edge. The colored body no longer visually bleeds through or beyond the lower outline.
+- **Root cause:** The refined `.latchling` model used `border:2px solid rgba(39,68,98,.42)` while its two-layer body background used the default `background-clip:border-box`. The dark body gradient therefore painted underneath a semi-transparent border. Near the darker lower hemisphere, the border visually merged into the body and looked cut off even though the element geometry itself was circular.
+- **Implementation:** `style400-game.css` now uses a fully opaque dark-navy 2px rim (`#274462`) and `background-clip:padding-box` on the refined `.latchling` rule. This makes the body gradient stop inside the rim while retaining `border-radius:50%`, `overflow:hidden`, the existing spherical highlights/shading, faces, suit marks, selection rings, hit targets, and movement/capture animation. No JavaScript or puzzle geometry changed.
+- **Product / cleanup commits:** Accepted product commit `a672cc443e20df02b889943d4fef49a183877c0c` (`Restore complete Latchling outlines`) changes only `style400-game.css`. Temporary validation helpers self-removed in clean-state commit `7fe92f5890f27a53ed410527245476f2e2593e8e` (`Remove round Latchling outline validator`).
+- **Acceptance:** GitHub Actions run `34562786568`, job `103148762316`, completed successfully and printed `ROUND_LATCHLING_OUTLINE_ACCEPTED`. It checked levels 1, 51, 201, and 351 at a 390x844 Android-sized viewport with device scale factor 3. Sampled Latchlings remained square, used `border-radius:50%`, had identical 2px top/right/bottom/left borders, an opaque identical rim color on all four sides, and `padding-box` clipping for every body-background layer. Selection interaction and the existing selected-ring shadow also passed.
+- **Rejected validator-only pass:** Initial run `34562661197` did not commit product code. Its candidate reached the browser correctly, but the test incorrectly expected computed `background-clip` to equal the single string `padding-box`; Chromium correctly returned `padding-box, padding-box` because the model has two background layers. The assertion was corrected without changing the candidate before the accepted rerun.
+- **Scope protection:** Hash verification confirmed `game400-a.js`, `game400-b.js`, `sfx400.js`, `music400.js`, `index.html`, `style400-ui.css`, `style400-themes.css`, `style400-skyway-atlas.css`, `style400-atlas-progression.css`, `style400-board-surfaces.css`, story/cinematic sources, and all eight `campaign400-*.js` files were unchanged.
+- **Artifact / visual review:** Acceptance artifact `round-latchling-outline-audit`, artifact ID `10184921542`, SHA-256 `0c217130d3cf802e2697a1dd686330cf5415bf15711b4546b84a1561f799fd25`, contains close-up selected/unselected samples, board captures, and `report.json`. Manual review of the unobscured Level 1 selected close-up shows a continuous dark rim around the entire sphere, including the bottom. Several later-level screenshots were visually obscured by chapter cinematics, so those were not used as manual visual evidence; their computed Latchling geometry/rim checks still passed in-browser.
+- **Deployment / hygiene:** GitHub Pages run `34562833979` successfully built and deployed clean accepted state `7fe92f5890f27a53ed410527245476f2e2593e8e`. Before this closeout helper was created, `.github/workflows` contained only `validate-repository-access-guard.yml`. This helper self-removes after committing the journal closeout.
+- **Remaining risk / next action:** No known blocker remains for playable puzzle Latchlings. The change intentionally did not alter separate decorative/story/Atlas guide character renderers because the reported defect was isolated to the playable board model; if the same rim artifact is later observed on one of those separate renderers, it should be corrected in that renderer without changing puzzle-piece geometry.
 
 ### 2026-09-10 — Fix blank Level Select when leaving a level
 
