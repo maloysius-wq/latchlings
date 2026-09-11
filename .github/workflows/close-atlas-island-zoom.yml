@@ -1,0 +1,49 @@
+name: Close Atlas island zoom handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/close-atlas-island-zoom.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Complete handoff entry
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-11 — Add island dive / Atlas pullback transitions'
+          start=s.index(heading)
+          next_heading=s.index('\n### ', start+len(heading))
+          block=s[start:next_heading]
+          block=block.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary='''\n#### Completion summary\n\n- **Result:** COMPLETED. Atlas ↔ puzzle navigation now behaves like a short camera move between the Skyway map and an island instead of using the generic sideways screen swipe.\n- **Atlas → level:** The outgoing Atlas zooms from 1.0× to **1.34×** over **460 ms** while fading away. Its transform origin is calculated from the center of the exact unlocked `.atlas-node[data-level]` selected for `currentLevel`, so the camera appears to dive into the island the player actually chose rather than simply enlarging around screen center.\n- **Level → Atlas:** The outgoing puzzle screen pulls back from 1.0× to **0.76×** over **460 ms** while fading, revealing the already-active Atlas underneath. Pause/Level Select and other direct game → Atlas paths inherit the same pullback.\n- **Transition scope / safety:** Every unrelated screen pair retains the existing **420 ms** `translate3d(106vw,0,0)` horizontal transition. Reduced-motion still swaps immediately without the camera zoom. Existing `activeScreenTransition` cancellation and explicit `animation.cancel()` cleanup remain intact, preventing finished `fill:forwards` animations from sticking to reusable screens.\n- **Cache freshness:** `index.html` now loads `game400-a.js?v=20260911-atlaszoom1`. No CSS, gameplay rules, campaign data, audio, cinematics, Little Home, or Atlas reward pacing/music code changed.\n- **Changed files / product commit:** Accepted product commit `926fcb98158e2c051774614dc54491547210e2a3` (`Add immersive Atlas island zoom transitions`) changes only `game400-a.js` and `index.html`.\n- **Accepted browser validation:** GitHub Actions run `34634130678`, job `103377799224`, passed static validation and the full Chromium browser gate and printed `ATLAS_ISLAND_ZOOM_ACCEPTED`. Coverage verified the Level 3 node was used as the actual dive origin, the 460 ms / 1.34× dive contained no horizontal-swipe keyframe, the 460 ms / 0.76× pullback contained no horizontal-swipe keyframe, repeated Atlas ↔ puzzle round trips left zero outgoing classes or direct animations, Atlas → Home still used the original 420 ms sideways transition, and reduced-motion produced no screen animation. No browser/page errors were reported.\n- **Acceptance artifact:** `atlas-island-zoom-audit`, artifact ID `10277133081`, SHA-256 `6f433d86cd71bd020ef4da0f2cdff4e198aab022fef45cc0caf95d130b7d4e6f`, contains before/mid-transition screenshots plus transition telemetry and reduced-motion state.\n- **Validator hygiene note:** The accepted run's final helper self-removal step failed after product acceptance because the workflow's temporary `npm install` left unstaged runner changes, so `git pull --rebase` refused to proceed. This did **not** affect validation or the accepted product commit. The temporary browser helper was removed directly in `645e034287617d9b154910f1ffd83d754fd32370`, and the temporary workflow was removed directly in `41718805708f8c7404662adba2afb911d8182bba`. `.github/workflows` was then verified to contain only permanent `validate-repository-access-guard.yml`.\n- **Deployment:** GitHub Pages run `34634265078` successfully built and deployed clean accepted state `41718805708f8c7404662adba2afb911d8182bba` before this handoff closeout.\n- **Remaining risk / next action:** No known code blocker remains. Real-device viewing is the final subjective feel check; if the camera move should be punchier or gentler, the special Atlas ↔ puzzle duration and scale endpoints are isolated from the generic screen transition and can be tuned without disturbing other navigation.\n\n'''
+          if '#### Completion summary' not in block:
+              block=block.rstrip()+"\n\n"+summary
+          s=s[:start]+block+s[next_heading:]
+          p.write_text(s)
+
+      - name: Commit handoff closeout
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md
+          git diff --cached --quiet || git commit -m "Complete Atlas island zoom handoff"
+          git push
+
+      - name: Self-remove closeout helper
+        run: |
+          git pull --rebase
+          git rm .github/workflows/close-atlas-island-zoom.yml
+          git commit -m "Remove Atlas island zoom closeout helper"
+          git push
