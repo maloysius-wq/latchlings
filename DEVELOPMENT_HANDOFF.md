@@ -37,6 +37,20 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Quieter SFX, slower screen transitions, and stronger puzzle-square identity
+
+**Status: IN PROGRESS**
+
+**User goal:** Reduce every non-music sound effect by 40% while leaving music volume untouched; make the animated transition between app screens/windows take twice as long; and make the actual puzzle squares visibly more varied, because the current mostly-white surface treatments and very light accents are too subtle to notice during play.
+
+**Implementation plan:** Add one centralized 0.60 output multiplier at the SFX media-element creation point in `sfx400.js`, so UI, movement, route, capture, win/lose, and other non-music effects all scale consistently without touching `music400.js`. Double the root View Transition duration from 210ms to 420ms in `style400-ui.css` while preserving the existing easing, direction, and reduced-motion bypass. Deepen `style400-board-surfaces.css` so the five ten-level surface families and eight chapter materials are obvious on the actual `.cell` squares: stronger non-white base materials, higher-contrast motif/inlay work, bolder borders and shadows, more distinct corner/geometry treatment, larger physical marks, and controlled per-cell variation, while keeping Latchlings, nests, gates, rails, switches, doors, anchors, and rocks immediately readable.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `sfx400.js`, `style400-ui.css`, `style400-board-surfaces.css`, and temporary self-removing GitHub Actions validation/helper workflows only. `music400.js`, campaign level definitions, story/cinematic sources, puzzle geometry/solutions, and Atlas progression logic are out of scope.
+
+**Validation plan:** Statistically/source-verify that every SFX volume is multiplied by exactly 0.60 at the common `makeAudio()` path and that `music400.js` is byte-for-byte unchanged. Assert both root View Transition declarations use 420ms, the old 210ms values are gone from that transition block, and reduced-motion still disables the transition. Browser-render representative boards for all 40 chapter × ten-level-range identities at phone size, collect computed cell signatures, and compare representative cell colors/patterns/borders/radii so the differences live on `.cell` itself rather than only the page backdrop. Capture contact sheets plus close-up range/chapter samples for manual review, and reject the pass if the cells still read as barely tinted white. Recheck JS syntax, responsive containment, pointer behavior, mechanic readability, Next Level/Atlas progression smoke paths, and protected story/cinematic/campaign hashes.
+
+**Deployment plan:** Commit this IN PROGRESS journal entry before any product edit, then implement and validate through a temporary self-removing workflow. Accept the product only after automated checks and manual visual review, verify GitHub Pages on the accepted clean state, close this same handoff entry with exact commits/run/artifact/deployment details, and confirm `.github/workflows` contains only the durable repository-access guard.
+
 ### 2026-09-10 — Keep only the animated Atlas traveler
 
 **Status: COMPLETED**
