@@ -1,0 +1,166 @@
+name: Validate smooth window transition
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-smooth-window-transition.yml'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve protected source hashes
+        shell: bash
+        run: |
+          sha256sum game400-a.js game400-b.js sfx400.js music400.js style400-board-surfaces.css style400-atlas-progression.css story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js campaign400-*.js > /tmp/protected-before.sha
+      - name: Apply smooth transition candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('style400-ui.css')
+          s=p.read_text()
+          old='''@supports (view-transition-name:root){
+            ::view-transition-group(root){animation-duration:420ms;animation-timing-function:cubic-bezier(.18,.76,.2,1);}
+            ::view-transition-image-pair(root){isolation:auto;}
+            ::view-transition-old(root){
+              z-index:2;mix-blend-mode:normal;transform-origin:50% 50%;
+              animation:latchlingsSwipeRightOld 420ms cubic-bezier(.18,.76,.2,1) both;
+              will-change:transform,filter,opacity;
+            }
+            ::view-transition-new(root){z-index:1;mix-blend-mode:normal;animation:none;opacity:1;}
+          }
+          @keyframes latchlingsSwipeRightOld{
+            0%{transform:translate3d(0,0,0) scaleX(1);filter:blur(0);opacity:1}
+            24%{transform:translate3d(10vw,0,0) scaleX(1.012);filter:blur(1.8px);opacity:.98}
+            58%{transform:translate3d(48vw,0,0) scaleX(1.045);filter:blur(5.5px);opacity:.86}
+            100%{transform:translate3d(112vw,0,0) scaleX(1.085);filter:blur(11px);opacity:.16}
+          }'''
+          new='''@supports (view-transition-name:root){
+            ::view-transition-group(root){animation-duration:420ms;animation-timing-function:cubic-bezier(.22,.61,.36,1);}
+            ::view-transition-image-pair(root){isolation:auto;}
+            ::view-transition-old(root){
+              z-index:2;mix-blend-mode:normal;transform-origin:50% 50%;
+              animation:latchlingsSwipeRightOld 420ms cubic-bezier(.22,.61,.36,1) both;
+              will-change:transform,opacity;
+              backface-visibility:hidden;
+            }
+            ::view-transition-new(root){z-index:1;mix-blend-mode:normal;animation:none;opacity:1;backface-visibility:hidden;}
+          }
+          @keyframes latchlingsSwipeRightOld{
+            0%{transform:translate3d(0,0,0) scaleX(1);opacity:1}
+            100%{transform:translate3d(106vw,0,0) scaleX(1.018);opacity:.10}
+          }'''
+          if old not in s:
+              raise SystemExit('expected transition block not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('style400-ui.css').read_text()
+          block=s[s.index('@supports (view-transition-name:root)'):s.index('@media(prefers-reduced-motion:reduce)')]
+          assert block.count('420ms') == 2
+          assert 'filter:' not in block
+          assert 'will-change:transform,opacity' in block
+          assert '24%' not in block and '58%' not in block
+          assert block.count('0%{') == 1 and block.count('100%{') == 1
+          assert 'scaleX(1.018)' in block
+          print('STATIC_TRANSITION_CHECKS_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser validator
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve candidate
+        run: python3 -m http.server 4173 >/tmp/latchlings-smooth-http.log 2>&1 &
+      - name: Browser-check transition smoothness
+        shell: bash
+        run: |
+          mkdir -p smooth-transition-audit
+          cat > validate-smooth-transition.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'fs';
+          const browser = await chromium.launch({headless:true});
+          const page = await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+          const errors=[];
+          page.on('pageerror',e=>errors.push(String(e)));
+          await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+          const source=await (await fetch('http://127.0.0.1:4173/style400-ui.css')).text();
+          const block=source.slice(source.indexOf('@supports (view-transition-name:root)'),source.indexOf('@media(prefers-reduced-motion:reduce)'));
+          if ((block.match(/420ms/g)||[]).length!==2) throw new Error('expected exactly two 420ms transition timings');
+          if (/filter\s*:/.test(block)) throw new Error('filter animation remains in transition block');
+          if (block.includes('24%')||block.includes('58%')) throw new Error('segmented mid keyframes remain');
+          if (!block.includes('will-change:transform,opacity')) throw new Error('compositor-friendly will-change missing');
+          const result=await page.evaluate(async()=>{
+            if (typeof document.startViewTransition!=='function') throw new Error('View Transitions API unavailable');
+            const runs=[];
+            for (const target of ['levels','home','story','home','levels','home']) {
+              const stamps=[];
+              let stop=false;
+              const pump=t=>{ stamps.push(t); if(!stop) requestAnimationFrame(pump); };
+              requestAnimationFrame(pump);
+              const start=performance.now();
+              screen(target);
+              const vt=activeScreenTransition;
+              if(!vt) throw new Error('transition did not start for '+target);
+              await vt.finished;
+              stop=true;
+              const elapsed=performance.now()-start;
+              const deltas=stamps.slice(1).map((t,i)=>t-stamps[i]);
+              runs.push({target,elapsed,frames:stamps.length,maxGap:deltas.length?Math.max(...deltas):0,avgGap:deltas.length?deltas.reduce((a,b)=>a+b,0)/deltas.length:0});
+              await new Promise(r=>setTimeout(r,45));
+            }
+            return {runs,screen:document.body.dataset.screen,overflow:document.documentElement.scrollWidth-innerWidth};
+          });
+          for (const r of result.runs) {
+            if (r.elapsed < 360 || r.elapsed > 650) throw new Error(`transition duration out of expected band ${r.target}: ${r.elapsed}`);
+            if (r.frames < 12) throw new Error(`too few rAF samples ${r.target}: ${r.frames}`);
+            if (r.maxGap > 55) throw new Error(`large main-thread frame gap ${r.target}: ${r.maxGap}`);
+          }
+          if (result.overflow>1) throw new Error('horizontal overflow during transition test');
+          if (errors.length) throw new Error('page errors: '+errors.join(' | '));
+          for (const [i,delay] of [0,70,140,210,280,350].entries()) {
+            if(i===0){ await page.evaluate(()=>screen('levels')); }
+            if(delay) await page.waitForTimeout(i===1?70:70);
+            await page.screenshot({path:`smooth-transition-audit/frame-${String(i).padStart(2,'0')}-${delay}ms.png`,fullPage:true});
+          }
+          await page.evaluate(async()=>{ if(activeScreenTransition) await activeScreenTransition.finished; });
+          fs.writeFileSync('smooth-transition-audit/report.json',JSON.stringify({accepted:true,...result},null,2));
+          console.log('SMOOTH_WINDOW_TRANSITION_ACCEPTED',JSON.stringify(result.runs));
+          await browser.close();
+          JS
+          node validate-smooth-transition.mjs
+      - name: Verify protected source unchanged
+        run: sha256sum -c /tmp/protected-before.sha
+      - name: Commit accepted transition
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f package.json package-lock.json validate-smooth-transition.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style400-ui.css
+          git commit -m 'Smooth window transition motion'
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smooth-window-transition-renders
+          path: smooth-transition-audit
+      - name: Self-remove validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard HEAD
+          git pull --ff-only origin main
+          git rm .github/workflows/validate-smooth-window-transition.yml
+          git commit -m 'Remove smooth transition validator'
+          git push
