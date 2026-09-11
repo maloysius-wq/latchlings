@@ -64,3 +64,4 @@ jobs:
           git rm .github/workflows/validate-round-latchling-outline.yml .github/tmp/apply-round-latchling-outline.py .github/tmp/validate-round-latchlings.mjs
           git commit -m 'Remove round Latchling outline validator'
           git push
+# validator rerun after layered background-clip assertion correction
