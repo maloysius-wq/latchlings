@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-11 — Make the playable Latchling rim visibly unmistakable
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** The previous outline fix looked unchanged in the real game. Make the playable Latchlings read as genuinely complete circles, with an unmistakable dark rim around the full sphere, especially across the bottom edge.
 
@@ -52,6 +52,20 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Capture before/after close-ups at Android phone resolution and normal 1x plus 3x DPR; assert a dedicated 3px dark rim is present on all four sides for selected and unselected pieces, body layers are clipped to the padding box, selection rings remain outside the rim, element dimensions/hit targets are unchanged, and movement/selection smoke tests still pass. Verify `index.html` references the cache-busted game stylesheet and protected gameplay/story/campaign files remain unchanged.
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits, validate through a temporary self-removing GitHub Actions workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+#### Completion summary
+
+- **Result:** COMPLETED. The first 2px follow-up was correctly rejected by the user as visually ineffective. This second pass produces a materially different playable Latchling silhouette: a substantial dark navy ring is now independently painted around the full sphere, including the bottom edge, instead of relying on a thin conventional border.
+- **Implementation:** `style400-game.css` now uses a transparent 4px structural border plus three background layers. The highlight and colored body are clipped/originated to the `padding-box`, while an independent solid `#17324d` layer paints the `border-box`. Because the project already uses global `box-sizing:border-box`, the outer Latchling dimensions and hit target stay unchanged while the body is inset to reveal the dedicated rim. Existing white/blue selected rings, face/suit placement, movement/capture animation, and interaction remain intact.
+- **Cache freshness:** `index.html` now references `style400-game.css?v=20260911-rim2`. This deliberately changes the stylesheet URL so browsers do not silently reuse a previously cached copy of the game-piece CSS.
+- **Changed files / commits:** Accepted product commit `ce1d4387c83891cc77944045cb0df29979eab9dc` (`Make Latchling rim visually distinct`) changes only `style400-game.css` and `index.html`. Temporary validation helpers self-removed in clean-state commit `5a01cb32510df4eb8365bc9c5894cf3c45a5e183` (`Remove visible Latchling rim validator`).
+- **Accepted validation:** GitHub Actions run `34605018441`, job `103281215685`, completed successfully and printed `VISIBLE_LATCHLING_RIM_ACCEPTED`. The corrected harness captured clean before/after selected-piece renders at 390x844 for DPR 1 and DPR 3, with cinematics hidden only inside the validator. It checked Levels 1, 5, 13, and 20; preserved outer geometry and selection behavior; verified `border-radius:50%`; verified the 4px structural border on all sides; verified `padding-box, padding-box, border-box` clipping/origin; confirmed the independent navy rim layer; and confirmed the cache-busted stylesheet URL.
+- **Measured visual change:** Pixel comparison of the same Level 13 selected gold Latchling before and after measured **18.71% changed pixels at DPR 1** and **11.87% at DPR 3**, comfortably above the 2% rejection threshold. Manual comparison likewise shows the old treatment as a thin navy hairline and the accepted treatment as a clearly thicker, continuous dark ring around the entire character, especially the bottom. This directly guards against repeating the prior visually-negligible pass.
+- **Rejected harness-only run:** Run `34604718052`, job `103280230524`, did not commit product code. Its candidate had passed the rim property checks, but an opening cinematic overlay intercepted the physical selection smoke-test click and also made those screenshots unsuitable as visual evidence. The harness was corrected to hide cinematics only for test rendering and to use a programmatic selection click; the candidate itself was unchanged before the accepted rerun.
+- **Artifact:** Accepted artifact `visible-latchling-rim-audit-v2`, artifact ID `10265839227`, SHA-256 `774101b575f12e6427e1ab49d8981a4e431c7096f6173fbc1ad00a714d2c9355`, contains clean before/after Level 1/5/13/20 close-ups at DPR 1 and DPR 3, board captures, reports, and explicit diff images.
+- **Scope protection:** Hash verification confirmed `game400-a.js`, `game400-b.js`, SFX/music, UI/themes/Atlas/board/story-rail CSS, story/cinematic sources, and all eight `campaign400-*.js` files remained unchanged. No puzzle rules, level data, Atlas behavior, story, audio, or navigation changed.
+- **Deployment / hygiene:** GitHub Pages run `34605085374` successfully deployed clean accepted state `5a01cb32510df4eb8365bc9c5894cf3c45a5e183`. Before this closeout helper was created, `.github/workflows` contained only the permanent `validate-repository-access-guard.yml`; this closeout helper self-removes after committing the journal update.
+- **Remaining risk / next action:** No known code blocker remains. A real-device visual check is still the final subjective confirmation, but the new URL cache-bust and measured before/after screenshot difference mean the deployed client should now receive and visibly render the stronger rim rather than the old cached 2px treatment.
 
 
 ### 2026-09-10 — Restore complete circular Latchling outlines
