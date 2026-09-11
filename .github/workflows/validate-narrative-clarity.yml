@@ -18,7 +18,15 @@ jobs:
           fetch-depth: 0
 
       - name: Apply narrative candidate
-        run: python .github/tmp/apply-narrative-clarity.py
+        run: |
+          python .github/tmp/apply-narrative-clarity.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('story-grounding400.js')
+          s=p.read_text()
+          if s.startswith('\\\n'):
+              p.write_text(s[2:])
+          PY
 
       - name: Static narrative and scope validation
         shell: bash
