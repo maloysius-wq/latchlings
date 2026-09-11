@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Revert puzzle rim and smooth home Latchling shading
+
+**Status: IN PROGRESS**
+
+**User goal:** Revert the playable puzzle Latchlings from the newly thick 4px rim to the slimmer circular outline they had before, and fix the Little Home decorative Latchlings shown on the title island so their bodies no longer read as a dark top section stacked over a lighter bottom section.
+
+**Diagnosis / implementation plan:** The two appearances come from separate renderers. Playable puzzle pieces are styled in `style400-game.css`, where the latest pass introduced a transparent 4px structural border with a dedicated border-box navy layer. Restore the prior accepted 2px opaque navy border with the colored body clipped inside it. The Little Home residents are rendered independently inside `title-island-concepts/index.html`; their current body uses a vertical `linear-gradient(180deg, var(--light), var(--piece-color), var(--dark))`, which reads as a vertically stacked lighting treatment at the small 25–34px production size. Replace only the decorative/title-island body lighting with a smoother radial sphere gradient and softer highlight/shadow so the color reads as one continuous round body rather than two halves. Preserve faces, suits, resident motion, child/adult sizing, and all home choreography.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `style400-game.css`, `title-island-concepts/index.html`, `index.html`, and temporary self-removing browser-validation helpers. Puzzle rules/data, Atlas, story/cinematics outside the home iframe, audio, board surfaces, and navigation are out of scope.
+
+**Validation plan:** Capture clean before/after Little Home screenshots and close-ups at 390x844 at DPR 1 and DPR 3, with the exact production iframe path, and verify the decorative residents remain circular while the top/bottom luminance discontinuity is materially reduced. Separately render selected/unselected puzzle pieces and assert the playable border is back to 2px on all sides, outer dimensions/hit targets remain unchanged, and selection rings remain intact. Smoke-test resident animation, puzzle selection/movement, and no page errors. Verify cache-busted URLs for both the game stylesheet and home iframe so mobile clients receive the accepted visuals.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, implement and validate through a temporary self-removing GitHub Actions workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact files/commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-11 — Make the playable Latchling rim visibly unmistakable
 
 **Status: COMPLETED**
