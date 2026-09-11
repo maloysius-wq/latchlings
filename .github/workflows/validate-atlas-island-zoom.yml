@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/validate-atlas-island-zoom.yml'
+      - '.github/tmp/validate-atlas-island-zoom.mjs'
 
 permissions:
   contents: write
