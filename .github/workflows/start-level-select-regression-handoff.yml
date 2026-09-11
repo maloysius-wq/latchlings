@@ -1,0 +1,41 @@
+name: Start Level Select regression handoff
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  journal:
+    if: github.event.head_commit.message == 'Start Level Select regression handoff'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add IN PROGRESS handoff entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          heading='### 2026-09-10 — Fix blank Level Select when leaving a level'
+          if heading not in text:
+              entry='''\n### 2026-09-10 — Fix blank Level Select when leaving a level\n\n**Status: IN PROGRESS**\n\n**User goal:** Fix the regression where choosing Level Select from an active level leaves only the themed background visible and the Skyway Atlas UI never appears.\n\n**Implementation plan:** Reproduce the active-level → Level Select path, including the Pause menu and post-level Level Select routes, against the current manual 420ms screen-transition controller. Identify whether the outgoing-screen overlay, transition settlement, destination activation, Atlas render timing, or an exception/race is suppressing the Atlas. Make the smallest robust transition/navigation fix that preserves the smooth 420ms glide and all existing Atlas progression behavior.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, likely `game400-a.js` and/or `game400-b.js`, possibly `style400-ui.css` only if the transition overlay itself is responsible, plus temporary self-removing validation helpers. Campaign data, puzzle rules, story/cinematics, board surface theming, SFX/music, and Atlas route/content data are out of scope.\n\n**Validation plan:** Browser-reproduce from a live level through Pause → Level Select, lose modal → Level Select, and cleared-level → Level Select, then assert after transition completion that `body[data-screen="levels"]`, `#levels.active`, `.atlas-shell`, populated chapter/range/map content, and clickable unlocked nodes are all visible. Also retest Home → Level Select, Level Select → Game, rapid navigation, reduced motion, no console/page errors, and no leftover `.screen-transition-outgoing` element. Reject any candidate that merely masks the blank state or breaks the 420ms smooth-transition fix.\n\n**Deployment plan:** Commit this IN PROGRESS entry before product edits, reproduce and patch through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, close this same entry with exact files/commits/runs/results, and verify only the permanent repository-access guard remains.\n\n'''
+              text=text.replace('## Current Work\n','## Current Work\n'+entry,1)
+              p.write_text(text)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m 'Log Level Select blank-screen regression'
+          git push
+      - name: Self-remove starter
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/start-level-select-regression-handoff.yml
+          git commit -m 'Remove Level Select handoff starter'
+          git push
