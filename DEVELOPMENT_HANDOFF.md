@@ -37,6 +37,23 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Make the playable Latchling rim visibly unmistakable
+
+**Status: IN PROGRESS**
+
+**User goal:** The previous outline fix looked unchanged in the real game. Make the playable Latchlings read as genuinely complete circles, with an unmistakable dark rim around the full sphere, especially across the bottom edge.
+
+**Reason for reopening:** The prior pass changed a translucent 2px border to an opaque 2px border and clipped the body background inside it. That was technically measurable but too subtle to deliver a meaningful user-facing visual change. Treat that prior result as insufficient.
+
+**Implementation plan:** Replace the single painted border treatment with a dedicated high-contrast circular rim layer using separate CSS background layers: body/highlight clipped to the padding box and a dark rim painted independently in the border box. Increase the rim thickness enough to be clearly visible while preserving the existing sphere size, face/suit placement, hit target, movement/capture animation, and selected white/blue rings. Add a cache-busting version to the `style400-game.css` link so the deployed build cannot reuse an older stylesheet.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, `style400-game.css`, `index.html`, and temporary self-removing browser-validation helpers. Puzzle rules/data, Atlas, story/cinematics, audio, board surfaces, and navigation are out of scope.
+
+**Validation plan:** Capture before/after close-ups at Android phone resolution and normal 1x plus 3x DPR; assert a dedicated 3px dark rim is present on all four sides for selected and unselected pieces, body layers are clipped to the padding box, selection rings remain outside the rim, element dimensions/hit targets are unchanged, and movement/selection smoke tests still pass. Verify `index.html` references the cache-busted game stylesheet and protected gameplay/story/campaign files remain unchanged.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate through a temporary self-removing GitHub Actions workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-10 — Restore complete circular Latchling outlines
 
 **Status: COMPLETED**
