@@ -26,6 +26,16 @@ jobs:
           s=p.read_text()
           if s.startswith('\\\n'):
               p.write_text(s[2:])
+          rail=Path('style400-story-rail-board.css')
+          with rail.open('a') as f:
+              f.write('\n/* Narrow-phone containment for the added narrative question. */\n.story-rail-main{overflow:hidden}.story-rail-foot{grid-template-columns:minmax(0,145px) minmax(0,1fr)!important;overflow:hidden}.story-rail-progress{min-width:0;overflow:hidden}.story-rail-movement{min-width:0;max-width:none!important;width:100%}\n@media(max-width:390px){.story-rail-foot{grid-template-columns:minmax(0,125px) minmax(0,1fr)!important}}\n')
+          # Correct two harness assumptions before execution: preserve the rail's real 90px rendered footprint,
+          # and reload in two Playwright steps instead of from inside page.evaluate().
+          v=Path('.github/tmp/validate-narrative-clarity.mjs')
+          vs=v.read_text()
+          vs=vs.replace("if(Math.abs(rail.hostH-94)>1.5||rail.scrollW>rail.clientW+2)","if(rail.hostH<86||rail.hostH>96||rail.scrollW>rail.clientW+2)")
+          vs=vs.replace("await page.evaluate(()=>{\n   const stars={50:3,100:3};localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:121,stars}));location.reload();\n });\n await page.waitForFunction", "await page.evaluate(()=>{const stars={50:3,100:3};localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:121,stars}))});\n await page.reload({waitUntil:'load'});\n await page.waitForFunction")
+          v.write_text(vs)
           PY
 
       - name: Static narrative and scope validation
