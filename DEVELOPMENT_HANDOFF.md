@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-11 — Make Little Home adult movement discrete with 4–10 second gaps
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** The adults currently wait and then run through several rapid movement waypoints in one burst. Change the Little Home adult choreography so there is a randomized 4–10 second pause between every individual adult movement and there are never several rapid adult movements at once.
 
@@ -50,6 +50,20 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Run the production Little Home in Chromium, instrument adult transforms over time, and prove that each adult event changes only one route waypoint, only one adult moves at a time, and the quiet interval between completed adult movement events is always 4–10 seconds. Observe enough events to cover all three adults and multiple route steps. Verify props remain visible, reduced motion prevents adult movement, children remain unchanged, and protected gameplay/story files are byte-identical.
 
 **Deployment plan:** Commit this IN PROGRESS journal entry before product edits, implement and validate through a temporary self-removing GitHub Actions workflow, deploy the clean accepted state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+#### Completion summary
+
+- **Result:** COMPLETED. Adult motion no longer consists of a long pause followed by a burst of six or seven rapid waypoints. Every scheduled adult event now advances exactly one waypoint, then the home remains quiet for a fresh randomized 4–10 seconds before any adult can move again.
+- **Architecture change:** The old `adult-outing` CSS animations and the `littleHomeGarden` / `littleHomeParcel` / `littleHomeTree` multi-keyframe bursts were removed. The original route points were preserved as JavaScript waypoint arrays, and a single global scheduler now advances one adult by one waypoint per turn. Turns rotate garden → parcel → tree, so only one adult can move at a time and each adult keeps progressing along its existing route over multiple separated events.
+- **Timing contract:** Each single movement lasts a short smooth **0.75–1.15 seconds**. After that movement fully completes, the scheduler draws a new quiet interval of **4.0–10.0 seconds** before starting the next adult movement. The first movement uses the same 4–10 second rule. There is no overlapping adult movement path.
+- **Carried props / other motion:** The previously fixed external carried props remain unclipped and move with their adult. Children and the play ball retain their existing independent choreography. Reduced-motion mode keeps all adults stationary.
+- **Cache freshness:** `index.html` now loads the production Little Home iframe with `v=20260911-discretesteps5`.
+- **Changed files / commits:** Accepted product commit `f9a2d295e0036e77bd3b654ccb18ba186b065321` (`Make home adult movement discrete`) changes only `title-island-concepts/index.html` and `index.html`. Temporary validator helpers self-removed in `38b856dd967c70383039ab5f0b2842cc1bf82a0a` (`Remove discrete adult movement validator`).
+- **Accepted validation:** GitHub Actions run `34616014622`, job `103318011063`, passed and printed `DISCRETE_ADULT_MOVEMENT_ACCEPTED`. The browser observed three real-time events covering all three adults. Every start reported exactly one moving adult and exactly one waypoint advance (`moveCount=1`, `routeIndex=1`).
+- **Observed real-time timings:** The three single-step movement durations were **841 ms**, **1119.4 ms**, and **831.1 ms**. The measured quiet finish-to-next-start gaps were **9280.3 ms** and **5485.3 ms**, both inside the requested 4–10 second interval. No overlap occurred.
+- **Reduced-motion / scope protection:** A reduced-motion browser remained at `moveCount=0` and `routeIndex=0` for all three adults after 10.5 seconds. Hash verification confirmed puzzle gameplay/style, SFX/music, UI/theme/Atlas/board CSS, story/cinematic sources, and all eight campaign files stayed byte-identical.
+- **Artifact:** `discrete-adult-movement-audit`, artifact ID `10270840463`, SHA-256 `d6c6c9d7cd295bec909f93f4d3b436fa458ba9f5b02eadd8037cd452dcc11017`, contains the timing report and a production home screenshot after the first three discrete moves.
+- **Deployment / hygiene:** GitHub Pages run `34616133136` successfully built and deployed clean accepted state `38b856dd967c70383039ab5f0b2842cc1bf82a0a`. Temporary validation helpers were already removed before this closeout helper was added; this closeout helper self-removes after recording the journal.
+- **Remaining risk / next action:** No known blocker remains. Real-device viewing is the final subjective pace check, but the acceptance test directly measures the requested no-burst, one-movement-at-a-time, 4–10-second-gap behavior.
 
 
 ### 2026-09-11 — Unclip Little Home carried props and calm adult movement
