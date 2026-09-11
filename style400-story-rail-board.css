@@ -130,3 +130,7 @@
 .story-card-trigger{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;padding:3px 2px!important}
 .story-card-trigger svg{width:19px!important;height:19px!important}.story-card-trigger:after{content:"Story";display:block;margin-top:1px;color:#49657a;font-size:6.7px;line-height:1;font-weight:950;letter-spacing:.03em;text-transform:uppercase}
 @media(max-width:430px){.story-rail-movement{max-width:94px}.story-rail-toggle{min-width:43px;padding:0 5px;font-size:7.1px}.story-rail-expanded-actions{align-items:flex-start;flex-direction:column;gap:4px}.story-rail-full{font-size:7.7px}}
+
+
+/* Expanded story text must fully wrap instead of retaining the compact ellipsis rules. */
+.story-level-rail.is-expanded .story-rail-quote,.story-level-rail.is-expanded .story-rail-thread{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
