@@ -46,3 +46,46 @@
 
 /* Prevent decorative layers from affecting the real gameplay fixtures. */
 .board[data-board-range] .cell .rock,.board[data-board-range] .cell .nest,.board[data-board-range] .cell .anchor,.board[data-board-range] .cell .gate,.board[data-board-range] .cell .rail,.board[data-board-range] .cell .turner,.board[data-board-range] .cell .switch-tile,.board[data-board-range] .cell .door-tile{z-index:2}
+
+/* Bold puzzle-square override: chapter materials and ten-level structures should read at a glance. */
+#app.theme-ch1 #board[data-board-range]{--sq-a:#d7c27d;--sq-b:#9fba68;--sq-edge:#58713d;--sq-mark:#b65c2f;--sq-chapter:radial-gradient(ellipse at 20% 23%,rgba(173,78,38,.58) 0 10%,transparent 11%),radial-gradient(ellipse at 35% 38%,rgba(246,184,52,.50) 0 8%,transparent 9%),radial-gradient(circle at 78% 72%,rgba(55,111,45,.50) 0 7%,transparent 8%)}
+#app.theme-ch2 #board[data-board-range]{--sq-a:#bf8655;--sq-b:#805237;--sq-edge:#4a3124;--sq-mark:#e9ae3f;--sq-chapter:repeating-linear-gradient(7deg,rgba(58,34,22,.40) 0 2px,transparent 2px 7px),radial-gradient(ellipse at 76% 23%,transparent 0 8%,rgba(65,39,25,.52) 9% 14%,transparent 15%)}
+#app.theme-ch3 #board[data-board-range]{--sq-a:#7eb5c7;--sq-b:#596fa5;--sq-edge:#334c78;--sq-mark:#3ccbe4;--sq-chapter:linear-gradient(126deg,transparent 0 31%,rgba(47,201,227,.66) 32% 40%,rgba(236,254,255,.48) 41% 44%,transparent 45%),linear-gradient(42deg,transparent 0 60%,rgba(103,72,182,.56) 61% 69%,transparent 70%)}
+#app.theme-ch4 #board[data-board-range]{--sq-a:#ae80a4;--sq-b:#684d7d;--sq-edge:#493650;--sq-mark:#d8a640;--sq-chapter:linear-gradient(45deg,rgba(226,177,68,.43) 25%,transparent 25% 75%,rgba(226,177,68,.43) 75%),linear-gradient(-45deg,rgba(61,38,73,.38) 25%,transparent 25% 75%,rgba(61,38,73,.38) 75%)}
+#app.theme-ch5 #board[data-board-range]{--sq-a:#76c4b1;--sq-b:#6699c1;--sq-edge:#376b80;--sq-mark:#8153c1;--sq-chapter:linear-gradient(118deg,rgba(235,69,78,.46) 0 11%,transparent 12% 23%,rgba(242,170,35,.46) 24% 36%,transparent 37% 48%,rgba(61,172,79,.44) 49% 61%,transparent 62% 73%,rgba(48,124,223,.46) 74% 86%,transparent 87%)}
+#app.theme-ch6 #board[data-board-range]{--sq-a:#bd7952;--sq-b:#824b35;--sq-edge:#573323;--sq-mark:#482719;--sq-chapter:radial-gradient(circle at 12% 13%,rgba(61,31,19,.78) 0 5%,rgba(241,175,109,.62) 6% 8%,transparent 9%),radial-gradient(circle at 88% 87%,rgba(61,31,19,.72) 0 5%,rgba(241,175,109,.58) 6% 8%,transparent 9%),linear-gradient(90deg,transparent 42%,rgba(76,37,22,.48) 43% 55%,transparent 56%)}
+#app.theme-ch7 #board[data-board-range]{--sq-a:#7d9dab;--sq-b:#526f83;--sq-edge:#2d485d;--sq-mark:#26bfe4;--sq-chapter:linear-gradient(90deg,transparent 0 27%,rgba(31,179,218,.61) 28% 39%,transparent 40%),linear-gradient(0deg,transparent 0 62%,rgba(224,251,255,.48) 63% 73%,transparent 74%),radial-gradient(circle at 72% 34%,rgba(241,255,255,.94) 0 5%,rgba(32,177,216,.58) 6% 10%,transparent 11%)}
+#app.theme-ch8 #board[data-board-range]{--sq-a:#8799cf;--sq-b:#606ca7;--sq-edge:#3f4f86;--sq-mark:#38ceb2;--sq-chapter:linear-gradient(158deg,transparent 0 16%,rgba(42,210,179,.55) 17% 31%,transparent 32% 43%,rgba(52,149,226,.50) 44% 59%,transparent 60% 70%,rgba(166,74,222,.50) 71% 84%,transparent 85%),radial-gradient(circle at 78% 20%,rgba(250,255,255,.96) 0 5%,transparent 6%)}
+
+/* ID specificity is deliberate: it overrides the original generic .cell background shorthand. */
+#board[data-board-range] .cell{background:var(--sq-range),var(--sq-chapter),linear-gradient(145deg,var(--sq-a),var(--sq-b));background-blend-mode:normal,normal,normal;border-color:var(--sq-edge);border-width:2px;box-shadow:inset 0 2px rgba(255,255,255,.30),inset 0 -5px color-mix(in srgb,var(--sq-edge) 45%,transparent),0 2px 4px rgba(20,31,40,.22)}
+#board[data-board-range] .cell:before{opacity:.82!important}
+#board[data-board-range] .cell:after{opacity:.96!important;filter:saturate(1.35) contrast(1.12)}
+#board[data-board-range] .cell[data-tile-variant="0"]{background-position:0 0,0 0,center}
+#board[data-board-range] .cell[data-tile-variant="1"]{background-position:6px -4px,12px -8px,center;filter:saturate(1.05) brightness(1.03)}
+#board[data-board-range] .cell[data-tile-variant="2"]{background-position:-6px 9px,-9px 13px,center;filter:saturate(.96) brightness(.96)}
+#board[data-board-range] .cell[data-tile-variant="3"]{background-position:9px 6px,15px 10px,center;filter:saturate(1.08) brightness(.99)}
+
+#board[data-board-range="1"]{--sq-range:repeating-linear-gradient(0deg,transparent 0 9px,rgba(255,255,255,.24) 9px 11px,transparent 11px 20px),repeating-linear-gradient(90deg,transparent 0 9px,color-mix(in srgb,var(--sq-edge) 48%,transparent) 9px 11px,transparent 11px 20px)}
+#board[data-board-range="1"] .cell{border-radius:15px}
+#board[data-board-range="1"] .cell:before{left:6%!important;right:6%!important;bottom:8%!important;height:2px!important;border-top:2px dashed color-mix(in srgb,var(--sq-edge) 68%,transparent)!important}
+
+#board[data-board-range="2"]{--sq-range:repeating-linear-gradient(135deg,transparent 0 5px,rgba(255,255,255,.26) 5px 8px,transparent 8px 12px,color-mix(in srgb,var(--sq-edge) 55%,transparent) 12px 16px,transparent 16px 22px)}
+#board[data-board-range="2"] .cell{border-radius:9px}
+#board[data-board-range="2"] .cell:before{width:32%!important;height:32%!important;right:7%!important;top:7%!important;border-top:3px solid color-mix(in srgb,var(--sq-mark) 70%,transparent)!important;border-right:3px solid color-mix(in srgb,var(--sq-edge) 72%,transparent)!important;border-radius:2px 8px 2px 2px!important}
+
+#board[data-board-range="3"]{--sq-range:radial-gradient(circle at 50% 50%,rgba(255,255,255,.25) 0 15%,color-mix(in srgb,var(--sq-mark) 72%,transparent) 16% 23%,transparent 24% 34%,color-mix(in srgb,var(--sq-edge) 60%,transparent) 35% 44%,transparent 45%)}
+#board[data-board-range="3"] .cell{border-radius:6px;border-width:3px}
+#board[data-board-range="3"] .cell:before{inset:13%!important;border:2px solid color-mix(in srgb,var(--sq-edge) 70%,transparent)!important;border-radius:50%!important}
+
+#board[data-board-range="4"]{--sq-range:linear-gradient(90deg,transparent 0 37%,color-mix(in srgb,var(--sq-edge) 68%,transparent) 38% 48%,rgba(255,255,255,.22) 49% 54%,transparent 55%),linear-gradient(0deg,transparent 0 37%,color-mix(in srgb,var(--sq-edge) 62%,transparent) 38% 48%,rgba(255,255,255,.20) 49% 54%,transparent 55%)}
+#board[data-board-range="4"] .cell{border-radius:3px;border-width:3px;box-shadow:inset 0 2px rgba(255,255,255,.20),inset 0 -6px color-mix(in srgb,var(--sq-edge) 56%,transparent),0 3px 4px rgba(18,28,38,.28)}
+#board[data-board-range="4"] .cell:before{left:5px!important;top:5px!important;width:6px!important;height:6px!important;border-radius:50%!important;background:color-mix(in srgb,var(--sq-mark) 78%,rgba(255,255,255,.32))!important;box-shadow:none!important}
+#board[data-board-range="4"] .cell:after{right:5px!important;bottom:5px!important;width:6px!important;height:6px!important;border-radius:50%!important;background:color-mix(in srgb,var(--sq-edge) 70%,rgba(255,255,255,.28))!important}
+
+#board[data-board-range="5"]{--sq-range:conic-gradient(from 45deg at 50% 50%,rgba(255,255,255,.38) 0 12.5%,transparent 12.5% 25%,color-mix(in srgb,var(--sq-mark) 64%,transparent) 25% 37.5%,transparent 37.5% 50%,rgba(255,255,255,.21) 50% 62.5%,transparent 62.5% 75%,color-mix(in srgb,var(--sq-edge) 58%,transparent) 75% 87.5%,transparent 87.5%)}
+#board[data-board-range="5"] .cell{border-radius:11px;border-width:3px;box-shadow:inset 0 2px rgba(255,255,255,.34),inset 0 -5px color-mix(in srgb,var(--sq-edge) 52%,transparent),0 0 10px color-mix(in srgb,var(--sq-mark) 42%,transparent)}
+#board[data-board-range="5"] .cell:before{inset:5%!important;border:2px solid color-mix(in srgb,var(--sq-mark) 78%,rgba(255,255,255,.24))!important;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)!important}
+
+#board[data-board-range] .nest{background:linear-gradient(145deg,rgba(255,255,255,.96),color-mix(in srgb,var(--sq-a) 30%,#fff3dd));box-shadow:inset 0 0 0 3px rgba(255,255,255,.72),0 0 0 2px color-mix(in srgb,var(--sq-edge) 58%,transparent),0 2px 5px rgba(30,43,54,.16)}
+#board[data-board-range] .rail,#board[data-board-range] .turner,#board[data-board-range] .switch-tile,#board[data-board-range] .door-tile,#board[data-board-range] .anchor{outline:2px solid color-mix(in srgb,var(--sq-edge) 62%,transparent);outline-offset:1px}

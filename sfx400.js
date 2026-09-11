@@ -3,6 +3,7 @@
 (() => {
   const SFX_KEY = 'latchlings_sfx_enabled_v1';
   const BASE = 'assets/sfx/';
+  const SFX_OUTPUT_SCALE = 0.60;
   const DEFINITIONS = {
     uiTap: ['ui-tap.wav', 0.22, 3],
     uiBack: ['ui-back.wav', 0.24, 2],
@@ -50,7 +51,7 @@
   function makeAudio(file, volume) {
     const audio = new Audio(BASE + file);
     audio.preload = 'auto';
-    audio.volume = volume;
+    audio.volume = Math.max(0, Math.min(1, volume * SFX_OUTPUT_SCALE));
     return audio;
   }
 

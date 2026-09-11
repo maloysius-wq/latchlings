@@ -118,11 +118,11 @@ body[data-screen="home"] .chapter-material-backdrop{display:none!important}
 
 /* Fast right-swipe root snapshot transitions */
 @supports (view-transition-name:root){
-  ::view-transition-group(root){animation-duration:210ms;animation-timing-function:cubic-bezier(.18,.76,.2,1);}
+  ::view-transition-group(root){animation-duration:420ms;animation-timing-function:cubic-bezier(.18,.76,.2,1);}
   ::view-transition-image-pair(root){isolation:auto;}
   ::view-transition-old(root){
     z-index:2;mix-blend-mode:normal;transform-origin:50% 50%;
-    animation:latchlingsSwipeRightOld 210ms cubic-bezier(.18,.76,.2,1) both;
+    animation:latchlingsSwipeRightOld 420ms cubic-bezier(.18,.76,.2,1) both;
     will-change:transform,filter,opacity;
   }
   ::view-transition-new(root){z-index:1;mix-blend-mode:normal;animation:none;opacity:1;}
