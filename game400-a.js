@@ -23,7 +23,31 @@ function loadProgress(){try{const x=JSON.parse(localStorage.getItem(PROGRESS_KEY
 function saveProgress(){localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress));updateHome()}
 function showError(e){const d=document.getElementById('debug');d.style.display='block';d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}
 window.addEventListener('error',e=>showError(e.error||e.message));window.addEventListener('unhandledrejection',e=>showError(e.reason));
-let activeScreenTransition=null;function screen(id){const next=document.getElementById(id),current=document.querySelector('.screen.active');if(!next)return;if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);return}const swap=()=>{document.body.dataset.screen=id;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));next.classList.add('active');if(id==='home')setTimeout(()=>updateHome(true),0)};const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,canSwipe=!!current&&!reduced&&typeof document.startViewTransition==='function';if(!canSwipe){swap();return}try{if(activeScreenTransition&&typeof activeScreenTransition.skipTransition==='function')activeScreenTransition.skipTransition();const vt=document.startViewTransition(swap);activeScreenTransition=vt;if(window.LatchlingsSFX&&window.LatchlingsSFX.screenSwipe)window.LatchlingsSFX.screenSwipe();vt.finished.finally(()=>{if(activeScreenTransition===vt)activeScreenTransition=null})}catch(_){activeScreenTransition=null;swap()}}
+let activeScreenTransition=null;
+function screen(id){
+ const next=document.getElementById(id);if(!next)return;
+ if(activeScreenTransition&&typeof activeScreenTransition.skipTransition==='function')activeScreenTransition.skipTransition();
+ const current=document.querySelector('.screen.active');
+ if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);return}
+ const swap=()=>{document.body.dataset.screen=id;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));next.classList.add('active');if(id==='home')setTimeout(()=>updateHome(true),0)};
+ const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches),canSlide=!!current&&!reduced&&typeof current.animate==='function';
+ if(!canSlide){swap();return}
+ const priorStyle=current.getAttribute('style'),rect=current.getBoundingClientRect(),computedDisplay=getComputedStyle(current).display,display=computedDisplay==='none'?'flex':computedDisplay;
+ let animation=null,rafA=0,rafB=0,settled=false,readySettled=false,resolveReady,resolveFinished,controller;
+ const ready=new Promise(r=>resolveReady=r),finished=new Promise(r=>resolveFinished=r);
+ const markReady=()=>{if(readySettled)return;readySettled=true;resolveReady()};
+ const restore=()=>{if(priorStyle===null)current.removeAttribute('style');else current.setAttribute('style',priorStyle);current.classList.remove('screen-transition-outgoing')};
+ const settle=()=>{if(settled)return;settled=true;if(rafA)cancelAnimationFrame(rafA);if(rafB)cancelAnimationFrame(rafB);if(animation){animation.onfinish=null;animation.oncancel=null}markReady();restore();resolveFinished();if(activeScreenTransition===controller)activeScreenTransition=null};
+ controller={ready,finished,skipTransition(){if(settled)return;if(animation)animation.cancel();settle()}};
+ activeScreenTransition=controller;
+ current.classList.add('screen-transition-outgoing');
+ Object.assign(current.style,{display,position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',margin:'0',zIndex:'40',pointerEvents:'none',willChange:'transform,opacity',transform:'translate3d(0,0,0) scaleX(1)',opacity:'1'});
+ swap();
+ if(window.LatchlingsSFX&&window.LatchlingsSFX.screenSwipe)window.LatchlingsSFX.screenSwipe();
+ void next.offsetWidth;
+ rafA=requestAnimationFrame(()=>{rafB=requestAnimationFrame(()=>{if(settled)return;markReady();animation=current.animate([{transform:'translate3d(0,0,0) scaleX(1)',opacity:1},{transform:'translate3d(106vw,0,0) scaleX(1.018)',opacity:.10}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'});animation.onfinish=settle;animation.oncancel=()=>{if(!settled)settle()}})});
+ return controller;
+}
 function icon(name){const paths={
  back:'<path d="M15 5 8 12l7 7"/><path d="M8 12h10"/>',pause:'<path d="M9 5v14M15 5v14"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.12-1.28l2-1.55-2-3.46-2.45 1a7 7 0 0 0-2.2-1.28L13.9 3h-4l-.36 2.43a7 7 0 0 0-2.2 1.28l-2.45-1-2 3.46 2 1.55A7 7 0 0 0 4.8 12c0 .44.04.87.12 1.28l-2 1.55 2 3.46 2.45-1a7 7 0 0 0 2.2 1.28L9.9 21h4l.36-2.43a7 7 0 0 0 2.2-1.28l2.45 1 2-3.46-2-1.55c.08-.41.12-.84.12-1.28Z"/>',reset:'<path d="M4 7v5h5"/><path d="M5.6 16a7 7 0 1 0 .2-8.2L4 10"/>',hint:'<path d="M9 18h6M10 21h4"/><path d="M8.4 14.3A6 6 0 1 1 15.6 14.3c-1.1.8-1.6 1.5-1.6 2.7h-4c0-1.2-.5-1.9-1.6-2.7Z"/>',up:'<path d="M5 15 12 8l7 7"/>',down:'<path d="m5 9 7 7 7-7"/>',left:'<path d="m15 5-7 7 7 7"/>',right:'<path d="m9 5 7 7-7 7"/>',anchor:'<circle cx="12" cy="5" r="2"/><path d="M12 7v11M7 10h10M5 15c1 4 4 6 7 6s6-2 7-6M5 15l-2 1M19 15l2 1"/>'};return `<svg class="icon" viewBox="0 0 24 24">${paths[name]||''}</svg>`}
 function suitSvg(s){
