@@ -59,7 +59,8 @@ for (const level of [1, 51, 201, 351]) {
     const colors = [s.topColor,s.rightColor,s.bottomColor,s.leftColor];
     if (!colors.every(c => c === colors[0])) throw new Error(`Level ${level} piece ${s.i}: rim colors differ ${colors.join(' | ')}`);
     if (parseAlpha(colors[0]) < 0.999) throw new Error(`Level ${level} piece ${s.i}: rim is translucent ${colors[0]}`);
-    if (s.backgroundClip !== 'padding-box') throw new Error(`Level ${level} piece ${s.i}: backgroundClip=${s.backgroundClip}`);
+    const clips = s.backgroundClip.split(',').map(x => x.trim());
+    if (!clips.length || !clips.every(x => x === 'padding-box')) throw new Error(`Level ${level} piece ${s.i}: backgroundClip=${s.backgroundClip}`);
     if (s.overflow !== 'hidden') throw new Error(`Level ${level} piece ${s.i}: overflow=${s.overflow}`);
     if (s.pointerEvents !== 'auto') throw new Error(`Level ${level} piece ${s.i}: pointerEvents=${s.pointerEvents}`);
   }
