@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-10 — Restore complete circular Latchling outlines
+
+**Status: IN PROGRESS**
+
+**User goal:** Make the playable Latchling models completely round, with the dark circular outline visibly intact around the full circumference instead of appearing cut off at the bottom while the colored body continues.
+
+**Implementation plan:** Inspect the shared board-piece model and correct the sphere/body-to-outline compositing rather than changing puzzle geometry. The current refined `.latchling` model uses a translucent dark border while its background paints through the border box; replace that with a dedicated opaque circular rim and clip the colored sphere cleanly inside it so the outline remains continuous on every side. Preserve faces, suits, selection rings, movement/capture animation, sizing, and hit targets.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `style400-game.css`, plus temporary self-removing browser-validation helpers. Puzzle rules/data, Atlas, story/cinematics, audio, board surfaces, and screen transitions are out of scope.
+
+**Validation plan:** Render selected and unselected Latchlings across several colors, chapters, and board sizes at phone resolution; assert square element geometry, `border-radius: 50%`, opaque rim color, body background clipping inside the border, no bottom-edge clipping, and unchanged selection rings/hit boxes. Capture close-up screenshots for visual inspection and smoke-test movement/capture animation.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this same entry with exact files/commits/runs/results and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-10 — Fix blank Level Select when leaving a level
 
 **Status: COMPLETED**
