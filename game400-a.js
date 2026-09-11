@@ -37,7 +37,7 @@ function screen(id){
  const ready=new Promise(r=>resolveReady=r),finished=new Promise(r=>resolveFinished=r);
  const markReady=()=>{if(readySettled)return;readySettled=true;resolveReady()};
  const restore=()=>{if(priorStyle===null)current.removeAttribute('style');else current.setAttribute('style',priorStyle);current.classList.remove('screen-transition-outgoing')};
- const settle=()=>{if(settled)return;settled=true;if(rafA)cancelAnimationFrame(rafA);if(rafB)cancelAnimationFrame(rafB);if(animation){animation.onfinish=null;animation.oncancel=null}markReady();restore();resolveFinished();if(activeScreenTransition===controller)activeScreenTransition=null};
+ const settle=()=>{if(settled)return;settled=true;if(rafA)cancelAnimationFrame(rafA);if(rafB)cancelAnimationFrame(rafB);if(animation){animation.onfinish=null;animation.oncancel=null;animation.cancel();animation=null}markReady();restore();resolveFinished();if(activeScreenTransition===controller)activeScreenTransition=null};
  controller={ready,finished,skipTransition(){if(settled)return;if(animation)animation.cancel();settle()}};
  activeScreenTransition=controller;
  current.classList.add('screen-transition-outgoing');
