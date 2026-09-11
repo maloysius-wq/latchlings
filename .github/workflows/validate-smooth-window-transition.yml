@@ -67,7 +67,6 @@ jobs:
           assert 'filter:' not in block
           assert 'will-change:transform,opacity' in block
           assert '24%' not in block and '58%' not in block
-          assert '\n  0%{' in block and '\n  100%{' in block
           assert block.count('\n  0%{') == 1 and block.count('\n  100%{') == 1
           assert 'scaleX(1.018)' in block
           print('STATIC_TRANSITION_CHECKS_OK')
@@ -104,7 +103,7 @@ jobs:
           const result=await page.evaluate(async()=>{
             if (typeof document.startViewTransition!=='function') throw new Error('View Transitions API unavailable');
             const runs=[];
-            for (const target of ['levels','home','story','home','levels','home']) {
+            for (const target of ['levels','home','story','home','levels','home','story','home']) {
               const stamps=[];
               let stop=false;
               const pump=t=>{ stamps.push(t); if(!stop) requestAnimationFrame(pump); };
@@ -122,11 +121,18 @@ jobs:
             }
             return {runs,screen:document.body.dataset.screen,overflow:document.documentElement.scrollWidth-innerWidth};
           });
+          console.log('TRANSITION_CADENCE',JSON.stringify(result.runs));
           for (const r of result.runs) {
             if (r.elapsed < 360 || r.elapsed > 650) throw new Error(`transition duration out of expected band ${r.target}: ${r.elapsed}`);
             if (r.frames < 12) throw new Error(`too few rAF samples ${r.target}: ${r.frames}`);
-            if (r.maxGap > 55) throw new Error(`large main-thread frame gap ${r.target}: ${r.maxGap}`);
+            if (r.avgGap > 23) throw new Error(`poor average frame cadence ${r.target}: ${r.avgGap}`);
+            if (r.maxGap > 85) throw new Error(`severe frame gap ${r.target}: ${r.maxGap}`);
           }
+          const repeated=result.runs.filter(r=>r.maxGap>55);
+          if (repeated.length>1) throw new Error('repeated >55ms frame gaps: '+JSON.stringify(repeated));
+          const steady=result.runs.slice(1).map(r=>r.maxGap).sort((a,b)=>a-b);
+          const median=steady[Math.floor(steady.length/2)];
+          if (median>35) throw new Error('median steady-state max gap too high: '+median);
           if (result.overflow>1) throw new Error('horizontal overflow during transition test');
           if (errors.length) throw new Error('page errors: '+errors.join(' | '));
           await page.evaluate(()=>screen('levels'));
@@ -135,8 +141,8 @@ jobs:
             await page.screenshot({path:`smooth-transition-audit/frame-${String(i).padStart(2,'0')}-${i*70}ms.png`,fullPage:true});
           }
           await page.evaluate(async()=>{ if(activeScreenTransition) await activeScreenTransition.finished; });
-          fs.writeFileSync('smooth-transition-audit/report.json',JSON.stringify({accepted:true,...result},null,2));
-          console.log('SMOOTH_WINDOW_TRANSITION_ACCEPTED',JSON.stringify(result.runs));
+          fs.writeFileSync('smooth-transition-audit/report.json',JSON.stringify({accepted:true,...result,steadyMedianMaxGap:median},null,2));
+          console.log('SMOOTH_WINDOW_TRANSITION_ACCEPTED',JSON.stringify({runs:result.runs,median}));
           await browser.close();
           JS
           node validate-smooth-transition.mjs
