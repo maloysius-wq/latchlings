@@ -1,0 +1,50 @@
+name: Diagnose Level Select regression
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    if: github.event.head_commit.message == 'Run Level Select regression diagnostic'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser validator
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve current build
+        shell: bash
+        run: python3 -m http.server 4173 >/tmp/latchlings-level-select-http.log 2>&1 &
+      - name: Reproduce Level Select regression
+        shell: bash
+        run: |
+          mkdir -p level-select-diagnostic
+          node .github/tmp/diagnose-level-select.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: level-select-regression-diagnostic
+          path: level-select-diagnostic
+          if-no-files-found: warn
+      - name: Self-remove diagnostic helpers
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard HEAD
+          git pull --ff-only origin main
+          rm -f package.json package-lock.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/diagnose-level-select-regression.yml .github/tmp/diagnose-level-select.mjs
+          git commit -m 'Remove Level Select diagnostic helpers'
+          git push
