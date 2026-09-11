@@ -26,6 +26,13 @@ function castIntroHtml(groups){const spoken=new Map(groups);const order=['Pippa'
 function dialogueLayerHtml(id,index,beat){const groups=dialogueGroups(beat);if(id==='opening'&&index===1)return castIntroHtml(groups);if(!groups.length)return '';
  return `<div class="cin-dialogue-layer" data-dialogue-count="${groups.length}">${groups.map(([name,texts],i)=>bubbleHtml(name,texts,i,groups.length)).join('')}</div>`;
 }
+function openingDockHtml(index,groups){
+ if(!groups.length)return '';
+ const order=['Pippa','Bramble','Rowan','Pip','Tansy'];
+ const castKey=index===1?`<div class="cin-opening-cast-key" aria-label="Little Home residents">${order.map(name=>{const c=CAST[name];return `<span class="cin-opening-cast-chip">${portrait(name,'opening-cast-portrait')}<span><b>${escapeHtml(name)}</b><small>${escapeHtml(c.role)}</small></span></span>`}).join('')}</div>`:'';
+ const rows=groups.map(([name,texts])=>{const c=CAST[name];return `<div class="cin-opening-dialogue-row" data-speaker="${escapeHtml(name)}">${portrait(name,'opening-dialogue-portrait')}<div class="cin-opening-bubble"><div class="cin-opening-speaker"><b>${escapeHtml(name)}</b><small>${escapeHtml(c?.role||'Resident')}</small></div>${speechTextHtml(texts)}</div></div>`}).join('');
+ return `<section class="cin-opening-dialogue-dock" data-beat="${index+1}" data-dialogue-count="${groups.length}" aria-label="Character dialogue">${castKey}<div class="cin-opening-dialogue-list">${rows}</div></section>`;
+}
 function accessibleDialogueHtml(groups){if(!groups.length)return'';return `<span class="cin-dialogue-a11y">${groups.map(([name,texts])=>`${escapeHtml(name)}: ${texts.map(escapeHtml).join(' ')}`).join(' ')}</span>`}
 let scheduled=false,processing=false;
 function postProcess(){
@@ -33,17 +40,26 @@ function postProcess(){
  if(!id||!beat||!overlay||!stage||!lines)return;if(overlay.dataset.cinematic!==id||overlay.dataset.visual!==beat.visual)return;
  processing=true;
  try{
-  const groups=dialogueGroups(beat);
-  if(!stage.querySelector(':scope > .cin-dialogue-layer'))stage.insertAdjacentHTML('beforeend',dialogueLayerHtml(id,index,beat));
-  const narration=narratorLines(beat);
+  const groups=dialogueGroups(beat),narration=narratorLines(beat),copy=lines.closest('.cinematic-copy'),opening=id==='opening';
+  if(opening){
+   stage.querySelectorAll(':scope > .cin-dialogue-layer').forEach(node=>node.remove());
+   let dock=copy?.querySelector(':scope > .cin-opening-dialogue-dock')||null;
+   const beatKey=String(index+1);
+   if(dock&&dock.dataset.beat!==beatKey){dock.remove();dock=null}
+   if(groups.length&&copy&&!dock)lines.insertAdjacentHTML('afterend',openingDockHtml(index,groups));
+   if(!groups.length&&dock)dock.remove();
+  }else{
+   copy?.querySelectorAll(':scope > .cin-opening-dialogue-dock').forEach(node=>node.remove());
+   if(!stage.querySelector(':scope > .cin-dialogue-layer'))stage.insertAdjacentHTML('beforeend',dialogueLayerHtml(id,index,beat));
+  }
   if(!lines.classList.contains('cinematic-narration-only'))lines.classList.add('cinematic-narration-only');
   lines.dataset.narratorCount=String(narration.length);
-  const desired=narration.map(text=>`<p class="narrator-only"><span>${escapeHtml(text)}</span></p>`).join('')+accessibleDialogueHtml(groups);
+  const desired=narration.map(text=>`<p class="narrator-only"><span>${escapeHtml(text)}</span></p>`).join('')+(opening?'':accessibleDialogueHtml(groups));
   if(lines.innerHTML!==desired)lines.innerHTML=desired;
-  lines.hidden=!narration.length&&!groups.length;
+  lines.hidden=!narration.length&&(opening||!groups.length);
   overlay.dataset.dialogueCount=String(groups.length);
   overlay.dataset.narratorCount=String(narration.length);
-  if(groups.length)window.LatchlingsCinematicGeometry?.normalizeDialogue(stage);
+  if(groups.length&&!opening)window.LatchlingsCinematicGeometry?.normalizeDialogue(stage);
  }finally{processing=false}
 }
 function schedule(){if(processing||scheduled)return;scheduled=true;queueMicrotask(postProcess)}

@@ -112,3 +112,21 @@
 /* Narrow-phone containment for the added narrative question. */
 .story-rail-main{overflow:hidden}.story-rail-foot{grid-template-columns:minmax(0,145px) minmax(0,1fr)!important;overflow:hidden}.story-rail-progress{min-width:0;overflow:hidden}.story-rail-movement{min-width:0;max-width:none!important;width:100%}
 @media(max-width:390px){.story-rail-foot{grid-template-columns:minmax(0,125px) minmax(0,1fr)!important}}
+
+
+/* Expandable story rail: compact by default, complete on demand, explicitly linked to the full Story card. */
+.story-rail-foot{grid-template-columns:minmax(0,auto) minmax(50px,1fr) auto!important}
+.story-rail-movement{max-width:118px;overflow:hidden;text-overflow:ellipsis}
+.story-rail-toggle{min-width:47px;height:20px;padding:0 6px;border:1px solid color-mix(in srgb,var(--railAccent) 38%,rgba(42,62,78,.2));border-radius:999px;background:rgba(255,250,238,.86);color:var(--railInk);font:inherit;font-size:7.5px;font-weight:950;letter-spacing:.025em;white-space:nowrap;cursor:pointer;box-shadow:0 2px 4px rgba(28,44,58,.08)}
+.story-rail-toggle:focus-visible,.story-rail-full:focus-visible{outline:2px solid color-mix(in srgb,var(--railAccent2) 78%,#173a67);outline-offset:2px}
+.story-rail-expanded-actions{display:flex;align-items:center;gap:7px;margin-top:5px;padding-top:6px;border-top:1px solid color-mix(in srgb,var(--railAccent) 22%,transparent)}.story-rail-expanded-actions[hidden]{display:none!important}.story-rail-expanded-actions small{font-size:7.5px;line-height:1.15;color:color-mix(in srgb,var(--railInk) 68%,#7f8c94)}
+.story-rail-full{flex:0 0 auto;border:1px solid color-mix(in srgb,var(--railAccent) 42%,#7a6651);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--railAccent) 14%,#fffaf0),rgba(255,249,236,.88));color:var(--railInk);padding:5px 8px;font-size:8px;font-weight:950;cursor:pointer;box-shadow:0 2px 5px rgba(30,47,61,.08)}.story-rail-full span{font-size:8px;margin-right:3px}
+#game .mechanic-note.story-level-rail-host.is-expanded{height:auto;min-height:94px;overflow:visible;position:relative;z-index:8}
+.story-level-rail.is-expanded{height:auto;min-height:94px;align-items:start;overflow:visible;padding-bottom:9px}
+.story-level-rail.is-expanded .story-rail-person{height:auto;min-height:78px;padding-top:3px}
+.story-level-rail.is-expanded .story-rail-main{height:auto;min-height:78px;grid-template-rows:auto auto auto auto;align-items:start;gap:4px}
+.story-level-rail.is-expanded .story-rail-main p{display:block;overflow:visible;-webkit-line-clamp:unset;line-clamp:unset;max-height:none;font-size:10.5px;line-height:1.28;padding:2px 0}
+.story-level-rail.is-expanded .story-rail-thread{display:block;margin-top:4px;padding-top:4px;border-top:1px solid color-mix(in srgb,var(--railAccent) 20%,transparent);font-size:9.3px;line-height:1.25}
+.story-card-trigger{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;padding:3px 2px!important}
+.story-card-trigger svg{width:19px!important;height:19px!important}.story-card-trigger:after{content:"Story";display:block;margin-top:1px;color:#49657a;font-size:6.7px;line-height:1;font-weight:950;letter-spacing:.03em;text-transform:uppercase}
+@media(max-width:430px){.story-rail-movement{max-width:94px}.story-rail-toggle{min-width:43px;padding:0 5px;font-size:7.1px}.story-rail-expanded-actions{align-items:flex-start;flex-direction:column;gap:4px}.story-rail-full{font-size:7.7px}}
