@@ -1,0 +1,48 @@
+name: Update smooth transition handoff scope
+on:
+  push:
+    paths:
+      - '.github/workflows/update-smooth-transition-handoff-scope.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record scope refinement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          title='### 2026-09-10 — Smooth the 420ms window transition'
+          start=s.index(title)
+          next_start=s.find('\n### ',start+len(title))
+          if next_start<0: next_start=len(s)
+          block=s[start:next_start]
+          marker='**Deployment plan:**'
+          if marker not in block: raise SystemExit('target handoff block missing deployment plan')
+          note='''**Scope refinement after runtime profiling:** Repeated browser cadence tests showed that removing blur and intermediate keyframes fixed the CSS-side discontinuity, but Chrome still produced repeatable 66.7ms stalls specifically when entering the complex Level Select destination. The stall comes from root View Transition snapshot capture/paint, not from the swipe keyframes. The implementation scope therefore expands to `game400-a.js`: replace root `document.startViewTransition()` navigation with a contract-compatible 420ms outgoing-screen overlay animation. The destination is activated and allowed to lay out behind the still-opaque outgoing screen before motion starts, then only the outgoing screen is animated with compositor-friendly transform/opacity. Preserve the existing `activeScreenTransition.finished` / `skipTransition()` contract used by level/story sequencing, screen-swipe SFX, reduced-motion behavior, and all existing screen callers. `style400-ui.css` will remove the obsolete root View Transition animation and provide only lightweight overlay support if needed.\n\n'''
+          if '**Scope refinement after runtime profiling:**' in block: raise SystemExit('scope refinement already recorded')
+          insert_at=start+block.index(marker)
+          s=s[:insert_at]+note+s[insert_at:]
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m 'Refine smooth transition handoff scope'
+          git push
+      - name: Self-remove scope helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/update-smooth-transition-handoff-scope.yml
+          git commit -m 'Remove transition handoff scope helper'
+          git push
