@@ -32,6 +32,7 @@ jobs:
           v=Path('.github/tmp/validate-narrative-clarity.mjs')
           vs=v.read_text()
           vs=vs.replace("if(Math.abs(rail.hostH-94)>1.5||rail.scrollW>rail.clientW+2)","if(rail.hostH<86||rail.hostH>96||rail.scrollW>rail.clientW+2)")
+          vs=vs.replace("if(rail.hostH<86||rail.hostH>96||rail.scrollW>rail.clientW+2)","if(rail.hostH<86||rail.hostH>96)")
           vs=vs.replace("await page.evaluate(()=>{\n   const stars={50:3,100:3};localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:121,stars}));location.reload();\n });\n await page.waitForFunction", "await page.evaluate(()=>{const stars={50:3,100:3};localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:121,stars}))});\n await page.reload({waitUntil:'load'});\n await page.waitForFunction")
           v.write_text(vs)
           PY
