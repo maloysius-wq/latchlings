@@ -1,0 +1,39 @@
+name: Start round Latchling outline handoff
+on:
+  push:
+    paths:
+      - '.github/workflows/start-round-latchling-outline.yml'
+permissions:
+  contents: write
+jobs:
+  journal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add IN PROGRESS handoff entry
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          marker='## Current Work\n\n'
+          entry='''### 2026-09-10 — Restore complete circular Latchling outlines\n\n**Status: IN PROGRESS**\n\n**User goal:** Make the playable Latchling models completely round, with the dark circular outline visibly intact around the full circumference instead of appearing cut off at the bottom while the colored body continues.\n\n**Implementation plan:** Inspect the shared board-piece model and correct the sphere/body-to-outline compositing rather than changing puzzle geometry. The current refined `.latchling` model uses a translucent dark border while its background paints through the border box; replace that with a dedicated opaque circular rim and clip the colored sphere cleanly inside it so the outline remains continuous on every side. Preserve faces, suits, selection rings, movement/capture animation, sizing, and hit targets.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `style400-game.css`, plus temporary self-removing browser-validation helpers. Puzzle rules/data, Atlas, story/cinematics, audio, board surfaces, and screen transitions are out of scope.\n\n**Validation plan:** Render selected and unselected Latchlings across several colors, chapters, and board sizes at phone resolution; assert square element geometry, `border-radius: 50%`, opaque rim color, body background clipping inside the border, no bottom-edge clipping, and unchanged selection rings/hit boxes. Capture close-up screenshots for visual inspection and smoke-test movement/capture animation.\n\n**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this same entry with exact files/commits/runs/results and verify only the permanent repository-access guard remains.\n\n\n'''
+          if marker not in s:
+              raise SystemExit('Current Work marker missing')
+          p.write_text(s.replace(marker, marker+entry, 1))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m 'Start round Latchling outline handoff'
+          git push
+      - name: Self-remove starter
+        shell: bash
+        run: |
+          git pull --ff-only origin main
+          git rm .github/workflows/start-round-latchling-outline.yml
+          git commit -m 'Remove round Latchling handoff starter'
+          git push
