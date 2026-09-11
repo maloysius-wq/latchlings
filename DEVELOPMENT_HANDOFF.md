@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-11 — Slow Atlas reward travel and smooth the music handoff
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Keep the post-level Atlas progression animation on screen about 70% longer so the traveler/route-restoration effect has time to land, and make the accompanying music transition feel substantially less abrupt.
 
@@ -50,6 +50,22 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Browser-test normal-motion same-range and cross-chapter rewards at phone size. Measure traveler animation durations and source-to-finish reward timing against a 1.7× target; verify route restoration, destination reveal, cloud clear, landing, and auto-advance still happen in order. Instrument music requested/current track state to prove same-chapter rewards never request the title track and chapter crossings remain on the source chapter until the destination Atlas appears, then request the destination chapter with the longer reward fade. Check reduced-motion still completes promptly, next-level auto-advance works, no page errors occur, and protected gameplay/story/style sources stay byte-identical.
 
 **Deployment plan:** Commit this IN PROGRESS journal entry before product edits, validate the candidate in a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
+#### Completion summary
+
+- **Result:** COMPLETED. Normal-motion post-level Atlas progression now runs at approximately **1.7×** the previous timing so route restoration, traveler motion, destination reveal, and landing have time to read. Music remains tied to the Atlas chapter instead of briefly bouncing through title music, and chapter crossings use a slower reward-specific fade.
+- **Atlas pacing:** `game400-a.js` now centralizes normal reward scaling with `ATLAS_REWARD_TIME_SCALE=1.7`. Same-range core reward timing changes from 2080 ms to **3536 ms**; its traveler duration changes from 1180 ms to **2006 ms**. Cross-waypoint/chapter core reward timing changes from 2920 ms to **4964 ms**, with traveler legs of **1224 ms** and **1598 ms**. Reduced-motion reward timing remains intentionally unscaled and prompt.
+- **Cross-map continuity fix:** The old cross-range choreography replaced the source Atlas at 850 ms even though its first 720 ms traveler leg began at 220 ms and therefore did not finish until 940 ms. The destination-map switch now uses a 970 ms base timing before the 1.7× scale, so the source traveler visibly reaches the map edge before the destination Atlas replaces it.
+- **Music behavior:** `music400.js` now recognizes `atlas-reward-mode` / `atlas-music-hold` as chapter-music contexts rather than generic Level Select/title contexts. Same-chapter rewards keep the existing chapter track without a title-track excursion. On a real chapter crossing, music stays on the source chapter until the destination Atlas is rendered, then changes directly to the destination chapter. Atlas reward fades are **612 ms** (360 ms × 1.7) while normal music fades elsewhere remain 360 ms. A short `atlas-music-hold` bridges the reward-to-next-level auto-advance gap so title music is never requested between them.
+- **Cache freshness:** `index.html` now loads `game400-a.js?v=20260911-atlaspace1` and `music400.js?v=20260911-atlaspace1`.
+- **Changed files / commits:** Accepted product commit `4218bf675650c7ec4c6449a783f8d54a600ba2a7` (`Slow Atlas reward and smooth music handoff`) changes only `game400-a.js`, `music400.js`, and `index.html`. Temporary validation helpers self-removed in `11a9a55260634395a4af2dd30a3232863dea2bc5` (`Remove Atlas reward pacing validator`).
+- **Accepted validation:** GitHub Actions run `34630755701`, job `103366720205`, completed successfully and printed `ATLAS_REWARD_PACING_ACCEPTED`. Browser coverage included same-range Level 1→2, same-chapter waypoint Level 10→11, chapter crossing Level 50→51, and reduced-motion Level 1→2 at phone dimensions. The same-range sequence measured about **3915 ms** through next-level auto-advance with a **2006 ms** traveler. Cross rewards produced the expected **1224 ms / 1598 ms** traveler legs. Reduced-motion completed in about **779 ms**. No page errors occurred.
+- **Music validation:** Requested/current music state was sampled every 25 ms. No scenario requested the title track during Atlas reward or its auto-advance bridge. Same-chapter rewards stayed on chapter 1; the chapter-crossing scenario moved directly from chapter 1 to chapter 2 only after the destination Atlas appeared. Atlas reward samples reported the expected **612 ms** fade duration.
+- **Acceptance artifact:** `atlas-reward-pacing-audit`, artifact ID `10276287050`, SHA-256 `a55c457df54ec3346fe91e4522f50d8ac0d2e4e7ce5be06c6a512d7172f0e514`, contains timing/music telemetry and before/after Atlas screenshots.
+- **Scope protection:** Hash verification confirmed `game400-b.js`, SFX, UI/game/theme/Atlas/board/cinematic CSS, cinematic/dialogue/geometry support, story sources, all eight campaign files, and Little Home source remained byte-identical. Only the Atlas reward controller, music controller, and cache-busted script URLs changed.
+- **Deployment / hygiene:** GitHub Pages run `34630885162` successfully built and deployed clean accepted state `11a9a55260634395a4af2dd30a3232863dea2bc5`. Before this closeout helper was added, `.github/workflows` contained only permanent `validate-repository-access-guard.yml`. This closeout helper self-removes after writing the journal.
+- **Remaining risk / next action:** No known code blocker remains. Real-device viewing is the final subjective pacing check; if the longer sequence feels slightly too leisurely or still too quick, the timing is now centralized behind one 1.7 scale constant and can be tuned cleanly without retiming every cue separately.
 
 
 ### 2026-09-11 — Remove opening-scene dialogue bubble flicker
