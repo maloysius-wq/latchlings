@@ -37,6 +37,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ## Current Work
 
+### 2026-09-11 — Add island dive / Atlas pullback transitions
+
+**Status: IN PROGRESS**
+
+**User goal:** Make transitions between the Skyway Atlas level selector and an individual puzzle feel geographically connected: quickly zoom into the chosen island when entering a level, and zoom back out from the puzzle when returning to the Atlas. Keep the effect immersive but brief.
+
+**Implementation plan:** Special-case only `levels` ↔ `game` inside the existing reusable screen-transition controller in `game400-a.js`. For Atlas → game, use the selected/current Atlas node as the transform origin so the outgoing Atlas appears to dive into that exact island before revealing the puzzle. For game → Atlas, shrink/fade the outgoing puzzle around its center so the already-rendered Atlas is revealed underneath, creating a camera pullback. Preserve the existing 420 ms generic sideways transition for every other screen pair, preserve rapid-navigation cancellation/stale-animation cleanup, and preserve reduced-motion immediate switching.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `game400-a.js`, optionally `index.html` for cache freshness, plus temporary self-removing browser-validation helpers. Atlas reward pacing/music, gameplay rules, level data, board art, cinematics, Little Home, and audio are out of scope.
+
+**Validation plan:** Browser-test Atlas → unlocked level and game → Atlas at phone dimensions. Capture transform/opacity telemetry to prove Atlas → game scales up around the selected island rather than sliding, game → Atlas scales down rather than sliding, each completes cleanly with no residual animation/styles, and unrelated transitions still use the existing 420 ms horizontal swipe. Test rapid cancellation, repeated round trips, reduced-motion, post-win/lose/pause returns to Level Select, and confirm no page errors.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
 ### 2026-09-11 — Slow Atlas reward travel and smooth the music handoff
 
 **Status: COMPLETED**
