@@ -4,6 +4,7 @@
   const MUSIC_KEY = 'latchlings_music_enabled_v1';
   const TARGET_VOLUME = 0.24;
   const FADE_MS = 360;
+  const ATLAS_FADE_MS = Math.round(FADE_MS * 1.7);
   const TRACKS = {
     title: 'assets/music/title-happy-ukulele.mp3',
     1: 'assets/music/chapter-1-peaceful-days.mp3',
@@ -46,6 +47,17 @@
     return active ? active.id : 'home';
   }
 
+  function atlasRewardScreenActive() {
+    const levels = document.getElementById('levels');
+    return activeScreenId() === 'levels' && !!(levels && (levels.classList.contains('atlas-reward-mode') || levels.classList.contains('atlas-music-hold')));
+  }
+
+  function atlasChapterKey() {
+    const app = document.getElementById('app');
+    const cls = app && Array.from(app.classList).find(name => /^theme-ch[1-8]$/.test(name));
+    return cls ? cls.slice(8) : null;
+  }
+
   function displayedLevel() {
     const label = document.getElementById('levelTitle');
     const match = label && label.textContent.match(/(\d+)/);
@@ -53,6 +65,7 @@
   }
 
   function desiredTrackKey() {
+    if (atlasRewardScreenActive()) return atlasChapterKey() || (/^[1-8]$/.test(requestedKey) ? requestedKey : '1');
     if (activeScreenId() !== 'game') return 'title';
     return String(Math.max(1, Math.min(8, Math.ceil(displayedLevel() / 50))));
   }
@@ -83,12 +96,12 @@
     });
   }
 
-  async function beginCurrentTrack(token) {
+  async function beginCurrentTrack(token, fadeMs = FADE_MS) {
     if (token !== transitionToken || !enabled || !unlocked) return;
     try {
       await audio.play();
       if (token !== transitionToken) return;
-      await fadeTo(TARGET_VOLUME, FADE_MS, token);
+      await fadeTo(TARGET_VOLUME, fadeMs, token);
     } catch (_) {
       // Browsers may still block playback until a later user gesture.
       // The next pointer/key interaction retries through unlockAudio().
@@ -97,14 +110,15 @@
 
   async function switchTrack(key, immediate = false) {
     requestedKey = key;
+    const fadeMs = atlasRewardScreenActive() ? ATLAS_FADE_MS : FADE_MS;
     if (!TRACKS[key] || !enabled || !unlocked) return;
     if (currentKey === key && audio.src) {
-      if (audio.paused) beginCurrentTrack(transitionToken);
+      if (audio.paused) beginCurrentTrack(transitionToken, fadeMs);
       return;
     }
 
     const token = ++transitionToken;
-    if (!immediate && currentKey && !audio.paused) await fadeTo(0, FADE_MS, token);
+    if (!immediate && currentKey && !audio.paused) await fadeTo(0, fadeMs, token);
     if (token !== transitionToken) return;
 
     audio.pause();
@@ -112,7 +126,7 @@
     audio.currentTime = 0;
     audio.volume = immediate ? TARGET_VOLUME : 0;
     currentKey = key;
-    await beginCurrentTrack(token);
+    await beginCurrentTrack(token, fadeMs);
   }
 
   function syncMusic(immediate = false) {
@@ -227,6 +241,8 @@
     isEnabled: () => enabled,
     setEnabled,
     current: () => currentKey,
-    requested: () => requestedKey
+    requested: () => requestedKey,
+    fadeDuration: () => atlasRewardScreenActive() ? ATLAS_FADE_MS : FADE_MS,
+    atlasRewardActive: atlasRewardScreenActive
   };
 })();
