@@ -1,0 +1,41 @@
+name: Start Atlas island zoom handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-atlas-island-zoom.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add IN PROGRESS handoff entry
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          marker='## Current Work\n'
+          entry='''\n### 2026-09-11 — Add island dive / Atlas pullback transitions\n\n**Status: IN PROGRESS**\n\n**User goal:** Make transitions between the Skyway Atlas level selector and an individual puzzle feel geographically connected: quickly zoom into the chosen island when entering a level, and zoom back out from the puzzle when returning to the Atlas. Keep the effect immersive but brief.\n\n**Implementation plan:** Special-case only `levels` ↔ `game` inside the existing reusable screen-transition controller in `game400-a.js`. For Atlas → game, use the selected/current Atlas node as the transform origin so the outgoing Atlas appears to dive into that exact island before revealing the puzzle. For game → Atlas, shrink/fade the outgoing puzzle around its center so the already-rendered Atlas is revealed underneath, creating a camera pullback. Preserve the existing 420 ms generic sideways transition for every other screen pair, preserve rapid-navigation cancellation/stale-animation cleanup, and preserve reduced-motion immediate switching.\n\n**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`, primarily `game400-a.js`, optionally `index.html` for cache freshness, plus temporary self-removing browser-validation helpers. Atlas reward pacing/music, gameplay rules, level data, board art, cinematics, Little Home, and audio are out of scope.\n\n**Validation plan:** Browser-test Atlas → unlocked level and game → Atlas at phone dimensions. Capture transform/opacity telemetry to prove Atlas → game scales up around the selected island rather than sliding, game → Atlas scales down rather than sliding, each completes cleanly with no residual animation/styles, and unrelated transitions still use the existing 420 ms horizontal swipe. Test rapid cancellation, repeated round trips, reduced-motion, post-win/lose/pause returns to Level Select, and confirm no page errors.\n\n**Deployment plan:** Commit this IN PROGRESS entry before product edits, validate the candidate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.\n\n'''
+          if '### 2026-09-11 — Add island dive / Atlas pullback transitions' not in s:
+              s=s.replace(marker, marker+entry, 1)
+              p.write_text(s)
+      - name: Commit handoff start
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md
+          git diff --cached --quiet || git commit -m "Start Atlas island zoom handoff"
+          git push
+      - name: Self-remove helper
+        run: |
+          git pull --rebase
+          git rm .github/workflows/start-atlas-island-zoom.yml
+          git commit -m "Remove Atlas island zoom start helper"
+          git push
