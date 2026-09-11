@@ -39,7 +39,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-11 — Unclip Little Home carried props and calm adult movement
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Fix the Little Home adults' carried tools/packages so they are not cut off by the Latchling circular outline, and make adult movement much less frequent because the current home scene feels too busy.
 
@@ -50,6 +50,20 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Render the exact production Little Home iframe at phone size and DPR 1/3; force each adult into an outing state and assert its carried prop extends beyond the resident border box without being clipped while the resident remains circular. Verify normal adult rest windows are at least 35 seconds, long-rest windows are substantially longer, initial moves are staggered, movement durations/paths are unchanged, reduced-motion still suppresses outings, children remain unchanged, and no page errors occur. Capture close-ups of all three adults carrying their props.
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits, validate through a temporary self-removing GitHub Actions browser workflow, deploy the accepted clean state to GitHub Pages, then close this entry with exact commits/runs/artifacts and verify only the permanent repository-access guard remains.
+
+
+#### Completion summary
+
+- **Result:** COMPLETED. All three Little Home adult carry props now render fully outside the Latchling body instead of being clipped at the circular edge, and adult outings now happen far less often so the home scene reads as calm rather than constantly busy.
+- **Root cause / prop fix:** The watering can, parcel, and basket/pot are CSS `::after` props positioned with negative `right` offsets so they intentionally extend beyond the adult sphere. The decorative `.latchling` rule had `overflow:hidden`, which clipped those external props. The production `#c2 .latchling` rule now overrides that with `overflow:visible`; the sphere itself remains circular via its existing `border-radius:50%`, border, and radial backgrounds. Faces, suits, sizes, and resident movement remain unchanged.
+- **Adult cadence:** Normal post-outing rests increased from 4.2–8.8 seconds to **35–55 seconds**. Occasional long rests increased from 9–13 seconds to **70–100 seconds**, with long-rest probability increased from 20% to 25%. Initial adult outings are deliberately staggered at approximately **10–16s**, **18–24s**, and **26–32s** after load. Existing outing durations (4.4–6.0 seconds) and movement paths are unchanged. Children and the play ball are unchanged.
+- **Cache freshness:** `index.html` now loads the production home iframe with `v=20260911-calmprops4`, forcing clients to request the updated Little Home document.
+- **Changed files / commits:** Accepted product commit `9ed6b86ef13fc5ea6f5d58705a46ff13ef7a2159` (`Unclip home props and calm adult movement`) changes only `title-island-concepts/index.html` and `index.html`. Temporary validator files self-removed in clean-state commit `93727ecedc4a75f8443c3a548831e506681258f2` (`Remove home props cadence validator`).
+- **Accepted validation:** GitHub Actions run `34613499377`, job `103309581326`, completed successfully and printed `HOME_PROPS_CADENCE_ACCEPTED`. It validated the exact production Little Home at 390×844 for DPR 1 and DPR 3, confirmed all three adult spheres remain circular, confirmed `overflow:visible`, confirmed each `::after` prop has a negative right offset and renders beyond the resident boundary, verified the staggered initial waits, and repeatedly rescheduled adults to ensure all post-outing rests fall within the new 35–100 second ranges.
+- **Visual review / artifact:** Artifact `home-props-cadence-audit`, artifact ID `10269516317`, SHA-256 `76e7359c51ef1bf985125fc9ff39dee8fc97fba12822d0765f699398220ad9e0`, contains before/after full-home renders plus close-ups of all three adults at DPR 1 and DPR 3. Manual review confirms the watering can, parcel, and basket/pot are fully visible outside the sphere instead of being chopped at the outline.
+- **Scope protection:** Hash verification confirmed `style400-game.css`, `game400-a.js`, `game400-b.js`, SFX/music, UI/theme/Atlas/board CSS, story/cinematic sources, and all eight campaign files remained unchanged. Puzzle-piece visuals and gameplay were not touched.
+- **Deployment / hygiene:** GitHub Pages run `34613584060` successfully built and deployed clean accepted state `93727ecedc4a75f8443c3a548831e506681258f2`. Before this closeout helper was added, temporary validation helpers were already removed. This closeout helper self-removes after writing the journal.
+- **Remaining risk / next action:** No known blocker remains. Real-device viewing is the final subjective cadence check; if the adults still feel too active, the idle ranges can be lengthened again without changing their routes or props.
 
 
 ### 2026-09-11 — Revert puzzle rim and smooth home Latchling shading
