@@ -121,3 +121,8 @@ body[data-screen="home"] .chapter-material-backdrop{display:none!important}
 @media(prefers-reduced-motion:reduce){.ending-face,.ending-eyes,.ending-route,.ending-far-island{animation:none!important}}
   .ending-face,.ending-eyes,.ending-route,.ending-far-island{animation:none!important}
 }
+
+
+/* Campaign payoff and milestone discovery hierarchy. */
+.story-beat-result{margin:9px 0;padding:10px 11px;border-radius:16px;background:rgba(224,241,232,.66);border:1px solid rgba(80,139,111,.25);text-align:left}.story-beat-kicker{display:block;margin-bottom:3px;color:#41705e;font-size:8px;font-weight:950;letter-spacing:.09em;text-transform:uppercase}.story-beat-result>strong{display:block;color:#173a67;font-family:Georgia,"Times New Roman",serif;font-size:14px}.story-beat-result>p{margin:4px 0 7px!important;color:#4b6678;font-size:11px;line-height:1.35}.story-beat-next{display:grid;gap:2px;padding-top:7px;border-top:1px solid rgba(76,116,99,.17)}.story-beat-next b{color:#5f7869;font-size:8px;letter-spacing:.07em;text-transform:uppercase}.story-beat-next span{color:#405f74;font-size:9.8px;line-height:1.3;font-weight:720}.story-reward{display:block;margin-top:7px;padding:6px 8px;border-radius:10px;background:rgba(255,244,199,.72);color:#755d34;font-size:9.5px;font-weight:800}
+.ending-resolution{display:grid;gap:5px;width:min(92%,370px);margin:2px auto 9px}.ending-resolution p{margin:0!important;max-width:none!important;padding:6px 9px;border-radius:12px;background:rgba(255,249,235,.62);border:1px solid rgba(173,142,99,.22);color:#526a79!important;font-size:10.2px!important;line-height:1.28!important;text-align:left}.ending-resolution strong{color:#173a67}

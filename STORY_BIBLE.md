@@ -555,3 +555,53 @@ The story ultimately says:
 **A good path is not one that never changes. It is one that can change with the people who need it.**
 
 That idea should remain implicit in most of the game and become explicit only near the end.
+
+---
+
+## Player-facing narrative delivery contract
+
+The story bible is only successful if the player can reconstruct the campaign without reading this file. Production story surfaces should therefore distribute the arc deliberately instead of hiding the strongest ideas in completion text.
+
+### What the opening must establish
+
+Before Level 1, a player should know all of the following without already knowing Chapter 1’s answer:
+
+- the islands naturally drift and drift is not an enemy;
+- the Skyway exists to keep ordinary life connected while the islands move;
+- Little Home is shared by Pippa, Bramble, Rowan, Pip, and Tansy, and each notices a different kind of evidence;
+- several ordinary morning routes have begun failing in suspiciously similar ways;
+- Little Home sends an old Waykeeper call and **the player answers it**;
+- the residents provide local observations while the Waykeeper reads route logic across the network;
+- route crews are voluntary local participants who know their own paths and infrastructure;
+- a puzzle board is the Waykeeper’s model of one practical route problem;
+- the first objective is to restore Sunpetal’s morning routes and determine whether the matching failures point to something larger.
+
+The opening must **not** state as settled fact that “the map is stale.” Levels 1–20 are the investigation that earns that diagnosis.
+
+### Ten-level movement rhythm
+
+Each chapter’s five ten-level movements have three distinct story surfaces:
+
+1. **Movement opening (Levels 1/11/21/31/41):** a short Story Card states the new evidence/setup, the current question, and why it matters. It does not reveal the result.
+2. **During the movement:** the compact gameplay rail keeps local character/errand flavor visible while also carrying the active movement title/question.
+3. **Movement result (Levels 10/20/30/40/50):** the win screen presents the canonical discovery/result and the next lead. Chapter 50 also makes the Little Home change and next-region bridge explicit.
+
+This means a milestone is discovered **after** the player completes it, not pre-announced immediately before its level.
+
+### Persistent campaign orientation
+
+- The **Skyway Atlas** should show a compact, spoiler-safe current question for the region the player has reached. Completed regions may show their learned outcome. Future regions should not reveal their answer.
+- **Story & Residents** is the catch-up surface. It should answer: Why is the Waykeeper here? What is the long-term goal? What do we know now? What question are we currently pursuing? What chapters have already been resolved? What does each Little Home resident contribute?
+- The three later major cinematics remain the places for the campaign’s mental-model shifts: visible regional separation, the changing-map revelation, and the distributed living network.
+
+### Ending knowledge
+
+By `Skyway Restored`, the player should understand that:
+
+- nobody defeated or stopped the drift;
+- Aurora Crown never contained a master switch;
+- there is no final permanent map;
+- Waykeeping has become a distributed community practice again;
+- Little Home is one node among many rather than the center of the world;
+- ordinary life continuing is the actual victory.
+

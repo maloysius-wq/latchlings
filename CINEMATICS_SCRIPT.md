@@ -27,98 +27,81 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 
 **Trigger:** Before Level 1, before the ordinary Level 1 Story Card.  
 **Replay unlock:** Always available.  
-**Story job:** Make the entire puzzle campaign legible before the first move. Establish the Latchlands, natural drift, Little Home, why its five residents recur, the Skyway, the Waykeeper, cooperative helper crews, snapping/stopping, and nests.
+**Story job:** Establish the Latchlands, normal drift, Little Home’s five residents and the different evidence each notices, several matching route failures, why Little Home sends a Waykeeper call, why the player answers as the Waykeeper, cooperative helper crews, the universal board language, and the initial Sunpetal investigation. **Do not reveal the stale-map diagnosis as solved fact here; Levels 1–20 earn that conclusion.**
 
 ## Beat 1 — The Latchlands Move
 
-**Visual:** A wide field of small floating islands drifts at different speeds beneath soft clouds. Faint route lights stretch between several islands, flexing as the islands move.
+**Visual:** A wide field of small floating islands drifts at different speeds beneath soft clouds. Faint route lights flex between them.
 
-**Narration:**  
-> The Latchlands are always moving. Not quickly. Not dangerously. Just enough that yesterday’s path is never quite today’s.
+**Narration:** The Latchlands are always moving. Drift is normal, which means yesterday’s path is never quite today’s.
 
-**Meaning:** Drift is normal. The player is not trying to stop it.
+**Player takeaway:** Movement is not the villain and the Waykeeper is not trying to stop it.
 
-## Beat 2 — Little Home
+## Beat 2 — Meet Little Home
 
-**Visual:** The production Little Home scene comes forward. All five recurring residents receive explicit face/name/role identification at the bottom of the scene: **Pippa — Organizer**, **Bramble — Courier**, **Rowan — Caretaker**, **Pip — Explorer**, and **Tansy — Collector**. Tansy and Pip speak from bubbles attached to their own portraits.
+**Visual:** Little Home comes forward. All five residents are visibly paired with face, name, and role: Pippa — Organizer, Bramble — Courier, Rowan — Caretaker, Pip — Explorer, Tansy — Collector.
 
-**Narration:**  
-> This is Little Home, a shared household where five very different sets of eyes keep catching different parts of the same day.
+**Narration:** Pippa tracks routines, Bramble knows inter-household routes, Rowan watches the island, Pip finds overlooked clues, and Tansy notices who a broken path leaves waiting.
 
-**Tansy:**  
-> It was one basket.
+**Tansy:** “It was one basket.”  
+**Pip:** “It was an expedition basket.”
 
-**Pip:**  
-> It was an expedition basket.
+**Player takeaway:** These five recur because their ordinary lives produce different evidence, not because they are chosen heroes.
 
-**Meaning:** The player can immediately pair each recurring name with a face and role. These are ordinary residents of a shared household, not magically selected heroes.
+## Beat 3 — The Same Miss
 
-## Beat 3 — What the Skyway Does
+**Visual:** Little Home’s morning route fails in several ways: watering, bread, and another routine route miss similar stops.
 
-**Visual:** Route lights brighten from Little Home to neighboring islands. A basket icon, parcel, and tiny visitor light travel along separate paths while the islands continue drifting.
+**Narration:** Different chores and travelers are failing in suspiciously similar ways.
 
-**Narration:**  
-> For generations, the Skyway has kept homes, gardens, markets, and neighbors connected while the islands drift. A good route does not hold the world still. It keeps working while the world moves.
+**Pippa:** “My watering stop moved a whole garden bed.”  
+**Bramble:** “Bread from East Sunpetal missed us by nearly the same amount.”  
+**Rowan:** “Little Home is healthy. It just drifted farther than those routes expected.”
 
-**Meaning:** The Skyway is infrastructure that adapts to movement.
+**Player takeaway:** There is a pattern worth investigating, but its cause is not yet known.
 
-## Beat 4 — You Are the Waykeeper
+## Beat 4 — What the Skyway Does
 
-**Visual:** A Waykeeper compass motif appears over the moving islands. Old route lines fade, new lines sketch themselves between the islands’ current positions. Pippa and Rowan appear as the speakers, each with a named speech bubble.
+**Visual:** Route lights link homes, gardens, markets, and neighbors while islands continue drifting.
 
-**Narration:**  
-> At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s missed deliveries, and Pip and Tansy’s finds all point to one pattern: the Skyway is using routes for islands that have already moved.
+**Narration:** The Skyway exists to keep ordinary life connected while the world moves. A good route works with drift rather than freezing it.
 
-**Pippa:**  
-> We can show you every place yesterday stopped working.
+## Beat 5 — A Waykeeper Answers
 
-**Rowan:**  
-> You can help us find where those routes should go now.
+**Visual:** An old Waykeeper signal/compass motif lights above Little Home and new route lines sketch around present positions.
 
-**Meaning:** Little Home matters because this household is the first to connect several ordinary failures into one pattern. The Waykeeper supplies specialized route-reading skill; the residents supply observations and lived context.
+**Narration:** Little Home sends an old Waykeeper call. **You answer it.** The household brings observations from lived-in routes; the Waykeeper brings specialized route-reading skill and can connect those clues across the network.
 
-## Beat 5 — The Helper Crew
+**Pippa:** “We’ll show you what changed in the day-to-day routes.”  
+**Rowan:** “You help us find out whether those changes belong to one larger pattern.”
 
-**Visual:** A miniature route board appears. Several spherical Latchlings hop into place as a local work party. Bramble speaks beside the board.
+**Player takeaway:** This explicitly answers why the player is here without assigning the Waykeeper a fixed biography.
 
-**Narration:**  
-> Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.
+## Beat 6 — Everyone Knows a Piece
 
-**Bramble:**  
-> Everybody knows a piece of the route. We just need to put the pieces together.
+**Visual:** Local helper crews gather around a route board.
 
-**Meaning:** Named residents do not order an anonymous population around. The wider Latchlands are capable participants cooperating on shared infrastructure. The board crew is the local group carrying out that specific route job, so their colors and suit marks do not need to match the featured resident.
+**Narration:** Every island knows its own paths and hardware. Volunteers test stops and travel windows; Little Home coordinates reports; the Waykeeper connects the route logic.
 
-## Beat 6 — Snap, Stop, Set Up
+**Bramble:** “Everybody knows a piece of the route. We just need to put the pieces together.”
 
-**Visual:** One helper is selected. A direction flashes. The helper snaps in a straight line and stops against a rock. The demonstration resets; a second helper is positioned as the stopper, and the first helper snaps into it. A matching nest glows nearby. Rowan’s explanation appears in a speech bubble above Rowan.
+## Beat 7 — How You See a Route
 
-**Narration:**  
-> Choose a Latchling, then choose a direction. They snap along that route until something stops them. An edge, a rock, or another helper can turn one move into the setup for the next.
+**Visual:** Demonstrate select → direction → continuous snap → deliberate stopper → matching nest.
 
-**Rowan:**  
-> Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.
+**Narration:** A board is the Waykeeper’s route model. Edges, rocks, helpers, and later Skyway hardware create stopping points. One move can set up the next.
 
-**Meaning:** This is the universal board language: select, direction, continuous snap, deliberate stop, matching nest, solve everyone.
+**Rowan:** “Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.”
 
-## Beat 7 — This Morning
+## Beat 8 — Start With Sunpetal
 
-**Visual:** The miniature board dissolves back into Little Home. A breakfast basket follows an old glowing route, misses its intended connection because the islands have shifted, and lands at an awkward stop. Pippa, Rowan, Pip, and Tansy each speak from their own on-stage bubbles.
+**Visual:** Return to Little Home’s failed morning connection.
 
-**Narration:**  
-> Start here. Fix Little Home’s morning routes, compare each repair with the reports arriving from Sunpetal, and find out whether this is one strange morning or something much larger.
+**Narration:** Restore Sunpetal’s morning routes, compare the failures as reports arrive, and determine whether this is one strange morning or something larger.
 
-**Pippa:**  
-> That route worked yesterday.
-
-**Rowan:**  
-> Little Home moved farther than usual overnight.
-
-**Pip:**  
-> So breakfast is a puzzle now?
-
-**Tansy:**  
-> Breakfast is urgently a puzzle now.
+**Pippa:** “First we make breakfast possible again.”  
+**Pip:** “Then we investigate breakfast.”  
+**Tansy:** “In that order, please.”
 
 **Final button:** **Begin Level 1**
 

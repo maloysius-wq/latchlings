@@ -8,36 +8,6 @@ const CAST={
  Pip:{color:'#4c8ff4',light:'#79aff9',dark:'#2e69c8',suit:'spade',expr:'determined',role:'Explorer',child:true},
  Tansy:{color:'#ef5f66',light:'#ff9297',dark:'#c33d49',suit:'heart',expr:'surprised',role:'Collector',child:true}
 };
-const opening=API.CINEMATICS.opening;
-if(opening){
- opening.beats[0].lines=[['Narrator','The Latchlands are always moving. Not quickly. Not dangerously. Just enough that yesterday’s path is never quite today’s.']];
- opening.beats[1].lines=[
-  ['Narrator','This is Little Home, a shared household where five very different sets of eyes keep catching different parts of the same day.'],
-  ['Tansy','It was one basket.'],
-  ['Pip','It was an expedition basket.']
- ];
- opening.beats[2].lines=[['Narrator','For generations, the Skyway has kept homes, gardens, markets, and neighbors connected while the islands drift. A good route does not hold the world still. It keeps working while the world moves.']];
- opening.beats[3].lines=[
-  ['Narrator','At Little Home, Pippa’s broken schedules, Rowan’s drift notes, Bramble’s missed deliveries, and Pip and Tansy’s finds all point to one pattern: the Skyway is using routes for islands that have already moved.'],
-  ['Pippa','We can show you every place yesterday stopped working.'],
-  ['Rowan','You can help us find where those routes should go now.']
- ];
- opening.beats[4].lines=[
-  ['Narrator','Word travels outward. Meadow neighbors send observations, volunteers test safe stops, and each island tends the Skyway hardware it knows best. Little Home gathers the reports so the Waykeeper can connect them.'],
-  ['Bramble','Everybody knows a piece of the route. We just need to put the pieces together.']
- ];
- opening.beats[5].lines=[
-  ['Narrator','Choose a Latchling, then choose a direction. They snap along that route until something stops them. An edge, a rock, or another helper can turn one move into the setup for the next.'],
-  ['Rowan','Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.']
- ];
- opening.beats[6].lines=[
-  ['Narrator','Start here. Fix Little Home’s morning routes, compare each repair with the reports arriving from Sunpetal, and find out whether this is one strange morning or something much larger.'],
-  ['Pippa','That route worked yesterday.'],
-  ['Rowan','Little Home moved farther than usual overnight.'],
-  ['Pip','So breakfast is a puzzle now?'],
-  ['Tansy','Breakfast is urgently a puzzle now.']
- ];
-}
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
  if(s==='heart')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg>';

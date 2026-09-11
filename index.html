@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
 <meta name="theme-color" content="#b9dcf4" />
 <title>Latchlings</title>
-<link rel="stylesheet" href="style400-ui.css">
+<link rel="stylesheet" href="style400-ui.css?v=20260911-narrative1">
 <link rel="stylesheet" href="style400-game.css?v=20260911-sphere3">
 <link rel="stylesheet" href="style400-themes.css">
-<link rel="stylesheet" href="style400-skyway-atlas.css">
-<link rel="stylesheet" href="style400-story-theme.css">
-<link rel="stylesheet" href="style400-story-rail-board.css">
+<link rel="stylesheet" href="style400-skyway-atlas.css?v=20260911-narrative1">
+<link rel="stylesheet" href="style400-story-theme.css?v=20260911-narrative1">
+<link rel="stylesheet" href="style400-story-rail-board.css?v=20260911-narrative1">
 <link rel="stylesheet" href="style400-cinematics.css">
 <link rel="stylesheet" href="style400-cinematics-polish.css">
 <link rel="stylesheet" href="style400-cinematics-refine.css">
@@ -51,11 +51,14 @@
       <div class="theme-kicker">The Latchlands</div>
       <h1>Little Home</h1>
       <p id="storyPremise"></p>
+      <div id="storyBriefing"></div>
       <div class="story-role-card" id="storyRole"></div>
       <h2>Residents</h2>
       <div class="story-cast" id="storyCast"></div>
       <h2>Current chapter</h2>
       <div class="story-current-chapter" id="storyChapter"></div>
+      <h2>Journey so far</h2>
+      <div class="story-journey" id="storyJourney"></div>
       <h2>Story Cinematics</h2>
       <p class="story-cinematic-intro">Replay the major story moments you have reached in the campaign.</p>
       <div class="cinematic-library" id="storyCinematics"></div>
@@ -92,6 +95,7 @@
         <div class="ending-latchling ending-pip ending-child expr-determined" data-character="Pip" role="img" aria-label="Pip, blue spade Latchling" style="--ending-light:#79aff9;--ending-color:#4c8ff4;--ending-dark:#2e69c8;--ending-blink-duration:5.35s;--ending-blink-delay:-1.85s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8C43 22 14 36 14 60c0 13 10 23 23 23 8 0 13-4 16-10-1 9-5 15-12 20h18c-7-5-11-11-12-20 3 6 8 10 16 10 13 0 23-10 23-23C86 36 57 22 50 8Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
         <div class="ending-latchling ending-tansy ending-child expr-surprised" data-character="Tansy" role="img" aria-label="Tansy, coral heart Latchling" style="--ending-light:#ff9297;--ending-color:#ef5f66;--ending-dark:#c33d49;--ending-blink-duration:4.25s;--ending-blink-delay:-2.25s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
       </div>
+      <div class="ending-resolution" aria-label="What Skyway Restored means"><p><strong>No master switch.</strong> Nobody stopped the islands from moving.</p><p><strong>No final map.</strong> Every community learned to watch its own routes and share what changes.</p><p><strong>A living Skyway.</strong> Little Home is one connected node among many, and tomorrow’s route can change again.</p></div>
       <p class="ending-note">Ordinary life continues. That is the victory.</p>
       <button class="primary-btn" id="completeLevels">Level Select</button><button class="secondary-btn" id="completeHome" style="margin-top:12px">Return to Little Home</button>
     </section></div>
@@ -107,6 +111,7 @@
       <h2 id="storyCardTitle"></h2>
       <p class="story-card-context" id="storyCardContext"></p>
       <p class="story-card-flavor" id="storyCardFlavor"></p>
+      <div class="story-card-objective" id="storyCardObjective" hidden></div>
       <aside class="story-card-crew-note" id="storyCardCrewNote" hidden><strong>How routes work</strong><span></span></aside>
       <div class="story-card-actions"><button class="story-card-continue" id="storyCardContinue">Continue</button></div>
     </div>
@@ -123,15 +128,15 @@
 <script src="campaign400-7.js"></script>
 <script src="campaign400-8.js"></script>
 <script src="story400.js"></script>
-<script src="story-grounding400.js"></script>
-<script src="cinematics400.js"></script>
-<script src="cinematic-dialogue400.js?v=20260911-bubblestable1"></script>
-<script src="game400-a.js?v=20260911-atlaszoom1"></script>
-<script src="game400-b.js"></script>
+<script src="story-grounding400.js?v=20260911-narrative1"></script>
+<script src="cinematics400.js?v=20260911-narrative1"></script>
+<script src="cinematic-dialogue400.js?v=20260911-narrative1"></script>
+<script src="game400-a.js?v=20260911-narrative1"></script>
+<script src="game400-b.js?v=20260911-narrative1"></script>
 <script src="music400.js?v=20260911-atlaspace1"></script>
 <script src="sfx400.js"></script>
-<script src="story-theme400.js"></script>
-<script src="gameplay-story-rail400.js"></script>
+<script src="story-theme400.js?v=20260911-narrative1"></script>
+<script src="gameplay-story-rail400.js?v=20260911-narrative1"></script>
 <script src="cinematic-geometry400.js?v=20260911-bubblestable1"></script>
 </body>
 </html>
