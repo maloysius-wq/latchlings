@@ -67,7 +67,8 @@ jobs:
           assert 'filter:' not in block
           assert 'will-change:transform,opacity' in block
           assert '24%' not in block and '58%' not in block
-          assert block.count('0%{') == 1 and block.count('100%{') == 1
+          assert '\n  0%{' in block and '\n  100%{' in block
+          assert block.count('\n  0%{') == 1 and block.count('\n  100%{') == 1
           assert 'scaleX(1.018)' in block
           print('STATIC_TRANSITION_CHECKS_OK')
           PY
@@ -128,10 +129,10 @@ jobs:
           }
           if (result.overflow>1) throw new Error('horizontal overflow during transition test');
           if (errors.length) throw new Error('page errors: '+errors.join(' | '));
-          for (const [i,delay] of [0,70,140,210,280,350].entries()) {
-            if(i===0){ await page.evaluate(()=>screen('levels')); }
-            if(delay) await page.waitForTimeout(i===1?70:70);
-            await page.screenshot({path:`smooth-transition-audit/frame-${String(i).padStart(2,'0')}-${delay}ms.png`,fullPage:true});
+          await page.evaluate(()=>screen('levels'));
+          for (let i=0;i<6;i++) {
+            if(i) await page.waitForTimeout(70);
+            await page.screenshot({path:`smooth-transition-audit/frame-${String(i).padStart(2,'0')}-${i*70}ms.png`,fullPage:true});
           }
           await page.evaluate(async()=>{ if(activeScreenTransition) await activeScreenTransition.finished; });
           fs.writeFileSync('smooth-transition-audit/report.json',JSON.stringify({accepted:true,...result},null,2));
