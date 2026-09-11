@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/close-narrative-clarity-overhaul.yml'
+      - '.github/tmp/close-narrative-clarity.py'
 
 permissions:
   contents: write
@@ -15,43 +16,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Complete handoff entry
-        shell: python
-        run: |
-          from pathlib import Path
-          p=Path('DEVELOPMENT_HANDOFF.md')
-          s=p.read_text()
-          heading='### 2026-09-11 — Campaign-wide narrative clarity overhaul'
-          start=s.index(heading)
-          next_heading=s.index('\n### ',start+len(heading))
-          block=s[start:next_heading]
-          block=block.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
-          summary='''
-#### Completion summary
-
-- **Result:** COMPLETED. The canonical eight-chapter story is now distributed through the actual player experience instead of relying on the story bible or occasional milestone prose. The campaign keeps its cozy no-villain premise while giving the player a legible mystery, evolving goal, recurring cast, chapter questions, earned discoveries, and a much stronger Level 400 payoff.
-- **Opening scene:** The production opening expands from seven beats to **eight player-paced beats**. It now (1) establishes natural drift, (2) introduces all five Little Home residents and the distinct evidence each notices, (3) dramatizes several matching morning route failures, (4) explains what the Skyway is for, (5) explicitly shows Little Home sending an old Waykeeper call and **the player answering it**, (6) establishes voluntary local helper crews, (7) explains the board as the Waykeeper's route model, and (8) gives the concrete first objective: restore Sunpetal's morning routes and determine whether the matching failures point to something larger. Crucially, it no longer states the stale-map diagnosis as solved fact before Levels 1–20 earn it. `cinematic-dialogue400.js` no longer maintains a second hardcoded copy of opening dialogue; `cinematics400.js` is the canonical runtime source.
-- **Campaign narrative model:** `story-grounding400.js` now contains a campaign goal, why-the-Waykeeper-is-here explanation, no-villain systemic pressure, resident investigation contributions, and **40 authored narrative movements**: five ten-level movements for each of the eight chapters. Each movement has a setup, current question, and stakes, while each chapter has its larger goal, Atlas objective, pressure, and learned outcome. Progress-aware helpers provide current briefing, spoiler-safe Atlas text, journey-so-far, and enriched milestone results.
-- **Ten-level story rhythm:** Automatic movement-opening Story Cards now occur at **Levels 1/11/21/31/41** rather than pre-announcing results at 10/20/30/40/50. Those cards show the movement setup, `Current question`, and why it matters without revealing the answer. During play, the existing compact story rail still carries local character/errand flavor but now also shows the current movement title/question. At **Levels 10/20/30/40/50**, the victory surface explicitly labels the canonical discovery/result, states what was learned, points to the next lead/region, and gives chapter-50 Little Home rewards stronger narrative meaning.
-- **Atlas and catch-up surfaces:** The Skyway Atlas chapter header now carries a compact spoiler-safe narrative line: completed regions show their learned outcome, the current region shows its active question, and future regions only say the earlier routes must be restored first. `Story & Residents` is now a real campaign briefing with `Why you're here`, `Current question`, `What we know`, the evolving Waykeeper goal, richer resident cards explaining what each contributes, and a spoiler-safe `Journey so far` list of completed/current chapters.
-- **Ending:** `Skyway Restored` now explicitly lands the campaign's three final truths on the completion screen: **No master switch**, **No final map**, and **A living Skyway**. It still ends on `Ordinary life continues. That is the victory.` The islands keep drifting, Little Home is one node among many, and the distributed Waykeeper network keeps adapting tomorrow's routes.
-- **Durable narrative docs:** `CINEMATICS_SCRIPT.md` now matches the eight-beat production opening and explicitly protects Chapter 1's earned stale-map reveal. `STORY_BIBLE.md` now includes a player-facing narrative delivery contract covering the opening, ten-level movement rhythm, persistent campaign orientation, and required ending knowledge.
-- **Changed files / product commit:** Accepted product commit `c11e45b6f281cfa3fb97fe10f2bc0ceb57ae563a` (`Make the full Latchlings story player-facing`) changes exactly 14 files: `story-grounding400.js`, `cinematics400.js`, `cinematic-dialogue400.js`, `story-theme400.js`, `gameplay-story-rail400.js`, `game400-a.js`, `game400-b.js`, `index.html`, `style400-story-theme.css`, `style400-story-rail-board.css`, `style400-skyway-atlas.css`, `style400-ui.css`, `CINEMATICS_SCRIPT.md`, and `STORY_BIBLE.md`. The commit reports **275 insertions / 122 deletions**. Campaign puzzle definitions/solver data, Little Home choreography, music/SFX, and the accepted Atlas camera transition were not modified.
-- **Accepted validation:** GitHub Actions run `34640408680`, job `103398417714`, passed static validation and the full Chromium narrative matrix and printed `NARRATIVE_CLARITY_ACCEPTED opening=16 rails=80 milestones=40 atlas=8`. `opening=16` means all eight beats passed independently at DPR 1 and DPR 3; `rails=80` means all 8 chapters × 5 movements passed at both densities. All 40 milestone results were present/enriched. The Atlas returned two completed-region outcomes, the current Chapter 3 question, and generic non-spoiler text for Chapters 4–8 in the test progress state. Early, mid, and late campaign briefings/journey states passed; later major cinematics retained their intended mental-model revelations; the Level 400 ending contained all required final truths; reduced motion completed all eight opening beats; and no browser/page errors were reported.
-- **Acceptance artifact:** `narrative-clarity-audit`, artifact ID `10279796935`, SHA-256 `ad446de9e98f0b06ef807d451eea37aa4a7f4b1eec5ef21332a753d3bc5e0b01`, contains `report.json` plus eight visual captures including opening cast/Waykeeper/objective frames, a movement Story Card, Atlas current-question view, mid-campaign Story & Residents, and Skyway Restored.
-- **Manual visual review:** The artifact was downloaded and inspected after acceptance. The Little Home cast introduction clearly pairs all five residents with names/roles while retaining character speech; `A Waykeeper Answers` visibly centers the Waykeeper compass and the player's reason for arriving; the final opening beat clearly states the Sunpetal investigation before `Begin Level 1`; the Level 11 Story Card visibly presents its new lead and current question; the Atlas question remains subordinate to the map; the mid-campaign Story & Residents screen reads as a complete briefing without horizontal overflow; and the Level 400 completion screen cleanly presents the three final truths above the existing ordinary-life closing line.
-- **Rejected validation attempts:** No rejected run committed product files. Run `34639878897` stopped at static syntax validation because the temporary patch helper emitted a leading backslash in `story-grounding400.js`. Run `34639959138` reached Chromium and rejected the rail gate while the harness still treated the fixed rail's clipped decorative `::after` artwork as visible horizontal overflow and assumed a literal 94 px rendered height. Run `34640132522` stopped at the scope checker because a temporary validator file intentionally modified at runtime was counted as a product diff. Run `34640184974` again exposed the clipped-decoration `scrollWidth` assertion. The final gate was corrected to measure the real rendered footprint rather than invisible content clipped by `overflow:hidden`; the accepted candidate itself preserved the rail within its existing roughly 90 px rendered footprint.
-- **Validation cleanup / hygiene:** The accepted run's final self-removal step failed after product acceptance because runner-side validation edits still left an unstaged change before `git pull --rebase`. The product commit was already pushed and validated. Temporary helpers were therefore removed directly through the GitHub connector in `ca89a8fb54307ad8a74941a0aec301fd62ef3f54` (patch helper), `2ca3c3fb9e2b619c2c315058728579ee8b25d9ce` (browser validator), and `bb916c52a4d7cc51beae55b3634422c5c6f91eed` (workflow). `.github/workflows` was then verified to contain only permanent `validate-repository-access-guard.yml`.
-- **Deployment:** GitHub Pages run `34640582008` completed successfully on clean accepted state `bb916c52a4d7cc51beae55b3634422c5c6f91eed` before this journal closeout.
-- **Remaining risk / next action:** The campaign now has complete structural narrative coverage, but prose density and emotional pacing are subjective. Real-device play from a fresh save is the final editorial check. In particular, the richer opening is intentionally longer but remains fully player-paced/skippable; if any individual beat feels too wordy in hand, trim that beat without removing its assigned story job. No known code blocker remains.
-
-'''
-          if '#### Completion summary' not in block:
-              block=block.rstrip()+"\n\n"+summary
-          s=s[:start]+block+s[next_heading:]
-          p.write_text(s)
-
+        run: python .github/tmp/close-narrative-clarity.py
       - name: Commit handoff closeout
         run: |
           git config user.name github-actions[bot]
@@ -59,10 +25,9 @@ jobs:
           git add DEVELOPMENT_HANDOFF.md
           git diff --cached --quiet || git commit -m "Complete campaign narrative clarity handoff"
           git push
-
-      - name: Self-remove closeout helper
+      - name: Self-remove closeout helpers
         run: |
           git pull --rebase
-          git rm .github/workflows/close-narrative-clarity-overhaul.yml
-          git commit -m "Remove narrative clarity closeout helper"
+          git rm .github/workflows/close-narrative-clarity-overhaul.yml .github/tmp/close-narrative-clarity.py
+          git commit -m "Remove narrative clarity closeout helpers"
           git push
