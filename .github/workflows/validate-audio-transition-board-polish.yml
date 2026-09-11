@@ -1,0 +1,138 @@
+name: Validate audio transition and board polish
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-audio-transition-board-polish.yml'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve protected source hashes
+        shell: bash
+        run: |
+          sha256sum music400.js game400-a.js game400-b.js index.html story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js campaign400-*.js style400-atlas-progression.css > /tmp/protected-before.sha
+      - name: Apply candidate polish
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          sfx=Path('sfx400.js')
+          s=sfx.read_text()
+          if 'SFX_OUTPUT_SCALE' in s:
+              raise SystemExit('SFX scale already present unexpectedly')
+          needle="  const BASE = 'assets/sfx/';\n"
+          if s.count(needle)!=1:
+              raise SystemExit('SFX BASE insertion point mismatch')
+          s=s.replace(needle,needle+'  const SFX_OUTPUT_SCALE = 0.60;\n',1)
+          old='    audio.volume = volume;'
+          new='    audio.volume = Math.max(0, Math.min(1, volume * SFX_OUTPUT_SCALE));'
+          if s.count(old)!=1:
+              raise SystemExit('SFX makeAudio volume assignment mismatch')
+          sfx.write_text(s.replace(old,new,1))
+
+          ui=Path('style400-ui.css')
+          s=ui.read_text()
+          a='::view-transition-group(root){animation-duration:210ms;animation-timing-function:cubic-bezier(.18,.76,.2,1);}'
+          b='::view-transition-group(root){animation-duration:420ms;animation-timing-function:cubic-bezier(.18,.76,.2,1);}'
+          c='animation:latchlingsSwipeRightOld 210ms cubic-bezier(.18,.76,.2,1) both;'
+          d='animation:latchlingsSwipeRightOld 420ms cubic-bezier(.18,.76,.2,1) both;'
+          if s.count(a)!=1 or s.count(c)!=1:
+              raise SystemExit('screen transition timing anchors mismatch')
+          s=s.replace(a,b,1).replace(c,d,1)
+          ui.write_text(s)
+
+          board=Path('style400-board-surfaces.css')
+          s=board.read_text()
+          patch=Path('.github/tmp/board-polish-override.css').read_text()
+          marker='/* Bold puzzle-square override:'
+          if marker in s:
+              raise SystemExit('bold square override already present')
+          board.write_text(s.rstrip()+'\n\n'+patch.strip()+'\n')
+          PY
+          node --check sfx400.js
+          node --check game400-a.js
+          node --check game400-b.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser validator
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve candidate
+        run: python3 -m http.server 4173 >/tmp/latchlings-polish-http.log 2>&1 &
+      - name: Validate 40 board identities and timing/audio source
+        shell: bash
+        run: |
+          mkdir -p polish-audit/boards
+          cp .github/tmp/validate-audio-transition-board-polish.mjs ./validate-audio-transition-board-polish.mjs
+          node validate-audio-transition-board-polish.mjs
+      - name: Build visual contact sheets
+        if: always()
+        shell: bash
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image,ImageDraw,ImageFont
+          files=sorted(Path('polish-audit/boards').glob('ch*-r*-l*.png'),key=lambda p:(int(p.name.split('-')[0][2:]),int(p.name.split('-')[1][1:])))
+          if not files:
+              raise SystemExit(0)
+          ims=[Image.open(p).convert('RGB') for p in files]
+          thumb_w,thumb_h=240,240
+          pad=24; label=28
+          sheet=Image.new('RGB',(5*(thumb_w+pad)+pad,8*(thumb_h+label+pad)+pad),(238,241,244))
+          draw=ImageDraw.Draw(sheet)
+          for i,(p,im) in enumerate(zip(files,ims)):
+              ch=i//5+1; r=i%5+1
+              im.thumbnail((thumb_w,thumb_h))
+              x=pad+(i%5)*(thumb_w+pad); y=pad+(i//5)*(thumb_h+label+pad)
+              sheet.paste(im,(x+(thumb_w-im.width)//2,y+(thumb_h-im.height)//2))
+              draw.text((x,y+thumb_h+5),f'Chapter {ch} / Range {r}',fill=(25,42,63))
+          sheet.save('polish-audit/board-40-contact-sheet.png')
+          for ch in (1,2,6,7,8):
+              group=[(p,Image.open(p).convert('RGB')) for p in files if p.name.startswith(f'ch{ch}-')]
+              strip=Image.new('RGB',(5*(thumb_w+pad)+pad,thumb_h+label+2*pad),(238,241,244))
+              sd=ImageDraw.Draw(strip)
+              for j,(p,im) in enumerate(group):
+                  im.thumbnail((thumb_w,thumb_h)); x=pad+j*(thumb_w+pad); y=pad
+                  strip.paste(im,(x+(thumb_w-im.width)//2,y+(thumb_h-im.height)//2)); sd.text((x,y+thumb_h+5),f'Range {j+1}',fill=(25,42,63))
+              strip.save(f'polish-audit/chapter-{ch}-range-strip.png')
+          PY
+      - name: Verify protected source unchanged
+        run: sha256sum -c /tmp/protected-before.sha
+      - name: Commit accepted product
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f package.json package-lock.json validate-audio-transition-board-polish.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sfx400.js style400-ui.css style400-board-surfaces.css
+          git commit -m 'Tune SFX transitions and puzzle surfaces'
+          git push
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audio-transition-board-polish-renders
+          path: polish-audit
+          if-no-files-found: warn
+      - name: Self-remove validation helpers
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard HEAD
+          git pull --ff-only origin main
+          git rm .github/workflows/validate-audio-transition-board-polish.yml .github/tmp/board-polish-override.css .github/tmp/validate-audio-transition-board-polish.mjs
+          git commit -m 'Remove audio transition board polish helpers'
+          git push
