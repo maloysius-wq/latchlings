@@ -1,0 +1,48 @@
+name: Close Level Select regression handoff
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  close:
+    if: github.event.head_commit.message == 'Close Level Select regression handoff'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Complete handoff entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          text=p.read_text()
+          heading='### 2026-09-10 — Fix blank Level Select when leaving a level'
+          start=text.index(heading)
+          try:
+              end=text.index('\n### ',start+len(heading))
+          except ValueError:
+              end=len(text)
+          section=text[start:end]
+          section=section.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          if '#### Completion summary' not in section:
+              section += '''\n#### Completion summary\n\n- **Result:** COMPLETED. Returning to Level Select after it had previously animated out to a game now restores the Skyway Atlas at full opacity and its normal on-screen position. The visible blank-background regression is fixed.\n- **Root cause:** The manual 420ms outgoing-screen transition uses a Web Animation with `fill: forwards`. When a screen finished animating out, `settle()` removed the temporary inline styles and class but did not cancel the finished Web Animation. The animation effect therefore remained attached to that DOM element. After Level Select had once been an outgoing screen, later visits reactivated a fully populated Atlas that was still visually held at the animation's final state: roughly `opacity: 0.1` and `translateX(106vw)`.\n- **Reproduction evidence:** Diagnostic run `34558950177`, job `103137502324`, reproduced the exact lifecycle. The first direct Game → Pause → Level Select was normal at opacity `1`, x `0`, width `390`, with 10 Atlas nodes. After Level Select animated out to a game once, subsequent Lose → Level Select and Win → Level Select states still contained the full Atlas DOM but measured opacity `0.1` with the shell displaced to approximately x `409.89`, matching the user's background-only symptom. No browser errors were present. Diagnostic artifact `level-select-regression-diagnostic`, artifact ID `10183616747`, SHA-256 `85234007f7bb7d298101dc82187b72c58a2501b334774816fef69a4cd7f28665`, captured the evidence.\n- **Implementation:** `game400-a.js` transition settlement now clears the Web Animation itself after detaching its finish/cancel handlers: `animation.cancel(); animation=null;`. This removes the `fill: forwards` effect before the outgoing screen is restored, so any screen can be safely reused later. No Atlas content, puzzle logic, navigation call sites, styles, audio, story, cinematics, or campaign data needed modification.\n- **Product / cleanup commits:** Accepted product commit `4ce93e5a09b662c01380e6709642b53be73fe94c` (`Clear completed screen transition effects`) changes only `game400-a.js` by one insertion/one deletion. Temporary validation helpers self-removed in clean-state commit `0ee6cbd6e42d62169cbcd5373f831b406bdec4b7` (`Remove Level Select fix validation helpers`).\n- **Acceptance:** GitHub Actions run `34559066233`, job `103137845326`, completed successfully and printed `LEVEL_SELECT_FIX_ACCEPTED`. It explicitly tested the formerly failing Level Select reuse sequence, Pause → Level Select, Lose → Level Select, cleared-level Atlas reward → Level Select, Home → Level Select after reuse, rapid navigation, and reduced motion. Every accepted Level Select state had opacity `1`, transform `none`, x `0`, full 390px viewport width, populated chapter/range content, 10 Atlas nodes, at least one clickable node, zero `.screen-transition-outgoing` leftovers, and zero completed direct animations still attached to `#levels`.\n- **Transition regression protection:** The accepted validator confirmed the smooth-transition contract remains exactly 420ms with two transform/opacity keyframes and no lingering animation effect after `finished`. The stutter fix from the prior task is therefore preserved rather than rolled back.\n- **Scope protection:** Hash verification confirmed `game400-b.js`, `sfx400.js`, `music400.js`, `index.html`, all relevant UI/game/theme/Atlas/board CSS files, story/cinematic sources, and all eight `campaign400-*.js` files were unchanged.\n- **Acceptance artifact:** `level-select-transition-fix-audit`, artifact ID `10183660475`, SHA-256 `3b20458fc28ca00f2231dcf80cc13bd810996eefcb7463195d2adaf1dbd91342`, contains the accepted final Level Select render and detailed browser-state report.\n- **Deployment:** GitHub Pages run `34559121908` successfully built and deployed clean accepted state `0ee6cbd6e42d62169cbcd5373f831b406bdec4b7`.\n- **Remaining risk / next action:** No known blocker remains. Device testing is still useful for subjective transition feel, but the exact stale-animation state responsible for the blank Atlas is now directly reproduced, asserted, and prevented.\n\n'''
+          text=text[:start]+section+text[end:]
+          p.write_text(text)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m 'Complete Level Select regression handoff'
+          git push
+      - name: Self-remove closeout helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/close-level-select-regression-handoff.yml
+          git commit -m 'Remove Level Select regression closeout helper'
+          git push
