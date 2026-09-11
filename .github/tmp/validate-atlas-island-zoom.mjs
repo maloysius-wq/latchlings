@@ -43,7 +43,7 @@ const targetGeometry=await page.evaluate(()=>{
   return {x:n.left+n.width/2-s.left,y:n.top+n.height/2-s.top};
 });
 await page.screenshot({path:`${out}/atlas-before-dive.png`});
-await page.click('.atlas-node[data-level="3"]');
+await page.locator('.atlas-node[data-level="3"]').click({force:true});
 await page.waitForFunction(()=>document.body.dataset.screen==='game');
 await page.waitForTimeout(210);
 const diveMid=await page.evaluate(()=>({
@@ -95,7 +95,7 @@ if(pull.frames.some(f=>String(f.transform||'').includes('106vw'))) throw new Err
 if(!pullMid.outgoing||pullMid.opacity>=1) throw new Error(`pullback not visibly progressing ${JSON.stringify(pullMid)}`);
 if(pullState.active!=='levels'||pullState.outgoing||pullState.animations) throw new Error(`pullback cleanup failed ${JSON.stringify(pullState)}`);
 
-await page.click('.atlas-node[data-level="3"]');
+await page.locator('.atlas-node[data-level="3"]').click({force:true});
 await page.waitForTimeout(540);
 await page.click('#pauseBtn');
 await page.click('#pauseLevels');
@@ -128,7 +128,7 @@ await rp.reload({waitUntil:'load'});
 await rp.waitForFunction(()=>window.LatchlingsHomeAction);
 await rp.evaluate(()=>window.LatchlingsHomeAction('levels'));
 await rp.waitForSelector('#levels.active .atlas-node[data-level="3"]');
-await rp.click('.atlas-node[data-level="3"]');
+await rp.locator('.atlas-node[data-level="3"]').click({force:true});
 const reducedState=await rp.evaluate(()=>({
   screen:document.body.dataset.screen,
   outgoing:document.querySelectorAll('.screen-transition-outgoing').length,
