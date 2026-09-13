@@ -1,0 +1,60 @@
+name: Start Chapter 4 Pass 3 handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-chapter4-pass3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add Chapter 4 Pass 3 work entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          marker='## Current Work\n'
+          if 'Pass 3 Chapter 4 Masquerade campaign application' in s:
+              raise SystemExit('Chapter 4 handoff entry already exists')
+          entry=r'''
+
+### 2026-09-12 — Pass 3 Chapter 4 Masquerade campaign application
+
+**Status: IN PROGRESS**
+
+**User goal:** Continue directly from the completed Chapter 3 Lodestone Pass 3 rollout and apply the next protected production slice to Chapter 4, Masquerade Keep / Market Day (campaign Levels 151–200), using current `main` as source of truth.
+
+**Roadmap/current-source recheck:** The Chapter 3 closeout names Masquerade Keep as the next Pass 3 unit. Current `LEVEL_SELECT_ART_DIRECTION.md` specifies Plaster Stone Wall material with gate arches, keep towers, market banners, stone parapets, and moonlit civic architecture. `STORY_BIBLE.md` defines Chapter 4 as a public market whose black suit marks are old civic routing credentials, with the key middle discovery that those marks predate the market and a Chapter 4 Little Home reward of market bunting. Current `game400-a.js` maps Chapters 1–3 into production modes; Level 200 still uses the generic completion surface; Little Home already contains the canonical stage-4 bunting but has no dedicated focus treatment. The current Atlas has a useful Masquerade masonry/banners base but no single recurring landmark that ties the old civic suit system to the chapter reward.
+
+**Implementation plan:** (1) Extend the reusable chapter visual-mode map so campaign Levels 151–200 use a new `masquerade` production mode while Daily stays neutral, Chapters 1–3 retain their accepted modes, Level 201 stays outside this rollout, and Level 366 keeps its Aurora override. (2) Build five quiet Masquerade movement surfaces from moonlit plaster/stone linear materials with restrained plum, rose, and antique-gold accents; keep cells non-symbolic and move arches, parapets, banners, and skyline silhouettes outside rule space. (3) Strengthen suit gates as the chapter's mechanic fixture using pale civic masonry, dark readable suit marks, and warm trim without changing gate behavior. (4) Turn the Chapter 4 movement-3 Atlas scene into a recognizable old civic suit-gate arch with worn black suit plaques and market cloth layered over older masonry, matching the story discovery that the suit system predates the market. (5) Add a dedicated Level 200 reward showing the reopened market gate / civic arch and celebratory bunting, with stars secondary, `Visit Little Home`, and `Continue to Prism`; the home action must focus the existing canonical stage-4 market bunting with reduced-motion-safe behavior. (6) Record the civic gate-arch landmark in durable art direction and bump only cache keys required by changed production surfaces.
+
+**Expected product files/systems:** `game400-a.js`, `game400-b.js`, `style400-production-slice.css`, `style400-skyway-atlas.css`, `title-island-concepts/index.html`, `LEVEL_SELECT_ART_DIRECTION.md`, and `index.html`; temporary self-removing candidate/validation helpers only. All eight `campaign400-*.js` files, authored solutions, `story400.js`, `story-grounding400.js`, `STORY_BIBLE.md`, cinematics, audio, movement simulation/rules, and Chapters 5–8 behavior are protected from change.
+
+**Validation plan:** Hash-protect all eight campaign definition files and unrelated runtime/story systems before candidate application. Run JavaScript syntax/static assertions and a Chromium matrix covering Chapter 4 Levels 151/160/161/170/171/180/181/190/191/200 at 390x844, Levels 151/200 at 320x568, Daily isolation on a Chapter 4 board, the accepted Level 150 Lodestone boundary, untouched Level 201, and Level 366 Aurora override. Assert all Chapter 4 campaign levels map to `masquerade`; five board ranges have distinct quiet linear materials; cell pseudo-decoration remains suppressed; selected Latchling/matching nest hierarchy remains explicit; suit gates exist and retain a high-contrast pale-masonry / dark-suit treatment; controls/viewport remain contained with >=44px active targets; no browser errors occur; and protected hashes remain unchanged. Verify Chapter 4 movement 3 exposes the old civic suit-gate landmark on the Atlas, solve the real authored Level 200 route to reach the dedicated reward, use `Visit Little Home` to reveal/focus the canonical market bunting, and confirm reduced-motion reaches the same informative state. Capture all five Masquerade ranges plus Atlas gate landmark, Level 200 reward, Little Home bunting focus, and small-phone endpoints for manual review before promotion.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits. Implement through a validation-only candidate, promote only after protected-source/static/browser checks and manual screenshots are accepted, remove every temporary helper, confirm GitHub Pages succeeds on the clean product head, then close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits/runs/artifacts and the next Pass 3 action.
+'''
+          if marker not in s:
+              raise SystemExit('Current Work marker missing')
+          s=s.replace(marker,marker+entry,1)
+          p.write_text(s)
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Begin Chapter 4 Pass 3 rollout"
+          git push
+      - name: Self-remove starter
+        run: |
+          git pull --rebase
+          git rm .github/workflows/start-chapter4-pass3.yml
+          git commit -m "Remove Chapter 4 Pass 3 starter"
+          git push
