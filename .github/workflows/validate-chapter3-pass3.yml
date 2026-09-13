@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 env:
-  PROMOTE: 'false'
+  PROMOTE: 'true'
   PRODUCT_FILES: >-
     game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css title-island-concepts/index.html LEVEL_SELECT_ART_DIRECTION.md index.html
 
