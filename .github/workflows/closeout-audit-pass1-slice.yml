@@ -1,0 +1,68 @@
+name: Close out audit Pass 1 and visual slice
+
+on:
+  push:
+    paths:
+      - '.github/workflows/closeout-audit-pass1-slice.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Close handoff entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from textwrap import dedent
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-12 — Audit Pass 1 clarity/correctness and approved visual slice'
+          if heading not in s:
+              raise SystemExit('audit work entry not found')
+          start=s.index(heading)
+          next_heading=s.find('\n### ',start+len(heading))
+          if next_heading<0:
+              next_heading=len(s)
+          entry=s[start:next_heading]
+          if '**Status: IN PROGRESS**' not in entry:
+              raise SystemExit('audit work entry is not IN PROGRESS')
+          entry=entry.replace('**Status: IN PROGRESS**','**Status: COMPLETED**',1)
+          summary=dedent('''
+
+          #### Completion summary
+
+          - **Result:** COMPLETED. Pass 1 clarity/correctness and the four-surface production visual slice are accepted, committed, cleaned up, and deployed. Puzzle rules, solutions, `story400.js`, `story-grounding400.js`, and all eight campaign definition files remained protected through the visual-slice validation.
+          - **Pass 1 product:** `4868b46cb9e934660e5fbfe08ed3953350de93b3` (`Complete clarity and correctness pass`). It fixed chronological cinematic dialogue presentation, earned-knowledge story grounding, real Settings/controls, isolated Daily mode, separate mechanic/story teaching, player-facing copy, readability/targets/zoom, and short-screen containment. Validation run `34736482096`, job `103668716157`; artifact `audit-pass1-clarity-correctness` ID `10311525334`, SHA-256 `1028cbdc10445c166aa0480ff371d19d1fd172d51ff01529ce1b2b3bd0eeefd5`. Cleanup commit `65b4c42b0136e8f3afb2873f9b00398ba270a29c`. Clean Pass 1 Pages run `34736516219` (run 963) succeeded.
+          - **Visual-slice product:** `413cb82f9f2b26b863e42d6e3a392e30fe664b3c` (`Build production visual slice`). Changed exactly `index.html`, `game400-a.js`, `game400-b.js`, `cinematics400.js`, `title-island-concepts/index.html`, and new `style400-production-slice.css`.
+          - **Sunpetal proof:** campaign Level 1 now uses the approved quiet matte moss/warm-stone grammar, removes rule-like patterned cell decoration, keeps obstacles/nests/Latchlings visually stratified, and explicitly pairs the selected Latchling with its matching nest. The 390x844 and 320x568 captures were manually inspected after strengthening the screenshot harness so the Chapter Opening card could not cover the board.
+          - **Dense Aurora proof:** campaign Level 366 was chosen because one 7x7 board contains anchor, suit gate, color gate, rail, turner, switch, door, and heavy rock geometry. The accepted midnight-blue floor moves aurora richness out of rule space and gives each fixture a distinct material/contrast role while preserving a single selected-piece/matching-nest focal pair.
+          - **Familiar Porch proof:** Across the Drift beat 2 now stages Tansy and Pip together with a telescope, layered near/far islands, and a warm lit porch. Dialogue stays in the ordered dock below the stage; a text-hidden screenshot was manually inspected and the visual still clearly communicates looking across the drift toward a familiar home.
+          - **Chapter 1 reward proof:** completing Level 50 now shows a dedicated Sunpetal-restored reward with an illustrated mailbox/route/basket result, concise ordinary-life consequence copy, stars secondary, `Visit Little Home`, and `Continue to Lanternwood`. Validation completes the real authored Level 50 solution, producing a 12-move / 12-perfect-route capture rather than a fabricated direct win. `Visit Little Home` then focuses the canonical mailbox on the real Little Home screen, with reduced-motion-safe treatment.
+          - **Visual validation:** validation-only run `34737200980`, job `103670614891`, passed the full browser/screenshot matrix and produced artifact `audit-production-visual-slice` ID `10310789826`, SHA-256 `90f2f125a377997bb40967d5ed7d7d0ca846841da8111fd91b3d845e7c069699`. Manual review approved the second evidence set: before/after Sunpetal, before/after dense Aurora, porch with text and with all cinematic copy hidden, real Level 50 reward, Little Home mailbox payoff, 320x568 Level 1/Aurora, and reduced-motion rendering.
+          - **Promotion validation:** promotion run `34737299187`, job `103670848231`, reran the same protected-source checks and browser/screenshot matrix successfully before committing. Promotion artifact `audit-production-visual-slice` is ID `10310779739`, SHA-256 `71fe499e9bbe946f8ac1d7f1156c75635f06bd7428c8c22669cad50aa3903227`. Validator/helper cleanup commit `cf7500c1526b1f8bb3ced6f326f3186c1fca2e77` removed all visual-slice temporary infrastructure.
+          - **Deployment / hygiene:** GitHub Pages run `34737338177` (run 975) succeeded on clean accepted slice head `cf7500c1526b1f8bb3ced6f326f3186c1fca2e77`. `.github/workflows` was verified to contain only permanent `validate-repository-access-guard.yml` before this closeout helper was added.
+          - **Remaining scope:** This work intentionally stops at the approved production slice. The new material language is **not** rolled across all 400 levels yet. The next product decision should be whether to extend the accepted quiet-floor/fixture/scenery grammar chapter-by-chapter using these proofs, with the same protected gameplay-data gate and screenshot review rather than applying a blanket decorative override.
+          ''')
+          if '#### Completion summary' in entry:
+              raise SystemExit('completion summary already present')
+          entry=entry.rstrip()+summary+'\n\n'
+          s=s[:start]+entry+s[next_heading:]
+          p.write_text(s)
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Complete audit Pass 1 and production visual slice handoff"
+          git push
+      - name: Self-remove closeout helper
+        run: |
+          git pull --rebase
+          git rm .github/workflows/closeout-audit-pass1-slice.yml
+          git commit -m "Remove audit closeout helper"
+          git push
