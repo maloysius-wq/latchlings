@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Chapter 7 handoff starter: output only, repository mutation remains connector-owned.
 p=Path('DEVELOPMENT_HANDOFF.md')
 s=p.read_text()
 anchor='## Current Work\n\n'
