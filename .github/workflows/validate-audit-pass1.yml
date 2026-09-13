@@ -1,0 +1,101 @@
+name: Validate audit Pass 1 clarity and correctness
+
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-audit-pass1.yml'
+
+permissions:
+  contents: write
+
+env:
+  PRODUCT_FILES: >-
+    index.html game400-a.js game400-b.js story-grounding400.js cinematic-dialogue400.js cinematics400.js gameplay-story-rail400.js title-island-concepts/index.html style400-story-rail-board.css style400-game.css style400-ui.css style400-skyway-atlas.css style400-cinematics-dialogue.css
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Protect campaign source hashes
+        run: sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+
+      - name: Apply Pass 1 candidate
+        run: python .github/tmp/apply-audit-pass1.py
+
+      - name: Static validation
+        run: |
+          node --check game400-a.js
+          node --check game400-b.js
+          node --check story-grounding400.js
+          node --check cinematics400.js
+          node --check cinematic-dialogue400.js
+          node --check gameplay-story-rail400.js
+          sha256sum -c /tmp/campaign-before.sha256
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          expected=set('index.html game400-a.js game400-b.js story-grounding400.js cinematic-dialogue400.js cinematics400.js gameplay-story-rail400.js title-island-concepts/index.html style400-story-rail-board.css style400-game.css style400-ui.css style400-skyway-atlas.css style400-cinematics-dialogue.css'.split())
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          if changed != expected:
+              raise SystemExit(f'product diff mismatch: {sorted(changed)}')
+          html=Path('index.html').read_text()
+          assert 'user-scalable=no' not in html
+          assert 'id="storyRailSlot"' in html
+          assert html.index('id="board"') < html.index('id="mechanicNote"') < html.index('class="controls"')
+          gb=Path('game400-b.js').read_text()
+          assert 'solver-verified' not in gb
+          assert 'Verified shortest solution' not in gb
+          assert "startDailyPuzzle" in gb and "saveDailyCompletion" in Path('game400-a.js').read_text()
+          cd=Path('cinematic-dialogue400.js').read_text()
+          assert "dialogueLines(beat).map" in cd and 'cin-ordered-dialogue-dock' in cd
+          sg=Path('story-grounding400.js').read_text()
+          assert "const fresh=discoveries.length===0" in sg
+          title=Path('title-island-concepts/index.html').read_text()
+          assert 'class="story-home"' in title and "'story'" in title
+          print('AUDIT_PASS1_STATIC_OK')
+          PY
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Chromium validation runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-pass1-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 1
+          node .github/tmp/validate-audit-pass1.mjs
+
+      - name: Upload Pass 1 audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-pass1-clarity-correctness
+          path: /tmp/audit-pass1
+
+      - name: Commit accepted Pass 1 product files
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add $PRODUCT_FILES
+          git commit -m "Complete clarity and correctness pass"
+          git push
+
+      - name: Self-remove Pass 1 validation helpers
+        run: |
+          rm -rf node_modules
+          git reset --hard HEAD
+          git pull --rebase
+          git rm .github/workflows/validate-audit-pass1.yml .github/tmp/apply-audit-pass1.py .github/tmp/validate-audit-pass1.mjs
+          git commit -m "Remove audit Pass 1 validator"
+          git push
