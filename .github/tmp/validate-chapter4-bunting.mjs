@@ -22,12 +22,15 @@ await frame.locator('#c2 .story-bunting').waitFor({state:'visible'});
 const state=await frame.locator('#c2 .phone').evaluate(phone=>{
  const bunting=phone.querySelector('.story-bunting'),cottage=phone.querySelector('.cottage');
  const b=bunting.getBoundingClientRect(),c=cottage.getBoundingClientRect(),s=getComputedStyle(bunting);
+ const flags=Array.from(bunting.querySelectorAll('b')).map(el=>{const r=el.getBoundingClientRect(),cs=getComputedStyle(el);return {w:r.width,h:r.height,bg:cs.backgroundColor,display:cs.display,opacity:cs.opacity}});
  const overlap=!(b.right<=c.left||b.left>=c.right||b.bottom<=c.top||b.top>=c.bottom);
- return {stage4:phone.classList.contains('story-stage-4'),focus:phone.classList.contains('story-focus-bunting'),display:s.display,opacity:s.opacity,bunting:{left:b.left,top:b.top,right:b.right,bottom:b.bottom,width:b.width,height:b.height},cottage:{left:c.left,top:c.top,right:c.right,bottom:c.bottom},overlap};
+ return {stage4:phone.classList.contains('story-stage-4'),focus:phone.classList.contains('story-focus-bunting'),display:s.display,opacity:s.opacity,bunting:{left:b.left,top:b.top,right:b.right,bottom:b.bottom,width:b.width,height:b.height},cottage:{left:c.left,top:c.top,right:c.right,bottom:c.bottom},overlap,flags};
 });
 if(!state.stage4||!state.focus||state.display==='none'||Number(state.opacity)<.95)throw new Error('Bunting focus state missing: '+JSON.stringify(state));
 if(state.overlap)throw new Error('Bunting overlaps cottage: '+JSON.stringify(state));
 if(state.bunting.width<120)throw new Error('Bunting too narrow to read: '+JSON.stringify(state));
+if(state.flags.length!==5||state.flags.some(f=>f.display==='none'||Number(f.opacity)<.95||f.w<8||f.h<9))throw new Error('Five pennants are not visibly rendered: '+JSON.stringify(state));
+if(new Set(state.flags.map(f=>f.bg)).size<4)throw new Error('Bunting palette did not render distinctly: '+JSON.stringify(state));
 if(errors.length)throw new Error('Browser errors: '+JSON.stringify(errors));
 await page.screenshot({path:`${OUT}/chapter4-home-bunting-focus-390.png`,fullPage:false});
 fs.writeFileSync(`${OUT}/bunting-refinement.json`,JSON.stringify(state,null,2));
