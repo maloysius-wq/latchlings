@@ -87,15 +87,17 @@ jobs:
           from pathlib import Path
           p=Path('.github/tmp/validate-audit-pass1.mjs')
           s=p.read_text()
+          s=s.replace("const page=await base.newPage();","const page=await base.newPage();\npage.setDefaultTimeout(5000);",1)
           s=s.replace("await homeFrame.click('#c2 .settings');","await homeFrame.evaluate(()=>document.querySelector('#c2 .settings').click());",1)
           s=s.replace("await homeFrame.click('#c2 .story-home');","await homeFrame.evaluate(()=>document.querySelector('#c2 .story-home').click());",1)
+          s=s.replace(" const p=await ctx.newPage();"," const p=await ctx.newPage();\n p.setDefaultTimeout(5000);",1)
           p.write_text(s)
           PY
           python3 -m http.server 4173 >/tmp/latchlings-pass1-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
-          node .github/tmp/validate-audit-pass1.mjs
+          timeout 180s node .github/tmp/validate-audit-pass1.mjs
 
       - name: Upload Pass 1 audit
         uses: actions/upload-artifact@v4
