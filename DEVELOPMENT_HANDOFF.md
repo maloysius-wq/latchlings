@@ -38,6 +38,21 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 ## Current Work
 
 
+### 2026-09-12 — Chapter 1 production material rollout
+
+**Status: IN PROGRESS**
+
+**User goal:** Continue development from the accepted production visual slice using the current repository as source of truth. Follow the handoff's explicit next step by extending the accepted quiet-floor / weighted-fixture / selected-piece-to-matching-nest visual grammar chapter-by-chapter, beginning with Chapter 1 only.
+
+**Implementation plan:** (1) Preserve the accepted Level 1 Sunpetal visual contract and extend it to all campaign Levels 1–50 through a reusable chapter-aware visual-mode hook rather than a 50-level hard-coded list. (2) Keep the existing Level 366 Aurora proof as an explicit level override and keep Daily mode neutral. (3) Add subtle Sunpetal board-range material variation across the five 10-level waypoints so the full chapter feels authored without introducing rule-like floor decoration or changing gameplay geometry. (4) Bump the production visual stylesheet cache key. No campaign definitions, solutions, movement rules, story content, or reward logic may change.
+
+**Expected files/systems:** `DEVELOPMENT_HANDOFF.md`; `game400-a.js`; `style400-production-slice.css`; `index.html`; temporary self-removing validation helpers only. Protected source: `campaign400-1.js` through `campaign400-8.js`, `story400.js`, `story-grounding400.js`, and gameplay movement/solution logic.
+
+**Validation plan:** Protect hashes for all eight campaign definition files plus story sources; run syntax/static assertions; browser-test representative Chapter 1 levels 1, 10, 11, 20, 21, 30, 31, 40, 41, and 50 at 390x844 plus Levels 1 and 50 at 320x568; assert every Chapter 1 campaign level receives the Sunpetal production mode, Daily receives none, Level 51 receives none, Level 366 retains Aurora dense mode, selected-piece/matching-nest pairing remains present, decorative pseudo-elements remain suppressed, floor backgrounds contain no repeating/conic/radial rule-like patterns, touch/viewport containment remains healthy, and no protected source hash changes. Capture screenshot evidence for the five Chapter 1 board ranges and small-phone endpoints.
+
+**Deployment plan:** Commit this IN PROGRESS entry before product edits. Implement the Chapter 1-only rollout, validate with temporary GitHub Actions/Chromium helpers, promote only a green product state, remove all temporary helpers, confirm GitHub Pages succeeds on the clean product head, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits/runs/artifacts and the next chapter decision.
+
+
 ### 2026-09-12 — Audit Pass 1 clarity/correctness and approved visual slice
 
 **Status: COMPLETED**
