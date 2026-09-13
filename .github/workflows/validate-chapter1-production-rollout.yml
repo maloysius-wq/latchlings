@@ -1,0 +1,99 @@
+name: Validate Chapter 1 production rollout
+
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-chapter1-production-rollout.yml'
+      - '.github/tmp/apply-chapter1-production-rollout.py'
+      - '.github/tmp/validate-chapter1-production-rollout.mjs'
+
+permissions:
+  contents: write
+
+env:
+  PRODUCT_FILES: >-
+    game400-a.js style400-production-slice.css index.html
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Protect gameplay and story sources
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js story400.js story-grounding400.js game400-b.js cinematics400.js title-island-concepts/index.html > /tmp/protected-before.sha256
+
+      - name: Apply Chapter 1 production candidate
+        run: python .github/tmp/apply-chapter1-production-rollout.py
+
+      - name: Static validation
+        run: |
+          node --check game400-a.js
+          sha256sum -c /tmp/protected-before.sha256
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          expected={'game400-a.js','style400-production-slice.css','index.html'}
+          changed=set()
+          for line in subprocess.check_output(['git','status','--porcelain'],text=True).splitlines():
+              path=line[3:]
+              if path.startswith('.github/tmp/') or path=='.github/workflows/validate-chapter1-production-rollout.yml':
+                  continue
+              changed.add(path)
+          if changed != expected:
+              raise SystemExit(f'Chapter 1 product diff mismatch: {sorted(changed)}')
+          a=Path('game400-a.js').read_text();css=Path('style400-production-slice.css').read_text();h=Path('index.html').read_text()
+          assert "const VISUAL_CHAPTER_MODES={1:'sunpetal'};" in a
+          assert "const VISUAL_LEVEL_OVERRIDES={366:'aurora-dense'};" in a
+          assert "if(playMode!=='campaign')return ''" in a
+          for r in range(1,6):
+              assert f'#game[data-visual-slice="sunpetal"] #board[data-board-range="{r}"]' in css
+          assert 'Chapter 1 waypoint progression:' in css
+          assert 'style400-production-slice.css?v=20260912-ch1rollout1' in h
+          print('CHAPTER1_PRODUCTION_STATIC_OK')
+          PY
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Chromium validation runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance and screenshot matrix
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-ch1-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 1
+          timeout 210s node .github/tmp/validate-chapter1-production-rollout.mjs
+
+      - name: Upload Chapter 1 rollout evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter1-production-rollout
+          path: /tmp/chapter1-production-rollout
+
+      - name: Commit accepted Chapter 1 product files
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add $PRODUCT_FILES
+          git commit -m "Roll production materials through Chapter 1"
+          git push
+
+      - name: Self-remove validation helpers
+        run: |
+          rm -rf node_modules
+          git reset --hard HEAD
+          git clean -fd
+          git pull --rebase
+          git rm .github/workflows/validate-chapter1-production-rollout.yml .github/tmp/apply-chapter1-production-rollout.py .github/tmp/validate-chapter1-production-rollout.mjs
+          git commit -m "Remove Chapter 1 rollout validator"
+          git push
