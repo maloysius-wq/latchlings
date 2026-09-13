@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/validate-chapter2-pass3.yml'
       - '.github/tmp/apply-chapter2-pass3.py'
+      - '.github/tmp/refine-chapter2-pass3.py'
       - '.github/tmp/validate-chapter2-pass3.mjs'
+      - '.github/tmp/validate-chapter2-pass3-final-evidence.mjs'
 
 permissions:
   contents: write
@@ -29,7 +31,9 @@ jobs:
           sha256sum campaign400-{1,2,3,4,5,6,7,8}.js cinematic-dialogue400.js gameplay-story-rail400.js story-theme400.js music400.js sfx400.js style400-game.css > /tmp/protected-before.sha256
 
       - name: Apply Chapter 2 Pass 3 candidate
-        run: python .github/tmp/apply-chapter2-pass3.py
+        run: |
+          python .github/tmp/apply-chapter2-pass3.py
+          python .github/tmp/refine-chapter2-pass3.py
 
       - name: Static validation
         run: |
@@ -62,6 +66,7 @@ jobs:
           assert 'showChapterTwoReward' in b and "focusHomeReward('pennant')" in b and 'currentLevel===100' in b
           assert 'porch-friend-lantern l1' in cin and 'porch-friend-lantern l2' in cin
           assert 'story-focus-pennant' in home and "e.data.focus==='pennant'" in home
+          assert '#c2 .story-pennant{left:238px;top:146px' in home
           assert '20260912-ch2pass3-1' in html
           print('CHAPTER2_PASS3_STATIC_OK')
           PY
@@ -82,6 +87,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
           timeout 300s node .github/tmp/validate-chapter2-pass3.mjs
+          timeout 120s node .github/tmp/validate-chapter2-pass3-final-evidence.mjs
           sha256sum -c /tmp/protected-before.sha256
 
       - name: Upload Chapter 2 Pass 3 evidence
@@ -89,7 +95,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chapter2-pass3-campaign-application
-          path: /tmp/chapter2-pass3
+          path: |
+            /tmp/chapter2-pass3
+            /tmp/chapter2-pass3-final
           if-no-files-found: warn
 
       - name: Commit accepted Chapter 2 product files
@@ -108,6 +116,6 @@ jobs:
           git reset --hard HEAD
           git clean -fd
           git pull --rebase
-          git rm .github/workflows/validate-chapter2-pass3.yml .github/tmp/apply-chapter2-pass3.py .github/tmp/validate-chapter2-pass3.mjs
+          git rm .github/workflows/validate-chapter2-pass3.yml .github/tmp/apply-chapter2-pass3.py .github/tmp/refine-chapter2-pass3.py .github/tmp/validate-chapter2-pass3.mjs .github/tmp/validate-chapter2-pass3-final-evidence.mjs
           git commit -m "Remove Chapter 2 Pass 3 validator"
           git push
