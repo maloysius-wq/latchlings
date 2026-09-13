@@ -61,6 +61,11 @@ jobs:
           daily_css='\nbody[data-play-mode="daily"] #storyCardBtn{display:none!important}\n'
           if daily_css.strip() not in gs:
               gp.write_text(gs+daily_css)
+          rp=Path('style400-story-rail-board.css')
+          rs=rp.read_text()
+          readability='\n/* Pass 1 readability contract: essential story copy must remain legible even against legacy responsive rules. */\n#game #storyRailSlot .story-level-rail .story-rail-main p{font-size:14px!important;line-height:1.25!important}\n@media(max-height:620px){#game #storyRailSlot .story-level-rail .story-rail-main p{font-size:13px!important;line-height:1.2!important}}\n'
+          if 'Pass 1 readability contract' not in rs:
+              rp.write_text(rs+readability)
           PY
 
       - name: Static validation
@@ -97,6 +102,8 @@ jobs:
           sfx=Path('sfx400.js').read_text()
           assert "if (button.textContent !== text)" in sfx and "if (button.getAttribute('aria-pressed') !== pressed)" in sfx
           assert 'body[data-play-mode="daily"] #storyCardBtn{display:none!important}' in Path('style400-game.css').read_text()
+          rail=Path('style400-story-rail-board.css').read_text()
+          assert 'Pass 1 readability contract' in rail and 'font-size:14px!important' in rail
           title=Path('title-island-concepts/index.html').read_text()
           assert 'class="story-home"' in title and "'story'" in title and "bindEmbed(c2.querySelector('.settings'),'settings')" in title
           print('AUDIT_PASS1_STATIC_OK')
