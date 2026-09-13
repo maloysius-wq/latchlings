@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 env:
-  PROMOTE: 'false'
+  PROMOTE: 'true'
   PRODUCT_FILES: >-
     index.html game400-a.js game400-b.js cinematics400.js title-island-concepts/index.html style400-production-slice.css
 
