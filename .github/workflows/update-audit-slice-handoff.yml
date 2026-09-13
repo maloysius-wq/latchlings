@@ -19,17 +19,18 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          from textwrap import dedent
           p=Path('DEVELOPMENT_HANDOFF.md')
           s=p.read_text()
           heading='### 2026-09-12 — Audit Pass 1 clarity/correctness and approved visual slice'
           if heading not in s:
               raise SystemExit('current audit work entry not found')
-          checkpoint='''
+          checkpoint=dedent('''
 
-**Pass 1 accepted checkpoint (2026-09-12):** Pass 1 is functionally accepted and deployed. Accepted product commit `4868b46cb9e934660e5fbfe08ed3953350de93b3` (`Complete clarity and correctness pass`) passed Actions run `34736482096`, job `103668716157`, including protected hashes for all eight campaign source files and the full Chromium acceptance matrix. Artifact `audit-pass1-clarity-correctness` is ID `10311525334`, SHA-256 `1028cbdc10445c166aa0480ff371d19d1fd172d51ff01529ce1b2b3bd0eeefd5`. The run also exposed and fixed four real acceptance issues before commit: an SFX Settings MutationObserver feedback loop, a campaign Story control leaking into Daily mode, essential story-rail copy collapsing to 9.8px through a late cascade, and the 320x568 control region extending 1.7px below the viewport. Validator cleanup commit `65b4c42b0136e8f3afb2873f9b00398ba270a29c` removed all Pass 1 temporary helpers. GitHub Pages run `34736516219` (run 963) succeeded on that clean head, and `.github/workflows` was verified to contain only `validate-repository-access-guard.yml` before this checkpoint helper was added.
+          **Pass 1 accepted checkpoint (2026-09-12):** Pass 1 is functionally accepted and deployed. Accepted product commit `4868b46cb9e934660e5fbfe08ed3953350de93b3` (`Complete clarity and correctness pass`) passed Actions run `34736482096`, job `103668716157`, including protected hashes for all eight campaign source files and the full Chromium acceptance matrix. Artifact `audit-pass1-clarity-correctness` is ID `10311525334`, SHA-256 `1028cbdc10445c166aa0480ff371d19d1fd172d51ff01529ce1b2b3bd0eeefd5`. The run also exposed and fixed four real acceptance issues before commit: an SFX Settings MutationObserver feedback loop, a campaign Story control leaking into Daily mode, essential story-rail copy collapsing to 9.8px through a late cascade, and the 320x568 control region extending 1.7px below the viewport. Validator cleanup commit `65b4c42b0136e8f3afb2873f9b00398ba270a29c` removed all Pass 1 temporary helpers. GitHub Pages run `34736516219` (run 963) succeeded on that clean head, and `.github/workflows` was verified to contain only `validate-repository-access-guard.yml` before this checkpoint helper was added.
 
-**Visual slice start checkpoint:** The approved visual slice now begins from clean deployed head `65b4c42b0136e8f3afb2873f9b00398ba270a29c`. Scope remains exactly the four pre-approved targets: Sunpetal gameplay, one dense Aurora board, the Across the Drift familiar-porch cinematic, and the Chapter 1 reward/Little Home mailbox payoff. The slice must establish reusable production tokens/components and may not alter puzzle rules, solutions, campaign level definitions, or expand into a campaign-wide material rollout before slice acceptance.
-'''
+          **Visual slice start checkpoint:** The approved visual slice now begins from clean deployed head `65b4c42b0136e8f3afb2873f9b00398ba270a29c`. Scope remains exactly the four pre-approved targets: Sunpetal gameplay, one dense Aurora board, the Across the Drift familiar-porch cinematic, and the Chapter 1 reward/Little Home mailbox payoff. The slice must establish reusable production tokens/components and may not alter puzzle rules, solutions, campaign level definitions, or expand into a campaign-wide material rollout before slice acceptance.
+          ''')
           if '**Pass 1 accepted checkpoint (2026-09-12):**' in s:
               raise SystemExit('checkpoint already recorded')
           start=s.index(heading)
