@@ -163,8 +163,10 @@
   function updateSettingsButton() {
     const button = document.getElementById('sfxToggleBtn');
     if (!button) return;
-    button.textContent = `Sound Effects: ${enabled ? 'On' : 'Off'}`;
-    button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    const text = `Sound Effects: ${enabled ? 'On' : 'Off'}`;
+    const pressed = enabled ? 'true' : 'false';
+    if (button.textContent !== text) button.textContent = text;
+    if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
   }
 
   function augmentSettingsModal() {

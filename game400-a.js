@@ -18,6 +18,20 @@ const DIRV={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]}; const CW={U:'R',R:'D',D:'L',L:'U
 let currentLevel=1,chapterView=1,rangeView=0,selected=0,movesUsed=0,doorMask=0,positions=[],animating=false,hintStep=0;
 const PROGRESS_KEY='latchlings_campaign400_progress_v1';
 let progress=loadProgress();
+const UI_PREFS_KEY='latchlings_ui_prefs_v1';
+const DAILY_PROGRESS_KEY='latchlings_daily400_progress_v1';
+let playMode='campaign',dailySession=null;
+function loadUiPrefs(){try{const x=JSON.parse(localStorage.getItem(UI_PREFS_KEY)||'{}');return {motion:x.motion==='reduced'?'reduced':'system',textSize:x.textSize==='large'?'large':'normal'}}catch(_){return {motion:'system',textSize:'normal'}}}
+let uiPrefs=loadUiPrefs();
+function effectiveReducedMotion(){return uiPrefs.motion==='reduced'||!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}
+function applyUiPrefs(){document.documentElement.dataset.motion=uiPrefs.motion;document.documentElement.dataset.textSize=uiPrefs.textSize}
+function setUiPref(key,value){if(key==='motion')uiPrefs.motion=value==='reduced'?'reduced':'system';if(key==='textSize')uiPrefs.textSize=value==='large'?'large':'normal';try{localStorage.setItem(UI_PREFS_KEY,JSON.stringify(uiPrefs))}catch(_){}applyUiPrefs();updateHome(true)}
+applyUiPrefs();
+window.LatchlingsPrefs={get:()=>({...uiPrefs}),set:setUiPref,reducedMotion:effectiveReducedMotion};
+function dailyRouteInfo(){const now=new Date(),key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,seed=now.getFullYear()*372+now.getMonth()*31+now.getDate();return {key,level:(seed*37%400)+1}}
+function startDailyPuzzle(){dailySession=dailyRouteInfo();startLevel(dailySession.level,'daily')}
+function saveDailyCompletion(stars){if(!dailySession)return;try{const all=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');all[dailySession.key]={level:dailySession.level,stars,moves:movesUsed,completed:true};localStorage.setItem(DAILY_PROGRESS_KEY,JSON.stringify(all))}catch(_){}}
+function leaveDailyForHome(){playMode='campaign';dailySession=null;document.body.dataset.playMode='campaign';screen('home')}
 let atlasRewardState=null,atlasRewardTimers=[];
 const ATLAS_REWARD_TIME_SCALE=1.7;
 function atlasRewardMs(ms){return Math.round(ms*ATLAS_REWARD_TIME_SCALE)}
@@ -32,7 +46,7 @@ function screen(id){
  const current=document.querySelector('.screen.active');
  if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);return}
  const swap=()=>{document.body.dataset.screen=id;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));next.classList.add('active');if(id==='home')setTimeout(()=>updateHome(true),0)};
- const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches),canAnimate=!!current&&!reduced&&typeof current.animate==='function';
+ const reduced=effectiveReducedMotion(),canAnimate=!!current&&!reduced&&typeof current.animate==='function';
  if(!canAnimate){swap();return}
  const atlasDive=current.id==='levels'&&id==='game',atlasPullback=current.id==='game'&&id==='levels';
  const priorStyle=current.getAttribute('style'),rect=current.getBoundingClientRect(),computedDisplay=getComputedStyle(current).display,display=computedDisplay==='none'?'flex':computedDisplay;
@@ -69,7 +83,7 @@ function clockwiseAvailable(){const lev=LEVELS[currentLevel-1],mid=(lev.size-1)/
 function cycleLatchling(){if(animating)return;const order=clockwiseAvailable();if(order.length<2)return;const at=order.indexOf(selected);selected=order[(at<0?0:at+1)%order.length];renderPieces(LEVELS[currentLevel-1]);if(window.LatchlingsSFX)window.LatchlingsSFX.cycleLatchling()}
 function nearestLatchling(origin){let best=-1,bestD=Infinity;positions.forEach((p,i)=>{if(!p)return;const d=(p[0]-origin[0])**2+(p[1]-origin[1])**2;if(d<bestD||(d===bestD&&i<best)){bestD=d;best=i}});return best}
 function starSvg(on,cls=''){return `<span class="win-star ${on?'on':''} ${cls}"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="core" d="M50 8 62 35 92 38 69 58 75 88 50 72 25 88 31 58 8 38 38 35 Z"/><path class="shine" d="M50 17 58 35 78 37 63 50 67 68 50 58 33 68 37 50 22 37 42 35 Z"/></svg></span>`}
-function updateHome(replay=false){const total=Object.values(progress.stars).reduce((a,b)=>a+(+b||0),0),legacy=document.getElementById('homeStars');if(legacy)legacy.textContent=total;const frame=document.getElementById('homeTitleFrame'),stage=STORY?STORY.completedChapters(progress):0;if(frame&&frame.contentWindow)frame.contentWindow.postMessage({source:'latchlings-game',type:'home-state',stars:total,stage,replay:!!replay},location.origin)}
+function updateHome(replay=false){const total=Object.values(progress.stars).reduce((a,b)=>a+(+b||0),0),legacy=document.getElementById('homeStars');if(legacy)legacy.textContent=total;const frame=document.getElementById('homeTitleFrame'),stage=STORY?STORY.completedChapters(progress):0;if(frame&&frame.contentWindow)frame.contentWindow.postMessage({source:'latchlings-game',type:'home-state',stars:total,stage,replay:!!replay,motion:uiPrefs.motion,textSize:uiPrefs.textSize},location.origin)}
 const ATLAS_WAYPOINTS=[
  ['Morning Path','Meadow Detour','Open Fields','Routeworks','Sunset Return'],
  ['Lantern Edge','Shared Paths','Deep Grove','After Dark','Home Together'],
@@ -176,9 +190,25 @@ function renderChapter(){
  map.querySelectorAll('.atlas-node:not(.locked)').forEach(b=>b.onclick=()=>startLevel(+b.dataset.level));
  const continueBtn=document.getElementById('continueBtn');if(continueBtn)continueBtn.innerHTML=`<span>${progress.stars[progress.unlocked]?'Return to latest stop':'Continue journey'}</span><b>Level ${progress.unlocked}</b>`;
 }
-function startLevel(L){currentLevel=Math.max(1,Math.min(400,L));const lev=LEVELS[currentLevel-1];if(!lev){showError('Missing level '+currentLevel);return}chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);applyTheme(chapterView);positions=lev.pieces.map(p=>p.pos.slice());doorMask=0;movesUsed=0;selected=0;hintStep=0;animating=false;screen('game');renderGame(true);const enterStory=()=>{if(window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.enterLevel(currentLevel)},enterCinematicOrStory=()=>{if(window.LatchlingsCinematics&&window.LatchlingsCinematics.maybeShowBeforeLevel(currentLevel,progress.unlocked,enterStory))return;enterStory()};if(activeScreenTransition&&activeScreenTransition.finished)activeScreenTransition.finished.then(enterCinematicOrStory).catch(enterCinematicOrStory);else enterCinematicOrStory()}
+function startLevel(L,mode='campaign'){
+ playMode=mode==='daily'?'daily':'campaign';document.body.dataset.playMode=playMode;
+ currentLevel=Math.max(1,Math.min(400,L));const lev=LEVELS[currentLevel-1];if(!lev){showError('Missing level '+currentLevel);return}
+ if(playMode==='daily'&&!dailySession)dailySession={...dailyRouteInfo(),level:currentLevel};
+ chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);applyTheme(chapterView);positions=lev.pieces.map(p=>p.pos.slice());doorMask=0;movesUsed=0;selected=0;hintStep=0;animating=false;
+ if(playMode==='daily'&&window.LatchlingsStoryTheme?.close)window.LatchlingsStoryTheme.close(false);
+ screen('game');renderGame(true);
+ if(playMode==='daily')return;
+ const enterStory=()=>{if(window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.enterLevel(currentLevel)},enterCinematicOrStory=()=>{if(window.LatchlingsCinematics&&window.LatchlingsCinematics.maybeShowBeforeLevel(currentLevel,progress.unlocked,enterStory))return;enterStory()};if(activeScreenTransition&&activeScreenTransition.finished)activeScreenTransition.finished.then(enterCinematicOrStory).catch(enterCinematicOrStory);else enterCinematicOrStory()
+}
 function boardRangeForLevel(L){return Math.floor(((L-1)%50)/10)+1}
-function renderGame(full=false){const lev=LEVELS[currentLevel-1],chapter=Math.ceil(currentLevel/50),boardRange=boardRangeForLevel(currentLevel);applyTheme(chapter);const storyMeta=STORY?STORY.levelMeta(currentLevel):null;document.getElementById('levelTitle').textContent='Level '+currentLevel;document.getElementById('movesLeft').textContent=Math.max(0,lev.moveLimit-movesUsed);const note=document.getElementById('mechanicNote');note.classList.remove('story-note');note.classList.add('mechanic-chip');note.innerHTML=`<span class="mechanic-chip-label">Route tip</span><span class="mechanic-chip-copy">${chapterNote(currentLevel)}</span>`;if(window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.decorateLevel(currentLevel,storyMeta);const board=document.getElementById('board');board.style.setProperty('--n',lev.size);board.dataset.boardRange=String(boardRange);board.dataset.boardStyle=`ch${chapter}-r${boardRange}`;if(full){board.querySelectorAll('.cell').forEach(x=>x.remove());for(let r=0;r<lev.size;r++)for(let c=0;c<lev.size;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.dataset.tileVariant=String((r*3+c*5+currentLevel+boardRange)%4);board.insertBefore(cell,document.getElementById('pieceLayer'));decorateCell(cell,lev,r,c)}}renderPieces(lev)}
+function renderGame(full=false){
+ const lev=LEVELS[currentLevel-1],chapter=Math.ceil(currentLevel/50),boardRange=boardRangeForLevel(currentLevel);applyTheme(chapter);const campaign=playMode==='campaign',storyMeta=campaign&&STORY?STORY.levelMeta(currentLevel):null;
+ const board=document.getElementById('board');board.dataset.level=String(currentLevel);document.getElementById('levelTitle').textContent=campaign?'Level '+currentLevel:'Daily Route';document.getElementById('movesLeft').textContent=Math.max(0,lev.moveLimit-movesUsed);
+ const storyBtn=document.getElementById('storyCardBtn');if(storyBtn){storyBtn.hidden=!campaign;storyBtn.setAttribute('aria-hidden',campaign?'false':'true')}
+ const note=document.getElementById('mechanicNote');note.className='mechanic-note mechanic-chip';note.innerHTML=`<span class="mechanic-chip-label">Route tip</span><span class="mechanic-chip-copy">${chapterNote(currentLevel)}</span>`;
+ const props=document.getElementById('levelProps');if(campaign&&window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.decorateLevel(currentLevel,storyMeta);else if(props){props.innerHTML='';props.hidden=true;props.setAttribute('aria-hidden','true')}
+ board.style.setProperty('--n',lev.size);board.dataset.boardRange=String(boardRange);board.dataset.boardStyle=`ch${chapter}-r${boardRange}`;if(full){board.querySelectorAll('.cell').forEach(x=>x.remove());for(let r=0;r<lev.size;r++)for(let c=0;c<lev.size;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.dataset.tileVariant=String((r*3+c*5+currentLevel+boardRange)%4);board.insertBefore(cell,document.getElementById('pieceLayer'));decorateCell(cell,lev,r,c)}}renderPieces(lev)
+}
 function chapterNote(L){const k=(L-1)%50+1,ch=Math.ceil(L/50),c=CHAPTERS[ch-1];if(k<=2)return (c.mechanic?c.mechanic+'. ':'')+c.tip;if(ch===1&&k<=5)return 'A snap continues until something stops it. Use the board edge and rocks to line up the nest.';if(ch===2&&k<=5)return 'Other Latchlings are movable walls. Park one where another needs to stop.';if(ch===3&&k<=5)return 'Anchors create exact stopping points without needing a wall behind them.';if(ch===4&&k<=5)return 'Read the black suit mark before committing to a gate route.';if(ch===5&&k<=5)return 'Body color and suit are separate clues now. Check both before you snap.';if(ch===6&&k<=5)return 'Rails restrict entry; turners bend one continuous snap without spending another move.';if(ch===7&&k<=5)return 'Switch order matters. Open the route you need before committing a Latchling to it.';if(ch===8&&k<=5)return 'Everything is live. Read the whole circuit before your first move.';if(k>=46)return 'Expert board: expect setup moves, temporary blockers, and routes that only make sense several snaps ahead.';return c.tip}
 function findAt(arr,r,c){return (arr||[]).find(x=>x[0]===r&&x[1]===c)}
 function decorateCell(cell,lev,r,c){const rock=findAt(lev.rocks,r,c);if(rock){cell.innerHTML='<div class="rock"></div>';return}const nestI=lev.nests.findIndex(n=>n[0]===r&&n[1]===c);if(nestI>=0){const p=lev.pieces[nestI];cell.innerHTML=`<div class="nest" style="--piece-color:${COLORS[p.color]}">${suitSvg(p.suit)}</div>`;return}if(findAt(lev.anchors,r,c))cell.innerHTML+='<div class="anchor">'+icon('anchor')+'</div>';const sg=findAt(lev.suitGates,r,c);if(sg)cell.innerHTML+=`<div class="gate suit">${suitSvg(sg[2])}</div>`;const cg=findAt(lev.colorGates,r,c);if(cg)cell.innerHTML+=`<div class="gate color" style="--gate-color:${gateColor(cg[2])}"><span style="width:42%;height:42%;border-radius:50%;background:${gateColor(cg[2])};box-shadow:inset 0 0 0 4px rgba(255,255,255,.55)"></span></div>`;const rail=findAt(lev.rails,r,c);if(rail)cell.innerHTML+=`<div class="rail">${dirSvg(rail[2])}</div>`;const turn=findAt(lev.turners,r,c);if(turn)cell.innerHTML+=`<div class="turner">${turnSvg(turn[2])}</div>`;const sw=findAt(lev.switches,r,c);if(sw)cell.innerHTML+='<div class="switch-tile"></div>';const dr=findAt(lev.doors,r,c);if(dr)cell.innerHTML+=`<div class="door-tile ${(doorMask&(1<<dr[2]))?'open':''}"><div class="door-bars"></div></div>`}

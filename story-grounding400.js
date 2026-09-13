@@ -93,7 +93,11 @@ function campaignBriefing(progress){
   const cc=STORY.chapters[ch-1];
   for(let i=0;i<5;i++){const L=(ch-1)*50+(i+1)*10;if(milestoneDone(progress,L))discoveries.push({chapter:ch,level:L,text:cc.beats[i]})}
  }
- return {chapter,local,chapterName:c.name,location:c.theme,why:STORY.whyWaykeeper,goal:STORY.campaignGoal,pressure:STORY.antagonisticPressure,currentTitle:movement.title,currentQuestion:movement.question,currentStakes:movement.stakes,known:discoveries.slice(-3).map(x=>x.text)};
+ const fresh=discoveries.length===0;
+ const premise=fresh?'Several ordinary routes around Little Home have started missing in suspiciously similar ways. The household has called a Waykeeper to compare the failures and find out what changed.':`Little Home is following what the restored routes have actually proved. The current work is in ${c.theme}, and later conclusions stay out of the briefing until the journey earns them.`;
+ const goal=c.arc?.chapterGoal||movement.chapterGoal||'Restore the routes people need now and follow the evidence.';
+ const pressure=movement.stakes||c.arc?.pressure||'The current route problem is affecting ordinary life.';
+ return {chapter,local,chapterName:c.name,location:c.theme,premise,why:STORY.whyWaykeeper,goal,pressure,currentTitle:movement.title,currentQuestion:movement.question,currentStakes:movement.stakes,known:discoveries.slice(-3).map(x=>x.text)};
 }
 function journeyFor(progress){
  const unlocked=Math.max(1,Math.min(400,Number(progress&&progress.unlocked)||1)),current=Math.ceil(unlocked/50),out=[];

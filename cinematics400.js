@@ -41,7 +41,7 @@ const CINEMATICS={
    {label:'They Were All Correct',visual:'map-sequence',lines:[['Pippa','They were all correct.'],['Narrator','Old Waykeepers never protected one perfect map. They watched the drift and rewrote the routes again and again.']]},
    {label:'What Was Forgotten',visual:'automation',lines:[['Rowan','The machines kept more of the work running by themselves.'],['Bramble','And eventually everyone forgot the part where somebody still had to look out the window.']]},
    {label:'The Real Problem',visual:'frozen-network',lines:[['Narrator','The islands are not broken. The drift is not the disaster. The Skyway stopped changing with them.'],['Pippa','Then we do not restore the old map.']]},
-   {label:'Make a New One',visual:'brand-new-route',lines:[['Rowan','We make the route the Latchlands need now.'],['Bramble','Finally. Instructions I can follow.'],['Narrator','For the first time, the Waykeeper deliberately builds a route that has never existed before.']]}
+   {label:'Make a New One',visual:'brand-new-route',lines:[['Rowan','We make the route the Latchlands need now.'],['Bramble','Finally. Instructions I can follow.'],['Narrator','Now the Waykeeper understands why a route with no historical precedent can still be the right route for the Latchlands today.']]}
   ]
  },
  homeward:{
