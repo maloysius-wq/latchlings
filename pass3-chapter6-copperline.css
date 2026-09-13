@@ -1,0 +1,60 @@
+/* Chapter 6 Pass 3 production layer: Copperline Junction / Old Ways. */
+/* Warm oxidized steel, station platforms and readable rail hardware. Rule-space floors stay quiet; archive/signal scenery lives outside it. */
+#game[data-visual-slice="copperline"] .board-wrap{background:linear-gradient(180deg,rgba(255,224,186,.05),rgba(80,48,37,.08));box-shadow:0 22px 44px rgba(54,35,29,.18)}
+#game[data-visual-slice="copperline"] #board{background:linear-gradient(145deg,#9b7860,#694f45)!important;border:3px solid #74503d!important;box-shadow:0 18px 34px rgba(45,29,25,.28),inset 0 2px rgba(255,238,210,.28),inset 0 0 0 5px rgba(102,70,52,.18)!important}
+#game[data-visual-slice="copperline"] #board .cell{background:linear-gradient(145deg,#d7c0a8,#b5967e)!important;border:1px solid rgba(91,62,49,.34)!important;border-radius:9px!important;box-shadow:inset 0 1px rgba(255,245,226,.42),inset 0 -2px rgba(67,44,36,.10)!important}
+#game[data-visual-slice="copperline"] #board .cell:before,#game[data-visual-slice="copperline"] #board .cell:after{opacity:0!important}
+#game[data-visual-slice="copperline"] #board .rock{background:linear-gradient(145deg,#80736b,#514b49 62%,#343638)!important;filter:saturate(.58);box-shadow:inset 4px 5px rgba(255,255,255,.17),inset -4px -5px rgba(25,24,24,.22),0 5px 8px rgba(38,28,25,.24)!important}
+#game[data-visual-slice="copperline"] #board .nest{background:linear-gradient(145deg,#f5e5cd,#d9bea0)!important;border-width:3px!important;border-style:solid!important;box-shadow:inset 0 0 0 3px rgba(255,248,232,.44),0 3px 8px rgba(65,43,35,.18)!important}
+
+/* Chapter mechanic fixtures: rails read as directional steel route plates; turners read as compact riveted turntables. */
+#game[data-visual-slice="copperline"] #board .rail{inset:12%;border-radius:10px;background:linear-gradient(145deg,#5b514b,#332f2e)!important;border:3px solid #8d5c3e!important;box-shadow:0 4px 8px rgba(39,27,24,.28),inset 0 1px rgba(255,230,196,.14),inset 0 0 0 2px rgba(33,27,25,.34)!important}
+#game[data-visual-slice="copperline"] #board .rail:before{content:"";position:absolute;inset:5px;border-radius:6px;border:1px solid rgba(236,180,112,.28);box-shadow:inset 0 0 0 1px rgba(34,28,26,.22)}
+#game[data-visual-slice="copperline"] #board .rail svg{position:relative;z-index:2;width:62%;height:62%;stroke:#ffe2a8!important;stroke-width:3.15!important;filter:drop-shadow(0 1px rgba(45,30,25,.65))}
+#game[data-visual-slice="copperline"] #board .turner{inset:11%;border-radius:50%;background:linear-gradient(145deg,#a96d48,#654738)!important;border:3px solid #493a34!important;box-shadow:0 4px 9px rgba(42,28,24,.28),inset 0 0 0 4px rgba(221,158,96,.24),inset 0 0 0 7px rgba(57,43,36,.20),inset 0 1px rgba(255,231,195,.22)!important}
+#game[data-visual-slice="copperline"] #board .turner:before{content:"";position:absolute;inset:5px;border:2px dotted rgba(255,211,151,.62);border-radius:50%}
+#game[data-visual-slice="copperline"] #board .turner svg{position:relative;z-index:2;width:61%;height:61%;stroke:#fff0c7!important;stroke-width:3!important;filter:drop-shadow(0 1px rgba(55,34,26,.72))}
+
+/* Five story movements: oxidized platform materials deepen as the Waykeeper leaves the idea of one authoritative old map behind. */
+#game[data-visual-slice="copperline"] #board[data-board-range="1"]{background:linear-gradient(145deg,#9b7860,#694f45)!important;border-color:#74503d!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="1"] .cell{background:linear-gradient(145deg,#d7c0a8,#b5967e)!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="2"]{background:linear-gradient(145deg,#967259,#65493f)!important;border-color:#704936!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="2"] .cell{background:linear-gradient(145deg,#d1b89e,#ad8d74)!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="3"]{background:linear-gradient(145deg,#8f6d55,#60463d)!important;border-color:#694533!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="3"] .cell{background:linear-gradient(145deg,#c9b096,#a6826b)!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="4"]{background:linear-gradient(145deg,#88664f,#5a4139)!important;border-color:#62402f!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="4"] .cell{background:linear-gradient(145deg,#c0a68d,#9b7763)!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="5"]{background:linear-gradient(145deg,#806149,#543c35)!important;border-color:#5d3d2e!important}
+#game[data-visual-slice="copperline"] #board[data-board-range="5"] .cell{background:linear-gradient(145deg,#b89e85,#906d59)!important}
+
+/* Scenery outside rules space: station canopy and signal post. */
+#game[data-visual-slice="copperline"] .theme-flourish.left{left:-2px;top:10%;width:78px;height:104px;opacity:.82;background:linear-gradient(180deg,rgba(72,49,40,.08),rgba(72,49,40,.18));border-left:6px solid rgba(82,54,42,.64);border-right:6px solid rgba(82,54,42,.48);filter:drop-shadow(0 7px 8px rgba(49,32,27,.16))}
+#game[data-visual-slice="copperline"] .theme-flourish.left:before{content:"";position:absolute;left:-10px;top:-7px;width:86px;height:18px;border-radius:5px 5px 12px 12px;background:linear-gradient(180deg,#8a5d45,#513b34);border:2px solid rgba(52,38,33,.72);box-shadow:inset 0 2px rgba(228,165,103,.18)}
+#game[data-visual-slice="copperline"] .theme-flourish.left:after{content:"";position:absolute;left:12px;right:12px;top:24px;height:4px;background:#4b3933;box-shadow:0 18px 0 #4b3933,0 36px 0 #4b3933}
+#game[data-visual-slice="copperline"] .theme-flourish.right{right:3px;bottom:13%;width:48px;height:104px;opacity:.88;background:linear-gradient(90deg,transparent 20px,#4d3b34 21px 27px,transparent 28px);filter:drop-shadow(0 6px 7px rgba(49,32,27,.18))}
+#game[data-visual-slice="copperline"] .theme-flourish.right:before{content:"";position:absolute;left:10px;top:4px;width:27px;height:38px;border-radius:8px;background:linear-gradient(145deg,#4c403a,#292a2b);border:3px solid #9a6545;box-shadow:inset 0 0 0 2px rgba(236,184,113,.10)}
+#game[data-visual-slice="copperline"] .theme-flourish.right:after{content:"";position:absolute;left:18px;top:13px;width:10px;height:10px;border-radius:50%;background:#f0b85d;box-shadow:0 0 9px rgba(240,168,70,.72),0 18px 0 #8fb36e}
+
+/* Movement 3 continuity landmark: a station archive kiosk with three staggered approved route/date plates. */
+.theme-ch6 .atlas-map.atlas-range-3 .atlas-scene em{left:auto;right:3%;top:11%;bottom:auto;width:86px;height:74px;border:4px solid #5c4033;border-radius:9px;background:linear-gradient(145deg,#75513f,#453833);box-shadow:0 7px 12px rgba(39,27,24,.22),inset 0 1px rgba(255,220,181,.18);opacity:.98;rotate:0deg}
+.theme-ch6 .atlas-map.atlas-range-3 .atlas-scene em:before{content:"";position:absolute;left:11px;top:10px;width:51px;height:12px;border-radius:3px;background:#ead5b7;border:1px solid #927052;box-shadow:7px 17px 0 -1px #d9bd96,14px 34px 0 -2px #caa57f;transform:rotate(-2deg)}
+.theme-ch6 .atlas-map.atlas-range-3 .atlas-scene em:after{content:"";position:absolute;right:7px;top:8px;width:7px;height:7px;border-radius:50%;background:#f2b65d;box-shadow:0 0 8px rgba(241,165,70,.72),0 12px 0 #5b4439,0 28px 0 #5b4439,0 44px 0 #5b4439}
+
+/* Chapter 6 reward: approved maps from different years sit beside one newly drawn working line and the Waykeeper compass. */
+.chapter-six-reward .chapter-reward-kicker{color:#8c5b3f}
+.copperline-reward-postcard{background:linear-gradient(#9b755c 0 56%,#5d453c 57% 100%);border-color:#76513d}
+.copperline-reward-postcard:before{background:linear-gradient(145deg,#ad8263,#755345)!important;box-shadow:inset 0 3px rgba(255,225,189,.18)!important}
+.copper-reward-kiosk{position:absolute;left:8%;bottom:17%;width:110px;height:98px;z-index:4;border-radius:10px;background:linear-gradient(145deg,#76513f,#433632);border:6px solid #543c32;box-shadow:0 7px 10px rgba(42,28,24,.22),inset 0 1px rgba(255,224,187,.18)}
+.copper-reward-map{position:absolute;z-index:6;width:66px;height:18px;border-radius:4px;border:2px solid rgba(118,87,60,.52);box-shadow:0 3px 5px rgba(49,32,27,.15)}
+.copper-reward-map:before{content:"";position:absolute;left:6px;right:6px;top:7px;height:3px;border-radius:999px;background:#8f5a3f;transform-origin:left center}
+.copper-reward-map.m1{left:15%;bottom:55%;background:#edd9bc;transform:rotate(-4deg)}.copper-reward-map.m1:before{transform:rotate(7deg)}
+.copper-reward-map.m2{left:20%;bottom:43%;background:#dec29a;transform:rotate(2deg)}.copper-reward-map.m2:before{transform:rotate(-8deg)}
+.copper-reward-map.m3{left:25%;bottom:31%;background:#cfa983;transform:rotate(-2deg)}.copper-reward-map.m3:before{transform:rotate(13deg)}
+.copper-reward-track{position:absolute;z-index:5;left:43%;bottom:29%;width:46%;height:8px;border-radius:999px;background:linear-gradient(180deg,#2f302f 0 32%,#e5a15e 33% 66%,#2f302f 67% 100%);transform:rotate(-9deg);box-shadow:0 0 9px rgba(239,156,78,.34)}
+.copper-reward-newline{position:absolute;z-index:7;left:47%;bottom:43%;width:39%;height:5px;border-radius:999px;background:#ffe0a0;transform:rotate(-16deg);box-shadow:0 0 8px rgba(255,190,91,.68)}
+.copper-reward-signal{position:absolute;z-index:8;right:12%;bottom:28%;width:7px;height:62px;background:#4c3b34;border-radius:3px}
+.copper-reward-signal:before{content:"";position:absolute;left:-8px;top:-2px;width:23px;height:30px;border-radius:7px;background:#34302f;border:3px solid #955f40}
+.copper-reward-signal:after{content:"";position:absolute;left:-1px;top:8px;width:9px;height:9px;border-radius:50%;background:#f0b65a;box-shadow:0 0 9px rgba(240,166,70,.72)}
+.copper-reward-compass{position:absolute;z-index:9;right:16%;top:18%;width:42px;height:42px;border-radius:50%;background:#f0d7a6;border:5px solid #a87545;box-shadow:0 4px 7px rgba(48,32,25,.23),inset 0 0 0 3px rgba(255,247,220,.45)}
+.copper-reward-compass:before{content:"";position:absolute;left:17px;top:5px;width:4px;height:25px;border-radius:3px;background:#28445d;transform:rotate(27deg);transform-origin:50% 80%}
+.copper-reward-compass:after{content:"";position:absolute;left:9px;top:17px;width:20px;height:4px;border-radius:3px;background:#28445d;transform:rotate(27deg)}
