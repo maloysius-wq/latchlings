@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 env:
-  PROMOTE: 'false'
+  PROMOTE: 'true'
   PRODUCT_FILES: >-
     game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css story400.js story-grounding400.js STORY_BIBLE.md cinematics400.js title-island-concepts/index.html index.html
 
