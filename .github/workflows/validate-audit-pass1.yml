@@ -25,7 +25,19 @@ jobs:
         run: sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
 
       - name: Apply Pass 1 candidate
-        run: python .github/tmp/apply-audit-pass1.py
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/apply-audit-pass1.py')
+          s=p.read_text()
+          old='if(action===\'daily\')startDailyPuzzle()",\'home daily action\')'
+          new='if(action===\'daily\')startDailyPuzzle();",\'home daily action\')'
+          if old not in s:
+              raise SystemExit('missing Daily helper correction anchor')
+          p.write_text(s.replace(old,new,1))
+          PY
+          python .github/tmp/apply-audit-pass1.py
+          git checkout -- .github/tmp/apply-audit-pass1.py
 
       - name: Static validation
         run: |
