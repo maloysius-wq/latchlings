@@ -262,11 +262,13 @@ Bramble's attempts to check on nearby households reveal that Lanternwood has bec
 
 The chapter turns the core stopper mechanic into a social idea: sometimes the route works because another person is there.
 
+A small neighbor porch with **twin amber lanterns** becomes the chapter's recurring relationship landmark. Pip and Tansy recognize it here first; when the porch returns in the later telescope story, the same paired lights should make the place recognizable before dialogue explains it.
+
 ### Milestone beats
 
 - **10:** The first neighboring household reconnects with Little Home.
 - **20:** Lanternwood begins coordinating shared travel windows.
-- **30:** Pip and Tansy make friends on an island that nearly drifted out of easy reach.
+- **30:** Pip and Tansy make friends at a small porch with twin amber lanterns on an island that nearly drifted out of easy reach.
 - **40:** The Waykeeper realizes the old Skyway expected communities to cooperate rather than route independently.
 - **50:** Lanternwood's neighborhood circuit is restored.
 
@@ -352,7 +354,7 @@ If nothing changes, some communities will become genuinely isolated.
 
 - **10:** The first color route is restored.
 - **20:** The household sees how far one neighboring island has drifted.
-- **30:** Tansy worries about friends in Lanternwood; the abstract problem becomes personal.
+- **30:** Tansy spots the same twin amber lanterns on the Lanternwood porch; the abstract problem becomes personal.
 - **40:** The Waykeeper realizes restoring the *old* map exactly will not work because the islands are already somewhere new.
 - **50:** Prism Gardens reconnects using an adjusted route rather than its historical alignment.
 

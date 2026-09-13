@@ -46,7 +46,7 @@ const CHAPTERS=[
   beats:[
    'The first neighboring household reconnects with Little Home. The easiest route turns out to require people helping one another stop safely.',
    'Lanternwood begins coordinating shared travel windows instead of everyone improvising alone.',
-   'Pip and Tansy make friends on an island that had nearly drifted out of easy reach.',
+   'Pip and Tansy make friends at a small porch marked by twin amber lanterns on an island that had nearly drifted out of easy reach.',
    'The old route pattern finally makes sense: the Skyway expected communities to cooperate rather than move independently.',
    'Lanternwood’s neighborhood circuit is restored. A little visitor pennant comes home with Bramble.'
   ],
@@ -60,7 +60,7 @@ const CHAPTERS=[
    'The supper bell rang. Several Latchlings are now attempting to be punctual at once.',
    'Pippa is visiting another garden and refuses to arrive after the seedlings have been watered incorrectly.',
    'Three households are sharing one basket and, increasingly, one route plan.',
-   'A porch light is waiting to be delivered before the grove gets properly dark.',
+   'A matching pair of amber porch lanterns is waiting to be delivered before the grove gets properly dark.',
    'Bramble has found another shortcut. Nobody is permitted to look worried yet.'
   ],
   phase:['',' With Company',' Two Stops Later',' After Dark',' Home Together']
@@ -130,7 +130,7 @@ const CHAPTERS=[
   beats:[
    'The first color route comes back online, but the view from the gardens reveals how far the neighboring islands have moved.',
    'One familiar island is visibly farther away. The larger drift is no longer an abstract measurement.',
-   'Tansy worries about friends in Lanternwood. The household stops talking about route efficiency and starts talking about staying connected.',
+   'Tansy spots the same twin amber lanterns on the Lanternwood porch. The household stops talking about route efficiency and starts talking about staying connected.',
    'The Waykeeper proves that restoring the old map exactly will not work. The islands are already somewhere new.',
    'Prism Gardens reconnects using an adjusted route that never existed on the historical map. Little Home gets a telescope to watch the drift.'
   ],
@@ -140,7 +140,7 @@ const CHAPTERS=[
    'Blue glass panes are headed for a greenhouse that is gradually becoming a little farther away.',
    'A letter to Lanternwood matters more now that the receiving island is visibly drifting toward the horizon.',
    'The garden cart needs both kinds of route mark to agree before anyone gets lunch.',
-   'Tansy can still see a friend’s porch. She would very much like to keep it reachable too.',
+   'Tansy can still see the twin amber lanterns on a friend’s porch. She would very much like to keep it reachable too.',
    'Rainbow seeds have been sorted by color with great care and routed with considerably less success.',
    'The high garden path gives Rowan the first clear view of the wider Latchlands drift.',
    'Bramble has a parcel for an island that is no longer quite where the address says it is.',
