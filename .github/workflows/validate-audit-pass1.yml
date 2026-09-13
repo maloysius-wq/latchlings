@@ -42,22 +42,14 @@ jobs:
           from pathlib import Path
           p=Path('sfx400.js')
           s=p.read_text()
-          old="""  function updateSettingsButton() {
-            const button = document.getElementById('sfxToggleBtn');
-            if (!button) return;
-            button.textContent = `Sound Effects: ${enabled ? 'On' : 'Off'}`;
-            button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-          }"""
-          new="""  function updateSettingsButton() {
-            const button = document.getElementById('sfxToggleBtn');
-            if (!button) return;
-            const text = `Sound Effects: ${enabled ? 'On' : 'Off'}`;
-            const pressed = enabled ? 'true' : 'false';
-            if (button.textContent !== text) button.textContent = text;
-            if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
-          }"""
+          old="""    button.textContent = `Sound Effects: ${enabled ? 'On' : 'Off'}`;
+              button.setAttribute('aria-pressed', enabled ? 'true' : 'false');"""
+          new="""    const text = `Sound Effects: ${enabled ? 'On' : 'Off'}`;
+              const pressed = enabled ? 'true' : 'false';
+              if (button.textContent !== text) button.textContent = text;
+              if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);"""
           if old not in s:
-              raise SystemExit('missing SFX settings updater anchor')
+              raise SystemExit('missing SFX settings updater statements')
           p.write_text(s.replace(old,new,1))
           ip=Path('index.html')
           h=ip.read_text()
