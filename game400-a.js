@@ -21,9 +21,10 @@ let progress=loadProgress();
 const UI_PREFS_KEY='latchlings_ui_prefs_v1';
 const DAILY_PROGRESS_KEY='latchlings_daily400_progress_v1';
 let playMode='campaign',dailySession=null;
-const VISUAL_SLICE_LEVELS={1:'sunpetal',366:'aurora-dense'};
+const VISUAL_CHAPTER_MODES={1:'sunpetal'};
+const VISUAL_LEVEL_OVERRIDES={366:'aurora-dense'};
 let homeRewardFocus=null;
-function visualSliceForLevel(level){return playMode==='campaign'?(VISUAL_SLICE_LEVELS[level]||''):''}
+function visualSliceForLevel(level){if(playMode!=='campaign')return '';const chapter=Math.ceil(level/50);return VISUAL_LEVEL_OVERRIDES[level]||VISUAL_CHAPTER_MODES[chapter]||''}
 function focusHomeReward(key){homeRewardFocus=key||null;screen('home')}
 function loadUiPrefs(){try{const x=JSON.parse(localStorage.getItem(UI_PREFS_KEY)||'{}');return {motion:x.motion==='reduced'?'reduced':'system',textSize:x.textSize==='large'?'large':'normal'}}catch(_){return {motion:'system',textSize:'normal'}}}
 let uiPrefs=loadUiPrefs();

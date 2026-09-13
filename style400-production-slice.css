@@ -16,7 +16,7 @@
 #game[data-visual-slice] .nest.selected-match{transform:scale(.93);box-shadow:inset 0 0 0 3px rgba(255,255,255,.88),0 0 0 3px rgba(255,255,255,.98),0 0 0 6px var(--piece-color),0 6px 13px rgba(24,42,55,.22)!important;filter:none!important}
 #game[data-visual-slice] .theme-flourish{pointer-events:none;display:block!important;position:absolute;z-index:0}
 
-/* Sunpetal proof, Level 1: matte moss/stone and morning scenery outside the rules layer. */
+/* Sunpetal production chapter, Levels 1-50: matte meadow materials with scenery outside the rules layer. */
 #game[data-visual-slice="sunpetal"] .board-wrap{background:radial-gradient(ellipse at 50% 48%,rgba(255,249,218,.88) 0 42%,rgba(196,216,160,.34) 64%,transparent 76%);box-shadow:0 20px 40px rgba(69,91,57,.08)}
 #game[data-visual-slice="sunpetal"] #board{background:linear-gradient(145deg,#dfe3bd,#c9d39e)!important;border:3px solid #89976a!important;box-shadow:0 15px 30px rgba(54,73,50,.22),inset 0 2px rgba(255,255,255,.72),inset 0 0 0 5px rgba(255,250,226,.28)!important}
 #game[data-visual-slice="sunpetal"] #board .cell{background:linear-gradient(145deg,#f1efd0,#dfe2bb)!important;border:1px solid rgba(91,105,72,.28)!important;border-radius:11px!important;box-shadow:inset 0 1px rgba(255,255,255,.72),inset 0 -2px rgba(84,101,64,.08)!important}
@@ -24,6 +24,19 @@
 #game[data-visual-slice="sunpetal"] #board .nest{background:linear-gradient(145deg,#fffbea,#e8e5c7)!important;border-width:3px!important;border-style:solid!important}
 #game[data-visual-slice="sunpetal"] .theme-flourish.left{left:max(1vw,5px);top:17%;width:58px;height:96px;border-radius:45%;opacity:.72;background:radial-gradient(circle at 18px 17px,#efbf52 0 3px,#fff3b2 4px 6px,transparent 7px),radial-gradient(circle at 40px 45px,#e7897a 0 3px,#ffe1c3 4px 6px,transparent 7px),radial-gradient(ellipse at 28px 69px,#7da768 0 6px,transparent 7px),radial-gradient(ellipse at 12px 76px,#93b878 0 5px,transparent 6px)}
 #game[data-visual-slice="sunpetal"] .theme-flourish.right{right:max(1vw,5px);bottom:18%;width:62px;height:92px;border-radius:45%;opacity:.68;background:radial-gradient(circle at 41px 19px,#efbf52 0 3px,#fff3b2 4px 6px,transparent 7px),radial-gradient(circle at 19px 46px,#88aee2 0 3px,#e9f4ff 4px 6px,transparent 7px),radial-gradient(ellipse at 37px 66px,#7aa568 0 6px,transparent 7px),radial-gradient(ellipse at 51px 77px,#94ba79 0 5px,transparent 6px)}
+
+
+/* Chapter 1 waypoint progression: five quiet material shifts, never rule-like floor patterns. */
+#game[data-visual-slice="sunpetal"] #board[data-board-range="1"]{background:linear-gradient(145deg,#dfe3bd,#c9d39e)!important;border-color:#89976a!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="1"] .cell{background:linear-gradient(145deg,#f1efd0,#dfe2bb)!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="2"]{background:linear-gradient(145deg,#d8dfae,#bdca8d)!important;border-color:#819064!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="2"] .cell{background:linear-gradient(145deg,#eef0cc,#d8dfa9)!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="3"]{background:linear-gradient(145deg,#ddd8aa,#c2c38e)!important;border-color:#8f8963!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="3"] .cell{background:linear-gradient(145deg,#efe7c1,#d9d6a2)!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="4"]{background:linear-gradient(145deg,#d4d9aa,#b8c28f)!important;border-color:#7d8965!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="4"] .cell{background:linear-gradient(145deg,#e5e7bd,#ced5a2)!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="5"]{background:linear-gradient(145deg,#d8d1a4,#b9bc87)!important;border-color:#877f5d!important}
+#game[data-visual-slice="sunpetal"] #board[data-board-range="5"] .cell{background:linear-gradient(145deg,#e8dfb6,#cfd0a0)!important}
 
 /* Aurora proof, Level 366: quiet midnight floor, aurora in scenery, mechanics carry contrast. */
 #game[data-visual-slice="aurora-dense"] .board-wrap{background:radial-gradient(ellipse at 50% 42%,rgba(62,94,145,.25) 0 42%,transparent 70%),linear-gradient(160deg,transparent 0 18%,rgba(91,226,196,.08) 19% 29%,transparent 30% 43%,rgba(103,151,239,.08) 44% 56%,transparent 57% 69%,rgba(178,105,232,.08) 70% 80%,transparent 81%);box-shadow:0 21px 42px rgba(15,25,52,.18)}
