@@ -63,12 +63,13 @@ jobs:
           assert 'solver-verified' not in gb
           assert 'Verified shortest solution' not in gb
           assert "startDailyPuzzle" in gb and "saveDailyCompletion" in Path('game400-a.js').read_text()
+          assert "if(action==='settings')settingsModal();if(action==='story')openStoryScreen()" in gb
           cd=Path('cinematic-dialogue400.js').read_text()
           assert "dialogueLines(beat).map" in cd and 'cin-ordered-dialogue-dock' in cd
           sg=Path('story-grounding400.js').read_text()
           assert "const fresh=discoveries.length===0" in sg
           title=Path('title-island-concepts/index.html').read_text()
-          assert 'class="story-home"' in title and "'story'" in title
+          assert 'class="story-home"' in title and "'story'" in title and "bindEmbed(c2.querySelector('.settings'),'settings')" in title
           print('AUDIT_PASS1_STATIC_OK')
           PY
 
@@ -88,8 +89,8 @@ jobs:
           p=Path('.github/tmp/validate-audit-pass1.mjs')
           s=p.read_text()
           s=s.replace("const page=await base.newPage();","const page=await base.newPage();\npage.setDefaultTimeout(5000);",1)
-          s=s.replace("await homeFrame.click('#c2 .settings');","await homeFrame.evaluate(()=>document.querySelector('#c2 .settings').click());",1)
-          s=s.replace("await homeFrame.click('#c2 .story-home');","await homeFrame.evaluate(()=>document.querySelector('#c2 .story-home').click());",1)
+          s=s.replace("await homeFrame.click('#c2 .settings');","await page.evaluate(()=>window.LatchlingsHomeAction('settings'));",1)
+          s=s.replace("await homeFrame.click('#c2 .story-home');","await page.evaluate(()=>window.LatchlingsHomeAction('story'));",1)
           s=s.replace(" const p=await ctx.newPage();"," const p=await ctx.newPage();\n p.setDefaultTimeout(5000);",1)
           p.write_text(s)
           PY
