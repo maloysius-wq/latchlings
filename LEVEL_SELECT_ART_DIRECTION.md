@@ -26,6 +26,7 @@ These are interaction/composition references only. No third-party game art is co
 - Material: **Rock Surface**, Poly Haven CC0, Amal Kumar. https://polyhaven.com/a/rock_surface
 - Object vocabulary: faceted stone shelves, crystal spires, anchor rings, cyan mineral glow and cavern silhouettes.
 - Shape source: real fractured rock/crystal facets simplified into readable phone-scale polygons.
+- Recurring landmark: an old Waykeeper marker slab with an offset cyan anchor-ring glyph and three pale chalk revision ticks; reuse this silhouette in Chapter 3 Atlas/reward surfaces so the maintenance evidence reads as one physical system.
 
 ### 4. Masquerade Keep
 - Material: **Plaster Stone Wall 01**, Poly Haven CC0, Charlotte Baglioni. https://polyhaven.com/a/plaster_stone_wall_01

@@ -228,3 +228,8 @@ body[data-screen="levels"] #app{overflow:hidden}
 .theme-ch2 .atlas-map.atlas-range-3 .atlas-scene em{right:8%;bottom:8%;width:48px;height:34px;border:0;border-radius:5px;background:linear-gradient(90deg,#765944,#5b4438);box-shadow:0 5px 8px rgba(12,29,24,.25);opacity:.92;rotate:0deg}
 .theme-ch2 .atlas-map.atlas-range-3 .atlas-scene em:before{content:"";position:absolute;left:-7%;top:-24%;width:114%;height:30%;background:#493d43;clip-path:polygon(50% 0,100% 100%,0 100%)}
 .theme-ch2 .atlas-map.atlas-range-3 .atlas-scene em:after{content:"";position:absolute;left:9px;top:18px;width:6px;height:8px;border-radius:3px;background:#ffd477;border:1px solid #8c6637;box-shadow:20px 0 0 -1px #ffd477,0 0 9px #f4b34d,20px 0 9px #f4b34d}
+
+/* Pass 3 Chapter 3 evidence landmark: Levels 111-120 surface an old Waykeeper marker before the maintenance-record reveal. */
+.theme-ch3 .atlas-map.atlas-range-2 .atlas-scene em{right:8%;bottom:10%;width:54px;height:66px;background:linear-gradient(145deg,#64717a,#36424e);clip-path:polygon(11% 0,90% 7%,100% 91%,14% 100%,0 17%);box-shadow:0 7px 11px rgba(8,18,29,.30);opacity:.88;rotate:-4deg}
+.theme-ch3 .atlas-map.atlas-range-2 .atlas-scene em:before{content:"";position:absolute;left:14px;top:12px;width:22px;height:22px;border:3px solid rgba(145,231,240,.85);border-radius:50%;box-shadow:0 0 9px rgba(87,213,229,.38)}
+.theme-ch3 .atlas-map.atlas-range-2 .atlas-scene em:after{content:"";position:absolute;left:12px;bottom:13px;width:27px;height:3px;border-radius:3px;background:rgba(211,239,240,.74);box-shadow:0 7px rgba(211,239,240,.48),0 -7px rgba(211,239,240,.35);transform:rotate(-7deg)}

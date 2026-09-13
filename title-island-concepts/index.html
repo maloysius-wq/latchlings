@@ -221,6 +221,14 @@ html[data-motion="reduced"] *{animation:none!important;transition-duration:.01ms
 @keyframes pennantRewardFocus{0%{opacity:.25;transform:translateY(-8px) rotate(-6deg) scale(.78)}28%{opacity:1;transform:translateY(1px) rotate(3deg) scale(1.15)}55%{transform:translateY(-1px) rotate(-1deg) scale(.99)}100%{opacity:1;transform:none}}
 @keyframes pennantRewardHalo{0%{opacity:0;scale:.55}28%{opacity:1;scale:1}100%{opacity:0;scale:1.24}}
 @media(prefers-reduced-motion:reduce){#c2 .phone.story-focus-pennant .story-pennant,#c2 .phone.story-focus-pennant .story-pennant:before{animation:none!important}}
+
+
+/* Chapter-three payoff focus: the canonical restored anchor gets a short, non-blocking reveal beneath Little Home. */
+#c2 .phone.story-focus-anchor .story-anchor{display:block;z-index:25;color:#47758a;animation:anchorRewardFocus 1800ms cubic-bezier(.2,.8,.2,1) both}
+#c2 .phone.story-focus-anchor .story-anchor:before{content:"";position:absolute;left:-10px;top:-8px;width:52px;height:57px;border-radius:50%;border:3px solid rgba(135,227,238,.82);box-shadow:0 0 0 7px rgba(139,230,239,.13),0 0 19px rgba(83,206,223,.56);animation:anchorRewardHalo 1800ms ease-out both;pointer-events:none}
+@keyframes anchorRewardFocus{0%{opacity:.25;transform:translateY(-8px) scale(.78)}28%{opacity:1;transform:translateY(1px) scale(1.16)}55%{transform:translateY(-1px) scale(.99)}100%{opacity:1;transform:none}}
+@keyframes anchorRewardHalo{0%{opacity:0;scale:.55}28%{opacity:1;scale:1}100%{opacity:0;scale:1.24}}
+@media(prefers-reduced-motion:reduce){#c2 .phone.story-focus-anchor .story-anchor,#c2 .phone.story-focus-anchor .story-anchor:before{animation:none!important}}
 </style>
 </head>
 <body>
@@ -306,7 +314,7 @@ function initProductionEmbed(){
  bindEmbed(c2.querySelector('.play'),'play');
  const secondary=c2.querySelectorAll('.secondary button');bindEmbed(secondary[0],'daily');bindEmbed(secondary[1],'levels');
  bindEmbed(c2.querySelector('.story-home'),'story');bindEmbed(c2.querySelector('.settings'),'settings');
- window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);phone.classList.remove('story-focus-mailbox','story-focus-pennant');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.focus==='pennant'){void phone.offsetWidth;phone.classList.add('story-focus-pennant');setTimeout(()=>phone.classList.remove('story-focus-pennant'),2200)}if(e.data.replay)restartLittleHomeTitle()});
+ window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);phone.classList.remove('story-focus-mailbox','story-focus-pennant','story-focus-anchor');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.focus==='pennant'){void phone.offsetWidth;phone.classList.add('story-focus-pennant');setTimeout(()=>phone.classList.remove('story-focus-pennant'),2200)}if(e.data.focus==='anchor'){void phone.offsetWidth;phone.classList.add('story-focus-anchor');setTimeout(()=>phone.classList.remove('story-focus-anchor'),2200)}if(e.data.replay)restartLittleHomeTitle()});
  parent.postMessage({source:'latchlings-home',action:'ready'},location.origin);
 }
 initProductionEmbed();

@@ -21,7 +21,7 @@ let progress=loadProgress();
 const UI_PREFS_KEY='latchlings_ui_prefs_v1';
 const DAILY_PROGRESS_KEY='latchlings_daily400_progress_v1';
 let playMode='campaign',dailySession=null;
-const VISUAL_CHAPTER_MODES={1:'sunpetal',2:'lanternwood'};
+const VISUAL_CHAPTER_MODES={1:'sunpetal',2:'lanternwood',3:'lodestone'};
 const VISUAL_LEVEL_OVERRIDES={366:'aurora-dense'};
 let homeRewardFocus=null;
 function visualSliceForLevel(level){if(playMode!=='campaign')return '';const chapter=Math.ceil(level/50);return VISUAL_LEVEL_OVERRIDES[level]||VISUAL_CHAPTER_MODES[chapter]||''}
