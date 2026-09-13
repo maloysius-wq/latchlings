@@ -1,0 +1,62 @@
+name: Start Chapter 3 Pass 3 handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-chapter3-pass3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add Chapter 3 Pass 3 work entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from textwrap import dedent
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          heading='### 2026-09-12 — Pass 3 Chapter 3 Lodestone campaign application'
+          if heading in s:
+              raise SystemExit('Chapter 3 Pass 3 entry already exists')
+          marker='## Current Work\n'
+          if marker not in s:
+              raise SystemExit('Current Work marker missing')
+          entry=dedent('''
+
+          ### 2026-09-12 — Pass 3 Chapter 3 Lodestone campaign application
+
+          **Status: IN PROGRESS**
+
+          **User goal:** Continue directly from the completed Chapter 2 Lanternwood Pass 3 rollout and apply the next protected production slice to Chapter 3, Lodestone Caverns (campaign Levels 101–150), using current `main` as source of truth.
+
+          **Roadmap/current-source recheck:** The previous Chapter 2 closeout explicitly names Lodestone as the next Pass 3 unit and records the approved direction as a geological-slab / clustered-crystal / old-Waykeeper-marker family plus a Chapter 3 Atlas/reward/anchor-trophy payoff. The standalone `LATCHLINGS_VISUAL_STORY_AUDIT.md` referenced by older handoff prose is not present anywhere in the current repository tree and GitHub reports no commit history under that exact path, so this task will not fabricate or restore an unverifiable file. The durable current-source roadmap is the handoff itself plus `LEVEL_SELECT_ART_DIRECTION.md` (Rock Surface, faceted stone shelves, crystal spires, anchor rings, cyan mineral glow and cavern silhouettes) and `STORY_BIBLE.md` (old Waykeeper anchors/markings, maintenance records, and a restored anchor beneath Little Home). Current `game400-a.js` maps only Chapters 1–2 into production visual modes, Level 150 still uses the generic chapter-end win surface, and Little Home already contains the canonical stage-3 anchor but has no dedicated focus treatment.
+
+          **Implementation plan:** (1) Extend the reusable chapter visual-mode map so campaign Levels 101–150 use a new `lodestone` production mode while Daily stays neutral, Chapters 1–2 retain their accepted modes, Level 151 stays outside this rollout, and Level 366 keeps its Aurora override. (2) Build five quiet Lodestone movement surfaces from slate/geological gradients, restrained cyan/violet mineral accents, weighted anchor fixtures, and clustered-crystal/cavern scenery outside rule space; cell floors must remain linear and non-symbolic. (3) Turn the Chapter 3 movement-2 Atlas scene into a recognizable old Waykeeper marker landmark using a weathered marker slab, cyan anchor-ring glyph, and small chalk revision ticks, matching the chapter's evidence beat without inventing a new mechanic. (4) Add a dedicated Level 150 reward showing the stabilized anchor line and old marker, with stars secondary, `Visit Little Home`, and `Continue to Masquerade`; the home action must focus the existing canonical stage-3 restored anchor with reduced-motion-safe behavior. (5) Record the marker landmark in durable art direction so later work reuses the same visual vocabulary. (6) Bump only cache keys required by changed production surfaces.
+
+          **Expected product files/systems:** `game400-a.js`, `game400-b.js`, `style400-production-slice.css`, `style400-skyway-atlas.css`, `title-island-concepts/index.html`, `LEVEL_SELECT_ART_DIRECTION.md`, and `index.html`; temporary self-removing candidate/validation helpers only. All eight `campaign400-*.js` files, authored solutions, `story400.js`, `story-grounding400.js`, cinematics, audio, movement simulation/rules, and Chapters 4–8 behavior are protected from change.
+
+          **Validation plan:** Hash-protect all eight campaign definition files and unrelated runtime/story systems before candidate application. Run JavaScript syntax/static assertions and a Chromium matrix covering Chapter 3 Levels 101/110/111/120/121/130/131/140/141/150 at 390x844, Levels 101/150 at 320x568, Daily isolation on a Chapter 3 board, the accepted Level 100 Lanternwood boundary, untouched Level 151, and Level 366 Aurora override. Assert all Chapter 3 campaign levels map to `lodestone`; five board ranges have distinct quiet linear materials; cell pseudo-decoration remains suppressed; selected Latchling/matching nest hierarchy remains explicit; anchor fixtures stay readable and weighted; controls/viewport remain contained with >=44px active targets; no browser errors occur; and protected hashes remain unchanged. Verify Chapter 3 movement 2 exposes the old Waykeeper marker on the Atlas, solve the real authored Level 150 route to reach the dedicated reward, use `Visit Little Home` to reveal/focus the canonical restored anchor, and confirm reduced-motion reaches the same informative state. Capture all five Lodestone ranges plus Atlas marker, Level 150 reward, Little Home anchor focus, and small-phone endpoints for manual review before promotion.
+
+          **Deployment plan:** Commit this IN PROGRESS entry before product edits. Implement through a validation-only candidate, promote only after protected-source/static/browser checks and manual screenshots are accepted, remove every temporary helper, confirm GitHub Pages succeeds on the clean product head, then close this same entry as COMPLETED/PARTIAL/BLOCKED with exact commits/runs/artifacts and the next Pass 3 action.
+          ''')
+          s=s.replace(marker,marker+entry,1)
+          p.write_text(s)
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Begin Pass 3 Chapter 3 Lodestone rollout"
+          git push
+      - name: Self-remove starter
+        run: |
+          git pull --rebase
+          git rm .github/workflows/start-chapter3-pass3.yml
+          git commit -m "Remove Chapter 3 Pass 3 starter"
+          git push
