@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/validate-chapter4-pass3.yml'
       - '.github/tmp/apply-chapter4-pass3.py'
+      - '.github/tmp/refine-chapter4-bunting.py'
       - '.github/tmp/validate-chapter4-pass3.mjs'
+      - '.github/tmp/validate-chapter4-bunting.mjs'
 
 permissions:
   contents: write
@@ -29,7 +31,9 @@ jobs:
           sha256sum campaign400-{1,2,3,4,5,6,7,8}.js story400.js story-grounding400.js STORY_BIBLE.md cinematics400.js cinematic-dialogue400.js gameplay-story-rail400.js story-theme400.js music400.js sfx400.js style400-game.css style400-board-surfaces.css > /tmp/protected-before.sha256
 
       - name: Apply Chapter 4 Pass 3 candidate
-        run: python .github/tmp/apply-chapter4-pass3.py
+        run: |
+          python .github/tmp/apply-chapter4-pass3.py
+          python .github/tmp/refine-chapter4-bunting.py
 
       - name: Static validation
         run: |
@@ -56,6 +60,8 @@ jobs:
           assert '.theme-ch4 .atlas-map.atlas-range-3 .atlas-scene em' in atlas
           assert 'old civic gate arch' in art and 'four worn black suit plaques' in art
           assert 'story-focus-bunting' in home and "e.data.focus==='bunting'" in home
+          assert '#c2 .story-bunting{left:192px;top:8px;width:132px' in home
+          assert 'width:148px;height:39px' in home
           assert '20260912-ch4pass3-1' in html
           print('CHAPTER4_PASS3_STATIC_OK')
           PY
@@ -76,6 +82,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
           timeout 300s node .github/tmp/validate-chapter4-pass3.mjs
+          timeout 90s node .github/tmp/validate-chapter4-bunting.mjs
           sha256sum -c /tmp/protected-before.sha256
 
       - name: Upload Chapter 4 Pass 3 evidence
@@ -102,6 +109,6 @@ jobs:
           git reset --hard HEAD
           git clean -fd
           git pull --rebase
-          git rm .github/workflows/validate-chapter4-pass3.yml .github/tmp/apply-chapter4-pass3.py .github/tmp/validate-chapter4-pass3.mjs
+          git rm .github/workflows/validate-chapter4-pass3.yml .github/tmp/apply-chapter4-pass3.py .github/tmp/refine-chapter4-bunting.py .github/tmp/validate-chapter4-pass3.mjs .github/tmp/validate-chapter4-bunting.mjs
           git commit -m "Remove Chapter 4 Pass 3 validator"
           git push
