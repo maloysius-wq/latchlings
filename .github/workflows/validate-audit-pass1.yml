@@ -63,14 +63,7 @@ jobs:
               gp.write_text(gs+daily_css)
           rp=Path('style400-story-rail-board.css')
           rs=rp.read_text()
-          readability='''
-/* Pass 1 readability contract: essential story copy must remain legible even against legacy responsive rules. */
-#game #storyRailSlot .story-level-rail .story-rail-main p{font-size:14px!important;line-height:1.25!important}
-@media(max-height:620px){
- #game #storyRailSlot .story-level-rail .story-rail-main p{font-size:13px!important;line-height:1.2!important}
- #game .dpad{width:140px!important;height:140px!important}
-}
-'''
+          readability='\n/* Pass 1 readability contract: essential story copy must remain legible even against legacy responsive rules. */\n#game #storyRailSlot .story-level-rail .story-rail-main p{font-size:14px!important;line-height:1.25!important}\n@media(max-height:620px){#game #storyRailSlot .story-level-rail .story-rail-main p{font-size:13px!important;line-height:1.2!important}#game .dpad{width:140px!important;height:140px!important}}\n'
           if 'Pass 1 readability contract' not in rs:
               rp.write_text(rs+readability)
           PY
