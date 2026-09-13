@@ -44,6 +44,7 @@ These are interaction/composition references only. No third-party game art is co
 - Material: **Rusty Metal 02**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/rusty_metal_02
 - Object vocabulary: rails, switch stands, station canopies, signal posts, turntables and riveted route hardware.
 - Shape source: railway signaling/track geometry reduced to chunky toy-like silhouettes.
+- Recurring landmark: a compact station archive / timetable kiosk holding three staggered approved route plates from different years beside rail and signal hardware; reuse it in Chapter 6 Atlas/reward surfaces so “they were all correct” reads as physical maintenance evidence rather than an abstract lesson.
 
 ### 7. Stormswitch Foundry
 - Material: **Blue Metal Plate**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/blue_metal_plate
