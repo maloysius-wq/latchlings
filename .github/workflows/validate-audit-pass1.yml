@@ -56,6 +56,11 @@ jobs:
           if '<script src="sfx400.js"></script>' not in h:
               raise SystemExit('missing SFX cache anchor')
           ip.write_text(h.replace('<script src="sfx400.js"></script>','<script src="sfx400.js?v=20260912-pass1"></script>',1))
+          gp=Path('style400-game.css')
+          gs=gp.read_text()
+          daily_css='\nbody[data-play-mode="daily"] #storyCardBtn{display:none!important}\n'
+          if daily_css.strip() not in gs:
+              gp.write_text(gs+daily_css)
           PY
 
       - name: Static validation
@@ -91,6 +96,7 @@ jobs:
           assert "const fresh=discoveries.length===0" in sg
           sfx=Path('sfx400.js').read_text()
           assert "if (button.textContent !== text)" in sfx and "if (button.getAttribute('aria-pressed') !== pressed)" in sfx
+          assert 'body[data-play-mode="daily"] #storyCardBtn{display:none!important}' in Path('style400-game.css').read_text()
           title=Path('title-island-concepts/index.html').read_text()
           assert 'class="story-home"' in title and "'story'" in title and "bindEmbed(c2.querySelector('.settings'),'settings')" in title
           print('AUDIT_PASS1_STATIC_OK')
