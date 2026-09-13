@@ -1,0 +1,63 @@
+/* Chapter 7 Pass 3 production layer: Stormswitch Foundry / Coming Together. */
+/* Blue steel, relay timing hardware and storm-lit industry. Rule-space floors stay quiet; network scenery lives outside it. */
+#game[data-visual-slice="stormswitch"] .board-wrap{background:linear-gradient(180deg,rgba(126,211,239,.04),rgba(11,30,42,.09));box-shadow:0 22px 46px rgba(7,21,31,.24)}
+#game[data-visual-slice="stormswitch"] #board{background:linear-gradient(145deg,#536774,#2b3c48)!important;border:3px solid #263b49!important;box-shadow:0 19px 36px rgba(7,19,28,.34),inset 0 2px rgba(211,243,255,.18),inset 0 0 0 5px rgba(17,39,52,.20)!important}
+#game[data-visual-slice="stormswitch"] #board .cell{background:linear-gradient(145deg,#8999a1,#687a84)!important;border:1px solid rgba(25,48,61,.45)!important;border-radius:9px!important;box-shadow:inset 0 1px rgba(230,249,255,.22),inset 0 -2px rgba(8,27,38,.12)!important}
+#game[data-visual-slice="stormswitch"] #board .cell:before,#game[data-visual-slice="stormswitch"] #board .cell:after{opacity:0!important}
+#game[data-visual-slice="stormswitch"] #board .rock{background:linear-gradient(145deg,#75808a,#424e58 62%,#27323a)!important;filter:saturate(.54);box-shadow:inset 4px 5px rgba(255,255,255,.14),inset -4px -5px rgba(7,16,22,.25),0 5px 8px rgba(7,20,29,.26)!important}
+#game[data-visual-slice="stormswitch"] #board .nest{background:linear-gradient(145deg,#e7eef0,#bdcbd0)!important;border-width:3px!important;border-style:solid!important;box-shadow:inset 0 0 0 3px rgba(247,253,255,.35),0 3px 8px rgba(10,29,40,.20)!important}
+
+/* Distinctive chapter hardware: switches and doors stay readable as stateful route tools. */
+#game[data-visual-slice="stormswitch"] #board .switch-tile{inset:10%;border-radius:11px;background:linear-gradient(145deg,#4f7080,#263f4d)!important;border:3px solid #1f3440!important;box-shadow:0 4px 9px rgba(6,19,28,.30),inset 0 1px rgba(211,245,255,.20),inset 0 0 0 3px rgba(93,181,211,.18)!important}
+#game[data-visual-slice="stormswitch"] #board .switch-tile:before{content:"";position:absolute;inset:5px;border-radius:7px;border:1px solid rgba(183,236,251,.22);box-shadow:inset 0 0 0 1px rgba(5,22,31,.26)}
+#game[data-visual-slice="stormswitch"] #board .switch-tile:after{width:48%!important;height:48%!important;background:radial-gradient(circle at 36% 30%,#f0fdff 0 13%,#a4e7f8 14% 43%,#4c9fbb 44% 66%,#173a4c 67% 100%)!important;border:3px solid #d8f8ff!important;box-shadow:0 0 0 4px rgba(74,173,207,.20),0 0 10px rgba(94,210,246,.48),inset 0 -2px rgba(8,35,47,.34)!important}
+#game[data-visual-slice="stormswitch"] #board .door-tile{inset:9%;border-radius:10px;background:linear-gradient(145deg,#344d5c,#172b37)!important;border:3px solid #152a36!important;box-shadow:0 4px 9px rgba(5,17,25,.30),inset 0 1px rgba(192,232,246,.13),inset 0 0 0 3px rgba(77,128,151,.15)!important}
+#game[data-visual-slice="stormswitch"] #board .door-tile .door-bars{width:60%;height:72%;border-color:#e9f7ec!important;border-width:4px!important;filter:drop-shadow(0 0 3px rgba(139,221,245,.28))}
+#game[data-visual-slice="stormswitch"] #board .door-tile .door-bars:before,#game[data-visual-slice="stormswitch"] #board .door-tile .door-bars:after{background:#e9f7ec!important;width:3px!important}
+#game[data-visual-slice="stormswitch"] #board .door-tile.open{background:linear-gradient(145deg,#4c7b70,#264f4c)!important;border-color:#5db6a7!important;box-shadow:0 4px 9px rgba(5,17,25,.24),0 0 0 3px rgba(93,205,187,.13),inset 0 1px rgba(218,255,248,.22)!important}
+#game[data-visual-slice="stormswitch"] #board .door-tile.open .door-bars{opacity:.34;transform:scaleX(1.06);border-color:#cffff4!important;filter:drop-shadow(0 0 5px rgba(104,237,216,.45))}
+#game[data-visual-slice="stormswitch"] #board .rail{background:linear-gradient(145deg,#465762,#23343e)!important;border:2px solid #39596a!important;box-shadow:0 3px 7px rgba(7,19,27,.24),inset 0 1px rgba(222,248,255,.13)!important}
+#game[data-visual-slice="stormswitch"] #board .rail svg,#game[data-visual-slice="stormswitch"] #board .turner svg{stroke:#d9f6ff!important;filter:drop-shadow(0 0 3px rgba(87,195,230,.38))}
+#game[data-visual-slice="stormswitch"] #board .turner{background:linear-gradient(145deg,#506470,#2c414d)!important;border:2px solid #385868!important}
+#game[data-visual-slice="stormswitch"] #board .gate.suit{border-color:#324f60!important;background:linear-gradient(rgba(223,244,250,.34),rgba(58,82,95,.09))!important}
+#game[data-visual-slice="stormswitch"] #board .gate.color{background:linear-gradient(rgba(232,249,252,.31),rgba(43,70,84,.08))!important}
+
+/* Five movements: blue-steel plate materials deepen as coordination spreads across the network. */
+#game[data-visual-slice="stormswitch"] #board[data-board-range="1"]{background:linear-gradient(145deg,#566b78,#2d404d)!important;border-color:#294351!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="1"] .cell{background:linear-gradient(145deg,#8c9da6,#6c7f89)!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="2"]{background:linear-gradient(145deg,#506673,#293c49)!important;border-color:#25404e!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="2"] .cell{background:linear-gradient(145deg,#8598a1,#637782)!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="3"]{background:linear-gradient(145deg,#4a606e,#253845)!important;border-color:#223b49!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="3"] .cell{background:linear-gradient(145deg,#7d929c,#5b707b)!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="4"]{background:linear-gradient(145deg,#445b68,#213541)!important;border-color:#1f3745!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="4"] .cell{background:linear-gradient(145deg,#758b96,#536975)!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="5"]{background:linear-gradient(145deg,#3f5562,#1d303c)!important;border-color:#1c3340!important}
+#game[data-visual-slice="stormswitch"] #board[data-board-range="5"] .cell{background:linear-gradient(145deg,#6d858f,#4b626e)!important}
+
+/* Scenery outside rules space: factory stack bank and lightning/relay mast. */
+#game[data-visual-slice="stormswitch"] .theme-flourish.left{left:1px;top:12%;width:74px;height:112px;opacity:.80;background:linear-gradient(90deg,transparent 0 8px,#213744 9px 26px,transparent 27px 34px,#304d5b 35px 54px,transparent 55px);filter:drop-shadow(0 7px 8px rgba(4,16,24,.20))}
+#game[data-visual-slice="stormswitch"] .theme-flourish.left:before{content:"";position:absolute;left:8px;top:-9px;width:18px;height:18px;border-radius:5px 5px 2px 2px;background:#182f3b;border:2px solid #477184;box-shadow:34px 15px 0 -1px #203b49}
+#game[data-visual-slice="stormswitch"] .theme-flourish.left:after{content:"";position:absolute;left:2px;right:8px;bottom:17px;height:4px;background:#557888;box-shadow:0 15px 0 #456674}
+#game[data-visual-slice="stormswitch"] .theme-flourish.right{right:5px;bottom:12%;width:52px;height:112px;opacity:.88;background:linear-gradient(90deg,transparent 23px,#466a79 24px 29px,transparent 30px);filter:drop-shadow(0 6px 8px rgba(5,17,25,.22))}
+#game[data-visual-slice="stormswitch"] .theme-flourish.right:before{content:"";position:absolute;left:9px;top:0;width:33px;height:42px;background:linear-gradient(150deg,transparent 0 28%,#d7f7ff 29% 36%,transparent 37% 52%,#67d0f3 53% 61%,transparent 62%);filter:drop-shadow(0 0 5px rgba(84,207,244,.68))}
+#game[data-visual-slice="stormswitch"] .theme-flourish.right:after{content:"";position:absolute;left:13px;top:51px;width:25px;height:20px;border-radius:5px;background:#1d3440;border:3px solid #4f8195;box-shadow:inset 0 0 0 2px rgba(125,217,245,.12)}
+
+/* Movement 3 / Useful Failure: multi-region synchronization relay with one amber correction lamp. */
+.theme-ch7 .atlas-map.atlas-range-3 .atlas-scene em{left:3%;right:auto;top:42%;bottom:auto;width:72px;height:82px;border-radius:9px;background:linear-gradient(145deg,#334c5a,#182e3a);border:4px solid #456b7d;box-shadow:0 7px 14px rgba(4,15,23,.28),inset 0 1px rgba(197,240,255,.18);opacity:.98;rotate:0deg}
+.theme-ch7 .atlas-map.atlas-range-3 .atlas-scene em:before{content:"";position:absolute;left:10px;top:11px;width:42px;height:42px;border-radius:50%;border:4px solid #8acfe4;background:radial-gradient(circle,#173441 0 44%,#527888 45% 55%,#142d39 56% 100%);box-shadow:0 0 0 4px rgba(97,192,225,.10),0 0 10px rgba(87,202,239,.26)}
+.theme-ch7 .atlas-map.atlas-range-3 .atlas-scene em:after{content:"";position:absolute;left:10px;bottom:9px;width:9px;height:9px;border-radius:50%;background:#72d2ef;box-shadow:15px 0 0 #72d2ef,30px 0 0 #72d2ef,45px 0 0 #e5a35d,0 0 7px rgba(99,210,245,.64),15px 0 7px rgba(99,210,245,.64),30px 0 7px rgba(99,210,245,.64),45px 0 7px rgba(231,158,81,.66)}
+
+/* Chapter 7 reward: regional relay lamps synchronize and feed Little Home's new arrival dock. */
+.chapter-seven-reward .chapter-reward-kicker{color:#3c819d}
+.stormswitch-reward-postcard{background:linear-gradient(#263e4d 0 58%,#172a35 59% 100%);border-color:#385d70}
+.stormswitch-reward-postcard:before{background:linear-gradient(145deg,#466574,#243d4a)!important;box-shadow:inset 0 3px rgba(194,239,255,.13)!important}
+.storm-reward-relay{position:absolute;left:8%;bottom:17%;width:90px;height:110px;z-index:5;border-radius:10px;background:linear-gradient(145deg,#3f5d6b,#1b3340);border:6px solid #294a5a;box-shadow:0 8px 13px rgba(3,14,22,.28),inset 0 1px rgba(212,245,255,.16)}
+.storm-reward-dial{position:absolute;z-index:8;left:14%;bottom:39%;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#173541 0 43%,#6e9aa9 44% 55%,#102a35 56%);border:4px solid #8ed8ec;box-shadow:0 0 11px rgba(91,206,242,.35)}
+.storm-reward-dial:after{content:"";position:absolute;left:22px;top:7px;width:4px;height:30px;border-radius:3px;background:#dcfaff;transform:rotate(18deg);transform-origin:50% 80%;box-shadow:0 0 5px rgba(175,240,255,.68)}
+.storm-reward-lamp{position:absolute;z-index:9;width:12px;height:12px;border-radius:50%;background:#74d9f4;box-shadow:0 0 8px rgba(92,218,251,.72)}
+.storm-reward-lamp.l1{left:13%;bottom:25%}.storm-reward-lamp.l2{left:26%;bottom:25%}.storm-reward-lamp.l3{left:39%;bottom:25%}.storm-reward-lamp.l4{left:52%;bottom:25%}
+.storm-reward-network{position:absolute;z-index:4;left:31%;bottom:35%;width:45%;height:7px;border-radius:999px;background:linear-gradient(90deg,#66c7e8,#d9f9ff 45%,#6ed5c5);transform:rotate(-8deg);box-shadow:0 0 10px rgba(101,210,239,.52)}
+.storm-reward-network:after{content:"";position:absolute;right:-8px;top:-10px;width:18px;height:18px;border-radius:50%;background:#d9fff7;border:4px solid #5fb8b0;box-shadow:0 0 9px rgba(107,233,215,.58)}
+.storm-reward-dock{position:absolute;z-index:7;right:8%;bottom:17%;width:92px;height:38px;border-radius:8px;background:linear-gradient(145deg,#6e8290,#3a5362);border:5px solid #294555;box-shadow:0 7px 9px rgba(4,17,25,.26),inset 0 1px rgba(217,247,255,.18)}
+.storm-reward-dock:before{content:"";position:absolute;left:12px;right:12px;top:9px;height:4px;background:#a5d9e8;box-shadow:0 11px 0 #7aa9b8}
+.storm-reward-beam{position:absolute;z-index:6;right:23%;bottom:34%;width:8px;height:80px;border-radius:999px;background:linear-gradient(180deg,rgba(207,251,255,.18),#9de6f5 42%,rgba(100,213,234,.10));box-shadow:0 0 14px rgba(110,222,244,.48)}
