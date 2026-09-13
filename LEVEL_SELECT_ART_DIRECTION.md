@@ -50,6 +50,7 @@ These are interaction/composition references only. No third-party game art is co
 - Material: **Blue Metal Plate**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/blue_metal_plate
 - Object vocabulary: factory stacks, relay towers, switch banks, insulated conduits, lightning masts and storm-lit steel.
 - Shape source: industrial electrical hardware abstracted into friendly readable machinery.
+- Recurring landmark: a compact multi-region synchronization relay with regional signal lamps feeding one shared timing-window dial. In the `Useful Failure` movement, one amber correction lamp sits visibly off-phase; in the Level 350 reward, the same relay language resolves into a synchronized line feeding Little Home's arrival platform.
 
 ### 8. Aurora Crown
 - Material: **Snow 02**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/snow_02
