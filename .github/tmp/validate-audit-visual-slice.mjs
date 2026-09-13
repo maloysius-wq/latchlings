@@ -6,7 +6,6 @@ fs.mkdirSync(OUT,{recursive:true});
 const results={checks:[],errors:[],screenshots:[]};
 function assert(cond,msg){if(!cond)throw new Error(msg)}
 function check(name,detail='ok'){results.checks.push({name,detail});console.log('CHECK',name,detail)}
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 const browser=await chromium.launch({headless:true});
 async function makeContext(viewport={width:390,height:844},reduced=false,unlocked=400){
@@ -21,9 +20,24 @@ async function makeContext(viewport={width:390,height:844},reduced=false,unlocke
 }
 async function settleGame(page,level){
  await page.evaluate(L=>window.startLevel(L),level);
- await page.waitForTimeout(700);
- await page.evaluate(()=>{try{window.LatchlingsStoryTheme?.close(false)}catch(_){}const o=document.getElementById('storyCardOverlay');if(o){o.classList.remove('show');o.setAttribute('aria-hidden','true')}});
- await page.waitForTimeout(90);
+ // Chapter-opening story cards are scheduled after the screen transition, so wait past that timer
+ // and dismiss through the real player-facing Start route control before visual capture.
+ await page.waitForTimeout(1050);
+ const continueBtn=page.locator('#storyCardContinue');
+ if(await continueBtn.isVisible().catch(()=>false))await continueBtn.click();
+ await page.evaluate(()=>{try{window.LatchlingsStoryTheme?.close(true)}catch(_){}const o=document.getElementById('storyCardOverlay');if(o){o.classList.remove('show');o.setAttribute('aria-hidden','true')}});
+ await page.waitForTimeout(120);
+ assert(!(await page.locator('#storyCardOverlay').evaluate(o=>o.classList.contains('show'))),'story card remained over gameplay');
+}
+async function solveCurrentLevel(page,level){
+ const solution=await page.evaluate(L=>window.LEVELS[L-1].solution,level);
+ assert(Array.isArray(solution)&&solution.length>0,`missing solution for level ${level}`);
+ for(const [pi,d] of solution){
+  const piece=page.locator(`.latchling[data-pi="${pi}"]`);
+  if(await piece.count()){await piece.click();await page.evaluate(dir=>window.moveSelected(dir),d);await page.waitForTimeout(15)}
+ }
+ await page.locator('.chapter-reward-card').waitFor({state:'visible',timeout:8000});
+ return solution.length;
 }
 async function shot(page,name){await page.screenshot({path:`${OUT}/${name}.png`,fullPage:false});results.screenshots.push(name+'.png')}
 async function boundsOk(page,label){const x=await page.evaluate(()=>({w:innerWidth,h:innerHeight,sw:document.documentElement.scrollWidth,sh:document.documentElement.scrollHeight,bodyw:document.body.scrollWidth}));assert(x.sw<=x.w+1&&x.bodyw<=x.w+1,`${label} horizontal overflow ${JSON.stringify(x)}`);check(label+' horizontal containment',JSON.stringify(x))}
@@ -92,9 +106,9 @@ await ctx.close();
 
 // Chapter 1 reward and canonical Little Home mailbox payoff from a chapter-one progress state.
 const rewardCtx=await makeContext({width:390,height:844},false,50);const rewardPage=await rewardCtx.newPage();rewardPage.setDefaultTimeout(8000);rewardPage.on('pageerror',e=>results.errors.push('reward pageerror: '+String(e)));
-await rewardPage.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await settleGame(rewardPage,50);await rewardPage.evaluate(()=>window.winLevel());await rewardPage.waitForTimeout(120);
-let reward=await rewardPage.evaluate(()=>({card:!!document.querySelector('.chapter-reward-card'),postcard:!!document.querySelector('.chapter-reward-postcard'),mailbox:!!document.querySelector('.chapter-reward-mailbox'),home:!!document.getElementById('chapterRewardHome'),cont:!!document.getElementById('chapterRewardContinue'),text:document.querySelector('.chapter-reward-result')?.textContent||'',genericBeat:!!document.querySelector('.story-beat-result')}));
-assert(reward.card&&reward.postcard&&reward.mailbox&&reward.home&&reward.cont,'Chapter 1 reward surface incomplete: '+JSON.stringify(reward));assert(!reward.genericBeat,'Chapter 1 still shows dense generic story result');assert(/Breakfast, watering, and mail/.test(reward.text),'Chapter 1 ordinary-life result missing');check('Chapter 1 visible reward contract',JSON.stringify(reward));await boundsOk(rewardPage,'Reward 390');await shot(rewardPage,'after-reward50-390');
+await rewardPage.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await settleGame(rewardPage,50);const solvedMoves=await solveCurrentLevel(rewardPage,50);await rewardPage.waitForTimeout(120);
+let reward=await rewardPage.evaluate(()=>({card:!!document.querySelector('.chapter-reward-card'),postcard:!!document.querySelector('.chapter-reward-postcard'),mailbox:!!document.querySelector('.chapter-reward-mailbox'),home:!!document.getElementById('chapterRewardHome'),cont:!!document.getElementById('chapterRewardContinue'),text:document.querySelector('.chapter-reward-result')?.textContent||'',score:document.querySelector('.chapter-reward-score')?.textContent||'',genericBeat:!!document.querySelector('.story-beat-result')}));
+assert(reward.card&&reward.postcard&&reward.mailbox&&reward.home&&reward.cont,'Chapter 1 reward surface incomplete: '+JSON.stringify(reward));assert(!reward.genericBeat,'Chapter 1 still shows dense generic story result');assert(/Breakfast, watering, and mail/.test(reward.text),'Chapter 1 ordinary-life result missing');assert(!/^0 moves/.test(reward.score),`reward screenshot used fabricated zero-move clear: ${reward.score}`);check('Chapter 1 visible reward contract',JSON.stringify({...reward,solutionMoves:solvedMoves}));await boundsOk(rewardPage,'Reward 390');await shot(rewardPage,'after-reward50-390');
 await rewardPage.click('#chapterRewardHome');await rewardPage.waitForTimeout(220);
 const frame=rewardPage.frameLocator('#homeTitleFrame');await frame.locator('#c2 .story-mailbox').waitFor({state:'visible'});let homePayoff=await frame.locator('#c2 .phone').evaluate(phone=>({focus:phone.classList.contains('story-focus-mailbox'),stage1:phone.classList.contains('story-stage-1'),mailbox:getComputedStyle(phone.querySelector('.story-mailbox')).display}));assert(homePayoff.stage1&&homePayoff.mailbox!=='none','Canonical Little Home mailbox did not appear: '+JSON.stringify(homePayoff));assert(homePayoff.focus,'Mailbox focus treatment did not trigger on Visit Little Home');check('Little Home mailbox payoff',JSON.stringify(homePayoff));await shot(rewardPage,'after-home-mailbox-390');await rewardCtx.close();
 
