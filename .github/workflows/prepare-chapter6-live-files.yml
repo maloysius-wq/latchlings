@@ -1,0 +1,33 @@
+name: Prepare Chapter 6 live wiring artifact
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/tmp/prepare-chapter6-live.py'
+      - '.github/workflows/prepare-chapter6-live-files.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare live wiring files
+        run: python3 .github/tmp/prepare-chapter6-live.py
+      - name: Verify output
+        run: |
+          test -s /tmp/chapter6-live/index.html
+          test -s /tmp/chapter6-live/LEVEL_SELECT_ART_DIRECTION.md
+          grep -q 'pass3-chapter6-copperline.css?v=20260913-ch6pass3-1' /tmp/chapter6-live/index.html
+          grep -q 'pass3-chapter6-copperline.js?v=20260913-ch6pass3-1' /tmp/chapter6-live/index.html
+          grep -q 'compact station archive / timetable kiosk' /tmp/chapter6-live/LEVEL_SELECT_ART_DIRECTION.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chapter6-live-wiring
+          path: /tmp/chapter6-live
+          if-no-files-found: error
