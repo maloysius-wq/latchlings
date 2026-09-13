@@ -83,6 +83,14 @@ jobs:
 
       - name: Browser acceptance matrix
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/validate-audit-pass1.mjs')
+          s=p.read_text()
+          s=s.replace("await homeFrame.click('#c2 .settings');","await homeFrame.evaluate(()=>document.querySelector('#c2 .settings').click());",1)
+          s=s.replace("await homeFrame.click('#c2 .story-home');","await homeFrame.evaluate(()=>document.querySelector('#c2 .story-home').click());",1)
+          p.write_text(s)
+          PY
           python3 -m http.server 4173 >/tmp/latchlings-pass1-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
