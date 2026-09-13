@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/validate-chapter5-pass3.yml'
       - '.github/tmp/apply-chapter5-pass3.py'
+      - '.github/tmp/refine-chapter5-pass3.py'
       - '.github/tmp/validate-chapter5-pass3.mjs'
+      - '.github/tmp/validate-chapter5-refinements.mjs'
       - '.github/tmp/fix-chapter5-validator.py'
 
 permissions:
@@ -23,7 +25,9 @@ jobs:
           sha256sum campaign400-{1,2,3,4,5,6,7,8}.js story400.js story-grounding400.js STORY_BIBLE.md cinematics400.js cinematic-dialogue400.js gameplay-story-rail400.js story-theme400.js music400.js sfx400.js style400-game.css style400-board-surfaces.css > /tmp/protected-before.sha256
 
       - name: Apply Chapter 5 Pass 3 candidate
-        run: python .github/tmp/apply-chapter5-pass3.py
+        run: |
+          python .github/tmp/apply-chapter5-pass3.py
+          python .github/tmp/refine-chapter5-pass3.py
 
       - name: Static and scope validation
         run: |
@@ -45,8 +49,8 @@ jobs:
           assert '.gate.color' in css and 'var(--gate-color)' in css
           assert '.chapter-five-reward' in css and '.prism-reward-scope' in css and '.prism-reward-lights' in css
           assert 'showChapterFiveReward' in b and "focusHomeReward('telescope')" in b and 'currentLevel===250' in b
-          assert '.theme-ch5 .atlas-map.atlas-range-3 .atlas-scene em' in atlas
-          assert 'story-focus-telescope' in home and "e.data.focus==='telescope'" in home
+          assert '.theme-ch5 .atlas-map.atlas-range-3 .atlas-scene em' in atlas and 'right:5%;bottom:12%' in atlas
+          assert 'story-focus-telescope' in home and "e.data.focus==='telescope'" in home and '0 0 0 5px rgba(103,218,221,.23)' in home
           assert 'glasshouse lookout / sighting arch' in art and 'two distant amber lights' in art
           assert '20260912-ch5pass3-1' in html
           print('CHAPTER5_PASS3_STATIC_OK')
@@ -69,6 +73,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
           timeout 360s node .github/tmp/validate-chapter5-pass3.mjs
+          timeout 90s node .github/tmp/validate-chapter5-refinements.mjs
           sha256sum -c /tmp/protected-before.sha256
 
       - name: Package candidate product files and diff
