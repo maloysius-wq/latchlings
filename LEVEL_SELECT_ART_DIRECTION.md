@@ -32,6 +32,7 @@ These are interaction/composition references only. No third-party game art is co
 - Material: **Plaster Stone Wall 01**, Poly Haven CC0, Charlotte Baglioni. https://polyhaven.com/a/plaster_stone_wall_01
 - Object vocabulary: gate arches, keep towers, market banners, stone parapets and moonlit civic architecture.
 - Shape source: simple masonry arches, battlements and cloth pennants translated into the game's rounded storybook proportions.
+- Recurring landmark: a rounded old civic gate arch with four worn black suit plaques beneath newer rose-and-gold market cloth; reuse it in Chapter 4 Atlas/reward surfaces so the market visibly sits on older Skyway infrastructure.
 
 ### 5. Prism Gardens
 - Material: **Marble 01**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/marble_01
