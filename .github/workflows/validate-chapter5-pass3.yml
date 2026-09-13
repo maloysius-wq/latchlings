@@ -6,6 +6,7 @@ on:
       - '.github/workflows/validate-chapter5-pass3.yml'
       - '.github/tmp/apply-chapter5-pass3.py'
       - '.github/tmp/validate-chapter5-pass3.mjs'
+      - '.github/tmp/fix-chapter5-validator.py'
 
 permissions:
   contents: read
@@ -62,6 +63,7 @@ jobs:
 
       - name: Browser acceptance and screenshot matrix
         run: |
+          python .github/tmp/fix-chapter5-validator.py
           python3 -m http.server 4173 >/tmp/latchlings-ch5-pass3-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
@@ -73,7 +75,9 @@ jobs:
         if: always()
         run: |
           mkdir -p /tmp/chapter5-pass3/product
-          cp game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css title-island-concepts/index.html LEVEL_SELECT_ART_DIRECTION.md index.html /tmp/chapter5-pass3/product/ || true
+          cp game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css LEVEL_SELECT_ART_DIRECTION.md index.html /tmp/chapter5-pass3/product/ || true
+          mkdir -p /tmp/chapter5-pass3/product/title-island-concepts
+          cp title-island-concepts/index.html /tmp/chapter5-pass3/product/title-island-concepts/index.html || true
           git diff -- game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css title-island-concepts/index.html LEVEL_SELECT_ART_DIRECTION.md index.html > /tmp/chapter5-pass3/product.diff || true
           cp /tmp/protected-before.sha256 /tmp/chapter5-pass3/protected-before.sha256 || true
 
