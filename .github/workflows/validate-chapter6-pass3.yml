@@ -1,4 +1,4 @@
-name: Validate Chapter 6 Pass 3 candidate
+name: Validate Chapter 6 Pass 3 live build
 
 on:
   push:
@@ -24,11 +24,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Protect authored and accepted source
+      - name: Protect authored and accepted Chapters 1-5 source
         shell: bash
         run: |
           set -euo pipefail
           BASE=7fcbb3473d8c6b63018c840fdad62f3712c23aed
+          CANDIDATE=ea955e6a53a744ab5ac5a2e09939e0354358f49a
           protected=(
             campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js
             campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
@@ -39,9 +40,9 @@ jobs:
             pass3-chapter5-prism.css pass3-chapter5-prism.js
           )
           git diff --exit-code "$BASE" -- "${protected[@]}"
-          git diff --exit-code "$BASE" -- index.html LEVEL_SELECT_ART_DIRECTION.md
+          git diff --exit-code "$CANDIDATE" -- pass3-chapter6-copperline.css pass3-chapter6-copperline.js
 
-      - name: Static candidate checks
+      - name: Static live wiring checks
         shell: bash
         run: |
           set -euo pipefail
@@ -52,23 +53,11 @@ jobs:
           grep -q 'story-stage-6' title-island-concepts/index.html
           grep -q 'atlas-map.atlas-range-3' pass3-chapter6-copperline.css
           grep -q 'copperline-reward-postcard' pass3-chapter6-copperline.css
-
-      - name: Prepare candidate-only live page
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text()
-          css='<link rel="stylesheet" href="pass3-chapter5-prism.css?v=20260913-ch5modular-1">'
-          js='<script src="pass3-chapter5-prism.js?v=20260913-ch5modular-1"></script>'
-          assert 'pass3-chapter6-copperline.css' not in s
-          assert 'pass3-chapter6-copperline.js' not in s
-          s=s.replace(css, css+'\n<link rel="stylesheet" href="pass3-chapter6-copperline.css?v=20260913-ch6candidate-1">', 1)
-          s=s.replace(js, js+'\n<script src="pass3-chapter6-copperline.js?v=20260913-ch6candidate-1"></script>', 1)
-          p.write_text(s)
-          PY
+          test "$(grep -c 'pass3-chapter6-copperline.css?v=20260913-ch6pass3-1' index.html)" -eq 1
+          test "$(grep -c 'pass3-chapter6-copperline.js?v=20260913-ch6pass3-1' index.html)" -eq 1
+          grep -q '<div class="story-cast" id="storyCast"></div>' index.html
+          ! grep -q 'id="story-cast" id="storyCast"' index.html
+          grep -q 'compact station archive / timetable kiosk' LEVEL_SELECT_ART_DIRECTION.md
 
       - uses: actions/setup-node@v4
         with:
@@ -81,7 +70,7 @@ jobs:
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Browser candidate acceptance
+      - name: Browser acceptance against committed live build
         shell: bash
         run: |
           set -euo pipefail
@@ -91,20 +80,19 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 0.2; done
           node .github/tmp/validate-chapter6-pass3.mjs
 
-      - name: Package candidate evidence
+      - name: Package live acceptance evidence
         if: always()
         shell: bash
         run: |
           mkdir -p /tmp/chapter6-pass3
           cp pass3-chapter6-copperline.css /tmp/chapter6-pass3/
           cp pass3-chapter6-copperline.js /tmp/chapter6-pass3/
-          git diff -- index.html > /tmp/chapter6-pass3/candidate-index.diff || true
           git status --short > /tmp/chapter6-pass3/status.txt
 
-      - name: Upload Chapter 6 candidate evidence
+      - name: Upload Chapter 6 live acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chapter6-pass3-candidate
+          name: chapter6-pass3-live-acceptance
           path: /tmp/chapter6-pass3
           if-no-files-found: error
