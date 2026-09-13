@@ -1,0 +1,31 @@
+name: Start Chapter 5 Pass 3 handoff
+
+on:
+  push:
+    paths:
+      - '.github/workflows/start-chapter5-pass3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Open Chapter 5 Pass 3 handoff
+        run: |
+          python .github/tmp/start-chapter5-pass3.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Start Pass 3 Chapter 5 Prism handoff"
+          git push
+      - name: Self-remove starter
+        run: |
+          git pull --rebase
+          git rm .github/workflows/start-chapter5-pass3.yml .github/tmp/start-chapter5-pass3.py
+          git commit -m "Remove Chapter 5 Pass 3 starter"
+          git push
