@@ -1,6 +1,6 @@
 # Latchlings Development Handoff
 
-Last updated: 2026-09-10
+Last updated: 2026-09-12
 
 ## Start here
 
@@ -40,7 +40,7 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 
 ### 2026-09-12 — Chapter 1 production material rollout
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 **User goal:** Continue development from the accepted production visual slice using the current repository as source of truth. Follow the handoff's explicit next step by extending the accepted quiet-floor / weighted-fixture / selected-piece-to-matching-nest visual grammar chapter-by-chapter, beginning with Chapter 1 only.
 
@@ -51,6 +51,19 @@ If a chat is interrupted, the handoff must already contain enough detail to resu
 **Validation plan:** Protect hashes for all eight campaign definition files plus story sources; run syntax/static assertions; browser-test representative Chapter 1 levels 1, 10, 11, 20, 21, 30, 31, 40, 41, and 50 at 390x844 plus Levels 1 and 50 at 320x568; assert every Chapter 1 campaign level receives the Sunpetal production mode, Daily receives none, Level 51 receives none, Level 366 retains Aurora dense mode, selected-piece/matching-nest pairing remains present, decorative pseudo-elements remain suppressed, floor backgrounds contain no repeating/conic/radial rule-like patterns, touch/viewport containment remains healthy, and no protected source hash changes. Capture screenshot evidence for the five Chapter 1 board ranges and small-phone endpoints.
 
 **Deployment plan:** Commit this IN PROGRESS entry before product edits. Implement the Chapter 1-only rollout, validate with temporary GitHub Actions/Chromium helpers, promote only a green product state, remove all temporary helpers, confirm GitHub Pages succeeds on the clean product head, then close this entry as COMPLETED/PARTIAL/BLOCKED with exact commits/runs/artifacts and the next chapter decision.
+
+#### Completion summary
+
+- **Result:** COMPLETED. The accepted Sunpetal production language now covers all campaign Levels 1–50 through a reusable chapter-aware visual-mode hook. Daily remains neutral, Level 51 does not inherit Sunpetal, and the accepted Level 366 Aurora dense proof remains an explicit override. No puzzle definition, solution, movement rule, story source, cinematic implementation, or Chapter 1 reward behavior changed.
+- **Product commit:** `57a50fcb2fb6e2ba9317f74c480643f9365b1d9c` (`Roll production materials through Chapter 1`). Product files changed exactly `game400-a.js`, `style400-production-slice.css`, and `index.html`. `game400-a.js` now maps Chapter 1 to `sunpetal` and keeps per-level overrides separate; the stylesheet adds five quiet 10-level waypoint material shifts; `index.html` advances the production stylesheet cache key.
+- **Visual direction:** All five Chapter 1 waypoint ranges keep rule space quiet with linear matte meadow materials, suppress decorative cell pseudo-elements, retain the selected-Latchling / matching-nest hierarchy, and vary subtly enough to make the chapter feel authored without introducing floor marks that could be mistaken for mechanics.
+- **Primary validation:** Actions run `34737631316`, job `103671725986`, completed successfully. It protected hashes for all eight `campaign400-*.js` files, `story400.js`, `story-grounding400.js`, `game400-b.js`, `cinematics400.js`, and `title-island-concepts/index.html`; checked representative Levels 1/10/11/20/21/30/31/40/41/50 at 390x844; verified Daily isolation, the Level 51 boundary, the Level 366 Aurora override, five distinct quiet waypoint surfaces, selected/matching-nest pairing, absence of rule-like floor gradients, and phone containment. Artifact `chapter1-production-rollout` is ID `10311940385`, SHA-256 `cf478ce19f84b85ef171d361324af8d99b3fdd765681acc05474b615d6774d44`.
+- **Small-phone acceptance:** At 320x568, Level 1 controls ended at 563.6875px and Level 50 at 565.6875px inside a 568px viewport; the smallest active control target measured 44.796875px in both captures. No horizontal overflow or browser errors were reported.
+- **Evidence correction:** Manual review found that the first Level 21 screenshot was blurred even though functional assertions passed. Source inspection showed `startLevel()` can defer story entry until its screen transition finishes, so the original screenshot helper could close the story surface too early and then capture its late overlay. This was a validation-harness race, not a product defect. Follow-up Actions run `34737762029`, job `103672092489`, waited for the transition, explicitly cleared story/modal/cinematic presentation layers, asserted the game and app were unfiltered and fully opaque, re-hashed the accepted product and authored sources, and captured clean Levels 1/11/21/31/41/50. Artifact `chapter1-production-evidence` is ID `10311980445`, SHA-256 `ef50a3a22c1812a5c03f6c93de623c62d1e666055733457b46768d50daf8665a`. Manual review of the corrected contact sheet confirmed all six checkpoints are sharp and visually coherent.
+- **Cleanup / deployment:** Product-validator cleanup commit `fe45b87b2cbf1bbf7765f7e26c316008d4541163`; evidence-validator cleanup commit `2d68e24c9fcff8f059f9f65d906da4a9f9c1c9e3`. GitHub Pages run `34737790533` (run 989) succeeded on clean head `2d68e24c9fcff8f059f9f65d906da4a9f9c1c9e3`. Before this closeout helper was added, `.github/workflows` contained only permanent `validate-repository-access-guard.yml`.
+- **Handoff hygiene:** The stale document header date is corrected from 2026-09-10 to 2026-09-12 so the handoff metadata matches the newest journal entries.
+- **Remaining scope / exact next action:** Stop here for this slice. Chapter 2 (Lanternwood Grove, Levels 51–100) remains untouched by the production material rollout and should be handled as a separate chapter entry with its own source-protection gate and screenshot review rather than automatically inheriting Chapter 1 styling.
+
 
 
 ### 2026-09-12 — Audit Pass 1 clarity/correctness and approved visual slice
