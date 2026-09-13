@@ -1,14 +1,14 @@
-name: Validate Chapter 5 Pass 3 campaign application
+name: Validate Chapter 5 Pass 3 live build
 
 on:
   push:
     paths:
       - '.github/workflows/validate-chapter5-pass3.yml'
-      - '.github/tmp/apply-chapter5-pass3.py'
-      - '.github/tmp/refine-chapter5-pass3.py'
-      - '.github/tmp/validate-chapter5-pass3.mjs'
-      - '.github/tmp/validate-chapter5-refinements.mjs'
-      - '.github/tmp/fix-chapter5-validator.py'
+      - '.github/tmp/validate-chapter5-live.mjs'
+      - 'pass3-chapter5-prism.css'
+      - 'pass3-chapter5-prism.js'
+      - 'index.html'
+      - 'LEVEL_SELECT_ART_DIRECTION.md'
 
 permissions:
   contents: read
@@ -19,42 +19,34 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Protect puzzle data and unrelated runtime systems
+      - name: Verify protected Chapter 1-4 and authored source stayed unchanged
         run: |
-          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js story400.js story-grounding400.js STORY_BIBLE.md cinematics400.js cinematic-dialogue400.js gameplay-story-rail400.js story-theme400.js music400.js sfx400.js style400-game.css style400-board-surfaces.css > /tmp/protected-before.sha256
+          protected=(
+            campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js
+            campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+            game400-a.js game400-b.js
+            style400-production-slice.css style400-skyway-atlas.css title-island-concepts/index.html
+            story400.js story-grounding400.js STORY_BIBLE.md
+            cinematics400.js cinematic-dialogue400.js gameplay-story-rail400.js story-theme400.js
+            music400.js sfx400.js style400-game.css style400-board-surfaces.css
+          )
+          git diff --exit-code 6573e9ecc84de26e17f801534b42ee7131ff7da0 HEAD -- "${protected[@]}"
+          sha256sum "${protected[@]}" pass3-chapter5-prism.css pass3-chapter5-prism.js index.html LEVEL_SELECT_ART_DIRECTION.md > /tmp/ch5-live-before.sha256
+          echo "Protected source matches the clean Chapter 4 checkpoint."
 
-      - name: Apply Chapter 5 Pass 3 candidate
+      - name: Static live wiring checks
         run: |
-          python .github/tmp/apply-chapter5-pass3.py
-          python .github/tmp/refine-chapter5-pass3.py
-
-      - name: Static and scope validation
-        run: |
-          node --check game400-a.js
-          node --check game400-b.js
-          sha256sum -c /tmp/protected-before.sha256
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess
-          expected=set('game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css title-island-concepts/index.html LEVEL_SELECT_ART_DIRECTION.md index.html'.split())
-          changed=set()
-          for line in subprocess.check_output(['git','status','--porcelain'],text=True).splitlines():
-              changed.add(line[3:])
-          if changed != expected:
-              raise SystemExit(f'Chapter 5 Pass 3 product diff mismatch: expected {sorted(expected)}, got {sorted(changed)}')
-          a=Path('game400-a.js').read_text(); b=Path('game400-b.js').read_text(); css=Path('style400-production-slice.css').read_text(); atlas=Path('style400-skyway-atlas.css').read_text(); home=Path('title-island-concepts/index.html').read_text(); art=Path('LEVEL_SELECT_ART_DIRECTION.md').read_text(); html=Path('index.html').read_text()
-          assert "VISUAL_CHAPTER_MODES={1:'sunpetal',2:'lanternwood',3:'lodestone',4:'masquerade',5:'prism'}" in a
-          assert '#game[data-visual-slice="prism"]' in css and 'data-board-range="5"' in css
-          assert '.gate.color' in css and 'var(--gate-color)' in css
-          assert '.chapter-five-reward' in css and '.prism-reward-scope' in css and '.prism-reward-lights' in css
-          assert 'showChapterFiveReward' in b and "focusHomeReward('telescope')" in b and 'currentLevel===250' in b
-          assert '.theme-ch5 .atlas-map.atlas-range-3 .atlas-scene em' in atlas and 'right:5%;bottom:12%' in atlas
-          assert 'story-focus-telescope' in home and "e.data.focus==='telescope'" in home and '0 0 0 5px rgba(103,218,221,.23)' in home
-          assert 'glasshouse lookout / sighting arch' in art and 'two distant amber lights' in art
-          assert '20260912-ch5pass3-1' in html
-          print('CHAPTER5_PASS3_STATIC_OK')
-          PY
+          node --check pass3-chapter5-prism.js
+          test "$(grep -Fc 'pass3-chapter5-prism.css?v=20260913-ch5modular-1' index.html)" -eq 1
+          test "$(grep -Fc 'pass3-chapter5-prism.js?v=20260913-ch5modular-1' index.html)" -eq 1
+          grep -F 'glasshouse lookout / sighting arch' LEVEL_SELECT_ART_DIRECTION.md
+          grep -F "VISUAL_CHAPTER_MODES[5]='prism'" pass3-chapter5-prism.js
+          grep -F 'chapter-five-reward' pass3-chapter5-prism.js
+          grep -F 'theme-ch5 .atlas-map.atlas-range-3 .atlas-scene em' pass3-chapter5-prism.css
+          echo "Chapter 5 committed wiring is present exactly once."
 
       - uses: actions/setup-node@v4
         with:
@@ -65,31 +57,27 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Browser acceptance and screenshot matrix
+      - name: Browser acceptance against committed live build
         run: |
-          python .github/tmp/fix-chapter5-validator.py
-          python3 -m http.server 4173 >/tmp/latchlings-ch5-pass3-server.log 2>&1 &
+          python3 -m http.server 4173 >/tmp/latchlings-ch5-live-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
-          timeout 360s node .github/tmp/validate-chapter5-pass3.mjs
-          timeout 90s node .github/tmp/validate-chapter5-refinements.mjs
-          sha256sum -c /tmp/protected-before.sha256
+          timeout 420s node .github/tmp/validate-chapter5-live.mjs
+          sha256sum -c /tmp/ch5-live-before.sha256
 
-      - name: Package candidate product files and diff
+      - name: Package live acceptance evidence
         if: always()
         run: |
-          mkdir -p /tmp/chapter5-pass3/product
-          cp game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css LEVEL_SELECT_ART_DIRECTION.md index.html /tmp/chapter5-pass3/product/ || true
-          mkdir -p /tmp/chapter5-pass3/product/title-island-concepts
-          cp title-island-concepts/index.html /tmp/chapter5-pass3/product/title-island-concepts/index.html || true
-          git diff -- game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css title-island-concepts/index.html LEVEL_SELECT_ART_DIRECTION.md index.html > /tmp/chapter5-pass3/product.diff || true
-          cp /tmp/protected-before.sha256 /tmp/chapter5-pass3/protected-before.sha256 || true
+          mkdir -p /tmp/chapter5-live-validation
+          git rev-parse HEAD > /tmp/chapter5-live-validation/validated-head.txt
+          cp /tmp/ch5-live-before.sha256 /tmp/chapter5-live-validation/source-hashes.sha256 || true
+          cp /tmp/latchlings-ch5-live-server.log /tmp/chapter5-live-validation/server.log || true
 
-      - name: Upload Chapter 5 Pass 3 evidence
+      - name: Upload Chapter 5 live acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chapter5-pass3-campaign-application
-          path: /tmp/chapter5-pass3
-          if-no-files-found: warn
+          name: chapter5-pass3-live-acceptance
+          path: /tmp/chapter5-live-validation
+          if-no-files-found: error
