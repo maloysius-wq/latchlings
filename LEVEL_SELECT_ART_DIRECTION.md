@@ -38,6 +38,7 @@ These are interaction/composition references only. No third-party game art is co
 - Material: **Marble 01**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/marble_01
 - Object vocabulary: glasshouse ribs, translucent petals, crystal planters, prismatic highlights and soft botanical geometry.
 - Shape source: greenhouse arches and radial flower forms, stylized rather than photo-real.
+- Recurring landmark: a pale glasshouse lookout / sighting arch with a compact brass scope aimed toward two distant amber porch lights; reuse it in Chapter 5 Atlas/reward surfaces so Prism's wider regional view visibly reconnects to the familiar Lanternwood friend porch.
 
 ### 6. Copperline Junction
 - Material: **Rusty Metal 02**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/rusty_metal_02
