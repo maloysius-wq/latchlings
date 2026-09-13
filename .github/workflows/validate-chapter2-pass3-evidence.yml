@@ -1,0 +1,63 @@
+name: Revalidate Chapter 2 Pass 3 visual evidence
+
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-chapter2-pass3-evidence.yml'
+      - '.github/tmp/validate-chapter2-pass3-evidence.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply accepted candidate without changing source scope
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js cinematic-dialogue400.js gameplay-story-rail400.js story-theme400.js music400.js sfx400.js style400-game.css > /tmp/protected-before.sha256
+          python .github/tmp/apply-chapter2-pass3.py
+          sha256sum game400-a.js game400-b.js style400-production-slice.css style400-skyway-atlas.css story400.js story-grounding400.js STORY_BIBLE.md cinematics400.js title-island-concepts/index.html index.html > /tmp/candidate-before.sha256
+          sha256sum -c /tmp/protected-before.sha256
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Chromium validation runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture corrected visual evidence
+        run: |
+          python3 -m http.server 4173 >/tmp/latchlings-ch2-evidence-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 1
+          timeout 180s node .github/tmp/validate-chapter2-pass3-evidence.mjs
+          sha256sum -c /tmp/protected-before.sha256
+          sha256sum -c /tmp/candidate-before.sha256
+
+      - name: Upload corrected Chapter 2 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter2-pass3-corrected-evidence
+          path: /tmp/chapter2-pass3-corrected
+
+      - name: Self-remove corrected evidence helpers
+        run: |
+          rm -rf node_modules
+          git reset --hard HEAD
+          git clean -fd
+          git pull --rebase
+          git rm .github/workflows/validate-chapter2-pass3-evidence.yml .github/tmp/validate-chapter2-pass3-evidence.mjs
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "Remove Chapter 2 corrected evidence validator"
+          git push
