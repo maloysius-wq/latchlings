@@ -205,6 +205,13 @@ body.cinematic-mode #c2 .topline,body.cinematic-mode #c2 .toy-brand,body.cinemat
 body.cinematic-mode #c2 .scene{left:50%!important;right:auto!important;top:50%!important;width:350px!important;height:350px!important;transform:translate(-50%,-50%) scale(.76)!important;transform-origin:50% 50%!important;overflow:visible!important}
 body.cinematic-mode #c2 .island-model{top:11px!important}
 html[data-motion="reduced"] *{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+
+/* Chapter-one payoff focus: the canonical Little Home mailbox gets a short, non-blocking reveal. */
+#c2 .phone.story-focus-mailbox .story-mailbox{display:block;z-index:25;animation:mailboxRewardFocus 1800ms cubic-bezier(.2,.8,.2,1) both}
+#c2 .phone.story-focus-mailbox .story-mailbox:before{content:"";position:absolute;left:-12px;top:-10px;width:37px;height:32px;border-radius:50%;border:3px solid rgba(255,231,139,.82);box-shadow:0 0 0 7px rgba(255,243,186,.20),0 0 18px rgba(255,218,104,.62);animation:mailboxRewardHalo 1800ms ease-out both;pointer-events:none}
+@keyframes mailboxRewardFocus{0%{opacity:.25;transform:translateY(-9px) scale(.76)}28%{opacity:1;transform:translateY(1px) scale(1.18)}55%{transform:translateY(-2px) scale(.98)}100%{opacity:1;transform:none}}
+@keyframes mailboxRewardHalo{0%{opacity:0;scale:.55}28%{opacity:1;scale:1}100%{opacity:0;scale:1.25}}
+@media(prefers-reduced-motion:reduce){#c2 .phone.story-focus-mailbox .story-mailbox,#c2 .phone.story-focus-mailbox .story-mailbox:before{animation:none!important}}
 </style>
 </head>
 <body>
@@ -290,7 +297,7 @@ function initProductionEmbed(){
  bindEmbed(c2.querySelector('.play'),'play');
  const secondary=c2.querySelectorAll('.secondary button');bindEmbed(secondary[0],'daily');bindEmbed(secondary[1],'levels');
  bindEmbed(c2.querySelector('.story-home'),'story');bindEmbed(c2.querySelector('.settings'),'settings');
- window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);if(e.data.replay)restartLittleHomeTitle()});
+ window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);phone.classList.remove('story-focus-mailbox');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.replay)restartLittleHomeTitle()});
  parent.postMessage({source:'latchlings-home',action:'ready'},location.origin);
 }
 initProductionEmbed();
