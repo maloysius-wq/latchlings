@@ -94,6 +94,19 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 0.2; done
           node .github/tmp/validate-chapter7-pass3.mjs
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          for(const [width,height,name] of [[390,844,'chapter7-level301-390.png'],[320,568,'chapter7-level301-320.png']]){
+            const ctx=await browser.newContext({viewport:{width,height},deviceScaleFactor:1});
+            const stars={};for(let i=1;i<400;i++)stars[i]=3;
+            await ctx.addInitScript(({stars})=>{localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars}));localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}))},{stars});
+            const p=await ctx.newPage();await p.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});await p.evaluate(()=>window.startLevel(301));await p.waitForTimeout(1800);
+            await p.evaluate(()=>{try{window.LatchlingsStoryTheme?.close(false)}catch(_){};const sc=document.getElementById('storyCardOverlay');if(sc){sc.classList.remove('show');sc.setAttribute('aria-hidden','true')}const co=document.getElementById('cinematicOverlay');if(co){co.classList.remove('show','active');co.setAttribute('aria-hidden','true')}});await p.waitForTimeout(120);
+            await p.screenshot({path:`/tmp/chapter7-pass3/${name}`,fullPage:false});await ctx.close();
+          }
+          await browser.close();
+          NODE
 
       - name: Package candidate evidence
         if: always()
