@@ -1,0 +1,33 @@
+name: Fix full audit keepsake validator interaction
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths: ['.github/workflows/fix-full-audit-validator-memory.yml']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+      - name: Exercise keepsake through its keyboard activation path
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/validate-full-audit.mjs')
+          s=p.read_text()
+          old="await mem.click();await p.waitForTimeout(60);"
+          new="await mem.focus();await mem.press('Enter');await p.waitForTimeout(60);"
+          assert s.count(old)==1, s.count(old)
+          p.write_text(s.replace(old,new))
+          PY
+          git diff --check
+      - name: Commit validator correction
+        run: |
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add .github/tmp/validate-full-audit.mjs
+          git commit -m 'Validate Home keepsakes through keyboard activation'
+          git push origin HEAD:audit-full-closure-candidate
