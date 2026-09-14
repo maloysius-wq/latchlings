@@ -1,0 +1,33 @@
+name: Fix winning-layer short-screen audit layout
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths: ['.github/workflows/fix-full-audit-winning-layout.yml']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+      - name: Reclaim puzzle height in the winning stylesheet
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('style400-story-rail-board.css')
+          s=p.read_text()
+          old='html[data-text-size="large"] #game .board{width:min(72vw,228px)}'
+          new='html[data-text-size="large"] #game .board{width:min(65vw,208px)}'
+          assert s.count(old)==1, s.count(old)
+          p.write_text(s.replace(old,new))
+          PY
+          git diff --check
+      - name: Commit fix
+        run: |
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add style400-story-rail-board.css
+          git commit -m 'Fit short-screen Large Text in winning layout layer'
+          git push origin HEAD:audit-full-closure-candidate
