@@ -38,7 +38,7 @@
 #game[data-visual-slice="aurora"] .theme-flourish.right:after{content:"";position:absolute;right:19px;top:4px;width:23px;height:35px;clip-path:polygon(50% 0,68% 28%,92% 48%,68% 100%,32% 100%,8% 48%,32% 28%);background:linear-gradient(180deg,#f5fbff,#a3bde8);filter:drop-shadow(0 0 7px rgba(154,193,236,.46))}
 
 /* Movement 1 / Old and New Together: convergence beacon, with routes visibly continuing through it. */
-.theme-ch8 .atlas-map.atlas-range-1 .atlas-scene em{right:3%;left:auto;top:39%;bottom:auto;width:76px;height:82px;opacity:.98;rotate:0deg;background:none;border:0;box-shadow:none;filter:drop-shadow(0 7px 9px rgba(20,34,65,.20))}
+.theme-ch8 .atlas-map.atlas-range-1 .atlas-scene em{left:2%;right:auto;top:55%;bottom:auto;width:76px;height:82px;opacity:.98;rotate:0deg;background:none;border:0;box-shadow:none;filter:drop-shadow(0 7px 9px rgba(20,34,65,.20))}
 .theme-ch8 .atlas-map.atlas-range-1 .atlas-scene em:before{content:"";position:absolute;left:16px;top:17px;width:44px;height:55px;clip-path:polygon(50% 0,63% 24%,82% 13%,77% 43%,100% 53%,70% 62%,63% 100%,50% 74%,37% 100%,30% 62%,0 53%,23% 43%,18% 13%,37% 24%);background:linear-gradient(180deg,#f6ffff,#a7d9ea 55%,#6a91bb);border-radius:8px;box-shadow:0 0 0 3px rgba(238,253,255,.48),0 0 15px rgba(111,215,224,.58)}
 .theme-ch8 .atlas-map.atlas-range-1 .atlas-scene em:after{content:"";position:absolute;left:-2px;top:39px;width:80px;height:5px;border-radius:999px;background:linear-gradient(90deg,rgba(111,230,205,0),#70e2cf 18%,#eaffff 49%,#93aef2 78%,rgba(170,119,234,0));box-shadow:0 -17px 0 -1px rgba(133,218,237,.72),0 17px 0 -1px rgba(164,132,235,.63),0 0 10px rgba(132,218,233,.52)}
 
@@ -56,7 +56,7 @@
 .aurora-reward-island.i1{left:8%;top:18%;transform:scale(.78)}.aurora-reward-island.i2{right:8%;top:17%;transform:scale(.82)}.aurora-reward-island.i3{left:11%;bottom:15%;transform:scale(.9)}.aurora-reward-island.i4{right:11%;bottom:14%;transform:scale(.86)}
 
 @media(max-width:350px){
-  .theme-ch8 .atlas-map.atlas-range-1 .atlas-scene em{right:1%;transform:scale(.88);transform-origin:100% 50%}
+  .theme-ch8 .atlas-map.atlas-range-1 .atlas-scene em{left:1%;right:auto;transform:scale(.88);transform-origin:0 50%}
 }
 
 @media(prefers-reduced-motion:reduce){
