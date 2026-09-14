@@ -1,0 +1,99 @@
+name: Validate Astra audit R1-R5 candidate
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/validate-audit-r1-r5.yml'
+      - '.github/tmp/validate-audit-r1-r5.mjs'
+      - '.github/tmp/prepare-audit-r1-r5.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Protect campaign, story canon, and accepted Pass 3 modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=d6e39c0866505795c2aa6a26777896072e16e7df
+          protected=(
+            campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js
+            campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+            story400.js story-grounding400.js STORY_BIBLE.md
+            pass3-chapter5-prism.css pass3-chapter5-prism.js
+            pass3-chapter6-copperline.css pass3-chapter6-copperline.js
+            pass3-chapter7-stormswitch.css pass3-chapter7-stormswitch.js
+            pass3-chapter8-aurora.css pass3-chapter8-aurora.js
+          )
+          git diff --exit-code "$BASE" -- "${protected[@]}"
+      - name: Prepare candidate-only site
+        shell: bash
+        run: |
+          set -euo pipefail
+          python .github/tmp/prepare-audit-r1-r5.py
+          rm -rf /tmp/r1r5-site
+          mkdir -p /tmp/r1r5-site
+          cp -a . /tmp/r1r5-site/
+          while IFS= read -r f; do mkdir -p "/tmp/r1r5-site/$(dirname "$f")"; cp "/tmp/r1r5-prepared/$f" "/tmp/r1r5-site/$f"; done < <(python - <<'PY'
+          import json
+          for k in json.load(open('/tmp/r1r5-prepared/manifest.json')): print(k)
+          PY
+          )
+          test "$(python - <<'PY'
+          import json
+          print(len(json.load(open('/tmp/r1r5-prepared/manifest.json'))))
+          PY
+          )" -eq 11
+          node --check /tmp/r1r5-site/game400-a.js
+          node --check /tmp/r1r5-site/game400-b.js
+          node --check /tmp/r1r5-site/gameplay-story-rail400.js
+          node --check /tmp/r1r5-site/cinematics400.js
+          grep -q 'style400-story-rail-board.css?v=20260913-audit-r1r5-1' /tmp/r1r5-site/index.html
+          grep -q 'game400-b.js?v=20260913-audit-r1r5-1' /tmp/r1r5-site/index.html
+          grep -q 'cinematics400.js?v=20260913-audit-r1r5-1' /tmp/r1r5-site/index.html
+          grep -q 'cinematic-footer' /tmp/r1r5-site/cinematics400.js
+          grep -q 'littleHomeEffectiveReducedMotion' /tmp/r1r5-site/title-island-concepts/index.html
+          grep -q 'MOVEMENT_RAIL_LINES' /tmp/r1r5-site/gameplay-story-rail400.js
+          grep -q 'ROUTE_TIPS' /tmp/r1r5-site/game400-a.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium validation runtime
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Browser R1-R5 acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/window.__dummy=0;//' .github/tmp/validate-audit-r1-r5.mjs
+          sed -i 's/updateStoryScreen?\.()/window.updateStoryScreen?.()/g' .github/tmp/validate-audit-r1-r5.mjs
+          python3 -m http.server 4173 -d /tmp/r1r5-site >/tmp/r1r5-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for i in {1..40}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep .2; done
+          node .github/tmp/validate-audit-r1-r5.mjs
+      - name: Package candidate evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p /tmp/audit-r1-r5-evidence
+          cp /tmp/r1r5-prepared/manifest.json /tmp/audit-r1-r5-evidence/prepared-manifest.json 2>/dev/null || true
+          cp /tmp/r1r5-prepared/blob-shas.json /tmp/audit-r1-r5-evidence/prepared-blob-shas.json 2>/dev/null || true
+          cp /tmp/r1r5-http.log /tmp/audit-r1-r5-evidence/http.log 2>/dev/null || true
+          git status --short > /tmp/audit-r1-r5-evidence/status.txt
+      - name: Upload R1-R5 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-r1-r5-candidate-evidence
+          path: /tmp/audit-r1-r5-evidence
+          if-no-files-found: error
