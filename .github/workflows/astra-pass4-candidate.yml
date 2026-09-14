@@ -26,7 +26,10 @@ jobs:
         run: sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
 
       - name: Apply Pass 4 candidate
-        run: python .github/tmp/astra_pass4_candidate.py
+        shell: bash
+        run: |
+          python .github/tmp/astra_pass4_candidate.py
+          python .github/tmp/astra_pass4_dialogue_followup.py
 
       - name: Protect campaign definitions and accepted R1-R5 source
         shell: bash
@@ -39,9 +42,11 @@ jobs:
         shell: bash
         run: |
           node --check cinematics400.js
+          node --check cinematic-dialogue400.js
           python - <<'PY'
           from pathlib import Path
           cin=Path('cinematics400.js').read_text()
+          dlg=Path('cinematic-dialogue400.js').read_text()
           idx=Path('index.html').read_text()
           ui=Path('style400-ui.css').read_text()
           css=Path('style400-cinematics.css').read_text()
@@ -50,14 +55,19 @@ jobs:
           assert 'activeLine' in cin
           assert 'cin-community-work' in cin
           assert 'cin-volunteer-scene' in cin
+          assert 'lineIndex=Math.max(0,Number(API.line)||0)' in dlg
+          assert 'dialogueGroups(beat),narration=narratorLines(beat)' not in dlg
           assert 'ending-home-frame' in idx
           assert 'ending-resolution' not in idx
           assert idx.index('id="completeHome"') < idx.index('id="completeLevels"')
           assert 'Astra Pass 4 canonical ending' in ui
           assert 'Astra Pass 4 action staging' in css
+          assert 'Astra Pass 4 in-game reduced motion' in css
+          assert 'Astra Pass 4 ending in-game reduced motion' in ui
           assert idx.count('style400-ui.css?v=20260914-astra-pass4-candidate1') == 1
           assert idx.count('style400-cinematics.css?v=20260914-astra-pass4-candidate1') == 1
           assert idx.count('cinematics400.js?v=20260914-astra-pass4-candidate1') == 1
+          assert idx.count('cinematic-dialogue400.js?v=20260914-astra-pass4-candidate1') == 1
           print('Static acceptance assertions passed.')
           PY
 
@@ -93,6 +103,8 @@ jobs:
             'homeward-0','homeward-1','homeward-2','homeward-4','homeward-5'
           ]);
 
+          function fail(message){errors.push(message);throw new Error(message)}
+
           for (const viewport of viewports) {
             const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},reducedMotion:'no-preference'});
             const page=await context.newPage();
@@ -104,20 +116,29 @@ jobs:
             for (const film of films) {
               await page.evaluate(id=>window.LatchlingsCinematics.show(id,{markSeen:false}),film);
               await page.waitForSelector('#cinematicOverlay.show');
+              await page.waitForTimeout(60);
               const spec=await page.evaluate(id=>window.LatchlingsCinematics.CINEMATICS[id],film);
               for (let bi=0;bi<spec.beats.length;bi++) {
                 const beat=spec.beats[bi];
                 for (let li=0;li<beat.lines.length;li++) {
-                  const state=await page.evaluate(()=>({beat:window.LatchlingsCinematics.beat,line:window.LatchlingsCinematics.line,count:document.querySelectorAll('#cinematicLines p').length,speaker:document.querySelector('#cinematicLines strong')?.textContent||'',text:document.querySelector('#cinematicLines span')?.textContent||'',visual:document.querySelector('#cinematicOverlay')?.dataset.visual||''}));
-                  if(state.beat!==bi||state.line!==li) throw new Error(`${viewport.name} ${film}: state ${state.beat}/${state.line}, expected ${bi}/${li}`);
-                  if(state.count!==1) throw new Error(`${viewport.name} ${film} beat ${bi}: expected one dialogue turn, found ${state.count}`);
-                  if(state.speaker!==beat.lines[li][0]||state.text!==beat.lines[li][1]) throw new Error(`${viewport.name} ${film} beat ${bi} line ${li}: dialogue order mismatch`);
-                  if(state.visual!==beat.visual) throw new Error(`${viewport.name} ${film} beat ${bi}: visual mismatch`);
+                  await page.waitForTimeout(30);
+                  const state=await page.evaluate(()=>{
+                    const narration=[...document.querySelectorAll('#cinematicLines .narrator-only')];
+                    const dialogue=[...document.querySelectorAll('.cinematic-copy > .cin-opening-dialogue-dock .cin-opening-dialogue-row')];
+                    let speaker='',text='';
+                    if(narration.length){speaker='Narrator';text=narration[0].querySelector('span')?.textContent?.trim()||''}
+                    else if(dialogue.length){speaker=dialogue[0].dataset.speaker||'';text=dialogue[0].querySelector('.cin-opening-bubble > span')?.textContent?.trim()||''}
+                    return {beat:window.LatchlingsCinematics.beat,line:window.LatchlingsCinematics.line,count:narration.length+dialogue.length,speaker,text,visual:document.querySelector('#cinematicOverlay')?.dataset.visual||''};
+                  });
+                  if(state.beat!==bi||state.line!==li) fail(`${viewport.name} ${film}: state ${state.beat}/${state.line}, expected ${bi}/${li}`);
+                  if(state.count!==1) fail(`${viewport.name} ${film} beat ${bi} line ${li}: expected exactly one visible utterance, found ${state.count}`);
+                  if(state.speaker!==beat.lines[li][0]||state.text!==beat.lines[li][1]) fail(`${viewport.name} ${film} beat ${bi} line ${li}: dialogue order mismatch (${state.speaker}: ${state.text})`);
+                  if(state.visual!==beat.visual) fail(`${viewport.name} ${film} beat ${bi}: visual mismatch`);
                   const nav=await page.evaluate(()=>{
                     const ids=['cinematicSkip','cinematicNext'];
                     return ids.map(id=>{const r=document.getElementById(id).getBoundingClientRect();return {id,top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}});
                   });
-                  for(const r of nav){if(r.top<0||r.bottom>viewport.height+0.5||r.left<0||r.right>viewport.width+0.5) throw new Error(`${viewport.name} ${film}: ${r.id} outside viewport ${JSON.stringify(r)}`)}
+                  for(const r of nav){if(r.top<0||r.bottom>viewport.height+0.5||r.left<0||r.right>viewport.width+0.5) fail(`${viewport.name} ${film}: ${r.id} outside viewport ${JSON.stringify(r)}`)}
                   if(viewport.name==='phone' && li===0 && visualCaptures.has(`${film}-${bi}`)) {
                     await page.waitForTimeout(100);
                     await page.screenshot({path:`/tmp/astra-pass4-evidence/cinematic-${film}-${String(bi+1).padStart(2,'0')}.png`,fullPage:true});
@@ -127,7 +148,7 @@ jobs:
                 }
               }
               await page.waitForTimeout(60);
-              if(await page.locator('#cinematicOverlay.show').count()) throw new Error(`${viewport.name} ${film}: cinematic did not close after final action`);
+              if(await page.locator('#cinematicOverlay.show').count()) fail(`${viewport.name} ${film}: cinematic did not close after final action`);
             }
 
             await page.evaluate(()=>{
@@ -135,7 +156,7 @@ jobs:
               document.getElementById('complete').classList.add('active');
               document.body.dataset.screen='complete';
             });
-            await page.waitForTimeout(250);
+            await page.waitForTimeout(350);
             const ending=await page.evaluate(()=>{
               const home=document.getElementById('completeHome');
               const levels=document.getElementById('completeLevels');
@@ -143,11 +164,11 @@ jobs:
               const hr=home.getBoundingClientRect(),lr=levels.getBoundingClientRect(),fr=frame.getBoundingClientRect();
               return {homeTop:hr.top,homeBottom:hr.bottom,levelsTop:lr.top,levelsBottom:lr.bottom,frameW:fr.width,frameH:fr.height,note:document.querySelector('.ending-note')?.textContent||'',resolution:!!document.querySelector('.ending-resolution')};
             });
-            if(!(ending.homeTop<ending.levelsTop)) throw new Error(`${viewport.name}: Return to Little Home is not primary/first`);
-            if(ending.frameW<250||ending.frameH<180) throw new Error(`${viewport.name}: canonical Little Home frame is too small`);
-            if(ending.resolution) throw new Error(`${viewport.name}: explanatory ending-resolution essay still present`);
-            if(!ending.note.includes('Ordinary life continues')) throw new Error(`${viewport.name}: canonical ordinary-life line missing`);
-            if(ending.homeBottom>viewport.height+0.5 && viewport.name!=='short') throw new Error(`${viewport.name}: primary ending action falls below viewport`);
+            if(!(ending.homeTop<ending.levelsTop)) fail(`${viewport.name}: Return to Little Home is not primary/first`);
+            if(ending.frameW<250||ending.frameH<180) fail(`${viewport.name}: canonical Little Home frame is too small`);
+            if(ending.resolution) fail(`${viewport.name}: explanatory ending-resolution essay still present`);
+            if(!ending.note.includes('Ordinary life continues')) fail(`${viewport.name}: canonical ordinary-life line missing`);
+            if(ending.homeBottom>viewport.height+0.5 && viewport.name!=='short') fail(`${viewport.name}: primary ending action falls below viewport`);
             await page.screenshot({path:`/tmp/astra-pass4-evidence/ending-${viewport.name}.png`,fullPage:true});
             results.push({viewport,ending});
             await context.close();
@@ -159,13 +180,22 @@ jobs:
           await rpage.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
           await rpage.evaluate(()=>window.LatchlingsCinematics.show('homeward',{markSeen:false}));
           await rpage.waitForTimeout(120);
-          const motion=await rpage.evaluate(()=>({
-            activeAnimations:[...document.querySelectorAll('.cinematic-stage *')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length,
-            footer:getComputedStyle(document.querySelector('.cinematic-footer')).position
-          }));
-          await rpage.screenshot({path:'/tmp/astra-pass4-evidence/homeward-reduced.png',fullPage:true});
-          results.push({reducedMotion:motion});
+          const osMotion=await rpage.evaluate(()=>([...document.querySelectorAll('.cinematic-stage *')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length));
+          await rpage.screenshot({path:'/tmp/astra-pass4-evidence/homeward-reduced-os.png',fullPage:true});
+          results.push({osReducedMotion:{activeAnimations:osMotion}});
           await reduced.close();
+
+          const inGame=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});
+          const gpage=await inGame.newPage();
+          gpage.on('pageerror',e=>errors.push(`in-game-reduced: pageerror ${e.message}`));
+          await gpage.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          await gpage.evaluate(()=>{window.LatchlingsPrefs.set('motion','reduced');window.LatchlingsCinematics.show('homeward',{markSeen:false})});
+          await gpage.waitForTimeout(120);
+          const gameMotion=await gpage.evaluate(()=>([...document.querySelectorAll('.cinematic-stage *')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length));
+          if(gameMotion!==0) fail(`in-game Reduced Motion left ${gameMotion} cinematic stage animations running`);
+          await gpage.screenshot({path:'/tmp/astra-pass4-evidence/homeward-reduced-ingame.png',fullPage:true});
+          results.push({inGameReducedMotion:{activeAnimations:gameMotion}});
+          await inGame.close();
 
           await browser.close();
           fs.writeFileSync('/tmp/astra-pass4-evidence/results.json',JSON.stringify({results,errors},null,2));
@@ -181,7 +211,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add cinematics400.js style400-cinematics.css style400-ui.css index.html
+          git add cinematics400.js cinematic-dialogue400.js style400-cinematics.css style400-ui.css index.html
           git commit -m "Stage Astra Pass 4 cinematic pacing and ending"
           git push origin HEAD:astra-pass4-candidate
 
