@@ -4,7 +4,7 @@ Last reconciled: 2026-09-14
 
 This file is the durable repository-side reconciliation of the original `LATCHLINGS_VISUAL_STORY_AUDIT.md` (audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`) and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` (reviewed head `d6e39c0866505795c2aa6a26777896072e16e7df`) against current `main` after the accepted R1-R5 usability pass and the accepted Astra Pass 4 cinematic candidate.
 
-The original standalone audit/review files were supplied outside the repository and therefore are not treated as repository source files. Their acceptance requirements are preserved here so future implementation work does not depend on an external attachment.
+The canonical source documents now live in this repository as [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md) and [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md). This matrix is the living reconciliation ledger against those source documents and current `main`; it does not replace their original wording, evidence, or Pass 1–5 acceptance definitions.
 
 Status meanings:
 - **COMPLETED**: software-addressable requirement is implemented and has concrete accepted evidence.
