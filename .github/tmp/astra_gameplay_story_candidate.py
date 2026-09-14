@@ -154,4 +154,5 @@ assert old_reward in ch8, 'Aurora reward copy anchor changed'
 ch8=ch8.replace(old_reward,new_reward,1)
 ch8_path.write_text(ch8,encoding='utf-8')
 
+exec(Path('.github/tmp/astra_gameplay_story_short_phone_fix.py').read_text(encoding='utf-8'), {'__name__':'__main__'})
 print('Astra gameplay + story coherence candidate patch applied.')
