@@ -73,7 +73,7 @@ jobs:
           mkdir -p /tmp/astra-pass4-evidence
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/latchlings-http.log 2>&1 &
           echo $! >/tmp/latchlings-http.pid
-          cat > /tmp/astra-pass4-check.mjs <<'JS'
+          cat > .astra-pass4-check.mjs <<'JS'
           import { chromium } from 'playwright';
           import fs from 'node:fs';
 
@@ -86,6 +86,12 @@ jobs:
             {name:'wide',width:430,height:932}
           ];
           const films=['opening','across-drift','old-maps','homeward'];
+          const visualCaptures=new Set([
+            'opening-0','opening-2','opening-5','opening-7',
+            'across-drift-1','across-drift-2','across-drift-3','across-drift-4',
+            'old-maps-0','old-maps-1','old-maps-2','old-maps-3','old-maps-4','old-maps-5',
+            'homeward-0','homeward-1','homeward-2','homeward-4','homeward-5'
+          ]);
 
           for (const viewport of viewports) {
             const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},reducedMotion:'no-preference'});
@@ -112,6 +118,10 @@ jobs:
                     return ids.map(id=>{const r=document.getElementById(id).getBoundingClientRect();return {id,top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}});
                   });
                   for(const r of nav){if(r.top<0||r.bottom>viewport.height+0.5||r.left<0||r.right>viewport.width+0.5) throw new Error(`${viewport.name} ${film}: ${r.id} outside viewport ${JSON.stringify(r)}`)}
+                  if(viewport.name==='phone' && li===0 && visualCaptures.has(`${film}-${bi}`)) {
+                    await page.waitForTimeout(100);
+                    await page.screenshot({path:`/tmp/astra-pass4-evidence/cinematic-${film}-${String(bi+1).padStart(2,'0')}.png`,fullPage:true});
+                  }
                   await page.click('#cinematicNext');
                   await page.waitForTimeout(45);
                 }
@@ -131,12 +141,13 @@ jobs:
               const levels=document.getElementById('completeLevels');
               const frame=document.querySelector('.ending-home-frame');
               const hr=home.getBoundingClientRect(),lr=levels.getBoundingClientRect(),fr=frame.getBoundingClientRect();
-              return {homeTop:hr.top,levelsTop:lr.top,frameW:fr.width,frameH:fr.height,note:document.querySelector('.ending-note')?.textContent||'',resolution:!!document.querySelector('.ending-resolution')};
+              return {homeTop:hr.top,homeBottom:hr.bottom,levelsTop:lr.top,levelsBottom:lr.bottom,frameW:fr.width,frameH:fr.height,note:document.querySelector('.ending-note')?.textContent||'',resolution:!!document.querySelector('.ending-resolution')};
             });
             if(!(ending.homeTop<ending.levelsTop)) throw new Error(`${viewport.name}: Return to Little Home is not primary/first`);
             if(ending.frameW<250||ending.frameH<180) throw new Error(`${viewport.name}: canonical Little Home frame is too small`);
             if(ending.resolution) throw new Error(`${viewport.name}: explanatory ending-resolution essay still present`);
             if(!ending.note.includes('Ordinary life continues')) throw new Error(`${viewport.name}: canonical ordinary-life line missing`);
+            if(ending.homeBottom>viewport.height+0.5 && viewport.name!=='short') throw new Error(`${viewport.name}: primary ending action falls below viewport`);
             await page.screenshot({path:`/tmp/astra-pass4-evidence/ending-${viewport.name}.png`,fullPage:true});
             results.push({viewport,ending});
             await context.close();
@@ -149,7 +160,7 @@ jobs:
           await rpage.evaluate(()=>window.LatchlingsCinematics.show('homeward',{markSeen:false}));
           await rpage.waitForTimeout(120);
           const motion=await rpage.evaluate(()=>({
-            volunteerAnimations:[...document.querySelectorAll('.cinematic-stage *')].flatMap(el=>el.getAnimations()).length,
+            activeAnimations:[...document.querySelectorAll('.cinematic-stage *')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length,
             footer:getComputedStyle(document.querySelector('.cinematic-footer')).position
           }));
           await rpage.screenshot({path:'/tmp/astra-pass4-evidence/homeward-reduced.png',fullPage:true});
@@ -161,7 +172,8 @@ jobs:
           if(errors.length) throw new Error(errors.join('\n'));
           console.log(JSON.stringify(results,null,2));
           JS
-          node /tmp/astra-pass4-check.mjs
+          node .astra-pass4-check.mjs
+          rm -f .astra-pass4-check.mjs
           kill $(cat /tmp/latchlings-http.pid) || true
 
       - name: Commit accepted candidate product
