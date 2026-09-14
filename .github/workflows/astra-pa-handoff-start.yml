@@ -1,0 +1,40 @@
+name: Record Presentation Accessibility Start
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/astra-pa-handoff-start.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Record active slice
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('DEVELOPMENT_HANDOFF.md')
+          s=p.read_text()
+          anchor='Remaining closure work:\n'
+          note='''Presentation/accessibility consolidation checkpoint (2026-09-14):\n- **Status: IN PROGRESS.** Candidate branch `astra-presentation-accessibility-candidate` is based on the cleaned Character/world accepted head.\n- TDD RED run `34893568352` failed for the intended missing behaviors and produced 37 concrete failures across 320x568, 360x800, 390x844, 430x932, 768x1024, and 844x390: duplicated cinematic presentation layers, duplicated cast visual identity, missing modal focus entry/trap/Escape restoration, short/landscape viewport overflow, and gameplay Web Animations still running under in-game Reduced Motion.\n- U02 closure will certify non-overlapping 44px action controls and the cycle+D-pad path; spatial board-piece taps remain a convenience and will not be enlarged into overlapping hit targets on dense boards.\n- Candidate implementation must preserve authored campaign files and every previously accepted product slice, use existing core runtime/style layers rather than another broad override file, and pass candidate browser + manual visual review before promotion.\n\n'''
+          if 'Presentation/accessibility consolidation checkpoint (2026-09-14):' not in s:
+              assert anchor in s
+              s=s.replace(anchor,note+anchor,1)
+              p.write_text(s)
+          PY
+          git diff --check
+      - name: Commit handoff
+        run: |
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m "Start presentation accessibility consolidation"
+          git push origin HEAD:main
