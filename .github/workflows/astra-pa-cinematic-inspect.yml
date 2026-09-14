@@ -1,0 +1,39 @@
+name: Astra PA Cinematic Inspect
+
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths:
+      - '.github/workflows/astra-pa-cinematic-inspect.yml'
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+      - name: Apply candidate
+        run: |
+          python .github/tmp/astra_pa_patch.py
+          python .github/tmp/astra_pa_memories_followup.py
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Inspect first cinematic
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/http.log 2>&1 &
+          cat > /tmp/inspect.mjs <<'JS'
+          import {chromium} from 'playwright';
+          const b=await chromium.launch({headless:true});const c=await b.newContext({viewport:{width:320,height:568}});const p=await c.newPage();
+          p.on('pageerror',e=>console.log('PAGEERROR',e.message));p.on('console',m=>{if(m.type()==='error')console.log('CONSOLE',m.text())});
+          await p.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          console.log('before',await p.evaluate(()=>({source:LatchlingsCinematics.castIdentitySource,ids:Object.keys(LatchlingsCinematics.CINEMATICS).slice(0,3),hasLines:!!document.getElementById('cinematicLines')})));
+          console.log('showResult',await p.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false})));
+          await p.waitForTimeout(100);
+          console.log('after',await p.evaluate(()=>({active:LatchlingsCinematics.active,beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line,overlay:document.getElementById('cinematicOverlay')?.outerHTML?.slice(0,1200),lines:document.getElementById('cinematicLines')?.innerHTML,count:document.querySelectorAll('#cinematicLines .is-current').length,allCurrent:[...document.querySelectorAll('.is-current')].map(x=>({tag:x.tagName,id:x.id,cls:x.className,text:x.textContent?.slice(0,100)}))})));
+          await b.close();
+          JS
+          node /tmp/inspect.mjs
