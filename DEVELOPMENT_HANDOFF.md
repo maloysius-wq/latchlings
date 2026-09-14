@@ -57,11 +57,17 @@ Accepted Ending closure checkpoint (2026-09-14):
 - The same run fresh-checked committed `main` and independently passed 320x568 / 390x844 / 430x932, canonical Little Home reuse, six-node living-network semantics, network-to-home sequence, exact concise copy, Home-first action, title/viewport containment, runtime-error checks, and OS/in-game Reduced Motion. Live artifact `10365415386`, SHA-256 `e26903228bbaadcf39868f85c00d08a0e1e036ca2da1be66af5f64f14928a26e`.
 - V18 ending art quality and N06 visual ending thesis are accepted complete. V19 remains partial for separate presentation-system consolidation.
 
+Accepted Character/world coherence checkpoint (2026-09-14):
+- Final candidate run `34891362319` passed exact protected-source/syntax checks and the full 320x568 / 390x844 / 430x932 browser matrix for the remaining character/world contracts: four distinct N04 information roles, first-return resident use for all seven keepsakes plus memory activation, Pip/Tansy authored behavior, line-sensitive expressions, recurring Story/Atlas fixture identity, all 40 authored Atlas destinations, Reduced Motion, and offscreen Home cancellation.
+- Accepted candidate product commit: `c4cab777dceb1b2162efa42fbd2fa126ef57b84a`. Candidate artifact `10366808335`, SHA-256 `8072f13cfe402bd987b9f6ae0d9337ac03c0746e0ea2f33389ba9d5ffe0d3b75`.
+- Visible Atlas evidence was recaptured with Level Select actually active. Run `34891909689`, artifact `10366838850`, SHA-256 `72370ab5f30882d0c2c276c383a691ba4d9c674f37250d7efd92cff0f43b41bf`; representative porch, market arch, Prism lookout, map gallery, relay, Crown beacon, short-phone, and wide-phone captures were manually reviewed and accepted.
+- Promotion run `34892253671` rechecked protected sources and imported only `story-grounding400.js`, `gameplay-story-rail400.js`, `story-theme400.js`, `game400-a.js`, `game400-b.js`, `title-island-concepts/index.html`, `style400-story-theme.css`, `style400-skyway-atlas.css`, and `index.html`. Exact product bytes were promoted to `main` as `c7d78aa61080513ac6f7ea31d9e82d7cd4ee2a4e`.
+- Committed-main run `34892359817` independently revalidated the exact promoted bytes. Artifact `10367985257`, SHA-256 `0ad54fffb528a8f8733cbe974ca3059e81442f81c51984afe07a7556bb017708`. N04, V06, N05, V07, and V12 are accepted complete.
+
 Remaining closure work:
-1. Character/world coherence: finish N04 information-role separation, remaining keepsake/resident-use behavior, Pip/Tansy characterization, cross-region fixture consistency, and Atlas landmark distinctiveness where nodes still feel interchangeable.
-2. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
-3. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
-4. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
+1. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
+2. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
+3. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
 
 Protected systems:
 - Exact authored puzzle definitions/solutions in `campaign400-1.js` through `campaign400-8.js` must not change.
@@ -78,7 +84,7 @@ Implementation/validation contract:
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Next action: Character/world coherence candidate. Preserve all accepted product slices while finishing the remaining source-defined behavior/world gaps: sharpen N04 information roles across during-play motive, movement-opening clue, milestone result, and recap; complete V06 resident use for earned keepsakes; add Pip/Tansy behavior and broader line-appropriate expressions for N05; improve V07 cross-region fixture consistency and V12 destination distinctiveness without changing authored puzzle definitions.
+Next action: Presentation/accessibility consolidation candidate. Preserve every accepted product slice while closing V04/V19/U02/U03/U11/V20 and the browser-addressable portions of A01/P01 where the source audit can be tested here; then run the full Pass 5 browser certification matrix. External physical-device, genuine iOS Safari, exhaustive assistive-technology, and subjective real-speaker/headphone certifications must remain explicitly unverified.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
@@ -103,6 +109,7 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - The accepted Atlas + Story/Journal coherence slice is promoted and protected; current product source is on `main`, not the candidate branch.
 - The accepted Gameplay / Story coherence slice is promoted and protected; V01/V09/V10/U09/V16/V17 are complete, while N04 and separate characterization/world-consistency items remain tracked as partial.
 - The Ending closure slice is promoted and protected; V18/N06 are complete on committed `main` with candidate, manual-visual, committed-live, and Reduced Motion evidence.
+- The Character/world coherence slice is promoted and protected; N04/V06/N05/V07/V12 are complete on committed `main` with candidate, manual Atlas visual review, and committed-main browser evidence.
 - `LATCHLINGS_VISUAL_STORY_AUDIT.md` and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` are canonical repository source documents for the Astra closure effort.
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
