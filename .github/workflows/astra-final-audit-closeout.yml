@@ -1,0 +1,86 @@
+name: Astra Final Audit Closeout
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/astra-final-audit-closeout.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Close audit ledger and remove temporary workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRODUCT=a998e095dd710028cdca6e028bc0047c71aeed3c
+          git diff --exit-code "$PRODUCT" HEAD -- story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css index.html game400-a.js game400-b.js style400-ui.css style400-game.css style400-story-theme.css style400-skyway-atlas.css title-island-concepts/index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+          python - <<'PY'
+          from pathlib import Path
+
+          handoff_path=Path('DEVELOPMENT_HANDOFF.md')
+          handoff=handoff_path.read_text()
+          old='''### Full Astra visual/story audit closure\n**Status: IN PROGRESS**'''
+          new='''### Full Astra visual/story audit closure\n**Status: BROWSER-ADDRESSABLE CLOSURE COMPLETE**'''
+          assert old in handoff
+          handoff=handoff.replace(old,new,1)
+          start=handoff.index('Presentation/accessibility consolidation checkpoint (2026-09-14):')
+          end=handoff.index('Protected systems:',start)
+          final='''Presentation/accessibility consolidation checkpoint (2026-09-14):\n- **ACCEPTED.** TDD RED run `34893568352` proved the intended missing presentation/accessibility behavior across short/compact/phone/wide/tablet/landscape layouts before implementation.\n- Accepted candidate product commit: `e02ba6a9b9ee8925b73e915a17712852da103023`. The slice consolidates cinematic presentation/cast identity in existing core layers, removes obsolete broad cinematic overrides, adds deterministic modal focus entry/trap/Escape restoration, honors in-game Reduced Motion for gameplay Web Animations, adds safe short/tablet/landscape layouts, and keeps the accessible Memories path at a 44px action target minimum. A genuine tablet focus-restoration race was found during certification and fixed synchronously before acceptance.\n- Settled visual-review run `34896742670` verified exact accepted bytes and produced clean Home, Memories, Journal, landscape gameplay, cinematic, and ending captures after screen transitions had fully settled. Artifact `10369157824`, SHA-256 `d0c1d3ac0bac2c1f5979c5b1919e30f3b2778277a0af6cc1b70759542ca55a68`; the representative captures were manually reviewed and accepted.\n- Promotion run `34896935069` rechecked authored campaign/protected accepted sources and promoted exact candidate product bytes to `main` as `a998e095dd710028cdca6e028bc0047c71aeed3c`. Committed-main run `34897014938` independently passed the same six-viewport presentation/accessibility matrix on the promoted bytes.\n- The canonical cinematic source contains 25 beats and 56 scripted utterances; certification derives the expected turn count from the source rather than a hard-coded total.\n\nFinal Pass 5 browser-addressable certification (2026-09-14):\n- **COMPLETED.** Final run `34898523134` passed with zero failures while guarding the exact accepted product bytes at `a998e095dd710028cdca6e028bc0047c71aeed3c`. Evidence artifact `10369612799`, SHA-256 `22e90d782e365232305be7dc98b3fd175c041b8ae53cbd5dc804b248e6231501`. Earlier Pass 5 attempts (`34897697765`, `34897918110`, `34898064440`) exposed harness-only selector/scope defects; those were corrected without changing product code.\n- Coverage: 320x568, 360x800, 390x844, 430x932, 768x1024 tablet, and 844x390 landscape; all 400 starting boards; all 40 chapter/range material variants; all 40 authored movement starts/results plus seven earned-knowledge chapter boundaries; fresh onboarding, skipped opening, returning player; isolated Daily/replay/campaign progression; all four films / 25 beats / 56 canonical utterances; non-color identity; keyboard/modal focus restoration; semantic journal tabs/panels; Large Text; audio controls/persistence/interruption; 71 loaded assets; and browser performance telemetry.\n- Pass 5 measured zero running gameplay animations under Reduced Motion in all six viewport classes and no tested viewport/control overflow. Large Text increased the representative Journal body copy from 10.8px to 12.5px.\n- Browser telemetry from the certification environment: navigation/load about 165.3ms; synthetic 400-board render loop about 117.4ms; 120 frame samples at about 16.7ms median / 16.7ms p95 / 16.8ms max; about 4.30MB used JS heap; 44 measured resources totaling about 0.93MB transferred. These are browser-runner measurements, not physical-phone performance claims.\n\nRemaining closure work:\n- **External-only, explicitly UNVERIFIED:** real physical-phone touch/performance/battery behavior; genuine iOS Safari hardware behavior; exhaustive assistive-technology testing; and subjective real-speaker/headphone audio mixing/listening. These do not reopen the completed browser-addressable audit implementation.\n\n'''
+          handoff=handoff[:start]+final+handoff[end:]
+          handoff_path.write_text(handoff)
+
+          matrix_path=Path('ASTRA_AUDIT_ACCEPTANCE_MATRIX.md')
+          matrix=matrix_path.read_text()
+          matrix=matrix.replace('after the accepted R1-R5 usability pass, Astra Pass 4 cinematic slice, Little Home coherence slice, Atlas + Story/Journal coherence slice, Gameplay / Story coherence slice, Ending closure slice, and Character/world coherence slice.', 'after the accepted R1-R5 usability pass, Astra Pass 4 cinematic slice, Little Home coherence slice, Atlas + Story/Journal coherence slice, Gameplay / Story coherence slice, Ending closure slice, Character/world coherence slice, Presentation/accessibility consolidation, and final Pass 5 browser certification.',1)
+          rows={
+          '| N02 earned knowledge |':'| N02 earned knowledge | COMPLETED | Character/world role separation keeps during-play motive, movement opening, milestone result, Story card, and journal recap distinct. Final Pass 5 verified all 40 authored movement start/result contracts and all seven chapter-boundary briefings change only after the relevant earned milestone, while fresh/returning flows avoid later conclusions. |',
+          '| U02 touch targets |':'| U02 touch targets | COMPLETED | Presentation/accessibility acceptance and final Pass 5 certify visible action controls across gameplay, Little Home, journal, Atlas, pause/settings, and cinematics in six viewport classes at the 44px design minimum. Dense spatial board-piece taps remain a convenience rather than overlapping enlarged hit regions; the cycle + D-pad path provides the accessible non-overlapping control route. |',
+          '| U03 viewport containment |':'| U03 viewport containment | COMPLETED | Final Pass 5 verifies actual viewport/control bounds with no horizontal or control overflow at 320x568, 360x800, 390x844, 430x932, 768x1024 tablet, and 844x390 landscape. The production viewport keeps `viewport-fit=cover`; short/tablet/landscape layouts use deliberate containment rather than shrinking essential text or action targets. Physical-device safe-area behavior remains part of the explicit external-only certification. |',
+          '| N03 Daily isolation |':'| N03 Daily isolation | COMPLETED | Fresh Daily completion remains stored separately from campaign progress; final Pass 5 reverified Daily completion does not mutate campaign unlocks/stars, cinematic replay does not mutate campaign progress, and an ordinary campaign win advances independently. |',
+          '| V04 material consistency |':'| V04 material consistency | COMPLETED | Presentation/accessibility consolidation uses the existing core material/token vocabulary instead of another broad override, consolidates duplicated cinematic/cast presentation, and removes obsolete cinematic refinement layers. Settled run `34896742670` manually reviewed Home, Memories, Journal, landscape gameplay, cinematic, and ending together on exact accepted bytes. |',
+          '| V08 selection feedback |':'| V08 selection feedback | COMPLETED | The accepted gameplay hierarchy keeps the high-contrast selected-piece ring with a brief 120ms box-shadow/filter settle, matching destination identity/emphasis, persistent resolved nests, and short arrival acknowledgement without pulsing the whole board. A trajectory preview remains an optional help experiment rather than a closure blocker. |',
+          '| V11 emotional win causality |':'| V11 emotional win causality | COMPLETED | The accepted movement loop coordinates departure trail, stop/capture, destination acknowledgement/resolved nest, concise authored movement result, chapter reward, and later Little Home resident/keepsake use. Final Pass 5 verifies all 40 movement start/result contracts while normal wins remain intentionally fast and larger ordinary-world payoffs stay at movement/chapter milestones. |',
+          '| V19 presentation consolidation |':'| V19 presentation consolidation | COMPLETED | Presentation/accessibility consolidation centralizes canonical cinematic utterance/presentation state, canonical cast visual identity and shared core presentation tokens, and removes obsolete broad cinematic override layers rather than stacking another permanent fix sheet. Final Pass 5 loaded/verified 71 production assets and confirmed the deleted cinematic refinement layer is no longer referenced. |',
+          '| U11 accessibility |':'| U11 accessibility | COMPLETED | Browser-addressable accessibility closure now includes user zoom (no `user-scalable=no`), Normal/Large Text, six-viewport containment, 44px action targets, modal focus entry/trap/Escape restoration, visible keyboard focus, semantic/Arrow-key journal tabs and panels, meaningful ending art text equivalent, and effective Reduced Motion. Final Pass 5 grew representative journal copy 10.8px→12.5px and passed with zero runtime errors. Genuine iOS hardware and exhaustive assistive-technology certification remain explicitly EXTERNAL. |',
+          '| V20 purposeful motion |':'| V20 purposeful motion | COMPLETED | Little Home offscreen cancellation, cinematic reduced-motion endpoints, Atlas reward motion preference, and gameplay Web Animations now share effective Reduced Motion behavior. Final Pass 5 measured zero running gameplay animations under Reduced Motion in every tested viewport, while responsive input/arrival motion remains available in normal motion. |',
+          '| A01 audio |':'| A01 audio | EXTERNAL | Browser-addressable audio behavior is complete: Home and Pause expose independent Music/SFX controls, mute persists across reload, disabled audio does not attempt playback, chapter routing selects the expected track, and visibility interruption pauses active media in final Pass 5. Subjective cue balance and real speaker/headphone listening/mixing remain explicitly EXTERNAL. |',
+          '| P01 performance |':'| P01 performance | EXTERNAL | Browser telemetry is complete in final Pass 5: ~165.3ms navigation/load in the runner, ~117.4ms synthetic 400-board render loop, 120 frame samples at ~16.7ms median/p95 and 16.8ms max, ~4.30MB used JS heap, and ~0.93MB transferred across 44 measured resources. Required modest physical-phone touch/frame-time/memory/battery certification remains explicitly EXTERNAL. |'
+          }
+          lines=matrix.splitlines()
+          for prefix,replacement in rows.items():
+              hits=[i for i,line in enumerate(lines) if line.startswith(prefix)]
+              assert len(hits)==1,(prefix,hits)
+              lines[hits[0]]=replacement
+          matrix='\n'.join(lines)+'\n'
+          open_block='''### Pass 5 browser-addressable certification\n**OPEN.** Cover 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption; asset/cache integrity; and frame-time/memory/loading in available browser runtimes.'''
+          done_block='''### Presentation / accessibility consolidation\n**COMPLETED and protected.** TDD RED run `34893568352` established the missing accessibility/presentation behaviors. Accepted candidate product `e02ba6a9b9ee8925b73e915a17712852da103023` was manually reviewed from settled exact-byte captures in run `34896742670` (artifact `10369157824`, SHA-256 `d0c1d3ac0bac2c1f5979c5b1919e30f3b2778277a0af6cc1b70759542ca55a68`), promoted by run `34896935069` to `main` as `a998e095dd710028cdca6e028bc0047c71aeed3c`, and independently revalidated in committed-main run `34897014938`. V04/V19/U02/U03/U11/V20 browser-addressable requirements are closed.\n\n### Pass 5 browser-addressable certification\n**COMPLETED.** Final run `34898523134` guarded exact accepted product `a998e095dd710028cdca6e028bc0047c71aeed3c` and passed with zero failures: six viewport classes, 400 boards, 40 material variants, 40 movement contracts, seven earned-knowledge chapter boundaries, fresh/skip/returning flows, Daily/replay/campaign isolation, four films / 25 beats / 56 utterances, non-color semantics, keyboard/focus/Large Text, audio persistence/interruption, 71 assets, and browser performance telemetry. Artifact `10369612799`, SHA-256 `22e90d782e365232305be7dc98b3fd175c041b8ae53cbd5dc804b248e6231501`.'''
+          assert open_block in matrix
+          matrix=matrix.replace(open_block,done_block,1)
+          assert '| PARTIAL' not in matrix
+          assert '| OPEN' not in matrix
+          matrix_path.write_text(matrix)
+          PY
+          rm -f \
+            .github/workflows/astra-pa-handoff-start.yml \
+            .github/workflows/astra-pa-live.yml \
+            .github/workflows/astra-pa-promote.yml \
+            .github/workflows/astra-pass5-browser-cert.yml \
+            .github/workflows/astra-pass5-browser-cert-rerun.yml \
+            .github/workflows/astra-pass5-browser-cert-rerun2.yml \
+            .github/workflows/astra-final-audit-closeout.yml
+          test -f .github/workflows/validate-repository-access-guard.yml
+          git diff --check
+          git diff --exit-code "$PRODUCT" HEAD -- story400.js story-grounding400.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css index.html game400-a.js game400-b.js style400-ui.css style400-game.css style400-story-theme.css style400-skyway-atlas.css title-island-concepts/index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add -A
+          git commit -m 'Close Astra visual story audit browser pass'
+          git push origin HEAD:main
