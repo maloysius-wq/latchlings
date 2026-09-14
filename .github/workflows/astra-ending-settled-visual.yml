@@ -44,7 +44,7 @@ jobs:
             const context=await browser.newContext({viewport:{width,height},reducedMotion:reduced});
             const page=await context.newPage();
             await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
-            await page.evaluate(gameReduced=>{if(gameReduced)document.documentElement.dataset.motion='reduced';screen('complete')},gameReduced);
+            await page.evaluate(gameReduced=>{if(gameReduced)window.LatchlingsPrefs.set('motion','reduced');screen('complete')},gameReduced);
             const snap=async(label)=>{
               const state=await page.evaluate(()=>({
                 scrollHeight:document.documentElement.scrollHeight,
@@ -53,9 +53,12 @@ jobs:
                 stage:document.querySelector('.ending-network-stage').getBoundingClientRect().toJSON(),
                 focus:{opacity:getComputedStyle(document.querySelector('.ending-home-focus')).opacity,transform:getComputedStyle(document.querySelector('.ending-home-focus')).transform},
                 field:{opacity:getComputedStyle(document.querySelector('.ending-network-field')).opacity,transform:getComputedStyle(document.querySelector('.ending-network-field')).transform},
-                animations:[...document.querySelectorAll('.ending-network-stage *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none')
+                animations:[...document.querySelectorAll('.ending-network-stage *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none'),
+                outgoing:!!document.querySelector('.screen-transition-outgoing'),
+                reduced:window.LatchlingsPrefs.reducedMotion()
               }));
               if(state.heroBottom>height+0.5)throw new Error(`${name}-${label}: hero overflow ${JSON.stringify(state)}`);
+              if((reduced==='reduce'||gameReduced)&&(state.animations.length||state.outgoing||!state.reduced))throw new Error(`${name}-${label}: Reduced Motion state ${JSON.stringify(state)}`);
               await page.screenshot({path:`/tmp/astra-ending-settled/${name}-${label}-viewport.png`,fullPage:false});
               await page.locator('.ending-network-stage').screenshot({path:`/tmp/astra-ending-settled/${name}-${label}-stage.png`});
               captures.push({name,label,state});
