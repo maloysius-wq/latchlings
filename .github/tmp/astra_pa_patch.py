@@ -94,12 +94,9 @@ p=Path('style400-game.css'); s=p.read_text()
 s += r'''
 
 /* Presentation/accessibility consolidation */
-html[data-motion="reduced"] #game .face,
-html[data-motion="reduced"] #game .eyes,
-html[data-motion="reduced"] #game .mouth,
-html[data-motion="reduced"] #game .motion-glow,
-html[data-motion="reduced"] #game .capture,
-html[data-motion="reduced"] #game .shake{animation:none!important;transition:none!important}
+html[data-motion="reduced"] #game *,
+html[data-motion="reduced"] #game *::before,
+html[data-motion="reduced"] #game *::after{animation:none!important;transition:none!important}
 #game.screen.active{min-height:0;height:100dvh;max-height:100dvh;overflow:hidden}
 @media(max-height:600px) and (orientation:portrait){
   #game .topbar{margin-bottom:5px}
