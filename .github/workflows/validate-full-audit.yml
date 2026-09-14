@@ -1,0 +1,54 @@
+name: Validate full Astra audit closure
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths:
+      - '.github/workflows/validate-full-audit.yml'
+      - '.github/tmp/validate-full-audit.mjs'
+      - 'index.html'
+      - 'style400.css'
+      - 'style400-*.css'
+      - 'title-island-concepts/**'
+      - 'story400.js'
+      - 'cinematics400.js'
+      - 'game400-a.js'
+      - 'game400-b.js'
+      - 'story-theme400.js'
+      - 'gameplay-story-rail400.js'
+      - 'pass3-chapter8-aurora.js'
+      - 'music400.js'
+      - 'sfx400.js'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser validation runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Start candidate server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/latchlings-http.log 2>&1 &
+          echo $! >/tmp/latchlings-http.pid
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/latchlings-http.log
+          exit 1
+      - name: Run full audit acceptance matrix
+        run: node .github/tmp/validate-full-audit.mjs
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-astra-audit-candidate-evidence
+          path: /tmp/full-audit-evidence
+          if-no-files-found: warn
+          retention-days: 30
