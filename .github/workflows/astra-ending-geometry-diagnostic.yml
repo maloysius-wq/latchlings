@@ -31,9 +31,9 @@ jobs:
       - name: Measure baseline and candidate short-screen geometry
         run: |
           mkdir -p /tmp/astra-ending-geometry
-          cat > /tmp/measure-ending.mjs <<'JS'
+          cat > .astra-ending-geometry.mjs <<'JS'
           import { chromium } from 'playwright';
-          import { spawn } from 'node:child_process';
+          import { spawn, execSync } from 'node:child_process';
           import fs from 'node:fs';
           const browser=await chromium.launch({headless:true});
           const measure=async(url,label)=>{
@@ -59,8 +59,6 @@ jobs:
           await new Promise(r=>setTimeout(r,400));
           const candidate=await measure('http://127.0.0.1:8000/index.html','candidate');
           candidateServer.kill();
-          // Serve pristine accepted main from a temporary git archive directory.
-          const {execSync}=await import('node:child_process');
           execSync('rm -rf /tmp/accepted-main && mkdir /tmp/accepted-main && git archive 69b6f80e794963f0e46ad1e54d90701f7caa5300 | tar -x -C /tmp/accepted-main');
           const baselineServer=spawn('python',['-m','http.server','8001','--bind','127.0.0.1'],{cwd:'/tmp/accepted-main',stdio:'ignore'});
           await new Promise(r=>setTimeout(r,400));
@@ -71,7 +69,8 @@ jobs:
           fs.writeFileSync('/tmp/astra-ending-geometry/geometry.json',JSON.stringify(result,null,2));
           console.log(JSON.stringify(result,null,2));
           JS
-          node /tmp/measure-ending.mjs
+          node .astra-ending-geometry.mjs
+          rm -f .astra-ending-geometry.mjs
 
       - name: Upload geometry evidence
         uses: actions/upload-artifact@v4
