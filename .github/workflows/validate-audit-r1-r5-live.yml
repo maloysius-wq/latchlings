@@ -58,12 +58,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp .github/tmp/validate-audit-r1-r5.mjs /tmp/validate-audit-r1-r5-live.mjs
-          sed -i 's/window.__dummy=0;//' /tmp/validate-audit-r1-r5-live.mjs
-          sed -i 's/updateStoryScreen?\.()/window.updateStoryScreen?.()/g' /tmp/validate-audit-r1-r5-live.mjs
+          RUNTIME=.github/tmp/validate-audit-r1-r5-live-runtime.mjs
+          cp .github/tmp/validate-audit-r1-r5.mjs "$RUNTIME"
+          sed -i 's/window.__dummy=0;//' "$RUNTIME"
+          sed -i 's/updateStoryScreen?\.()/window.updateStoryScreen?.()/g' "$RUNTIME"
           python - <<'PY'
           from pathlib import Path
-          p=Path('/tmp/validate-audit-r1-r5-live.mjs')
+          p=Path('.github/tmp/validate-audit-r1-r5-live-runtime.mjs')
           t=p.read_text(encoding='utf-8')
           old="await settleGame(page,201);await page.click('#hintBtn');"
           new="await settleGame(page,201);await page.waitForTimeout(320);await page.evaluate(()=>window.LatchlingsStoryTheme?.close(false));await page.waitForTimeout(20);await page.click('#hintBtn');"
@@ -83,7 +84,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           for i in {1..40}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep .2; done
-          node /tmp/validate-audit-r1-r5-live.mjs
+          node "$RUNTIME"
       - name: Package live evidence
         if: always()
         shell: bash
