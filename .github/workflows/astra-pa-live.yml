@@ -1,0 +1,77 @@
+name: Astra PA Committed Main Validation
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/astra-pa-live.yml']
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Verify exact promoted product and protected sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRODUCT=a998e095dd710028cdca6e028bc0047c71aeed3c
+          CAND=e02ba6a9b9ee8925b73e915a17712852da103023
+          git diff --exit-code "$PRODUCT" HEAD -- story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          git fetch origin "$CAND"
+          for f in story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html; do test "$(git rev-parse "$PRODUCT:$f")" = "$(git rev-parse "$CAND:$f")"; done
+          for f in style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css; do test -z "$(git ls-tree -r --name-only "$PRODUCT" -- "$f")"; done
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js
+          node --check story400.js
+          node --check cinematics400.js
+          node --check game400-b.js
+      - name: Load accepted validation harness only
+        shell: bash
+        run: |
+          EVID=c31b8bb381112d5114e01a27118324d2f0d6aec9
+          git fetch origin "$EVID"
+          git show "$EVID:.github/workflows/astra-presentation-accessibility-candidate.yml" > /tmp/astra-pa-base.yml
+          git show "$EVID:.github/workflows/astra-presentation-accessibility-rerun6.yml" > /tmp/astra-pa-rerun6.yml
+          mkdir -p .github/workflows
+          cp /tmp/astra-pa-base.yml .github/workflows/astra-presentation-accessibility-candidate.yml
+          cp /tmp/astra-pa-rerun6.yml .github/workflows/astra-presentation-accessibility-rerun6.yml
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run committed-main six-viewport matrix
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/astra-pa-rerun6.yml').read_text()
+          start=s.index('      - name: Run synchronized browser matrix')
+          chunk=s[start:]
+          run_at=chunk.index('        run: |\n')+len('        run: |\n')
+          end=chunk.index('      - name: Commit accepted candidate product')
+          body=chunk[run_at:end]
+          lines=[line[10:] if line.startswith('          ') else line for line in body.splitlines()]
+          shell='\n'.join(lines).rsplit('node .astra-pa-green.mjs',1)[0]
+          Path('/tmp/generate-live-matrix.sh').write_text(shell+'\n')
+          PY
+          bash /tmp/generate-live-matrix.sh
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.astra-pa-green.mjs'); s=p.read_text()
+          old="const ids=Object.keys(await cp.evaluate(()=>LatchlingsCinematics.CINEMATICS));let turns=0;"
+          new="const cinematicMeta=await cp.evaluate(()=>{const cs=LatchlingsCinematics.CINEMATICS;return {ids:Object.keys(cs),beats:Object.values(cs).reduce((n,c)=>n+c.beats.length,0),turns:Object.values(cs).reduce((n,c)=>n+c.beats.reduce((m,b)=>m+(b.lines?.length||0),0),0)}});const ids=cinematicMeta.ids;const expectedTurns=cinematicMeta.turns;let turns=0;"
+          assert old in s;s=s.replace(old,new,1)
+          old2="if(turns!==68)fail('cinematics','unexpected utterance count',{turns});"
+          new2="if(turns!==expectedTurns)fail('cinematics','unexpected utterance count',{turns,expectedTurns,beats:cinematicMeta.beats});if(cinematicMeta.beats!==25)fail('cinematics','unexpected beat count',cinematicMeta);"
+          assert old2 in s;s=s.replace(old2,new2,1)
+          p.write_text(s)
+          PY
+          node .astra-pa-green.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-pa-committed-main-evidence
+          path: /tmp/astra-pa-evidence
+          if-no-files-found: error
