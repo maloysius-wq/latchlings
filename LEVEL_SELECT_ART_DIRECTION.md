@@ -56,6 +56,7 @@ These are interaction/composition references only. No third-party game art is co
 - Material: **Snow 02**, Poly Haven CC0, Rob Tuytel. https://polyhaven.com/a/snow_02
 - Object vocabulary: pale crystalline ledges, crown-like beacons, star fields, aurora ribbons and luminous route bridges.
 - Shape source: ice/crystal facets and atmospheric aurora bands translated into the established Latchlings celestial palette.
+- Recurring landmark: a pale crown-shaped convergence beacon where historical and newly drawn route-light strands meet but visibly continue onward; reuse it in Chapter 8 movement 1 and the Level 400 reward so Aurora Crown reads as a meeting point in the living Skyway, never a central master switch.
 
 ## State language
 
