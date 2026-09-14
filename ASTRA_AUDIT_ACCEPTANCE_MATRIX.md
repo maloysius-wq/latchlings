@@ -2,7 +2,7 @@
 
 Last reconciled: 2026-09-14
 
-This file is the durable repository-side reconciliation of the original `LATCHLINGS_VISUAL_STORY_AUDIT.md` (audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`) and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` (reviewed head `d6e39c0866505795c2aa6a26777896072e16e7df`) against current `main` after the accepted R1-R5 usability pass.
+This file is the durable repository-side reconciliation of the original `LATCHLINGS_VISUAL_STORY_AUDIT.md` (audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`) and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` (reviewed head `d6e39c0866505795c2aa6a26777896072e16e7df`) against current `main` after the accepted R1-R5 usability pass and the accepted Astra Pass 4 cinematic candidate.
 
 The original standalone audit/review files were supplied outside the repository and therefore are not treated as repository source files. Their acceptance requirements are preserved here so future implementation work does not depend on an external attachment.
 
@@ -19,12 +19,12 @@ Status meanings:
 |---|---|---|
 | V01 quiet board floors | PARTIAL | Pass 3 materially quieted all eight chapter families. Residual decorative-cell ambiguity still needs cleanup, especially badge/ring-like decoration that can resemble mechanics. |
 | V02 readable story rail | COMPLETED | R1/R4 acceptance covers all 400 campaign rails/tips at 390x844 and 320x568 in Normal and Large Text without clipping essential story/mechanic copy. |
-| V03 shared cinematic layout | PARTIAL | Chronological dialogue and persistent short-phone navigation are accepted. Pass 4 scenic restaging, purposeful action, visual cause/effect, and one-speaker pacing across all 25 beats remain. |
-| N01 dialogue order | COMPLETED | Original script order is preserved for the identified Tansy/Pip and Bramble/Pippa defects. |
-| N02 earned knowledge | PARTIAL | Fresh journal/briefing spoilers were improved. Later movement authorship, revelation pacing, and repeated exposition still need consolidation. |
+| V03 shared cinematic layout | COMPLETED | Pass 4 candidate run `34865335086` exercised every utterance in all 25 beats at 320x568, 390x844, and 430x932. Each beat keeps one scenic stage mounted while exactly one canonical utterance is visible at a time; script order, visual IDs, Skip/Continue containment, and reduced-motion behavior passed. Representative screenshots were manually reviewed before promotion. |
+| N01 dialogue order | COMPLETED | Original script order is preserved for the identified Tansy/Pip and Bramble/Pippa defects; Pass 4 additionally validates exact canonical speaker/text order for every cinematic utterance. |
+| N02 earned knowledge | PARTIAL | Pass 4 moved cinematic exposition toward observable cause/effect and reduced repeated beat-level explanation. Fresh journal/briefing spoilers were improved earlier. Later movement authorship and repeated information across rail/milestone/journal still need consolidation. |
 | U01 real Settings | COMPLETED | Home gear routes to real Settings; Story/Residents has its own entry; relevant preferences are exposed. |
 | U02 touch targets | PARTIAL | Gameplay chrome and Atlas controls improved, but an all-controls target audit is still required across cinematics, dialogs, journal, home, and dense states. |
-| U03 viewport containment | PARTIAL | Gameplay and R5 cinematic navigation are accepted on tested phones. Pass 5 still requires the full phone/tablet/landscape/safe-area matrix. |
+| U03 viewport containment | PARTIAL | Gameplay and R5 cinematic navigation are accepted on tested phones. Pass 4 revalidated all 25 cinematics at 320x568, 390x844, and 430x932. Pass 5 still requires 360x800, tablet, landscape, and broader safe-area decisions. |
 | N03 Daily isolation | COMPLETED | Fresh Daily solve was verified to keep campaign unlocks/stars/cinematic state isolated and store Daily completion separately. |
 | U04 mechanic teaching | COMPLETED | Story and mechanic guidance are separate, rule art is present, and R1 acceptance keeps essential mechanic distinctions readable. |
 | V04 material consistency | OPEN | Title, story cards/cinematics, Little Home, and ending still need one approved material/light/shadow vocabulary. |
@@ -36,7 +36,7 @@ Status meanings:
 | V09 readable nests | PARTIAL | Suit-plus-color identity is preserved and nests are clearer. Arrival acknowledgement/completed-destination resolution still needs refinement. |
 | V10 mechanic-state causality | PARTIAL | Explicit switch-to-door relationship, open/closed causality, rail/turn readability, and rejected-blocker feedback remain. |
 | U06 control dominance | COMPLETED | Compact controls are accepted. Swipe and Undo are optional design experiments and intentionally NON-BLOCKING because they change interaction/difficulty economics. |
-| V11 emotional win causality | PARTIAL | Chapter rewards now provide stronger payoff, but ordinary-world action consequences and fast destination-to-world causality remain incomplete. |
+| V11 emotional win causality | PARTIAL | Chapter rewards now provide stronger payoff, and Pass 4 cinematics show more visible route/world cause-and-effect. Ordinary-world consequences immediately after normal play still need strengthening. |
 | U07 hints | COMPLETED | Honest reset-before-hint flow is retained; R3 acceptance keeps board highlighting active after returning until interaction/reset rather than expiring while the modal is read. Current-state solver hints remain a NON-BLOCKING future enhancement. |
 | U08 failure tone | COMPLETED | Solver-verification language was replaced with player-facing retry/help language. |
 | U09 mastery copy | PARTIAL | Move wording/pluralization is corrected. Star criteria still need discoverability before evaluation. |
@@ -44,16 +44,16 @@ Status meanings:
 | V13 Atlas hierarchy | OPEN | Competing chapter/range/map/navigation layers and truncated secondary labels still need simplification. |
 | V14 restored vs available states | PARTIAL | Progression states improved but need stronger non-color-only shape/lighting/route distinctions. |
 | V15 visible map repair | PARTIAL | Existing route transition/reward language is useful; affected landmarks still need a brief visible working-state payoff. |
-| N04 information-layer roles | PARTIAL | Story rail was simplified, but play/movement/milestone/journal responsibilities still overlap and repeat exposition. |
+| N04 information-layer roles | PARTIAL | Story rail was simplified and Pass 4 reduced cinematic over-explanation, but play/movement/milestone/journal responsibilities still overlap and repeat exposition. |
 | V16 story postcards | OPEN | Chapter rewards gained postcard-like treatment, but regular Story cards still need authored place/prop crops, one concise line, and one goal. |
 | U10 journal structure | OPEN | `Now` plus separate Residents/Journey/Cinematics hierarchy and faster replay access remain outstanding. |
 | N05 characterization through behavior | OPEN | Resident identity is still mostly portrait/copy driven; authored actions and expression changes remain. |
 | V17 chapter reward | PARTIAL | Dedicated chapter rewards exist across all eight chapters with keepsakes and Home/Continue choices. Late reward copy still needs trimming, especially Aurora. |
-| V18 ending art quality | OPEN | Simplified completion scene must be replaced by the canonical Little Home quality/state, ordinary-life resolution, and living-Skyway pullback. |
-| N06 visual ending thesis | OPEN | Ending should let the successful ordinary morning and living network carry the thesis; concise text only, with Return to Little Home primary. |
-| V19 presentation consolidation | OPEN | Cast identity, scene rendering, state, design tokens, and layered cinematic/presentation overrides remain duplicated. Consolidate existing layers instead of adding another broad override. |
-| U11 accessibility | PARTIAL | Zoom/readability preferences and R4/R5 are accepted. Full target/focus, safe-area, reading-order, text-scaling, meaningful-equivalent, and device checks remain. |
-| V20 purposeful motion | PARTIAL | R2 proves in-game Reduced Motion stops/cancels Little Home resident movement. Broader offscreen animation, interruption, ambient-vs-informative motion, and all-cinematic checks remain. |
+| V18 ending art quality | PARTIAL | Pass 4 replaced the simplified completion graphic with the canonical Little Home scene, ordinary-life activity, living-route accents, and a Home-first action. Candidate screenshots passed at 320x568, 390x844, and 430x932. A true living-Skyway-to-Little-Home pullback is still needed before closure. |
+| N06 visual ending thesis | PARTIAL | Pass 4 removed the explanatory three-card thesis and now centers the ordinary morning with concise copy and primary Return to Little Home. The final network-to-home visual pullback still needs to carry more of the thesis without relying on text. |
+| V19 presentation consolidation | PARTIAL | Pass 4 consolidated canonical utterance state between `cinematics400.js` and the existing `cinematic-dialogue400.js` layer instead of adding another renderer; the dialogue layer now consumes the active canonical line. Broader duplicated cast/state/design-token and stacked cinematic CSS cleanup remains. |
+| U11 accessibility | PARTIAL | Zoom/readability preferences and R4/R5 are accepted. Pass 4 additionally validated persistent cinematic navigation and zero running cinematic-stage animations under both OS and in-game Reduced Motion. Full target/focus, safe-area, reading-order, text-scaling, meaningful-equivalent, and device checks remain. |
+| V20 purposeful motion | PARTIAL | R2 proves in-game Reduced Motion stops/cancels Little Home resident movement. Pass 4 records zero running cinematic-stage animations under OS and in-game Reduced Motion. Broader offscreen animation, interruption, and ambient-vs-informative motion checks remain. |
 | A01 audio | PARTIAL / EXTERNAL | Controls are reachable. Persistence/interruption can be browser-tested; subjective cue balance, real-speaker/headphone mixing and listening remain EXTERNAL. |
 | P01 performance | PARTIAL / EXTERNAL | Browser frame-time/memory/loading measurement is still required. Physical modest-phone touch/performance/battery certification remains EXTERNAL. |
 
@@ -69,10 +69,10 @@ Substantially complete where represented by the completed/partial item statuses 
 **COMPLETED and protected.** Accepted head before this closure pass: `7e2643d2e78b1a5c25b6b5364225e1566e19a5cd`. Preserve rail/tip readability, live Reduced Motion behavior, persistent hint highlight, Large Text coverage, and persistent cinematic progress/Skip/Continue on short phones.
 
 ### Pass 4 cinematics and ending
-**OPEN / next product slice.** Restage all 25 beats around purposeful action and visual cause/effect; use one-speaker chronological pacing, shared scenic/cast systems, and reduced-motion-safe information. Replace the simplified ending with canonical Little Home, an ordinary successful morning/visit/delivery, a living-Skyway pullback, concise thesis, and primary Return to Little Home action. Opening pacing should trade diagrams/exposition for observable action and guided understanding.
+**PARTIAL, accepted cinematic slice promoted.** Candidate run `34865335086` passed source protection, syntax/static checks, every utterance across all 25 beats at three phone sizes, representative visual evidence, OS Reduced Motion, and in-game Reduced Motion. Accepted candidate product commit: `b8f6addf83611b3f8daf71311372e10de3ed90b6`; exact product bytes promoted to main as `0e244bfb5e0ae71fad64f468cb99b301b01af713`. One-speaker chronological pacing, action-oriented scenic restaging, opening pacing cleanup, canonical Little Home ending art, concise ending copy, and Home-first completion action are accepted. Remaining Pass 4 closure is the true living-Skyway-to-home visual pullback plus broader presentation-system consolidation tracked under V18/N06/V19.
 
 ### Home / Atlas / journal / gameplay coherence
-**OPEN after or alongside Pass 4 where shared presentation work makes it safer.** Complete keepsake resident use/memories, contextual Home action, Atlas hierarchy/state legibility, journal hierarchy, information-layer roles, authored character progression, residual decorative-cell cleanup, mechanic causality, arrival feedback, and star-criteria discoverability.
+**OPEN / next closure slices.** Complete keepsake resident use/memories, contextual Home action, Atlas hierarchy/state legibility, journal hierarchy, information-layer roles, authored character progression, residual decorative-cell cleanup, mechanic causality, arrival feedback, and star-criteria discoverability.
 
 ### Pass 5 browser-addressable certification
 **OPEN.** Cover 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption; asset/cache integrity; and frame-time/memory/loading in available browser runtimes.
