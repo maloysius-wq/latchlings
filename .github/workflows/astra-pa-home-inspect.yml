@@ -15,7 +15,9 @@ jobs:
           ref: astra-presentation-accessibility-candidate
       - name: Print relevant Home hooks
         run: |
-          echo '--- title action hooks ---'
-          grep -nE 'postMessage|memory|Memory|action|Action|primary|Primary|button|LittleHome|HomeAction' title-island-concepts/index.html | tail -n 140
-          echo '--- parent Home hooks ---'
-          grep -nE 'HOME_KEEPSAKE_MEMORIES|homeMemory|HomeAction|homeAction|memory:' game400-b.js | head -n 120
+          echo '--- parent memory data ---'
+          sed -n '55,82p' game400-b.js
+          echo '--- Home state sender / stage logic ---'
+          grep -nE 'function updateHome|const updateHome|home-state|storyProgress|stage:' game400-a.js game400-b.js | head -n 100
+          echo '--- title embed event block ---'
+          sed -n '412,431p' title-island-concepts/index.html
