@@ -1,0 +1,140 @@
+name: Astra Presentation Accessibility Candidate
+
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths:
+      - '.github/workflows/astra-presentation-accessibility-candidate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+          fetch-depth: 0
+      - name: Apply candidate and protect authored product
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematic-dialogue400.js style400-cinematics-dialogue.css style400-cinematics-geometry.css cinematic-geometry400.js gameplay-story-rail400.js story-grounding400.js story-theme400.js style400-story-rail-board.css style400-atlas-progression.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css > /tmp/protected-before.sha256
+          python .github/tmp/astra_pa_patch.py
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/protected-before.sha256
+          node --check story400.js
+          node --check cinematics400.js
+          node --check game400-b.js
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          h=Path('title-island-concepts/index.html').read_text()
+          for n,script in enumerate(re.findall(r'<script>(.*?)</script>',h,re.S)):
+              q=Path(f'/tmp/title-pa-{n}.js');q.write_text(script);subprocess.run(['node','--check',str(q)],check=True)
+          idx=Path('index.html').read_text()
+          assert all(x not in idx for x in ['style400-cinematics-polish.css','style400-cinematics-refine.css','style400-cinematics-refine2.css'])
+          assert 'Consolidated accepted cinematic presentation layers' in Path('style400-cinematics.css').read_text()
+          PY
+          git diff --check
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run presentation accessibility browser matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-pa-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-pa-http.log 2>&1 &
+          cat > .astra-pa-green.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const sizes=[
+            {name:'short',width:320,height:568},
+            {name:'compact',width:360,height:800},
+            {name:'phone',width:390,height:844},
+            {name:'wide',width:430,height:932},
+            {name:'tablet',width:768,height:1024},
+            {name:'landscape',width:844,height:390},
+          ];
+          const results=[];
+          function fail(name,msg,data){throw new Error(`${name}: ${msg} ${JSON.stringify(data||{})}`)}
+          async function visibleTargets(page,selector='button:not(.latchling)'){
+            return page.evaluate(selector=>[...document.querySelectorAll(selector)].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return !el.disabled&&s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0}).map(el=>({id:el.id||el.className,w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})),selector)
+          }
+          async function assertTargets(page,name,selector){const xs=await visibleTargets(page,selector);const bad=xs.filter(x=>x.w<43.5||x.h<43.5);if(bad.length)fail(name,'undersized controls',bad.slice(0,12));return xs.length}
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            const cast=await page.evaluate(()=>({source:window.LatchlingsCinematics?.castIdentitySource,cast:window.LATCHLINGS_STORY?.cast||[]}));
+            if(cast.source!=='LATCHLINGS_STORY.cast'||cast.cast.length!==5||cast.cast.some(c=>!c.visual?.color||!c.visual?.light||!c.visual?.dark||!c.visual?.suit))fail(size.name,'canonical cast',cast);
+
+            await page.evaluate(()=>{progress={unlocked:2,stars:{}};startLevel(2)});await page.waitForTimeout(40);
+            const box=await page.evaluate(()=>{const r=document.getElementById('game').getBoundingClientRect();return {l:r.left,r:r.right,t:r.top,b:r.bottom,sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}});
+            if(box.sw>box.cw+1||box.l<-.5||box.r>size.width+.5||box.t<-.5||box.b>size.height+.5)fail(size.name,'game containment',box);
+            const gameTargets=await assertTargets(page,size.name,'#game button:not(.latchling)');
+            const dpad=await page.evaluate(()=>({cycle:document.getElementById('cycleLatchlingBtn').getBoundingClientRect().toJSON(),dirs:[...document.querySelectorAll('.dpad-hit')].map(x=>x.getBoundingClientRect().toJSON())}));
+            if(dpad.cycle.width<44||dpad.cycle.height<44||dpad.dirs.some(r=>r.width<44||r.height<44))fail(size.name,'certified piece-selection/movement path',dpad);
+
+            await page.evaluate(()=>{document.getElementById('pauseBtn').focus();settingsModal()});await page.waitForTimeout(30);
+            const focusEntry=await page.evaluate(()=>({inside:document.getElementById('modal').contains(document.activeElement),id:document.activeElement?.id||''}));
+            if(!focusEntry.inside)fail(size.name,'modal focus entry',focusEntry);
+            await assertTargets(page,size.name,'#modal button');
+            const trap=await page.evaluate(()=>{const els=modalFocusables();els[els.length-1].focus();return {first:els[0].id,last:els[els.length-1].id}});await page.keyboard.press('Tab');
+            const cycled=await page.evaluate(()=>document.activeElement?.id||'');if(cycled!==trap.first)fail(size.name,'modal focus trap',{trap,cycled});
+            await page.keyboard.press('Escape');await page.waitForTimeout(30);const restored=await page.evaluate(()=>({shown:document.getElementById('overlay').classList.contains('show'),focus:document.activeElement?.id||''}));if(restored.shown||restored.focus!=='pauseBtn')fail(size.name,'modal escape/restore',restored);
+
+            await page.evaluate(()=>window.LatchlingsPrefs.set('motion','reduced'));const motion=await page.evaluate(async()=>{startLevel(2);const [pi,d]=LEVELS[1].solution[0];selected=pi;const p=moveSelected(d);await new Promise(r=>setTimeout(r,25));const running=document.getAnimations().filter(a=>a.playState==='running'&&a.effect?.target?.closest?.('#game')).length;await p;return {running,moves:movesUsed}});if(motion.running!==0||motion.moves!==1)fail(size.name,'reduced gameplay motion',motion);
+
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('motion','system');progress={unlocked:351,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3}};chapterView=5;rangeView=0;screen('levels');renderChapter()});await page.waitForTimeout(40);await assertTargets(page,size.name,'#levels button');
+            const levelsBox=await page.evaluate(()=>{const r=document.getElementById('levels').getBoundingClientRect();return {l:r.left,r:r.right,t:r.top,b:r.bottom}});if(levelsBox.b>size.height+.5||levelsBox.r>size.width+.5||levelsBox.l<-.5)fail(size.name,'Atlas containment',levelsBox);
+            await page.evaluate(()=>openStoryScreen());await page.waitForTimeout(30);await assertTargets(page,size.name,'#story button');
+            const normalFont=await page.$eval('#storyNowPanel p',el=>parseFloat(getComputedStyle(el).fontSize));await page.evaluate(()=>window.LatchlingsPrefs.set('textSize','large'));await page.waitForTimeout(30);const largeFont=await page.$eval('#storyNowPanel p',el=>parseFloat(getComputedStyle(el).fontSize));if(!(largeFont>normalFont))fail(size.name,'Large Text did not grow journal copy',{normalFont,largeFont});
+            const storyBox=await page.evaluate(()=>{const r=document.getElementById('story').getBoundingClientRect();return {l:r.left,r:r.right,t:r.top,b:r.bottom,sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}});if(storyBox.sw>storyBox.cw+1||storyBox.b>size.height+.5||storyBox.r>size.width+.5||storyBox.l<-.5)fail(size.name,'journal containment',storyBox);
+
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('textSize','normal');screen('home');updateHome(false)});await page.waitForTimeout(120);const homeFrame=page.frames().find(f=>f.url().includes('title-island-concepts'));if(!homeFrame)fail(size.name,'home frame missing');
+            const homeControls=await homeFrame.evaluate(()=>[...document.querySelectorAll('button')].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return !el.disabled&&s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0}).map(el=>({id:el.id||el.className,w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})));
+            const homeBad=homeControls.filter(x=>x.w<43.5||x.h<43.5);if(homeBad.length)fail(size.name,'home controls',homeBad.slice(0,10));
+            const memoryEffective=await homeFrame.evaluate(()=>[...document.querySelectorAll('.story-keepsake[role="button"]')].filter(x=>getComputedStyle(x).display!=='none').map(x=>{const r=x.getBoundingClientRect();return {key:x.dataset.memory,w:r.width+16,h:r.height+16}}));if(memoryEffective.some(x=>x.w<44||x.h<44))fail(size.name,'keepsake effective target',memoryEffective);
+
+            if(errors.length)fail(size.name,'runtime errors',errors);
+            if(size.name==='phone'){
+              await page.screenshot({path:'/tmp/astra-pa-evidence/home-phone.png',fullPage:true});
+              await page.evaluate(()=>openStoryScreen());await page.screenshot({path:'/tmp/astra-pa-evidence/journal-phone.png',fullPage:true});
+              await page.evaluate(()=>{progress={unlocked:400,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3,400:3}};screen('complete')});await page.screenshot({path:'/tmp/astra-pa-evidence/ending-phone.png',fullPage:true});
+            }
+            if(size.name==='landscape'){await page.evaluate(()=>{progress={unlocked:2,stars:{}};startLevel(2)});await page.screenshot({path:'/tmp/astra-pa-evidence/game-landscape.png',fullPage:true})}
+            results.push({size,castSource:cast.source,gameTargets,normalFont,largeFont,homeControls:homeControls.length});await context.close();
+          }
+
+          // Replay every canonical utterance at short phone width after stylesheet consolidation.
+          const cctx=await browser.newContext({viewport:{width:320,height:568}});const cp=await cctx.newPage();await cp.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          const ids=Object.keys(await cp.evaluate(()=>LatchlingsCinematics.CINEMATICS));let turns=0;
+          for(const id of ids){await cp.evaluate(id=>LatchlingsCinematics.show(id,{markSeen:false}),id);await cp.waitForTimeout(20);while(await cp.evaluate(()=>!!LatchlingsCinematics.active)){const state=await cp.evaluate(()=>{const next=document.getElementById('cinematicNext'),skip=document.getElementById('cinematicSkip'),line=document.querySelectorAll('#cinematicLines .is-current'),shell=document.querySelector('.cinematic-shell')?.getBoundingClientRect(),nr=next?.getBoundingClientRect(),sr=skip?.getBoundingClientRect();return {lines:line.length,shell:shell?.toJSON(),next:nr?.toJSON(),skip:sr?.toJSON(),sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}});if(state.lines!==1||!state.next||state.next.width<44||state.next.height<44||!state.skip||state.skip.width<44||state.skip.height<44||state.sw>state.cw+1||state.shell.bottom>568.5)fail('cinematic-'+id,'utterance layout',state);turns++;await cp.evaluate(()=>LatchlingsCinematics.next());await cp.waitForTimeout(8)}}
+          await cp.evaluate(()=>LatchlingsCinematics.show('across-drift',{markSeen:false}));await cp.waitForTimeout(40);await cp.screenshot({path:'/tmp/astra-pa-evidence/cinematic-short.png',fullPage:true});await cp.evaluate(()=>LatchlingsCinematics.finish(true));await cctx.close();
+          if(turns!==68)fail('cinematics','unexpected utterance count',{turns});
+          results.push({cinematicUtterances:turns});
+          fs.writeFileSync('/tmp/astra-pa-evidence/results.json',JSON.stringify(results,null,2));await browser.close();
+          JS
+          node .astra-pa-green.mjs
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html
+          git add -u style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          git diff --cached --check
+          git commit -m "Stage presentation accessibility consolidation [skip ci]"
+          git push origin HEAD:astra-presentation-accessibility-candidate
+          git rev-parse HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-presentation-accessibility-evidence
+          path: /tmp/astra-pa-evidence
+          if-no-files-found: error
