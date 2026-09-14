@@ -1,0 +1,77 @@
+name: Astra Presentation Accessibility RED
+
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths:
+      - '.github/workflows/astra-presentation-accessibility-red.yml'
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Prove missing presentation accessibility behavior
+        shell: bash
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-pa-red-http.log 2>&1 &
+          cat > .astra-pa-red.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const failures=[];
+          const html=fs.readFileSync('index.html','utf8');
+          for(const legacy of ['style400-cinematics-polish.css','style400-cinematics-refine.css','style400-cinematics-refine2.css']){
+            if(html.includes(legacy)) failures.push(`legacy cinematic layer still loaded: ${legacy}`);
+          }
+          const browser=await chromium.launch({headless:true});
+          const sizes=[
+            {name:'short',width:320,height:568},
+            {name:'compact',width:360,height:800},
+            {name:'phone',width:390,height:844},
+            {name:'wide',width:430,height:932},
+            {name:'tablet',width:768,height:1024},
+            {name:'landscape',width:844,height:390},
+          ];
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height}});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            const cast=await page.evaluate(()=>window.LATCHLINGS_STORY?.cast||[]);
+            if(!cast.length||cast.some(c=>!c.visual?.color||!c.visual?.light||!c.visual?.dark||!c.visual?.suit)) failures.push(`${size.name}: cast has no canonical visual identity`);
+
+            await page.evaluate(()=>{progress={unlocked:1,stars:{}};screen('game');startLevel(1)});
+            const targets=await page.evaluate(()=>[...document.querySelectorAll('button')].filter(b=>{const s=getComputedStyle(b),r=b.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0}).map(b=>({id:b.id||b.className,w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height})));
+            const undersized=targets.filter(x=>x.w<44||x.h<44);
+            if(undersized.length) failures.push(`${size.name}: undersized buttons ${JSON.stringify(undersized.slice(0,8))}`);
+            const viewport=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,sh:document.documentElement.scrollHeight,ch:document.documentElement.clientHeight,game:document.getElementById('game').getBoundingClientRect().toJSON()}));
+            if(viewport.sw>viewport.cw+1||viewport.game.left<-.5||viewport.game.right>size.width+.5||viewport.game.top<-.5||viewport.game.bottom>size.height+.5) failures.push(`${size.name}: game containment ${JSON.stringify(viewport)}`);
+
+            await page.evaluate(()=>{document.getElementById('pauseBtn').focus();settingsModal()});
+            const focusEntry=await page.evaluate(()=>({inside:document.getElementById('modal').contains(document.activeElement),tag:document.activeElement?.tagName,id:document.activeElement?.id||''}));
+            if(!focusEntry.inside) failures.push(`${size.name}: modal did not take focus ${JSON.stringify(focusEntry)}`);
+            const trap=await page.evaluate(()=>{const modal=document.getElementById('modal'),els=[...modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled);if(!els.length)return {ok:false};els[els.length-1].focus();return {first:els[0].id,last:els[els.length-1].id}});
+            await page.keyboard.press('Tab');
+            const cycled=await page.evaluate(()=>document.activeElement?.id||'');
+            if(!trap.ok||cycled!==trap.first) failures.push(`${size.name}: modal tab trap missing expected ${trap.first} got ${cycled}`);
+            await page.keyboard.press('Escape');
+            const restored=await page.evaluate(()=>({shown:document.getElementById('overlay').classList.contains('show'),focus:document.activeElement?.id||''}));
+            if(restored.shown||restored.focus!=='pauseBtn') failures.push(`${size.name}: modal escape/focus restore ${JSON.stringify(restored)}`);
+
+            await page.evaluate(()=>window.LatchlingsPrefs.set('motion','reduced'));
+            const motion=await page.evaluate(async()=>{startLevel(1);const [pi,d]=LEVELS[0].solution[0];selected=pi;const p=moveSelected(d);await new Promise(r=>setTimeout(r,25));const running=document.getAnimations().filter(a=>a.playState==='running'&&a.effect?.target?.closest?.('#game')).length;await p;return {running}});
+            if(motion.running!==0) failures.push(`${size.name}: reduced-motion gameplay still animates ${JSON.stringify(motion)}`);
+            await context.close();
+          }
+          await browser.close();
+          console.log(JSON.stringify({failureCount:failures.length,failures},null,2));
+          if(!failures.length) throw new Error('RED contract unexpectedly passed');
+          process.exitCode=1;
+          JS
+          node .astra-pa-red.mjs
