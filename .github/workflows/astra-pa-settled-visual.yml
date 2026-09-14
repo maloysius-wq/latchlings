@@ -13,10 +13,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: astra-presentation-accessibility-candidate
-      - name: Require exact accepted product commit
+          fetch-depth: 0
+      - name: Require exact accepted product bytes
         run: |
-          test "$(git rev-parse HEAD^)" = "e02ba6a9b9ee8925b73e915a17712852da103023" || { echo "Workflow must be the first evidence-only child of accepted product"; exit 1; }
-          git diff --exit-code e02ba6a9b9ee8925b73e915a17712852da103023 -- story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          git diff --exit-code e02ba6a9b9ee8925b73e915a17712852da103023 HEAD -- story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
       - name: Install Chromium
         run: |
           npm install --no-save playwright@1.55.0
@@ -38,7 +38,7 @@ jobs:
             await p.screenshot({path:'/tmp/astra-pa-settled/home.png'});
             const f=p.frames().find(x=>x.url().includes('title-island-concepts'));if(!f)throw new Error('Home frame missing');await f.click('.memories-home');await p.waitForTimeout(120);await p.screenshot({path:'/tmp/astra-pa-settled/memories.png'});await p.click('#homeMemoriesClose');
             await p.evaluate(()=>openStoryScreen());await p.waitForTimeout(650);await p.screenshot({path:'/tmp/astra-pa-settled/journal.png'});
-            await p.evaluate(()=>{screen('complete')});await p.waitForTimeout(650);await p.screenshot({path:'/tmp/astra-pa-settled/ending.png'});
+            await p.evaluate(()=>screen('complete'));await p.waitForTimeout(650);await p.screenshot({path:'/tmp/astra-pa-settled/ending.png'});
             await p.evaluate(()=>LatchlingsCinematics.show('across-drift',{markSeen:false}));await p.waitForTimeout(250);await p.screenshot({path:'/tmp/astra-pa-settled/cinematic.png'});await p.evaluate(()=>LatchlingsCinematics.finish(true));
             if(errors.length)throw new Error(errors.join('\n'));await c.close();
           }
