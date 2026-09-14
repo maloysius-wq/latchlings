@@ -1,49 +1,29 @@
-name: Astra ending closure candidate
+name: Astra ending closure accepted candidate verification
 
 on:
   push:
     branches: [astra-ending-closure-candidate]
     paths:
       - '.github/workflows/astra-ending-closure-candidate.yml'
-      - '.github/tmp/astra_ending_closure_candidate.py'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  candidate:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Check out candidate
+      - name: Check out accepted candidate
         uses: actions/checkout@v4
         with:
           ref: astra-ending-closure-candidate
           fetch-depth: 0
 
-      - name: Require accepted main base ancestry
+      - name: Verify exact accepted product and protected slices
         run: |
-          git fetch origin main
-          git merge-base --is-ancestor 69b6f80e794963f0e46ad1e54d90701f7caa5300 HEAD
-
-      - name: Snapshot protected accepted sources
-        run: |
-          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/ending-campaign-before.sha256
-          sha256sum game400-a.js game400-b.js story-theme400.js style400-story-theme.css \
-            cinematics400.js cinematic-dialogue400.js style400-cinematics.css \
-            gameplay-story-rail400.js style400-story-rail-board.css \
-            title-island-concepts/index.html style400-skyway-atlas.css \
-            style400-atlas-progression.css pass3-chapter5-prism.js \
-            pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
-            pass3-chapter8-aurora.js > /tmp/ending-accepted-before.sha256
-
-      - name: Apply ending candidate
-        run: python .github/tmp/astra_ending_closure_candidate.py
-
-      - name: Protect authored campaigns and accepted slices
-        run: |
-          sha256sum -c /tmp/ending-campaign-before.sha256
-          sha256sum -c /tmp/ending-accepted-before.sha256
+          test "$(git show 64fe6f447f486e0bfe79e59401432ab4ad3e9741:index.html | sha256sum | cut -d' ' -f1)" = "$(sha256sum index.html | cut -d' ' -f1)"
+          test "$(git show 64fe6f447f486e0bfe79e59401432ab4ad3e9741:style400-ui.css | sha256sum | cut -d' ' -f1)" = "$(sha256sum style400-ui.css | cut -d' ' -f1)"
           git diff --exit-code 69b6f80e794963f0e46ad1e54d90701f7caa5300 -- \
             campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js \
             campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js \
@@ -55,35 +35,17 @@ jobs:
             pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
             pass3-chapter8-aurora.js
 
-      - name: Static ending assertions
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          i=Path('index.html').read_text(encoding='utf-8')
-          c=Path('style400-ui.css').read_text(encoding='utf-8')
-          assert 'ending-network-stage' in i
-          assert i.count('class="ending-skyway-node') == 6
-          assert i.count('ending-network-link') >= 6
-          assert i.count('data-home-node="true"') == 1
-          assert 'Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.' in i
-          assert 'Ordinary life continues. That is the victory.' in i
-          assert 'id="completeHome">Return to Little Home</button>' in i
-          assert 'endingNetworkWide' in c and 'endingNetworkHomeward' in c
-          assert 'Astra ending closure: living Skyway to Little Home' in c
-          print('Static ending assertions passed.')
-          PY
-
       - name: Install Chromium
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Browser ending acceptance
+      - name: Validate accepted ending runtime
         run: |
-          mkdir -p /tmp/astra-ending-evidence
-          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-http.log 2>&1 &
-          echo $! >/tmp/astra-ending-http.pid
-          cat > .astra-ending-check.mjs <<'JS'
+          mkdir -p /tmp/astra-ending-accepted
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-accepted-http.log 2>&1 &
+          echo $! >/tmp/astra-ending-accepted-http.pid
+          cat > .astra-ending-accepted.mjs <<'JS'
           import { chromium } from 'playwright';
           import fs from 'node:fs';
           const browser=await chromium.launch({headless:true});
@@ -91,86 +53,59 @@ jobs:
           const results=[];
           for(const size of sizes){
             const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
-            const page=await context.newPage();
-            const errors=[]; page.on('pageerror',e=>errors.push(e.message)); page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            const page=await context.newPage(); const errors=[];
+            page.on('pageerror',e=>errors.push(e.message)); page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
             await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
-            await page.evaluate(()=>screen('complete'));
-            await page.waitForTimeout(100);
-            const ending=await page.evaluate(()=>{
-              const stage=document.querySelector('.ending-network-stage');
-              const focus=document.querySelector('.ending-home-focus');
-              const field=document.querySelector('.ending-network-field');
-              const actions=document.querySelector('.ending-actions');
-              const primary=actions?.querySelector('button:first-child');
-              const homeFrame=document.querySelector('.ending-home-frame');
-              const hero=document.querySelector('.ending-hero-pass4');
-              return {
-                stage:!!stage,
-                label:stage?.getAttribute('aria-label')||'',
-                nodes:document.querySelectorAll('.ending-skyway-node').length,
-                links:document.querySelectorAll('.ending-network-link').length,
-                homeNodes:document.querySelectorAll('.ending-skyway-node[data-home-node="true"]').length,
-                focusAnimation:focus?getComputedStyle(focus).animationName:'',
-                fieldAnimation:field?getComputedStyle(field).animationName:'',
-                parcelAnimation:getComputedStyle(document.querySelector('.ending-parcel')).animationName,
-                frameSrc:homeFrame?.getAttribute('src')||'',
-                primaryId:primary?.id||'',
-                primaryText:primary?.textContent?.trim()||'',
-                copy:[...hero.querySelectorAll(':scope>p')].map(x=>x.textContent.trim()),
-                bottom:hero?.getBoundingClientRect().bottom||0,
-                viewport:innerHeight
-              };
-            });
-            if(!ending.stage)throw new Error(`${size.name}: missing living-Skyway ending stage`);
-            if(ending.nodes<5||ending.links<4||ending.homeNodes!==1)throw new Error(`${size.name}: network does not establish communities + one Little Home node ${JSON.stringify(ending)}`);
-            if(!/communities/i.test(ending.label)||!/Little Home/i.test(ending.label)||!/parcel/i.test(ending.label))throw new Error(`${size.name}: ending art lacks meaningful equivalent ${ending.label}`);
-            if(!ending.focusAnimation.includes('endingNetworkHomeward')||!ending.fieldAnimation.includes('endingNetworkWide'))throw new Error(`${size.name}: missing network-to-home camera sequence ${JSON.stringify(ending)}`);
-            if(!ending.parcelAnimation.includes('endingPass4Parcel'))throw new Error(`${size.name}: ordinary parcel action missing`);
-            if(!ending.frameSrc.includes('title-island-concepts/')||!ending.frameSrc.includes('ending=1'))throw new Error(`${size.name}: canonical Little Home frame missing`);
-            if(ending.primaryId!=='completeHome'||ending.primaryText!=='Return to Little Home')throw new Error(`${size.name}: Home-first completion action regressed ${JSON.stringify(ending)}`);
-            if(ending.copy[0]!=='Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.'||ending.copy[1]!=='Ordinary life continues. That is the victory.')throw new Error(`${size.name}: accepted concise ending copy changed ${JSON.stringify(ending.copy)}`);
-            if(ending.bottom>size.height+0.5)throw new Error(`${size.name}: ending below viewport ${JSON.stringify(ending)}`);
+            await page.evaluate(()=>screen('complete')); await page.waitForTimeout(520);
+            const state=await page.evaluate(()=>({
+              nodes:document.querySelectorAll('.ending-skyway-node').length,
+              links:document.querySelectorAll('.ending-network-link').length,
+              homeNodes:document.querySelectorAll('.ending-skyway-node[data-home-node="true"]').length,
+              label:document.querySelector('.ending-network-stage')?.getAttribute('aria-label')||'',
+              fieldAnimation:getComputedStyle(document.querySelector('.ending-network-field')).animationName,
+              focusAnimation:getComputedStyle(document.querySelector('.ending-home-focus')).animationName,
+              parcelAnimation:getComputedStyle(document.querySelector('.ending-parcel')).animationName,
+              frameSrc:document.querySelector('.ending-home-frame')?.getAttribute('src')||'',
+              primary:document.querySelector('.ending-actions button:first-child')?.textContent.trim()||'',
+              primaryId:document.querySelector('.ending-actions button:first-child')?.id||'',
+              copy:[...document.querySelectorAll('.ending-hero-pass4>p')].map(x=>x.textContent.trim()),
+              bottom:document.querySelector('.ending-hero-pass4').getBoundingClientRect().bottom,
+              outgoing:!!document.querySelector('.screen-transition-outgoing')
+            }));
+            if(state.nodes!==6||state.links<6||state.homeNodes!==1)throw new Error(`${size.name}: network semantics ${JSON.stringify(state)}`);
+            if(!/communities/i.test(state.label)||!/Little Home/i.test(state.label)||!/parcel/i.test(state.label))throw new Error(`${size.name}: meaningful equivalent ${state.label}`);
+            if(!state.fieldAnimation.includes('endingNetworkWide')||!state.focusAnimation.includes('endingNetworkHomeward')||!state.parcelAnimation.includes('endingPass4Parcel'))throw new Error(`${size.name}: visual sequence missing ${JSON.stringify(state)}`);
+            if(!state.frameSrc.includes('title-island-concepts/')||!state.frameSrc.includes('ending=1'))throw new Error(`${size.name}: canonical home missing`);
+            if(state.primaryId!=='completeHome'||state.primary!=='Return to Little Home')throw new Error(`${size.name}: Home-first action regressed`);
+            if(state.copy[0]!=='Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.'||state.copy[1]!=='Ordinary life continues. That is the victory.')throw new Error(`${size.name}: ending copy regressed ${JSON.stringify(state.copy)}`);
+            if(state.bottom>size.height+0.5)throw new Error(`${size.name}: ending overflow ${JSON.stringify(state)}`);
+            if(state.outgoing)throw new Error(`${size.name}: outgoing screen transition did not settle`);
             if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join('; ')}`);
-            await page.screenshot({path:`/tmp/astra-ending-evidence/${size.name}-normal.png`,fullPage:true});
-            results.push({size:size.name,ending});
-            await context.close();
+            results.push({size:size.name,state}); await context.close();
           }
-
           for(const mode of ['os','game']){
             const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:mode==='os'?'reduce':'no-preference'});
-            const page=await context.newPage();
-            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
-            await page.evaluate(mode=>{if(mode==='game')document.documentElement.dataset.motion='reduced';screen('complete')},mode);
-            await page.waitForTimeout(80);
+            const page=await context.newPage(); await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(mode=>{if(mode==='game')window.LatchlingsPrefs.set('motion','reduced');screen('complete')},mode); await page.waitForTimeout(120);
             const reduced=await page.evaluate(()=>({
+              pref:window.LatchlingsPrefs.reducedMotion(),
               animations:[...document.querySelectorAll('.ending-network-stage *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none'),
+              outgoing:!!document.querySelector('.screen-transition-outgoing'),
               primary:document.querySelector('.ending-actions button:first-child')?.id||'',
-              nodes:document.querySelectorAll('.ending-skyway-node').length
+              nodes:document.querySelectorAll('.ending-skyway-node').length,
+              bottom:document.querySelector('.ending-hero-pass4').getBoundingClientRect().bottom
             }));
-            if(reduced.animations.length)throw new Error(`${mode}: ending animations still running ${JSON.stringify(reduced.animations)}`);
-            if(reduced.primary!=='completeHome'||reduced.nodes<5)throw new Error(`${mode}: reduced-motion final tableau incomplete ${JSON.stringify(reduced)}`);
-            await page.screenshot({path:`/tmp/astra-ending-evidence/reduced-${mode}.png`,fullPage:true});
-            await context.close();
+            if(!reduced.pref||reduced.animations.length||reduced.outgoing||reduced.primary!=='completeHome'||reduced.nodes!==6||reduced.bottom>844.5)throw new Error(`${mode}: Reduced Motion contract ${JSON.stringify(reduced)}`);
+            await page.screenshot({path:`/tmp/astra-ending-accepted/${mode}-reduced-viewport.png`,fullPage:false}); await context.close();
           }
-          await browser.close();
-          fs.writeFileSync('/tmp/astra-ending-evidence/results.json',JSON.stringify(results,null,2));
+          await browser.close(); fs.writeFileSync('/tmp/astra-ending-accepted/results.json',JSON.stringify(results,null,2));
           JS
-          node .astra-ending-check.mjs
-          rm -f .astra-ending-check.mjs
-          kill $(cat /tmp/astra-ending-http.pid) || true
+          node .astra-ending-accepted.mjs
+          rm -f .astra-ending-accepted.mjs
+          kill $(cat /tmp/astra-ending-accepted-http.pid) || true
 
-      - name: Commit accepted candidate product
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add index.html style400-ui.css
-          git diff --cached --quiet && { echo 'No candidate product diff'; exit 1; }
-          git commit -m "Accept living Skyway ending closure candidate"
-          git push origin HEAD:astra-ending-closure-candidate
-
-      - name: Upload candidate evidence
-        if: always()
+      - name: Upload accepted-candidate evidence
         uses: actions/upload-artifact@v4
         with:
-          name: astra-ending-candidate-evidence
-          path: /tmp/astra-ending-evidence
+          name: astra-ending-accepted-candidate-evidence
+          path: /tmp/astra-ending-accepted
