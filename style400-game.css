@@ -160,3 +160,12 @@ button:focus-visible,[role="button"]:focus-visible{outline:3px solid #fff3a9!imp
 @media(max-height:620px){.ending-resolution-card{bottom:max(7px,env(safe-area-inset-bottom));padding:12px 14px}.ending-resolution-card h1{font-size:22px}.ending-ordinary-list{margin:6px 0}.ending-resolution-card>p{font-size:11px;margin:4px auto}.ending-actions{margin-top:7px}}
 @media(orientation:landscape) and (max-height:500px){.ending-resolution-card{right:max(12px,env(safe-area-inset-right));left:auto;bottom:50%;translate:0 50%;width:min(44vw,430px)}.ending-home-frame{width:58%}}
 html[data-motion="reduced"] .blocked-feedback,html[data-motion="reduced"] .arrival-ack{animation:none!important}@media(prefers-reduced-motion:reduce){.blocked-feedback,.arrival-ack{animation:none!important}}
+
+
+/* Full audit short-screen Large Text containment */
+@media(max-height:620px) and (max-width:380px){
+ html[data-text-size="large"] #game .board{width:min(100%,480px,36svh)}
+ html[data-text-size="large"] #game .game-top{margin-bottom:2px}
+ html[data-text-size="large"] #game .story-rail-slot{margin-bottom:2px}
+ html[data-text-size="large"] #game .controls{padding-top:1px}
+}
