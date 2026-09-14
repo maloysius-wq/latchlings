@@ -1,0 +1,26 @@
+name: Astra PA Focus Inspect
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths: ['.github/workflows/astra-pa-focus-inspect.yml']
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+      - run: |
+          python .github/tmp/astra_pa_patch.py
+          python .github/tmp/astra_pa_memories_followup.py
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium >/dev/null
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/http.log 2>&1 &
+          cat > .focus-inspect.mjs <<'JS'
+          import {chromium} from 'playwright';
+          const b=await chromium.launch({headless:true});const c=await b.newContext({viewport:{width:768,height:1024}});const p=await c.newPage();await p.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});await p.evaluate(()=>{progress={unlocked:2,stars:{}};startLevel(2)});await p.waitForTimeout(50);
+          console.log('pause-before',await p.evaluate(()=>{const e=document.getElementById('pauseBtn'),r=e.getBoundingClientRect(),s=getComputedStyle(e);e.focus();return {display:s.display,visibility:s.visibility,disabled:e.disabled,rect:r.toJSON(),active:document.activeElement?.id,tabIndex:e.tabIndex}}));
+          console.log('open',await p.evaluate(()=>{settingsModal();return {saved:modalReturnFocus?.id,active:document.activeElement?.id}}));await p.waitForTimeout(50);console.log('after-open',await p.evaluate(()=>({saved:modalReturnFocus?.id,active:document.activeElement?.id})));
+          await p.keyboard.press('Escape');console.log('after-escape-immediate',await p.evaluate(()=>({active:document.activeElement?.id,shown:document.getElementById('overlay').classList.contains('show')})));await p.waitForTimeout(50);console.log('after-escape-50',await p.evaluate(()=>({active:document.activeElement?.id,shown:document.getElementById('overlay').classList.contains('show')})));await b.close();
+          JS
+          node .focus-inspect.mjs
