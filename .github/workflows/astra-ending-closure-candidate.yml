@@ -57,21 +57,25 @@ jobs:
             page.on('pageerror',e=>errors.push(e.message)); page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
             await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
             await page.evaluate(()=>screen('complete')); await page.waitForTimeout(850);
-            const state=await page.evaluate(()=>({
-              nodes:document.querySelectorAll('.ending-skyway-node').length,
-              links:document.querySelectorAll('.ending-network-link').length,
-              homeNodes:document.querySelectorAll('.ending-skyway-node[data-home-node="true"]').length,
-              label:document.querySelector('.ending-network-stage')?.getAttribute('aria-label')||'',
-              fieldAnimation:getComputedStyle(document.querySelector('.ending-network-field')).animationName,
-              focusAnimation:getComputedStyle(document.querySelector('.ending-home-focus')).animationName,
-              parcelAnimation:getComputedStyle(document.querySelector('.ending-parcel')).animationName,
-              frameSrc:document.querySelector('.ending-home-frame')?.getAttribute('src')||'',
-              primary:document.querySelector('.ending-actions button:first-child')?.textContent.trim()||'',
-              primaryId:document.querySelector('.ending-actions button:first-child')?.id||'',
-              copy:[...document.querySelectorAll('.ending-hero-pass4>p')].map(x=>x.textContent.trim()),
-              bottom:document.querySelector('.ending-hero-pass4').getBoundingClientRect().bottom,
-              outgoing:!!document.querySelector('.screen-transition-outgoing')
-            }));
+            const state=await page.evaluate(()=>{
+              const hero=document.querySelector('.ending-hero-pass4'),title=hero.querySelector('h1'),hr=hero.getBoundingClientRect(),tr=title.getBoundingClientRect();
+              return {
+                nodes:document.querySelectorAll('.ending-skyway-node').length,
+                links:document.querySelectorAll('.ending-network-link').length,
+                homeNodes:document.querySelectorAll('.ending-skyway-node[data-home-node="true"]').length,
+                label:document.querySelector('.ending-network-stage')?.getAttribute('aria-label')||'',
+                fieldAnimation:getComputedStyle(document.querySelector('.ending-network-field')).animationName,
+                focusAnimation:getComputedStyle(document.querySelector('.ending-home-focus')).animationName,
+                parcelAnimation:getComputedStyle(document.querySelector('.ending-parcel')).animationName,
+                frameSrc:document.querySelector('.ending-home-frame')?.getAttribute('src')||'',
+                primary:document.querySelector('.ending-actions button:first-child')?.textContent.trim()||'',
+                primaryId:document.querySelector('.ending-actions button:first-child')?.id||'',
+                copy:[...document.querySelectorAll('.ending-hero-pass4>p')].map(x=>x.textContent.trim()),
+                bottom:hr.bottom,
+                title:{left:tr.left,right:tr.right,width:tr.width,heroLeft:hr.left,heroRight:hr.right},
+                outgoing:!!document.querySelector('.screen-transition-outgoing')
+              };
+            });
             if(state.nodes!==6||state.links<6||state.homeNodes!==1)throw new Error(`${size.name}: network semantics ${JSON.stringify(state)}`);
             if(!/communities/i.test(state.label)||!/Little Home/i.test(state.label)||!/parcel/i.test(state.label))throw new Error(`${size.name}: meaningful equivalent ${state.label}`);
             if(!state.fieldAnimation.includes('endingNetworkWide')||!state.focusAnimation.includes('endingNetworkHomeward')||!state.parcelAnimation.includes('endingPass4Parcel'))throw new Error(`${size.name}: visual sequence missing ${JSON.stringify(state)}`);
@@ -79,6 +83,7 @@ jobs:
             if(state.primaryId!=='completeHome'||state.primary!=='Return to Little Home')throw new Error(`${size.name}: Home-first action regressed`);
             if(state.copy[0]!=='Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.'||state.copy[1]!=='Ordinary life continues. That is the victory.')throw new Error(`${size.name}: ending copy regressed ${JSON.stringify(state.copy)}`);
             if(state.bottom>size.height+0.5)throw new Error(`${size.name}: ending overflow ${JSON.stringify(state)}`);
+            if(state.title.left<state.title.heroLeft-0.5||state.title.right>state.title.heroRight+0.5)throw new Error(`${size.name}: ending title clipped ${JSON.stringify(state.title)}`);
             if(state.outgoing)throw new Error(`${size.name}: outgoing screen transition did not settle`);
             if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join('; ')}`);
             results.push({size:size.name,state}); await context.close();
@@ -105,6 +110,7 @@ jobs:
           kill $(cat /tmp/astra-ending-accepted-http.pid) || true
 
       - name: Upload accepted-candidate evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: astra-ending-accepted-candidate-evidence
