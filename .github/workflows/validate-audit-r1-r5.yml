@@ -7,6 +7,7 @@ on:
       - '.github/tmp/validate-audit-r1-r5.mjs'
       - '.github/tmp/prepare-audit-r1-r5.py'
       - '.github/tmp/fix-audit-r1-r5-candidate.py'
+      - '.github/tmp/finalize-audit-r4.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -39,6 +40,7 @@ jobs:
           set -euo pipefail
           python .github/tmp/prepare-audit-r1-r5.py
           python .github/tmp/fix-audit-r1-r5-candidate.py
+          python .github/tmp/finalize-audit-r4.py
           rm -rf /tmp/r1r5-site
           mkdir -p /tmp/r1r5-site
           cp -a . /tmp/r1r5-site/
@@ -64,6 +66,7 @@ jobs:
           grep -q 'MOVEMENT_RAIL_LINES' /tmp/r1r5-site/gameplay-story-rail400.js
           grep -q 'ROUTE_TIPS' /tmp/r1r5-site/game400-a.js
           grep -q '.story-rail-main{min-height:0;overflow:visible}' /tmp/r1r5-site/style400-story-rail-board.css
+          grep -q 'html\[data-text-size="large"\] .modal p{font-size:18px' /tmp/r1r5-site/style400-game.css
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -89,6 +92,10 @@ jobs:
           t=t.replace(old,new,1)
           if t.count("#pauseResume")!=1: raise SystemExit(f'pause selector expected once, found {t.count("#pauseResume")}')
           t=t.replace("#pauseResume","#resumeBtn",1)
+          old="await p.evaluate(()=>window.LatchlingsCinematics.show('across-drift',{markSeen:false}));await p.waitForTimeout(160);const cin=await p.evaluate(()=>{const b=document.querySelector('.cin-ordered-dialogue-dock .cin-opening-bubble'),n=document.querySelector('.cinematic-lines .narrator-only');return {bubble:b?parseFloat(getComputedStyle(b).fontSize):0,narrator:n?parseFloat(getComputedStyle(n).fontSize):0}});"
+          new="await p.evaluate(()=>window.LatchlingsCinematics.show('across-drift',{markSeen:false}));await p.waitForTimeout(160);const narrator=await p.evaluate(()=>{const n=document.querySelector('.cinematic-lines .narrator-only');return n?parseFloat(getComputedStyle(n).fontSize):0});await p.click('#cinematicNext');await p.waitForTimeout(180);const bubble=await p.evaluate(()=>{const b=document.querySelector('.cin-ordered-dialogue-dock .cin-opening-bubble')||document.querySelector('.cinematic-lines p.dialogue span');return b?parseFloat(getComputedStyle(b).fontSize):0});const cin={bubble,narrator};"
+          if t.count(old)!=1: raise SystemExit(f'cinematic font probe expected once, found {t.count(old)}')
+          t=t.replace(old,new,1)
           p.write_text(t,encoding='utf-8')
           PY
           python3 -m http.server 4173 -d /tmp/r1r5-site >/tmp/r1r5-http.log 2>&1 &
