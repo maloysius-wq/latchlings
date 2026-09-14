@@ -23,7 +23,7 @@ Accepted Astra Pass 4 checkpoint (2026-09-14):
 - Candidate run `34865335086` passed exact campaign/source protection, syntax/static assertions, every utterance in all 25 cinematic beats at 320x568 / 390x844 / 430x932, representative visual evidence, OS Reduced Motion, and in-game Reduced Motion.
 - Accepted candidate product commit: `b8f6addf83611b3f8daf71311372e10de3ed90b6`.
 - Exact accepted product bytes were promoted to `main` as `0e244bfb5e0ae71fad64f468cb99b301b01af713` after a second protected-source check.
-- V03 is accepted complete. V18/N06 remain partial because the final living-Skyway-to-Little-Home pullback is still implied rather than fully staged. V19 is partial: canonical utterance state is consolidated between the core cinematic renderer and dialogue layer, but broader presentation/CSS duplication remains.
+- V03 is accepted complete. The later Ending closure checkpoint below closes V18/N06 with the living-Skyway-to-Little-Home pullback. V19 remains partial: canonical utterance state is consolidated between the core cinematic renderer and dialogue layer, but broader presentation/CSS duplication remains.
 
 Accepted Little Home coherence checkpoint (2026-09-14):
 - Candidate run `34867918569` passed exact campaign/accepted-source protection plus browser checks at 320x568, 390x844, and 430x932. Accepted candidate product commit: `119ece1000cdab69c902ec75d2b0d89881372bd1`.
@@ -52,19 +52,21 @@ Accepted Gameplay / Story coherence checkpoint (2026-09-14):
 - V01 quiet board floors, V09 readable nests, V10 mechanic-state causality, U09 mastery copy, V16 story postcards, and V17 chapter reward are accepted complete. N04 remains partial because the audit still requires clearer role separation among during-play motive, movement-opening clue, milestone result, and remaining exposition. V06/N05/V07/V12 remain partial for their separate characterization/world-consistency requirements.
 
 Accepted Ending closure checkpoint (2026-09-14):
-- **IN PROGRESS promotion gate.** TDD RED run `34881984533` failed for the intended missing behavior (`short: missing living-Skyway ending stage`). Final candidate run `34884153884` passes the three-phone ending contract and OS/in-game Reduced Motion on exact accepted product commit `e3ac2e999c4781e8f4e9789552a5025e93b3466e`; candidate artifact `10363603745`, SHA-256 `faa23518054ba810b16d0ee25116736fc22832192ef28c5b157b748dd7b7d23a`, has been manually reviewed. Promotion and committed-main verification are the remaining acceptance gates before V18/N06 can be marked complete.
+- **ACCEPTED.** TDD RED run `34881984533` failed for the intended missing behavior (`short: missing living-Skyway ending stage`). Final candidate run `34884153884` passed the three-phone ending contract and OS/in-game Reduced Motion on exact accepted product commit `e3ac2e999c4781e8f4e9789552a5025e93b3466e`; candidate artifact `10363603745`, SHA-256 `faa23518054ba810b16d0ee25116736fc22832192ef28c5b157b748dd7b7d23a`, was manually reviewed.
+- Promotion/live run `34886703644` required exact promotion base `540f5af60d9b4fe3ea2078a1f7956e42d4eaf885`, rechecked all protected accepted sources, imported only `index.html` and `style400-ui.css`, and promoted exact accepted ending bytes to `main` as `96aead97f525a25061f9b3e2b60b2a8263b2509d`.
+- The same run fresh-checked committed `main` and independently passed 320x568 / 390x844 / 430x932, canonical Little Home reuse, six-node living-network semantics, network-to-home sequence, exact concise copy, Home-first action, title/viewport containment, runtime-error checks, and OS/in-game Reduced Motion. Live artifact `10365415386`, SHA-256 `e26903228bbaadcf39868f85c00d08a0e1e036ca2da1be66af5f64f14928a26e`.
+- V18 ending art quality and N06 visual ending thesis are accepted complete. V19 remains partial for separate presentation-system consolidation.
 
 Remaining closure work:
-1. Ending closure: promote the accepted ending bytes to `main`, revalidate committed `main`, then reconcile V18/N06.
-2. Character/world coherence: finish N04 information-role separation, remaining keepsake/resident-use behavior, Pip/Tansy characterization, cross-region fixture consistency, and Atlas landmark distinctiveness where nodes still feel interchangeable.
-3. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
-4. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
-5. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
+1. Character/world coherence: finish N04 information-role separation, remaining keepsake/resident-use behavior, Pip/Tansy characterization, cross-region fixture consistency, and Atlas landmark distinctiveness where nodes still feel interchangeable.
+2. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
+3. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
+4. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
 
 Protected systems:
 - Exact authored puzzle definitions/solutions in `campaign400-1.js` through `campaign400-8.js` must not change.
 - Preserve accepted Pass 3 chapter art direction unless an audit item specifically requires a presentation-layer correction.
-- Preserve all R1-R5 behavior, accepted Pass 4 cinematic dialogue/navigation behavior, accepted Little Home contextual/memory/motion behavior, accepted Atlas/journal hierarchy/state/accessibility behavior, and accepted Gameplay / Story behavior.
+- Preserve all R1-R5 behavior, accepted Pass 4 cinematic dialogue/navigation behavior, accepted Little Home contextual/memory/motion behavior, accepted Atlas/journal hierarchy/state/accessibility behavior, accepted Gameplay / Story behavior, and accepted ending network/Home-first/Reduced-Motion behavior.
 
 Implementation/validation contract:
 - Read both canonical audit source documents above when reconciling an item; do not rely on the acceptance matrix as a substitute for their original wording.
@@ -76,7 +78,7 @@ Implementation/validation contract:
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Next action: promote exact ending product bytes from accepted candidate `e3ac2e999c4781e8f4e9789552a5025e93b3466e`, run a fresh committed-main ending matrix at 320x568 / 390x844 / 430x932 plus OS/in-game Reduced Motion, then reconcile V18/N06 only if the promoted bytes remain green.
+Next action: Character/world coherence candidate. Preserve all accepted product slices while finishing the remaining source-defined behavior/world gaps: sharpen N04 information roles across during-play motive, movement-opening clue, milestone result, and recap; complete V06 resident use for earned keepsakes; add Pip/Tansy behavior and broader line-appropriate expressions for N05; improve V07 cross-region fixture consistency and V12 destination distinctiveness without changing authored puzzle definitions.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
@@ -100,7 +102,7 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - The accepted Little Home coherence slice is promoted and protected.
 - The accepted Atlas + Story/Journal coherence slice is promoted and protected; current product source is on `main`, not the candidate branch.
 - The accepted Gameplay / Story coherence slice is promoted and protected; V01/V09/V10/U09/V16/V17 are complete, while N04 and separate characterization/world-consistency items remain tracked as partial.
-- The ending closure candidate is accepted on its validation branch and is awaiting exact-byte promotion plus committed-main verification; V18/N06 remain partial until those gates pass.
+- The Ending closure slice is promoted and protected; V18/N06 are complete on committed `main` with candidate, manual-visual, committed-live, and Reduced Motion evidence.
 - `LATCHLINGS_VISUAL_STORY_AUDIT.md` and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` are canonical repository source documents for the Astra closure effort.
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
