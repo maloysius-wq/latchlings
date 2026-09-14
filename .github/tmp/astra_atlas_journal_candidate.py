@@ -181,4 +181,5 @@ assert 'storyTabCinematics' in i and 'storyNowPanel' in i
 assert 'Astra Atlas hierarchy coherence' in atlas
 assert 'Astra journal section coherence' in story
 assert 'Astra working-landmark arrival' in prog
+exec(Path('.github/tmp/astra_atlas_journal_viewport_followup.py').read_text(encoding='utf-8'), {'__name__':'__main__'})
 print('Astra Atlas + journal candidate patch applied.')
