@@ -9,7 +9,7 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Full Astra visual/story audit closure
-**Status: IN PROGRESS**
+**Status: BROWSER-ADDRESSABLE CLOSURE COMPLETE**
 
 User goal: reconcile the entire original [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md) and the later [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md) against current `main`, finish every remaining software-addressable item, validate the complete acceptance matrix, clean temporary validation machinery, deploy, and close out without treating untested external-device work as complete.
 
@@ -65,15 +65,20 @@ Accepted Character/world coherence checkpoint (2026-09-14):
 - Committed-main run `34892359817` independently revalidated the exact promoted bytes. Artifact `10367985257`, SHA-256 `0ad54fffb528a8f8733cbe974ca3059e81442f81c51984afe07a7556bb017708`. N04, V06, N05, V07, and V12 are accepted complete.
 
 Presentation/accessibility consolidation checkpoint (2026-09-14):
-- **Status: IN PROGRESS.** Candidate branch `astra-presentation-accessibility-candidate` is based on the cleaned Character/world accepted head.
-- TDD RED run `34893568352` failed for the intended missing behaviors and produced 37 concrete failures across 320x568, 360x800, 390x844, 430x932, 768x1024, and 844x390: duplicated cinematic presentation layers, duplicated cast visual identity, missing modal focus entry/trap/Escape restoration, short/landscape viewport overflow, and gameplay Web Animations still running under in-game Reduced Motion.
-- U02 closure will certify non-overlapping 44px action controls and the cycle+D-pad path; spatial board-piece taps remain a convenience and will not be enlarged into overlapping hit targets on dense boards.
-- Candidate implementation must preserve authored campaign files and every previously accepted product slice, use existing core runtime/style layers rather than another broad override file, and pass candidate browser + manual visual review before promotion.
+- **ACCEPTED.** TDD RED run `34893568352` proved the intended missing presentation/accessibility behavior across short/compact/phone/wide/tablet/landscape layouts before implementation.
+- Accepted candidate product commit: `e02ba6a9b9ee8925b73e915a17712852da103023`. The slice consolidates cinematic presentation/cast identity in existing core layers, removes obsolete broad cinematic overrides, adds deterministic modal focus entry/trap/Escape restoration, honors in-game Reduced Motion for gameplay Web Animations, adds safe short/tablet/landscape layouts, and keeps the accessible Memories path at a 44px action target minimum. A genuine tablet focus-restoration race was found during certification and fixed synchronously before acceptance.
+- Settled visual-review run `34896742670` verified exact accepted bytes and produced clean Home, Memories, Journal, landscape gameplay, cinematic, and ending captures after screen transitions had fully settled. Artifact `10369157824`, SHA-256 `d0c1d3ac0bac2c1f5979c5b1919e30f3b2778277a0af6cc1b70759542ca55a68`; the representative captures were manually reviewed and accepted.
+- Promotion run `34896935069` rechecked authored campaign/protected accepted sources and promoted exact candidate product bytes to `main` as `a998e095dd710028cdca6e028bc0047c71aeed3c`. Committed-main run `34897014938` independently passed the same six-viewport presentation/accessibility matrix on the promoted bytes.
+- The canonical cinematic source contains 25 beats and 56 scripted utterances; certification derives the expected turn count from the source rather than a hard-coded total.
+
+Final Pass 5 browser-addressable certification (2026-09-14):
+- **COMPLETED.** Final run `34898523134` passed with zero failures while guarding the exact accepted product bytes at `a998e095dd710028cdca6e028bc0047c71aeed3c`. Evidence artifact `10369612799`, SHA-256 `22e90d782e365232305be7dc98b3fd175c041b8ae53cbd5dc804b248e6231501`. Earlier Pass 5 attempts (`34897697765`, `34897918110`, `34898064440`) exposed harness-only selector/scope defects; those were corrected without changing product code.
+- Coverage: 320x568, 360x800, 390x844, 430x932, 768x1024 tablet, and 844x390 landscape; all 400 starting boards; all 40 chapter/range material variants; all 40 authored movement starts/results plus seven earned-knowledge chapter boundaries; fresh onboarding, skipped opening, returning player; isolated Daily/replay/campaign progression; all four films / 25 beats / 56 canonical utterances; non-color identity; keyboard/modal focus restoration; semantic journal tabs/panels; Large Text; audio controls/persistence/interruption; 71 loaded assets; and browser performance telemetry.
+- Pass 5 measured zero running gameplay animations under Reduced Motion in all six viewport classes and no tested viewport/control overflow. Large Text increased the representative Journal body copy from 10.8px to 12.5px.
+- Browser telemetry from the certification environment: navigation/load about 165.3ms; synthetic 400-board render loop about 117.4ms; 120 frame samples at about 16.7ms median / 16.7ms p95 / 16.8ms max; about 4.30MB used JS heap; 44 measured resources totaling about 0.93MB transferred. These are browser-runner measurements, not physical-phone performance claims.
 
 Remaining closure work:
-1. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
-2. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
-3. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
+- **External-only, explicitly UNVERIFIED:** real physical-phone touch/performance/battery behavior; genuine iOS Safari hardware behavior; exhaustive assistive-technology testing; and subjective real-speaker/headphone audio mixing/listening. These do not reopen the completed browser-addressable audit implementation.
 
 Protected systems:
 - Exact authored puzzle definitions/solutions in `campaign400-1.js` through `campaign400-8.js` must not change.
