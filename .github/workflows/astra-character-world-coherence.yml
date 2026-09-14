@@ -3,42 +3,244 @@ name: Astra Character World Coherence
 on:
   push:
     branches: [astra-character-world-coherence]
+    paths:
+      - '.github/workflows/astra-character-world-coherence.yml'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  coherence:
+  candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out candidate
+        uses: actions/checkout@v4
         with:
+          ref: astra-character-world-coherence
           fetch-depth: 0
-      - name: RED acceptance contract
+
+      - name: Snapshot protected accepted sources
+        shell: bash
         run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css style400-cinematics-dialogue.css style400-ui.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css > /tmp/accepted-before.sha256
+
+      - name: Record candidate in handoff before product edits
+        shell: bash
+        run: |
+          python .github/tmp/astra_character_world_patch.py --handoff-only
+          if ! git diff --quiet -- DEVELOPMENT_HANDOFF.md; then
+            git config user.name "maloysius-wq"
+            git config user.email "maloysius@gmail.com"
+            git add DEVELOPMENT_HANDOFF.md
+            git commit -m "Document character world coherence candidate [skip ci]"
+            git push origin HEAD:astra-character-world-coherence
+          fi
+
+      - name: Apply product candidate
+        shell: bash
+        run: |
+          # Tighten two authored acceptance details before applying the patch:
+          # every ten-level destination is unique within its chapter, and concern about a missed visit reads as concern.
           python - <<'PY'
           from pathlib import Path
-          checks = []
-          rail = Path('gameplay-story-rail400.js').read_text()
-          theme = Path('story-theme400.js').read_text()
-          grounding = Path('story-grounding400.js').read_text()
-          home = Path('title-island-concepts/index.html').read_text()
-          game = Path('game400-a.js').read_text()
-          checks += [
-            ('N04 immediate motive role', 'data-story-role="motive"' in rail and 'MOVEMENT_RAIL_LINES' not in rail),
-            ('N04 movement clue role', 'data-story-role="movement-clue"' in theme),
-            ('V06 complete keepsake use map', all(f"keepsake:'{k}'" in home for k in ['mailbox','pennant','anchor','bunting','telescope','relic','dock'])),
-            ('N05 Pip authored behavior', 'data-resident="Pip"' in home and "resident:'Pip'" in home),
-            ('N05 Tansy authored behavior', 'data-resident="Tansy"' in home and "resident:'Tansy'" in home),
-            ('N05 line-sensitive expressions', 'expressionForLine' in theme),
-            ('V07 shared world fixture contract', 'movementFixtureFor' in grounding and 'data-fixture' in theme),
-            ('V12 authored Atlas destinations', 'data-landmark-label' in game and 'atlasLandmarkFor' in game),
-          ]
-          missing = [name for name, ok in checks if not ok]
-          print('\n'.join(f"{'PASS' if ok else 'RED'}  {name}" for name, ok in checks))
-          if missing:
-            raise SystemExit('Expected missing coherence behavior: ' + '; '.join(missing))
-          raise SystemExit('RED contract unexpectedly passed on the pre-change product')
+          p=Path('.github/tmp/astra_character_world_patch.py')
+          s=p.read_text()
+          s=s.replace("{id:'route-mailbox',label:'Little Home Route Mailbox',kind:'mailbox'}\n ],\n [\n  {id:'lanternwood-crossing'", "{id:'sunpetal-return-post',label:'Sunpetal Return Post',kind:'mailbox'}\n ],\n [\n  {id:'lanternwood-crossing'", 1)
+          s=s.replace("{id:'route-plate-archive',label:'Approved Route-Plate Archive',kind:'archive'},\n  {id:'automation-desk'", "{id:'three-date-map-gallery',label:'Three-Date Map Gallery',kind:'archive'},\n  {id:'automation-desk'", 1)
+          s=s.replace("miss|fail|wrong|stale|farther|separat|out of place|closed|lost", "miss|fail|wrong|stale|farther|separat|out of place|closed|lost|vanish|isolat")
+          s=s.replace("window.LatchlingsHomeLife={runAdult:runLittleHomeAdultMove,runChild:runLittleHomeChildBehavior,runKeepsake:runLittleHomeFocusedKeepsake,keepsakeUses:littleHomeKeepsakeUses};", "window.LatchlingsHomeLife={runAdult:runLittleHomeAdultMove,runChild:runLittleHomeChildBehavior,runKeepsake:runLittleHomeFocusedKeepsake,stopChildren:stopLittleHomeChildMotion,stopAdults:stopLittleHomeAdultMotion,keepsakeUses:littleHomeKeepsakeUses};")
+          p.write_text(s)
           PY
+          python .github/tmp/astra_character_world_patch.py --product
+
+      - name: Protect campaigns and accepted product slices
+        shell: bash
+        run: |
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/accepted-before.sha256
+          git diff --exit-code origin/main -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css style400-cinematics-dialogue.css style400-ui.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css
+
+      - name: Syntax and static acceptance
+        shell: bash
+        run: |
+          python -m py_compile .github/tmp/astra_character_world_patch.py
+          node --check story-grounding400.js
+          node --check gameplay-story-rail400.js
+          node --check story-theme400.js
+          node --check game400-a.js
+          node --check game400-b.js
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          rail=Path('gameplay-story-rail400.js').read_text(); theme=Path('story-theme400.js').read_text(); grounding=Path('story-grounding400.js').read_text(); home=Path('title-island-concepts/index.html').read_text(); game=Path('game400-a.js').read_text(); gb=Path('game400-b.js').read_text(); idx=Path('index.html').read_text()
+          assert 'MOVEMENT_RAIL_LINES' not in rail and 'EARLY_STORY' not in rail and 'data-story-role="motive"' in rail
+          assert 'data-story-role="movement-clue"' in theme and 'expressionForLine' in theme and 'data-fixture' in theme
+          assert 'movementFixtureFor' in grounding and 'twin-lantern-porch' in grounding and 'waykeeper-marker' in grounding
+          assert all(f"keepsake:'{k}'" in home for k in ['mailbox','pennant','anchor','bunting','telescope','relic','dock'])
+          assert 'data-resident="Pip"' in home and 'data-resident="Tansy"' in home and "resident:'Pip'" in home and "resident:'Tansy'" in home
+          assert 'data-landmark-label' in game and 'atlasLandmarkFor' in game and 'authored-landmark-prop' in game
+          assert 'data-story-role="result"' in gb and 'data-story-role="briefing"' in gb and 'data-story-role="recap"' in gb
+          assert '20260914-character-world1' in idx
+          scripts=re.findall(r'<script>(.*?)</script>', home, re.S)
+          for n,script in enumerate(scripts):
+            tmp=Path(f'/tmp/home-inline-{n}.js'); tmp.write_text(script); subprocess.run(['node','--check',str(tmp)],check=True)
+          print('Static character/world coherence contract passed.')
+          PY
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-character-world-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-character-world-http.log 2>&1 &
+          echo $! >/tmp/astra-character-world-http.pid
+          cat > .astra-character-world-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const results=[];
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          const sequentialStars=(through)=>{const stars={};for(let n=50;n<=through;n+=50)stars[n]=3;return stars};
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(`pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            if(errors.length)throw new Error(`${size.name}: initial errors ${errors.join(' | ')}`);
+
+            // N04: during play is only immediate motive.
+            await page.evaluate(()=>{progress={unlocked:80,stars:{50:3}};startLevel(62)});
+            await page.waitForTimeout(80);
+            const motive=await page.evaluate(()=>({role:document.querySelector('#storyRailSlot [data-story-role]')?.dataset.storyRole||'',line:document.querySelector('#storyRailSlot p')?.textContent?.trim()||'',expected:LATCHLINGS_STORY.levelMeta(62).context,label:document.querySelector('#storyRailSlot .story-rail-meta span')?.textContent?.trim()||''}));
+            if(motive.role!=='motive'||motive.line!==motive.expected||motive.label!=='Why this route matters')throw new Error(`${size.name}: motive role ${JSON.stringify(motive)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-character-world-evidence/n04-route-motive-phone.png',fullPage:true});
+
+            // Movement opening is a new clue, not the route motive repeated again.
+            await page.evaluate(()=>{window.LatchlingsStoryTheme.show(61,false)});
+            await page.waitForTimeout(50);
+            const clue=await page.evaluate(()=>({role:document.getElementById('storyCardOverlay')?.dataset.storyRole||'',marker:document.querySelector('#storyCardScene [data-story-role="movement-clue"]')!==null,line:document.querySelector('#storyCardLine em')?.textContent?.trim()||'',setup:LATCHLINGS_STORY.movementForLevel(61).setup,question:document.querySelector('#storyCardGoal span')?.textContent?.trim()||'',expectedQuestion:LATCHLINGS_STORY.movementForLevel(61).question,motive:LATCHLINGS_STORY.levelMeta(61).context}));
+            if(clue.role!=='movement-clue'||!clue.marker||clue.line!==clue.setup||clue.question!==clue.expectedQuestion||clue.line===clue.motive)throw new Error(`${size.name}: movement clue role ${JSON.stringify(clue)}`);
+            const card=await page.locator('#storyCardPanel').boundingBox();if(card&&(card.left<-.5||card.right>size.width+.5||card.bottom>size.height+.5))throw new Error(`${size.name}: clue card out of viewport ${JSON.stringify(card)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-character-world-evidence/n04-movement-clue-phone.png',fullPage:true});
+            await page.evaluate(()=>window.LatchlingsStoryTheme.close(false));
+
+            // Manual Story is route context, while milestone completion is a result.
+            await page.evaluate(()=>window.LatchlingsStoryTheme.show(62,true));
+            const manual=await page.evaluate(()=>({role:document.getElementById('storyCardOverlay')?.dataset.storyRole,line:document.querySelector('#storyCardLine em')?.textContent?.trim(),expected:LATCHLINGS_STORY.levelMeta(62).context}));
+            if(manual.role!=='route-context'||manual.line!==manual.expected)throw new Error(`${size.name}: manual Story role ${JSON.stringify(manual)}`);
+            await page.evaluate(()=>{window.LatchlingsStoryTheme.close(false);startLevel(60);winLevel()});
+            const result=await page.evaluate(()=>({role:document.querySelector('.story-beat-result')?.dataset.storyRole||'',text:document.querySelector('.story-beat-result p')?.textContent?.trim()||'',expected:LATCHLINGS_STORY.beatForLevel(60).text}));
+            if(result.role!=='result'||result.text!==result.expected)throw new Error(`${size.name}: milestone result role ${JSON.stringify(result)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-character-world-evidence/n04-milestone-result-phone.png',fullPage:true});
+            await page.evaluate(()=>closeModal());
+
+            // Journal is current briefing plus earned recap, clearly separate from play/card/result roles.
+            await page.evaluate(()=>{progress={unlocked:121,stars:{50:3,100:3,110:3,120:3}};openStoryScreen()});
+            await page.waitForTimeout(30);
+            const journal=await page.evaluate(()=>({briefing:document.querySelectorAll('#storyNowPanel [data-story-role="briefing"]').length,recaps:document.querySelectorAll('#storyJourneyPanel [data-story-role="recap"]').length,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}));
+            if(journal.briefing!==1||journal.recaps<2||journal.overflow)throw new Error(`${size.name}: journal roles ${JSON.stringify(journal)}`);
+
+            // N05: expressions are line-sensitive, not permanently pinned.
+            const expr=await page.evaluate(()=>({rowanConcern:LatchlingsStoryTheme.expressionForLine('Rowan','The route failed after fresh drift.'),rowanRelief:LatchlingsStoryTheme.expressionForLine('Rowan','The route works and home is connected.'),tansyConcern:LatchlingsStoryTheme.expressionForLine('Tansy','A missed visit left our friend farther away.'),tansyRelief:LatchlingsStoryTheme.expressionForLine('Tansy','Our friend can visit home again.'),pipClue:LatchlingsStoryTheme.expressionForLine('Pip','I found an overlooked marker.'),pipShortcut:LatchlingsStoryTheme.expressionForLine('Pip','I found a shortcut.')}));
+            if(expr.rowanConcern===expr.rowanRelief||expr.tansyConcern===expr.tansyRelief||expr.pipClue===expr.pipShortcut)throw new Error(`${size.name}: expression states are still pinned ${JSON.stringify(expr)}`);
+
+            // V07/V12: shared fixture identity survives Story -> Atlas, and all 40 Atlas destinations are authored.
+            const fixture=await page.evaluate(()=>({lantern:LATCHLINGS_STORY.movementFixtureFor(71),prism:LATCHLINGS_STORY.movementFixtureFor(221),markerA:LATCHLINGS_STORY.movementFixtureFor(21),markerB:LATCHLINGS_STORY.movementFixtureFor(111)}));
+            if(fixture.lantern.id!=='twin-lantern-porch'||fixture.prism.id!==fixture.lantern.id||fixture.markerA.id!=='waykeeper-marker'||fixture.markerB.id!==fixture.markerA.id)throw new Error(`${size.name}: shared fixture identity ${JSON.stringify(fixture)}`);
+            await page.evaluate(()=>window.LatchlingsStoryTheme.show(71,true));
+            const storyFixture=await page.evaluate(()=>document.querySelector('#storyCardScene [data-fixture]')?.dataset.fixture||'');
+            if(storyFixture!=='twin-lantern-porch')throw new Error(`${size.name}: Story fixture ${storyFixture}`);
+            await page.evaluate(()=>window.LatchlingsStoryTheme.close(false));
+            const landmarks=await page.evaluate(()=>{progress={unlocked:400,stars:{}};const rows=[];for(let ch=1;ch<=8;ch++){const labels=[];for(let r=0;r<5;r++){chapterView=ch;rangeView=r;renderChapter();const n=document.querySelector('#levelGrid .atlas-node.milestone');const c=document.querySelector('#levelGrid .atlas-landmark-caption');labels.push({label:n?.dataset.landmarkLabel||'',fixture:n?.dataset.fixture||'',kind:n?.dataset.landmarkKind||'',mark:!!n?.querySelector('.atlas-landmark-mark'),caption:c?.textContent?.replace(/\s+/g,' ').trim()||''})}rows.push({ch,labels})}return rows});
+            for(const row of landmarks){if(row.labels.length!==5||new Set(row.labels.map(x=>x.label)).size!==5||row.labels.some(x=>!x.label||!x.fixture||!x.kind||!x.mark||!x.caption.includes(x.label)))throw new Error(`${size.name}: Atlas landmarks chapter ${row.ch} ${JSON.stringify(row.labels)}`)}
+            const sameAtlas=await page.evaluate(()=>{chapterView=2;rangeView=2;renderChapter();const a=document.querySelector('#levelGrid .atlas-node.milestone')?.dataset.fixture;chapterView=5;rangeView=2;renderChapter();const b=document.querySelector('#levelGrid .atlas-node.milestone')?.dataset.fixture;return {a,b}});
+            if(sameAtlas.a!=='twin-lantern-porch'||sameAtlas.b!==sameAtlas.a)throw new Error(`${size.name}: cross-region Atlas fixture ${JSON.stringify(sameAtlas)}`);
+
+            chapterView=undefined;
+            await page.evaluate(()=>{chapterView=6;rangeView=2;renderChapter()});
+            const atlasFit=await page.evaluate(()=>{const map=document.getElementById('levelGrid').getBoundingClientRect(),cap=document.querySelector('.atlas-landmark-caption').getBoundingClientRect(),node=document.querySelector('.atlas-node.milestone').getBoundingClientRect();return {map:{l:map.left,r:map.right,t:map.top,b:map.bottom},cap:{l:cap.left,r:cap.right,t:cap.top,b:cap.bottom},node:{l:node.left,r:node.right,t:node.top,b:node.bottom},overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}});
+            if(atlasFit.overflow||atlasFit.cap.l<atlasFit.map.l-1||atlasFit.cap.r>atlasFit.map.r+1||atlasFit.cap.t<atlasFit.map.t-1||atlasFit.cap.b>atlasFit.map.b+1)throw new Error(`${size.name}: Atlas landmark layout ${JSON.stringify(atlasFit)}`);
+            if(size.name==='short')await page.screenshot({path:'/tmp/astra-character-world-evidence/atlas-short-map-room.png',fullPage:true});
+            if(size.name==='phone'){
+              for(const [ch,r,name] of [[2,2,'atlas-lanternwood-porch'],[4,2,'atlas-market-arch'],[5,0,'atlas-prism-lookout'],[6,2,'atlas-copperline-map-gallery'],[7,2,'atlas-stormswitch-relay'],[8,0,'atlas-aurora-crown']]){await page.evaluate(([c,x])=>{chapterView=c;rangeView=x;renderChapter()},[ch,r]);await page.screenshot({path:`/tmp/astra-character-world-evidence/${name}.png`,fullPage:true})}
+            }
+            if(size.name==='wide')await page.screenshot({path:'/tmp/astra-character-world-evidence/atlas-wide-copperline.png',fullPage:true});
+
+            // Little Home: every keepsake has an authored user, focus causes visible resident use, and memory tap still works.
+            await page.evaluate(()=>{progress={unlocked:351,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3}};screen('home');updateHome(false)});
+            await page.waitForTimeout(100);
+            const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+            if(!frame)throw new Error(`${size.name}: Little Home frame missing`);
+            const homeContract=await frame.evaluate(()=>({uses:window.LatchlingsHomeLife?.keepsakeUses||[],pip:!!document.querySelector('[data-resident="Pip"]'),tansy:!!document.querySelector('[data-resident="Tansy"]'),unlocked:document.querySelectorAll('.story-keepsake.memory-unlocked').length}));
+            if(homeContract.uses.length!==7||new Set(homeContract.uses.map(x=>x.keepsake)).size!==7||!homeContract.pip||!homeContract.tansy||homeContract.unlocked!==7)throw new Error(`${size.name}: Little Home life contract ${JSON.stringify(homeContract)}`);
+            await frame.evaluate(()=>{window.LatchlingsHomeLife.stopChildren();window.LatchlingsHomeLife.stopAdults()});
+            await page.evaluate(()=>{focusHomeReward('anchor')});
+            await page.waitForTimeout(330);
+            await frame.waitForFunction(()=>document.querySelector('[data-resident="Rowan"]')?.dataset.keepsakeUse==='anchor'&&document.querySelector('[data-memory="anchor"]')?.classList.contains('is-being-used'),null,{timeout:2500});
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-character-world-evidence/home-first-return-anchor-use.png',fullPage:true});
+            await page.waitForTimeout(1700);
+
+            await frame.evaluate(()=>{window.LatchlingsHomeLife.stopChildren();void window.LatchlingsHomeLife.runChild('Pip')});
+            await frame.waitForFunction(()=>{const x=document.querySelector('[data-resident="Pip"]');return /overlooked marker|shortcut/.test(x?.dataset.behaviorAction||'')&&['curious','smug'].includes(x?.dataset.expression)},null,{timeout:3000});
+            const pip=await frame.evaluate(()=>{const x=document.querySelector('[data-resident="Pip"]');return {action:x.dataset.behaviorAction,expr:x.dataset.expression,target:x.dataset.behaviorTarget}});
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-character-world-evidence/home-pip-clue.png',fullPage:true});
+            await frame.evaluate(()=>window.LatchlingsHomeLife.stopChildren());
+
+            await frame.evaluate(()=>{window.LatchlingsHomeLife.stopChildren();void window.LatchlingsHomeLife.runChild('Tansy')});
+            await frame.waitForFunction(()=>{const x=document.querySelector('[data-resident="Tansy"]');return /missed visit|friends can visit/.test(x?.dataset.behaviorAction||'')&&['curious','happy'].includes(x?.dataset.expression)},null,{timeout:3000});
+            const tansy=await frame.evaluate(()=>{const x=document.querySelector('[data-resident="Tansy"]');return {action:x.dataset.behaviorAction,expr:x.dataset.expression,target:x.dataset.behaviorTarget}});
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-character-world-evidence/home-tansy-visit.png',fullPage:true});
+            await frame.evaluate(()=>window.LatchlingsHomeLife.stopChildren());
+
+            await frame.click('[data-memory="telescope"]');
+            const memory=await page.locator('#modal').textContent();
+            if(!memory.includes('Prism Telescope')||!memory.includes('Prism Gardens'))throw new Error(`${size.name}: keepsake memory regression ${memory}`);
+            await page.evaluate(()=>closeModal());
+
+            // Reduced Motion and offscreen Home must stop the new behavior too.
+            await page.evaluate(()=>window.LatchlingsPrefs.set('motion','reduced'));
+            await page.waitForTimeout(120);
+            const reduced=await frame.evaluate(()=>({motion:document.documentElement.dataset.motion,work:document.querySelectorAll('.work-active').length,behavior:document.querySelectorAll('.behavior-active').length,running:document.getAnimations().filter(a=>a.playState==='running'&&a.effect?.target?.closest?.('#c2 .resident')).length}));
+            if(reduced.motion!=='reduced'||reduced.work||reduced.behavior||reduced.running)throw new Error(`${size.name}: Reduced Motion ${JSON.stringify(reduced)}`);
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('motion','system');screen('levels')});
+            await page.waitForTimeout(150);
+            const offscreen=await frame.evaluate(()=>({active:document.documentElement.dataset.sceneActive,work:document.querySelectorAll('.work-active').length,behavior:document.querySelectorAll('.behavior-active').length,running:document.getAnimations().filter(a=>a.playState==='running'&&a.effect?.target?.closest?.('#c2 .resident')).length}));
+            if(offscreen.active!=='false'||offscreen.work||offscreen.behavior||offscreen.running)throw new Error(`${size.name}: offscreen Home motion ${JSON.stringify(offscreen)}`);
+
+            if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join(' | ')}`);
+            results.push({size,motive,clue,result,journal,expr,fixture,sameAtlas,homeContract,pip,tansy,reduced,offscreen});
+            await context.close();
+          }
+          fs.writeFileSync('/tmp/astra-character-world-evidence/results.json',JSON.stringify(results,null,2));
+          await browser.close();
+          console.log(JSON.stringify(results,null,2));
+          JS
+          node .astra-character-world-check.mjs
+
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add story-grounding400.js gameplay-story-rail400.js story-theme400.js game400-a.js game400-b.js title-island-concepts/index.html style400-story-theme.css style400-skyway-atlas.css index.html
+          git diff --cached --check
+          git commit -m "Stage character world coherence candidate [skip ci]"
+          git push origin HEAD:astra-character-world-coherence
+          git rev-parse HEAD | tee /tmp/astra-character-world-evidence/candidate-commit.txt
+
+      - name: Upload candidate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-character-world-evidence
+          path: /tmp/astra-character-world-evidence
+          if-no-files-found: error
