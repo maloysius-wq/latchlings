@@ -1,0 +1,49 @@
+name: Build full Astra audit closure candidate
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths:
+      - '.github/tmp/build-full-audit-closure.py'
+      - '.github/workflows/build-full-audit-candidate.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+          fetch-depth: 0
+      - name: Apply full audit closure build
+        run: python .github/tmp/build-full-audit-closure.py
+      - name: Static validation and source protection
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in story400.js cinematics400.js game400-a.js game400-b.js story-theme400.js gameplay-story-rail400.js pass3-chapter8-aurora.js music400.js; do node --check "$f"; done
+          git diff --exit-code e9ab6846a002c87f29979792bb5a87005413cdd0 -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story-grounding400.js STORY_BIBLE.md
+          test ! -e style400-cinematics-polish.css
+          test ! -e style400-cinematics-refine.css
+          test ! -e style400-cinematics-refine2.css
+          test ! -e style400-cinematics-dialogue.css
+          test ! -e style400-cinematics-geometry.css
+          test ! -e cinematic-dialogue400.js
+          test ! -e cinematic-geometry400.js
+          grep -q 'endingHomeFrame' index.html
+          grep -q 'VISUAL_DESCRIPTIONS' cinematics400.js
+          grep -q 'HOME_MEMORIES' game400-b.js
+          grep -q 'evolvingMovementLine' gameplay-story-rail400.js
+          grep -q 'FULL_AUDIT_CLOSURE_BUILD_OK' <(python .github/tmp/build-full-audit-closure.py)
+      - name: Commit candidate product
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add -A
+          git reset .github/tmp/build-full-audit-closure.py .github/workflows/build-full-audit-candidate.yml
+          if git diff --cached --quiet; then echo 'No product changes'; exit 0; fi
+          git commit -m 'Implement full Astra audit closure candidate'
+          git push origin HEAD:audit-full-closure-candidate
