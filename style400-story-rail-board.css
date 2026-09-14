@@ -148,7 +148,7 @@ html[data-text-size="large"] #game .board{width:min(90vw,460px)}
  #game .rail-latchling{width:30px;height:30px}
  #game .rail-latchling.child{width:28px;height:28px}
  #game .story-rail-story-btn{min-width:44px;min-height:44px}
- html[data-text-size="large"] #game .board{width:min(72vw,228px)}
+ html[data-text-size="large"] #game .board{width:min(65vw,208px)}
  #game .controls{grid-template-columns:68px minmax(0,1fr) 68px;gap:6px;padding-top:1px}
  #game .dpad{width:138px;height:138px}
  #game .side-action{min-height:54px}
