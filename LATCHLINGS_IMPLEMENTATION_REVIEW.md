@@ -220,3 +220,4 @@ The quieter floors, stronger selected piece, recognizable nests and chapter rewa
 Main measurements: [results.json](C:/RetroRig_Codex_Handoff/audit-latchlings/review-2026-09-13/results.json). Text and actual-solution tests: [supplement.json](C:/RetroRig_Codex_Handoff/audit-latchlings/review-2026-09-13/supplement.json). Settled small-screen cinematics: [inspect.json](C:/RetroRig_Codex_Handoff/audit-latchlings/review-2026-09-13/inspect.json). Independent motion test: [motion.json](C:/RetroRig_Codex_Handoff/audit-latchlings/review-2026-09-13/motion.json).
 
 Screenshots and contact sheets are in the same local review folder. The original audit and original screenshots were preserved.
+
