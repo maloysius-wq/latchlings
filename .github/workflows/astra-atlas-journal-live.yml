@@ -1,0 +1,101 @@
+name: Astra Atlas journal committed-live validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/astra-atlas-journal-live.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out committed main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Require promoted product and exact accepted bytes
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD^)" = "d9290e333fe41cb624b699259db2c6cc83f421fd"
+          git diff --exit-code b359b522961f01287dbe1c5a25a60d848c0fdead -- game400-a.js game400-b.js index.html style400-skyway-atlas.css style400-story-theme.css style400-atlas-progression.css
+          node --check game400-a.js
+          node --check game400-b.js
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Exercise committed main
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-atlas-journal-live
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-atlas-journal-live-http.log 2>&1 &
+          echo $! >/tmp/astra-atlas-journal-live-http.pid
+          cat > .astra-atlas-journal-live.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const results=[];
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(`pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>{progress={unlocked:255,stars:{50:3,100:3,150:3,200:3,250:3,251:3,252:3,253:3,254:3}};chapterView=6;rangeView=0;screen('levels');renderChapter()});
+            await page.waitForTimeout(520);
+            const atlas=await page.evaluate(()=>({dots:document.querySelectorAll('#chapterNav .atlas-region-dot').length,oldTabs:document.querySelectorAll('#rangeNav .atlas-waypoint-tab').length,range:document.querySelector('#rangeNav .atlas-range-current')?.textContent?.replace(/\s+/g,' ').trim()||'',chapterTargets:[...document.querySelectorAll('#chapterNav button')].map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),rangeTargets:[...document.querySelectorAll('#rangeNav button')].map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),states:[...document.querySelectorAll('#levelGrid .atlas-node')].map(n=>[n.dataset.state,n.querySelector('.atlas-state-badge')?.textContent?.trim()||'']),footer:document.getElementById('continueBtn').getBoundingClientRect().bottom}));
+            if(atlas.dots||atlas.oldTabs||!atlas.range.includes('Levels 251–260'))throw new Error(`${size.name}: Atlas hierarchy mismatch ${JSON.stringify(atlas)}`);
+            if(atlas.chapterTargets.some(([w,h])=>w<44||h<44)||atlas.rangeTargets.some(([w,h])=>w<44||h<44))throw new Error(`${size.name}: Atlas target regression ${JSON.stringify(atlas)}`);
+            if(!atlas.states.some(([s,b])=>s==='restored'&&b==='✓')||!atlas.states.some(([s,b])=>s==='current'&&b==='◆'))throw new Error(`${size.name}: Atlas state regression ${JSON.stringify(atlas.states)}`);
+            if(atlas.footer>size.height+0.5)throw new Error(`${size.name}: Atlas Continue below viewport ${atlas.footer}`);
+            await page.evaluate(()=>{progress={unlocked:251,stars:{250:3}};chapterView=6;rangeView=0;renderChapter();atlasRevealDestination({to:252})});
+            const arrival=await page.evaluate(()=>{const n=document.querySelector('.atlas-node[data-level="252"]');return {state:n?.dataset.state,working:n?.classList.contains('reward-working'),badge:n?.querySelector('.atlas-state-badge')?.textContent?.trim()}});
+            if(arrival.state!=='current'||!arrival.working||arrival.badge!=='◆')throw new Error(`${size.name}: arrival regression ${JSON.stringify(arrival)}`);
+            await page.evaluate(()=>{progress={unlocked:255,stars:{50:3,100:3,150:3,200:3,250:3,251:3,252:3,253:3,254:3}};openStoryScreen()});
+            await page.waitForTimeout(520);
+            const journal=await page.evaluate(()=>({tabs:[...document.querySelectorAll('#story [role="tab"]')].map(t=>[t.textContent.trim(),t.getBoundingClientRect().height]),visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id),now:document.querySelector('#storyNowPanel')?.textContent?.replace(/\s+/g,' ').trim()||'',bottom:document.querySelector('.story-journal-shell').getBoundingClientRect().bottom}));
+            if(journal.tabs.map(x=>x[0]).join('|')!=='Now|Residents|Journey|Cinematics'||journal.visible.join('|')!=='storyNowPanel')throw new Error(`${size.name}: journal structure ${JSON.stringify(journal)}`);
+            if(journal.tabs.some(x=>x[1]<44)||journal.bottom>size.height+0.5)throw new Error(`${size.name}: journal containment/target regression ${JSON.stringify(journal)}`);
+            if(!journal.now.includes('Current question')||!journal.now.includes('Latest discovery')||!journal.now.includes('Your work'))throw new Error(`${size.name}: Now roles missing`);
+            await page.click('#storyTabCinematics');
+            const cinema=await page.evaluate(()=>({visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id),cards:document.querySelectorAll('#storyCinematics button').length}));
+            if(cinema.visible.join('|')!=='storyCinematicsPanel'||cinema.cards<1)throw new Error(`${size.name}: Cinematics access ${JSON.stringify(cinema)}`);
+            await page.focus('#storyTabCinematics');await page.keyboard.press('ArrowLeft');
+            const key=await page.evaluate(()=>({active:document.activeElement?.id,selected:document.querySelector('[role="tab"][aria-selected="true"]')?.id,visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id)}));
+            if(key.active!=='storyTabJourney'||key.selected!=='storyTabJourney'||key.visible.join('|')!=='storyJourneyPanel')throw new Error(`${size.name}: keyboard journal nav ${JSON.stringify(key)}`);
+            await page.click('#storyTabNow');
+            const normal=parseFloat(await page.locator('.story-now-grid p').first().evaluate(el=>getComputedStyle(el).fontSize));
+            await page.evaluate(()=>window.LatchlingsPrefs.set('textSize','large'));
+            const large=parseFloat(await page.locator('.story-now-grid p').first().evaluate(el=>getComputedStyle(el).fontSize));
+            if(!(large>normal))throw new Error(`${size.name}: Large Text did not enlarge ${normal}->${large}`);
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('textSize','normal');progress={unlocked:251,stars:{50:3,100:3,150:3,200:3,250:3}};screen('home');updateHome(false)});
+            await page.waitForTimeout(120);
+            const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+            const home=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',keepsakes:document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length}));
+            if(home.label!=='Continue Old Ways'||home.keepsakes!==5)throw new Error(`${size.name}: Little Home regression ${JSON.stringify(home)}`);
+            if(errors.length)throw new Error(`${size.name}: ${errors.join('; ')}`);
+            results.push({size:size.name,atlas,journal,normal,large,home});
+            await context.close();
+          }
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-atlas-journal-live/results.json',JSON.stringify(results,null,2));
+          JS
+          node .astra-atlas-journal-live.mjs
+          rm -f .astra-atlas-journal-live.mjs
+          kill $(cat /tmp/astra-atlas-journal-live-http.pid) || true
+      - name: Upload committed-live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-atlas-journal-committed-live-evidence
+          path: /tmp/astra-atlas-journal-live
+          if-no-files-found: warn
