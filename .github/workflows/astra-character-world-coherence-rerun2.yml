@@ -1,0 +1,89 @@
+name: Astra Character World Coherence Rerun 2
+
+on:
+  push:
+    branches: [astra-character-world-coherence]
+    paths:
+      - '.github/workflows/astra-character-world-coherence-rerun2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-character-world-coherence
+          fetch-depth: 0
+
+      - name: Apply protected candidate
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css style400-cinematics-dialogue.css style400-ui.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css > /tmp/accepted-before.sha256
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/astra_character_world_patch.py'); s=p.read_text()
+          s=s.replace("{id:'route-mailbox',label:'Little Home Route Mailbox',kind:'mailbox'}\n ],\n [\n  {id:'lanternwood-crossing'", "{id:'sunpetal-return-post',label:'Sunpetal Return Post',kind:'mailbox'}\n ],\n [\n  {id:'lanternwood-crossing'", 1)
+          s=s.replace("{id:'route-plate-archive',label:'Approved Route-Plate Archive',kind:'archive'},\n  {id:'automation-desk'", "{id:'three-date-map-gallery',label:'Three-Date Map Gallery',kind:'archive'},\n  {id:'automation-desk'", 1)
+          s=s.replace("miss|fail|wrong|stale|farther|separat|out of place|closed|lost", "miss|fail|wrong|stale|farther|separat|out of place|closed|lost|vanish|isolat")
+          s=s.replace("window.LatchlingsHomeLife={runAdult:runLittleHomeAdultMove,runChild:runLittleHomeChildBehavior,runKeepsake:runLittleHomeFocusedKeepsake,keepsakeUses:littleHomeKeepsakeUses};", "window.LatchlingsHomeLife={runAdult:runLittleHomeAdultMove,runChild:runLittleHomeChildBehavior,runKeepsake:runLittleHomeFocusedKeepsake,stopChildren:stopLittleHomeChildMotion,stopAdults:stopLittleHomeAdultMotion,keepsakeUses:littleHomeKeepsakeUses};")
+          p.write_text(s)
+          PY
+          python .github/tmp/astra_character_world_patch.py --product
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/accepted-before.sha256
+          node --check story-grounding400.js
+          node --check gameplay-story-rail400.js
+          node --check story-theme400.js
+          node --check game400-a.js
+          node --check game400-b.js
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run corrected browser contract
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-character-world-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-character-world-http.log 2>&1 &
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('.github/workflows/astra-character-world-coherence.yml').read_text()
+          start="cat > .astra-character-world-check.mjs <<'JS'\n"
+          body=s.split(start,1)[1].split('\n          JS\n',1)[0]
+          lines=[]
+          for line in body.splitlines():
+              if line.startswith('          '): line=line[10:]
+              if line.strip()=='chapterView=undefined;': continue
+              if "await frame.click('[data-memory=\"telescope\"]');" in line:
+                  line=line.replace("await frame.click('[data-memory=\"telescope\"]');", "await frame.evaluate(()=>document.querySelector('[data-memory=\\\"telescope\\\"]')?.click());")
+              lines.append(line)
+          Path('.astra-character-world-check.mjs').write_text('\n'.join(lines)+'\n')
+          PY
+          node .astra-character-world-check.mjs
+
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add story-grounding400.js gameplay-story-rail400.js story-theme400.js game400-a.js game400-b.js title-island-concepts/index.html style400-story-theme.css style400-skyway-atlas.css index.html
+          git diff --cached --check
+          git commit -m "Stage character world coherence candidate [skip ci]"
+          git push origin HEAD:astra-character-world-coherence
+          git rev-parse HEAD | tee /tmp/astra-character-world-evidence/candidate-commit.txt
+
+      - name: Upload candidate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-character-world-evidence
+          path: /tmp/astra-character-world-evidence
+          if-no-files-found: error
