@@ -1,0 +1,33 @@
+name: Make full audit Home chore acceptance deterministic
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths: ['.github/workflows/fix-full-audit-validator-chore.yml']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+      - name: Poll for the authored Home chore event
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/validate-full-audit.mjs')
+          s=p.read_text()
+          old="await p.waitForTimeout(12500);const seenActions=await f.locator('#c2').evaluate(()=>window.__auditHomeActions||[]);assert(seenActions.length>0,`no purposeful Home resident action observed ${JSON.stringify(seenActions)}`);"
+          new="let seenActions=[];for(let i=0;i<35;i++){await p.waitForTimeout(1000);seenActions=await f.locator('#c2').evaluate(()=>window.__auditHomeActions||[]);if(seenActions.length)break}assert(seenActions.length>0,`no purposeful Home resident action observed after bounded route polling ${JSON.stringify(seenActions)}`);"
+          assert s.count(old)==1, s.count(old)
+          p.write_text(s.replace(old,new))
+          PY
+          git diff --check
+      - name: Commit validator correction
+        run: |
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add .github/tmp/validate-full-audit.mjs
+          git commit -m 'Poll for authored Home chore during audit validation'
+          git push origin HEAD:audit-full-closure-candidate
