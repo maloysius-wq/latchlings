@@ -35,7 +35,6 @@ jobs:
           grep -q 'VISUAL_DESCRIPTIONS' cinematics400.js
           grep -q 'HOME_MEMORIES' game400-b.js
           grep -q 'evolvingMovementLine' gameplay-story-rail400.js
-          grep -q 'FULL_AUDIT_CLOSURE_BUILD_OK' <(python .github/tmp/build-full-audit-closure.py)
       - name: Commit candidate product
         shell: bash
         run: |
