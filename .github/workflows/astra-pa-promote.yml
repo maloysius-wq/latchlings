@@ -1,0 +1,42 @@
+name: Astra PA Exact Promotion
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/astra-pa-promote.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Promote exact accepted presentation accessibility bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=83cd19d50551594de928179a5b916d9e620ca8fb
+          CAND=e02ba6a9b9ee8925b73e915a17712852da103023
+          test "$(git rev-parse HEAD^)" = "$BASE"
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematic-dialogue400.js style400-cinematics-dialogue.css style400-cinematics-geometry.css cinematic-geometry400.js gameplay-story-rail400.js story-grounding400.js story-theme400.js style400-story-rail-board.css style400-atlas-progression.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css > /tmp/protected-before.sha256
+          git fetch origin "$CAND"
+          for f in story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html; do git show "$CAND:$f" > "$f"; done
+          rm -f style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/protected-before.sha256
+          for f in story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html; do test "$(git hash-object "$f")" = "$(git rev-parse "$CAND:$f")"; done
+          for f in style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css; do test ! -e "$f"; done
+          git diff --check
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html
+          git add -u style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          git commit -m "Accept presentation accessibility consolidation"
+          git push origin HEAD:main
+          git rev-parse HEAD
