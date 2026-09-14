@@ -1,0 +1,174 @@
+name: Astra Little Home coherence candidate
+
+on:
+  push:
+    branches: [astra-little-home-candidate]
+    paths:
+      - '.github/workflows/astra-little-home-candidate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: astra-little-home-candidate
+
+      - name: Snapshot protected campaign and accepted Pass 4 sources
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css style400-story-theme.css > /tmp/accepted-before.sha256
+
+      - name: Apply Little Home candidate
+        run: python .github/tmp/astra_little_home_candidate.py
+
+      - name: Protect campaign and accepted cinematic/story behavior
+        shell: bash
+        run: |
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/accepted-before.sha256
+          git diff --exit-code 75a22e57ef5a04964a70bf8446e642ffe1935a32 -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css style400-story-theme.css
+
+      - name: Static syntax and acceptance assertions
+        shell: bash
+        run: |
+          node --check game400-a.js
+          node --check game400-b.js
+          python - <<'PY'
+          from pathlib import Path
+          a=Path('game400-a.js').read_text(); b=Path('game400-b.js').read_text(); h=Path('title-island-concepts/index.html').read_text(); i=Path('index.html').read_text()
+          assert 'primaryLabel' in a and 'primaryMeta' in a
+          assert 'HOME_KEEPSAKE_MEMORIES' in b and "startsWith('memory:')" in b
+          assert h.count('data-memory=') == 7
+          assert 'completedWorkCycles' in h and 'lastWorkTarget' in h
+          assert 'memory-unlocked' in h and 'home-primary-copy' in h
+          assert "document.documentElement.dataset.motion==='reduced'" in h
+          assert i.count('game400-a.js?v=20260914-home-coherence-candidate1') == 1
+          assert i.count('game400-b.js?v=20260914-home-coherence-candidate1') == 1
+          assert i.count('title-island-concepts/?c=2&amp;embed=1&amp;v=20260914-home-coherence-candidate1') == 1
+          print('Little Home static assertions passed.')
+          PY
+
+      - name: Install Chromium validation runtime
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-home-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/latchlings-home-http.log 2>&1 &
+          echo $! >/tmp/latchlings-home-http.pid
+          cat > .astra-home-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const results=[];const errors=[];
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          const fail=m=>{errors.push(m);throw new Error(m)};
+
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            page.on('pageerror',e=>errors.push(`${size.name}: pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`${size.name}: console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>{localStorage.clear();location.reload()});
+            await page.waitForLoadState('networkidle');
+            const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+            if(!frame)fail(`${size.name}: Little Home frame missing`);
+            await frame.waitForSelector('#c2 .play');
+            await page.waitForTimeout(120);
+            const fresh=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',meta:document.querySelector('#c2 .home-primary-copy small')?.textContent||'',unlocked:document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length,button:(()=>{const r=document.querySelector('#c2 .play').getBoundingClientRect();return {w:r.width,h:r.height}})()}));
+            if(!fresh.label.startsWith('Begin '))fail(`${size.name}: fresh primary action is not contextual Begin: ${fresh.label}`);
+            if(fresh.meta!=='Level 1 · Chapter 1')fail(`${size.name}: fresh primary meta mismatch: ${fresh.meta}`);
+            if(fresh.unlocked!==0)fail(`${size.name}: fresh save exposes ${fresh.unlocked} keepsakes`);
+            if(fresh.button.h<44)fail(`${size.name}: primary action target below 44px`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-fresh.png',fullPage:true});
+
+            await page.evaluate(()=>{progress={unlocked:251,stars:{50:3,100:3,150:3,200:3,250:3}};saveProgress();updateHome(true)});
+            await page.waitForTimeout(160);
+            const mid=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',meta:document.querySelector('#c2 .home-primary-copy small')?.textContent||'',unlocked:[...document.querySelectorAll('#c2 .story-keepsake.memory-unlocked')].map(el=>({key:el.dataset.memory,tab:el.tabIndex,hidden:el.getAttribute('aria-hidden')}))}));
+            if(!mid.label.includes('Prism'))fail(`${size.name}: returning action did not name Prism chapter: ${mid.label}`);
+            if(!mid.meta.startsWith('Level 251'))fail(`${size.name}: returning action level mismatch: ${mid.meta}`);
+            if(mid.unlocked.length!==5||mid.unlocked.some(k=>k.tab!==0||k.hidden!=='false'))fail(`${size.name}: stage-5 keepsake access mismatch ${JSON.stringify(mid.unlocked)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-stage5.png',fullPage:true});
+
+            await frame.locator('[data-memory="telescope"]').click();
+            await page.waitForSelector('#overlay.show');
+            const memoryTitle=await page.locator('#modal h2').textContent();
+            if(memoryTitle?.trim()!=='Prism Telescope')fail(`${size.name}: keepsake memory did not open correct modal: ${memoryTitle}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-memory.png',fullPage:true});
+            await page.click('#homeMemoryClose');
+
+            await page.evaluate(()=>{progress={unlocked:351,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3}};saveProgress();window.LatchlingsPrefs.set('motion','system');updateHome(true)});
+            await page.waitForTimeout(120);
+            const stage7=await frame.evaluate(()=>document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length);
+            if(stage7!==7)fail(`${size.name}: stage-7 expected 7 unlocked keepsakes, found ${stage7}`);
+
+            if(size.name==='phone'){
+              const expected=[['Pippa','blue flowers'],['Bramble','visitor pennant'],['Rowan','Waykeeper compass']];
+              for(let turn=0;turn<3;turn++){
+                const data=await frame.evaluate(async turn=>{stopLittleHomeAdultMotion();littleHomeSceneActive=true;document.documentElement.dataset.motion='system';littleHomeStoryStage=7;littleHomeAdultTurn=turn;await runLittleHomeAdultMove();const adult=littleHomeAdults[turn];const out={resident:adult.dataset.resident,last:adult.dataset.lastWorkTarget,action:adult.dataset.lastWorkAction,moves:Number(adult.dataset.moveCount||0),cycles:Number(adult.dataset.completedWorkCycles||0)};stopLittleHomeAdultMotion();return out},turn);
+                if(data.resident!==expected[turn][0]||data.last!==expected[turn][1]||!data.action||data.moves<2||data.cycles<1)fail(`purposeful work cycle ${turn} mismatch ${JSON.stringify(data)}`);
+                results.push({work:data});
+              }
+              await frame.evaluate(()=>{stopLittleHomeAdultMotion();littleHomeSceneActive=true;document.documentElement.dataset.motion='system';littleHomeStoryStage=7;littleHomeAdultTurn=0;void runLittleHomeAdultMove()});
+              await frame.waitForSelector('#c2 .resident.work-active',{state:'visible',timeout:4000});
+              await page.screenshot({path:'/tmp/astra-home-evidence/home-purposeful-work.png',fullPage:true});
+              await frame.evaluate(()=>stopLittleHomeAdultMotion());
+            }
+
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('motion','reduced');updateHome(true)});
+            await page.waitForTimeout(100);
+            const reduced=await frame.evaluate(()=>({motion:document.documentElement.dataset.motion,next:document.querySelector('#c2')?.dataset.nextAdultMoveMs||'',running:[...document.querySelectorAll('#c2 .resident')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length,active:document.querySelectorAll('#c2 .resident.work-active').length}));
+            if(reduced.motion!=='reduced'||reduced.next!=='paused'||reduced.running!==0||reduced.active!==0)fail(`${size.name}: in-game Reduced Motion regression ${JSON.stringify(reduced)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-reduced.png',fullPage:true});
+
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('motion','system');screen('levels')});
+            await page.waitForTimeout(80);
+            const offscreen=await frame.evaluate(()=>({scene:document.documentElement.dataset.sceneActive,next:document.querySelector('#c2')?.dataset.nextAdultMoveMs||'',running:[...document.querySelectorAll('#c2 .resident.adult')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length}));
+            if(offscreen.scene!=='false'||offscreen.next!=='paused'||offscreen.running!==0)fail(`${size.name}: offscreen motion regression ${JSON.stringify(offscreen)}`);
+
+            await page.evaluate(()=>{screen('home');progress={unlocked:400,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3,400:3}};saveProgress();updateHome(true)});
+            await page.waitForTimeout(100);
+            const completed=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',meta:document.querySelector('#c2 .home-primary-copy small')?.textContent||''}));
+            if(completed.label!=='Replay Aurora Crown'||!completed.meta.startsWith('Level 400'))fail(`${size.name}: completed Home action mismatch ${JSON.stringify(completed)}`);
+            results.push({size:size.name,fresh,mid:{label:mid.label,meta:mid.meta,unlocked:mid.unlocked.length},stage7,reduced,offscreen,completed});
+            await context.close();
+          }
+
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-home-evidence/results.json',JSON.stringify({results,errors},null,2));
+          if(errors.length)throw new Error(errors.join('\n'));
+          console.log(JSON.stringify(results,null,2));
+          JS
+          node .astra-home-check.mjs
+          rm -f .astra-home-check.mjs
+          kill $(cat /tmp/latchlings-home-http.pid) || true
+
+      - name: Commit accepted Little Home product
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add game400-a.js game400-b.js title-island-concepts/index.html index.html
+          git commit -m "Stage Little Home purposeful life and memories"
+          git push origin HEAD:astra-little-home-candidate
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-little-home-candidate-evidence
+          path: /tmp/astra-home-evidence
+          if-no-files-found: warn
