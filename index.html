@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#b9dcf4" />
 <title>Latchlings</title>
 <link rel="stylesheet" href="style400-ui.css?v=20260914-astra-pass4-candidate1">
-<link rel="stylesheet" href="style400-game.css?v=20260913-audit-r1r5-1">
+<link rel="stylesheet" href="style400-game.css?v=20260914-gameplay-story-candidate1">
 <link rel="stylesheet" href="style400-themes.css">
 <link rel="stylesheet" href="style400-skyway-atlas.css?v=20260914-atlas-journal-candidate1">
-<link rel="stylesheet" href="style400-story-theme.css?v=20260914-atlas-journal-candidate1">
+<link rel="stylesheet" href="style400-story-theme.css?v=20260914-gameplay-story-candidate1">
 <link rel="stylesheet" href="style400-story-rail-board.css?v=20260913-audit-r1r5-1">
 <link rel="stylesheet" href="style400-cinematics.css?v=20260914-astra-pass4-candidate1">
 <link rel="stylesheet" href="style400-cinematics-polish.css">
@@ -102,14 +102,14 @@
 <div class="story-card-overlay" id="storyCardOverlay" aria-hidden="true">
   <section class="story-card-panel" id="storyCardPanel" role="dialog" aria-modal="true" aria-labelledby="storyCardTitle">
     <button class="story-card-x" id="storyCardClose" aria-label="Close story">×</button>
-    <div class="story-card-scene" id="storyCardScene" aria-hidden="true"></div>
+    <div class="story-card-scene" id="storyCardScene" role="img" aria-label=""></div>
     <div class="story-card-body">
       <div class="story-card-meta"><span class="story-card-kind" id="storyCardKind"></span><span class="story-card-location" id="storyCardLocation"></span></div>
       <div class="story-card-characters" id="storyCardCharacters" hidden></div>
       <h2 id="storyCardTitle"></h2>
-      <p class="story-card-context" id="storyCardContext"></p>
-      <p class="story-card-flavor" id="storyCardFlavor"></p>
-      <div class="story-card-objective" id="storyCardObjective" hidden></div>
+      <div class="story-card-line" id="storyCardLine"></div>
+      <div class="story-card-goal" id="storyCardGoal"></div>
+      <details class="story-card-more" id="storyCardMore"><summary>More context</summary><p id="storyCardMoreCopy"></p></details>
       <aside class="story-card-crew-note" id="storyCardCrewNote" hidden><strong>How routes work</strong><span></span></aside>
       <div class="story-card-actions"><button class="story-card-continue" id="storyCardContinue">Continue</button></div>
     </div>
@@ -129,15 +129,15 @@
 <script src="story-grounding400.js?v=20260912-ch2pass3-1"></script>
 <script src="cinematics400.js?v=20260914-astra-pass4-candidate1"></script>
 <script src="cinematic-dialogue400.js?v=20260914-astra-pass4-candidate1"></script>
-<script src="game400-a.js?v=20260914-atlas-journal-candidate1"></script>
-<script src="game400-b.js?v=20260914-atlas-journal-candidate1"></script>
+<script src="game400-a.js?v=20260914-gameplay-story-candidate1"></script>
+<script src="game400-b.js?v=20260914-gameplay-story-candidate1"></script>
 <script src="pass3-chapter5-prism.js?v=20260913-ch5modular-1"></script>
 <script src="pass3-chapter6-copperline.js?v=20260913-ch6pass3-1"></script>
 <script src="pass3-chapter7-stormswitch.js?v=20260913-ch7pass3-1"></script>
-<script src="pass3-chapter8-aurora.js?v=20260913-ch8pass3-1"></script>
+<script src="pass3-chapter8-aurora.js?v=20260914-gameplay-story-candidate1"></script>
 <script src="music400.js?v=20260911-atlaspace1"></script>
 <script src="sfx400.js?v=20260912-pass1"></script>
-<script src="story-theme400.js?v=20260911-narrative1"></script>
+<script src="story-theme400.js?v=20260914-gameplay-story-candidate1"></script>
 <script src="gameplay-story-rail400.js?v=20260913-audit-r1r5-1"></script>
 <script src="cinematic-geometry400.js?v=20260911-bubblestable1"></script>
 </body>
