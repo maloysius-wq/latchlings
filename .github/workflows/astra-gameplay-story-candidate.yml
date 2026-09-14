@@ -1,0 +1,199 @@
+name: Astra gameplay story candidate
+
+on:
+  push:
+    branches: [astra-gameplay-story-candidate]
+    paths:
+      - '.github/workflows/astra-gameplay-story-candidate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: astra-gameplay-story-candidate
+          fetch-depth: 0
+
+      - name: Snapshot protected accepted sources
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css title-island-concepts/index.html style400-skyway-atlas.css style400-atlas-progression.css pass3-chapter5-prism.js pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js > /tmp/accepted-before.sha256
+
+      - name: Apply candidate
+        shell: bash
+        run: python .github/tmp/astra_gameplay_story_candidate.py
+
+      - name: Protect campaigns and previously accepted slices
+        shell: bash
+        run: |
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/accepted-before.sha256
+          git diff --exit-code b81751ddd6e188cbbf4b38ca22ebb3abd1d6ad27 -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css title-island-concepts/index.html style400-skyway-atlas.css style400-atlas-progression.css pass3-chapter5-prism.js pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js
+
+      - name: Static syntax and acceptance assertions
+        shell: bash
+        run: |
+          node --check game400-a.js
+          node --check game400-b.js
+          node --check story-theme400.js
+          node --check pass3-chapter8-aurora.js
+          python - <<'PY'
+          from pathlib import Path
+          a=Path('game400-a.js').read_text(); b=Path('game400-b.js').read_text(); s=Path('story-theme400.js').read_text(); css=Path('style400-story-theme.css').read_text(); i=Path('index.html').read_text(); ch8=Path('pass3-chapter8-aurora.js').read_text()
+          assert 'id="masteryGuide"' in a and '3★ ≤ ${lev.optimal}' in a
+          assert 'mechanicLinkLabel' in a and 'door-state-label' in a and 'nest-resolution' in a
+          assert 'function immediateBlocker' in b and "dataset.feedback='blocked'" in b and 'lastNestArrival=res.capture?pi:null' in b
+          assert 'storyCardLine' in i and 'storyCardGoal' in i and '<details class="story-card-more"' in i
+          assert "scene.dataset.primaryProp" in s and "characters.hidden=true" in s
+          assert 'Astra gameplay/story coherence' in css and '#game .board{z-index:2}' in css
+          reward=ch8.split('class="chapter-reward-result">',1)[1].split('</p>',1)[0]
+          assert len(reward.split()) <= 30, len(reward.split())
+          print('Static gameplay/story acceptance assertions passed.')
+          PY
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-gameplay-story-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-gameplay-story-http.log 2>&1 &
+          echo $! >/tmp/astra-gameplay-story-http.pid
+          cat > .astra-gameplay-story-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const results=[];
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(`pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+
+            await page.evaluate(()=>{startLevel(1);window.LatchlingsStoryTheme?.close(false)});
+            await page.waitForTimeout(120);
+            const basic=await page.evaluate(()=>({
+              mastery:document.querySelector('#masteryGuide')?.textContent?.replace(/\s+/g,' ').trim()||'',
+              stacking:{board:Number(getComputedStyle(document.getElementById('board')).zIndex)||0,props:Number(getComputedStyle(document.getElementById('levelProps')).zIndex)||0,pointer:getComputedStyle(document.getElementById('levelProps')).pointerEvents},
+              controlsBottom:document.querySelector('#game .controls')?.getBoundingClientRect().bottom||0,
+              noteBottom:document.getElementById('mechanicNote')?.getBoundingClientRect().bottom||0
+            }));
+            if(!basic.mastery.includes('3★')||!basic.mastery.includes('2★')||!basic.mastery.includes('1★'))throw new Error(`${size.name}: mastery rubric missing ${JSON.stringify(basic)}`);
+            if(!(basic.stacking.board>basic.stacking.props)||basic.stacking.pointer!=='none')throw new Error(`${size.name}: scenery stacking ${JSON.stringify(basic.stacking)}`);
+            if(basic.controlsBottom>size.height+0.5)throw new Error(`${size.name}: controls below viewport ${JSON.stringify(basic)}`);
+
+            // Every mechanic family gets a text-equivalent rule identity when it appears.
+            const mechanicSelectors=[['suitGates','.gate.suit'],['colorGates','.gate.color'],['rails','.rail'],['turners','.turner']];
+            const mechanicLabels={};
+            for(const [field,selector] of mechanicSelectors){
+              const L=await page.evaluate(field=>{for(let i=0;i<LEVELS.length;i++)if((LEVELS[i][field]||[]).length)return i+1;return 0},field);
+              if(!L)continue;
+              await page.evaluate(L=>{startLevel(L);window.LatchlingsStoryTheme?.close(false)},L);await page.waitForTimeout(35);
+              const label=await page.locator(selector).first().getAttribute('aria-label');
+              if(!label)throw new Error(`${size.name}: ${field} missing rule label`);
+              mechanicLabels[field]=label;
+            }
+
+            const switchLevel=await page.evaluate(()=>{for(let i=0;i<LEVELS.length;i++){const l=LEVELS[i];if((l.switches||[]).length&&(l.doors||[]).length)return i+1}return 0});
+            await page.evaluate(L=>{startLevel(L);window.LatchlingsStoryTheme?.close(false)},switchLevel);await page.waitForTimeout(40);
+            const linked=await page.evaluate(()=>({switches:[...document.querySelectorAll('.switch-tile')].map(x=>({link:x.dataset.link,label:x.querySelector('.mechanic-link-badge')?.textContent?.trim()||'',aria:x.getAttribute('aria-label')||''})),doors:[...document.querySelectorAll('.door-tile')].map(x=>({link:x.dataset.link,label:x.querySelector('.mechanic-link-badge')?.textContent?.trim()||'',state:x.querySelector('.door-state-label')?.textContent?.trim()||'',aria:x.getAttribute('aria-label')||''}))}));
+            if(!linked.switches.length||!linked.doors.length||linked.switches.some(x=>x.link===undefined||!x.label||!x.aria)||linked.doors.some(x=>x.link===undefined||!x.label||x.state!=='CLOSED'||!x.aria))throw new Error(`${size.name}: switch/door linkage ${JSON.stringify(linked)}`);
+            const firstDoor=linked.doors[0];
+            await page.evaluate(link=>{const lev=LEVELS[currentLevel-1],d=(lev.doors||[]).find(x=>String(x[2])===String(link));doorMask|=(1<<d[2]);renderGame(true)},firstDoor.link);
+            const opened=await page.evaluate(link=>{const d=[...document.querySelectorAll('.door-tile')].find(x=>x.dataset.link===String(link));return {open:d?.classList.contains('open'),state:d?.querySelector('.door-state-label')?.textContent?.trim(),aria:d?.getAttribute('aria-label')}},firstDoor.link);
+            if(!opened.open||opened.state!=='OPEN'||!opened.aria?.toLowerCase().includes('open'))throw new Error(`${size.name}: open door state ${JSON.stringify(opened)}`);
+
+            if(size.name==='phone'){
+              const blocker=await page.evaluate(()=>{
+                const dirs={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]};
+                for(let L=151;L<=400;L++){
+                  const lev=LEVELS[L-1],occ=new Set(lev.pieces.map(p=>p.pos.join(',')));
+                  for(let pi=0;pi<lev.pieces.length;pi++)for(const [dir,[dr,dc]] of Object.entries(dirs)){
+                    const p=lev.pieces[pi],r=p.pos[0]+dr,c=p.pos[1]+dc,key=`${r},${c}`;if(r<0||c<0||r>=lev.size||c>=lev.size)continue;
+                    if((lev.rocks||[]).some(x=>x[0]===r&&x[1]===c)||[...occ].some((x)=>x===key&&x!==p.pos.join(',')))continue;
+                    const door=(lev.doors||[]).find(x=>x[0]===r&&x[1]===c);if(door)return {L,pi,dir,type:'door',r,c};
+                    const sg=(lev.suitGates||[]).find(x=>x[0]===r&&x[1]===c);if(sg&&sg[2]!==p.suit)return {L,pi,dir,type:'suitGate',r,c};
+                    const cg=(lev.colorGates||[]).find(x=>x[0]===r&&x[1]===c);if(cg&&cg[2]!==p.color)return {L,pi,dir,type:'colorGate',r,c};
+                    const rail=(lev.rails||[]).find(x=>x[0]===r&&x[1]===c);if(rail&&rail[2]!==dir)return {L,pi,dir,type:'rail',r,c};
+                  }
+                }return null;
+              });
+              if(!blocker)throw new Error('phone: no mechanic blocker fixture found');
+              await page.evaluate(b=>{startLevel(b.L);window.LatchlingsStoryTheme?.close(false);selected=b.pi;renderPieces(LEVELS[currentLevel-1]);moveSelected(b.dir)},blocker);await page.waitForTimeout(80);
+              const rejected=await page.evaluate(b=>({feedback:document.getElementById('mechanicNote')?.dataset.feedback||'',blocker:document.querySelector(`.cell[data-r="${b.r}"][data-c="${b.c}"]`)?.dataset.blockerFeedback||'',text:document.getElementById('mechanicNote')?.textContent?.replace(/\s+/g,' ').trim()||''}),blocker);
+              if(rejected.feedback!=='blocked'||rejected.blocker!==blocker.type||rejected.text.length<12)throw new Error(`phone: rejected move ${JSON.stringify({blocker,rejected})}`);
+              await page.screenshot({path:'/tmp/astra-gameplay-story-evidence/blocker-feedback.png',fullPage:true});
+            }
+
+            await page.evaluate(()=>{startLevel(1);window.LatchlingsStoryTheme?.close(false);lastNestArrival=0;positions[0]=null;renderGame(true)});
+            const nest=await page.evaluate(()=>({resolved:document.querySelector('.nest[data-pi="0"]')?.classList.contains('resolved'),arrived:document.querySelector('.nest[data-pi="0"]')?.classList.contains('just-arrived'),badge:document.querySelector('.nest[data-pi="0"] .nest-resolution')?.textContent?.trim()||'',state:document.querySelector('.cell:has(.nest[data-pi="0"])')?.dataset.nestState||''}));
+            if(!nest.resolved||!nest.arrived||nest.badge!=='✓'||nest.state!=='resolved')throw new Error(`${size.name}: nest resolution ${JSON.stringify(nest)}`);
+
+            await page.evaluate(()=>window.LatchlingsStoryTheme.show(1,true));await page.waitForTimeout(40);
+            const card=await page.evaluate(()=>({line:document.querySelector('#storyCardLine')?.textContent?.replace(/\s+/g,' ').trim()||'',goal:document.querySelector('#storyCardGoal')?.textContent?.replace(/\s+/g,' ').trim()||'',details:document.querySelector('#storyCardMore')?.tagName||'',open:document.querySelector('#storyCardMore')?.open,legacy:document.querySelectorAll('#storyCardContext,#storyCardFlavor,#storyCardObjective').length,sceneProps:document.querySelectorAll('#storyCardScene .story-scene-prop').length,panelBottom:document.getElementById('storyCardPanel')?.getBoundingClientRect().bottom||0}));
+            if(!card.line||!card.goal||card.details!=='DETAILS'||card.open||card.legacy||card.sceneProps<1)throw new Error(`${size.name}: Story postcard structure ${JSON.stringify(card)}`);
+            if(card.panelBottom>size.height+0.5)throw new Error(`${size.name}: Story card below viewport ${JSON.stringify(card)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-gameplay-story-evidence/story-postcard.png',fullPage:true});
+            await page.evaluate(()=>window.LatchlingsStoryTheme.close(false));
+
+            // Previously accepted Atlas/journal and Little Home behavior must survive runtime edits.
+            if(size.name==='phone'){
+              await page.evaluate(()=>{progress={unlocked:255,stars:{50:3,100:3,150:3,200:3,250:3,251:3,252:3,253:3,254:3}};chapterView=6;rangeView=0;screen('levels');renderChapter()});await page.waitForTimeout(520);
+              const atlas=await page.evaluate(()=>({dots:document.querySelectorAll('#chapterNav .atlas-region-dot').length,range:document.querySelector('#rangeNav .atlas-range-current')?.textContent?.replace(/\s+/g,' ').trim()||'',current:document.querySelector('.atlas-node[data-state="current"] .atlas-state-badge')?.textContent?.trim()||''}));
+              if(atlas.dots||!atlas.range.includes('Levels 251–260')||atlas.current!=='◆')throw new Error(`phone: Atlas regression ${JSON.stringify(atlas)}`);
+              await page.evaluate(()=>openStoryScreen());await page.waitForTimeout(520);
+              const journal=await page.evaluate(()=>({tabs:[...document.querySelectorAll('#story [role="tab"]')].map(t=>t.textContent.trim()).join('|'),visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id).join('|')}));
+              if(journal.tabs!=='Now|Residents|Journey|Cinematics'||journal.visible!=='storyNowPanel')throw new Error(`phone: journal regression ${JSON.stringify(journal)}`);
+              await page.evaluate(()=>{progress={unlocked:251,stars:{50:3,100:3,150:3,200:3,250:3}};screen('home');updateHome(false)});await page.waitForTimeout(120);
+              const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+              const home=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',keepsakes:document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length}));
+              if(home.label!=='Continue Old Ways'||home.keepsakes!==5)throw new Error(`phone: Little Home regression ${JSON.stringify(home)}`);
+            }
+
+            if(errors.length)throw new Error(`${size.name}: ${errors.join('; ')}`);
+            results.push({size:size.name,basic,mechanicLabels,linked,opened,nest,card});
+            await context.close();
+          }
+
+          const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          await page.evaluate(()=>{const lev=LEVELS[399],row='<i></i><i></i><i></i>';window.LatchlingsChapterEightPass3.showReward(3,row,n=>`${n} moves`,lev)});
+          const reward=await page.locator('.chapter-eight-reward .chapter-reward-result').textContent(),rewardWords=reward.trim().split(/\s+/).length;
+          if(rewardWords>30)throw new Error(`Aurora reward too long: ${rewardWords}`);
+          await page.screenshot({path:'/tmp/astra-gameplay-story-evidence/aurora-reward.png',fullPage:true});await context.close();
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-gameplay-story-evidence/results.json',JSON.stringify({results,reward,rewardWords},null,2));
+          JS
+          node .astra-gameplay-story-check.mjs
+          rm -f .astra-gameplay-story-check.mjs
+          kill $(cat /tmp/astra-gameplay-story-http.pid) || true
+
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add game400-a.js game400-b.js story-theme400.js style400-story-theme.css index.html pass3-chapter8-aurora.js
+          git commit -m "Accept gameplay and Story coherence candidate"
+          git push origin HEAD:astra-gameplay-story-candidate
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-gameplay-story-candidate-evidence
+          path: /tmp/astra-gameplay-story-evidence
+          if-no-files-found: warn
