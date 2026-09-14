@@ -1,0 +1,34 @@
+name: Prepare Chapter 8 live wiring artifact
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/tmp/prepare-chapter8-live.py'
+      - '.github/workflows/prepare-chapter8-live-files.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare final live files
+        run: python3 .github/tmp/prepare-chapter8-live.py
+      - name: Verify output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c 'pass3-chapter8-aurora.css?v=20260913-ch8pass3-1' index.html)" -eq 1
+          test "$(grep -c 'pass3-chapter8-aurora.js?v=20260913-ch8pass3-1' index.html)" -eq 1
+          grep -q 'Recurring landmark: a pale crown-shaped convergence beacon' LEVEL_SELECT_ART_DIRECTION.md
+          mkdir -p /tmp/chapter8-live
+          cp index.html LEVEL_SELECT_ART_DIRECTION.md /tmp/chapter8-live/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chapter8-live-wiring
+          path: /tmp/chapter8-live
+          if-no-files-found: error
