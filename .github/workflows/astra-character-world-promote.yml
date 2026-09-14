@@ -55,7 +55,7 @@ jobs:
             style400-story-theme.css \
             title-island-concepts/index.html \
             | sort > /tmp/expected-product-files.txt
-          git diff --name-only | sort > /tmp/actual-product-files.txt
+          git diff --cached --name-only | sort > /tmp/actual-product-files.txt
           diff -u /tmp/expected-product-files.txt /tmp/actual-product-files.txt
           node --check story-grounding400.js
           node --check gameplay-story-rail400.js
@@ -81,7 +81,6 @@ jobs:
         run: |
           git config user.name "maloysius-wq"
           git config user.email "maloysius@gmail.com"
-          git add story-grounding400.js gameplay-story-rail400.js story-theme400.js game400-a.js game400-b.js title-island-concepts/index.html style400-story-theme.css style400-skyway-atlas.css index.html
           git diff --cached --check
           git commit -m "Promote accepted character world coherence"
           git push origin HEAD:main
