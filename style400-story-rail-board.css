@@ -112,3 +112,44 @@
 /* Pass 1 readability contract: essential story copy must remain legible even against legacy responsive rules. */
 #game #storyRailSlot .story-level-rail .story-rail-main p{font-size:14px!important;line-height:1.25!important}
 @media(max-height:620px){#game #storyRailSlot .story-level-rail .story-rail-main p{font-size:13px!important;line-height:1.2!important}#game .dpad{width:140px!important;height:140px!important}}
+
+
+/* Astra audit R1/R4: readable rails must wrap instead of clipping, including Large Text. */
+.story-level-rail{height:auto;overflow:visible}
+.story-rail-main{min-height:0;overflow:visible}
+.story-rail-main p{overflow:visible}
+html[data-text-size="large"] #game #storyRailSlot .story-level-rail .story-rail-main p{font-size:16px!important;line-height:1.32!important}
+@media(max-height:620px){
+ .story-level-rail{height:auto;min-height:52px}
+ html[data-text-size="large"] #game #storyRailSlot .story-level-rail .story-rail-main p{font-size:15px!important;line-height:1.3!important}
+}
+
+
+/* Astra audit R1/R4 narrow-phone correction: preserve the current three-part rail in one row. */
+@media(max-width:430px){
+ .story-level-rail{grid-template-columns:44px minmax(0,1fr) 50px;align-items:center}
+ .story-rail-person,.story-rail-main{height:auto;min-height:0}
+}
+@media(max-height:720px){
+ .story-level-rail{grid-template-columns:38px minmax(0,1fr) 46px;align-items:center}
+ .story-rail-person,.story-rail-main{height:auto;min-height:0}
+}
+
+/* Large Text yields a little puzzle-surface width before sacrificing readable copy. */
+html[data-text-size="large"] #game .board{width:min(90vw,460px)}
+
+/* 320x568-class phones reclaim chrome space, not text size or touch-target safety. */
+@media(max-height:620px){
+ #game.screen{padding:4px 8px}
+ #game .topbar{min-height:48px;margin-bottom:3px;padding:1px 8px}
+ #game .story-rail-slot{margin-bottom:1px}
+ #game .story-level-rail{grid-template-columns:34px minmax(0,1fr) 44px;gap:4px;padding:3px 5px}
+ #game .story-rail-person{height:auto}
+ #game .rail-latchling{width:30px;height:30px}
+ #game .rail-latchling.child{width:28px;height:28px}
+ #game .story-rail-story-btn{min-width:44px;min-height:44px}
+ html[data-text-size="large"] #game .board{width:min(72vw,228px)}
+ #game .controls{grid-template-columns:68px minmax(0,1fr) 68px;gap:6px;padding-top:1px}
+ #game .dpad{width:138px;height:138px}
+ #game .side-action{min-height:54px}
+}

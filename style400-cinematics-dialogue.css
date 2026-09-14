@@ -77,3 +77,10 @@
 
 /* Pass 1: every cinematic uses the protected chronological dock. */
 .cin-ordered-dialogue-dock .cin-opening-bubble{font-size:13px;line-height:1.34}.cin-ordered-dialogue-dock .cin-opening-speaker b{font-size:10px}.cin-ordered-dialogue-dock .cin-opening-speaker small{font-size:9px}.cinematic-stage>.cin-dialogue-layer{display:none!important}@media(max-height:620px){.cin-ordered-dialogue-dock .cin-opening-bubble{font-size:12px;line-height:1.28}}
+
+
+/* Astra audit R4: Large Text enlarges actual chronological cinematic dialogue too. */
+html[data-text-size="large"] .cin-ordered-dialogue-dock .cin-opening-bubble{font-size:16px!important;line-height:1.4}
+html[data-text-size="large"] .cin-ordered-dialogue-dock .cin-opening-speaker b{font-size:11px}
+html[data-text-size="large"] .cin-ordered-dialogue-dock .cin-opening-speaker small{font-size:10px}
+@media(max-height:620px){html[data-text-size="large"] .cin-ordered-dialogue-dock .cin-opening-bubble{font-size:15px!important;line-height:1.36}}

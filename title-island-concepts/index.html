@@ -205,6 +205,7 @@ body.cinematic-mode #c2 .topline,body.cinematic-mode #c2 .toy-brand,body.cinemat
 body.cinematic-mode #c2 .scene{left:50%!important;right:auto!important;top:50%!important;width:350px!important;height:350px!important;transform:translate(-50%,-50%) scale(.76)!important;transform-origin:50% 50%!important;overflow:visible!important}
 body.cinematic-mode #c2 .island-model{top:11px!important}
 html[data-motion="reduced"] *{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+html[data-scene-active="false"] #c2 *{animation-play-state:paused!important}
 
 /* Chapter-one payoff focus: the canonical Little Home mailbox gets a short, non-blocking reveal. */
 #c2 .phone.story-focus-mailbox .story-mailbox{display:block;z-index:25;animation:mailboxRewardFocus 1800ms cubic-bezier(.2,.8,.2,1) both}
@@ -265,20 +266,34 @@ const littleHomeAdultRoutes={
   tree:[{x:0,y:0,r:0},{x:-8,y:-8,r:0},{x:4,y:-13,r:0},{x:14,y:-5,r:0},{x:11,y:6,r:0},{x:-3,y:8,r:0},{x:-10,y:2,r:0}]
 };
 const littleHomeAdults=[...document.querySelectorAll('#c2 .resident.adult')];
-const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const littleHomeMotionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 const littleHomeRoot=document.querySelector('#c2');
 const littleHomeStepTransform=step=>`translate(${step.x}px,${step.y}px) rotate(${step.r||0}deg)`;
 let littleHomeAdultTimer=0;
 let littleHomeAdultTurn=0;
+let littleHomeAdultAnimation=null;
+let littleHomeSceneActive=true;
+const littleHomeEffectiveReducedMotion=()=>littleHomeMotionQuery.matches||document.documentElement.dataset.motion==='reduced';
+const littleHomeMotionAllowed=()=>littleHomeSceneActive&&!littleHomeEffectiveReducedMotion();
+const stopLittleHomeAdultMotion=()=>{
+  clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
+  if(littleHomeAdultAnimation){littleHomeAdultAnimation.cancel();littleHomeAdultAnimation=null}
+  if(littleHomeRoot){littleHomeRoot.dataset.activeAdult='';littleHomeRoot.dataset.nextAdultMoveMs='paused'}
+};
 const scheduleNextLittleHomeAdultMove=()=>{
-  if(reducedMotion||!littleHomeAdults.length)return;
+  clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
+  if(!littleHomeMotionAllowed()||!littleHomeAdults.length)return;
   const wait=littleHomeRandom(LITTLE_HOME_ADULT_GAP_MIN,LITTLE_HOME_ADULT_GAP_MAX);
   if(littleHomeRoot)littleHomeRoot.dataset.nextAdultMoveMs=String(Math.round(wait));
-  clearTimeout(littleHomeAdultTimer);
-  littleHomeAdultTimer=setTimeout(runLittleHomeAdultMove,wait);
+  littleHomeAdultTimer=setTimeout(()=>{littleHomeAdultTimer=0;runLittleHomeAdultMove()},wait);
+};
+const syncLittleHomeMotion=()=>{
+  document.documentElement.dataset.sceneActive=littleHomeSceneActive?'true':'false';
+  if(!littleHomeMotionAllowed()){stopLittleHomeAdultMotion();return}
+  if(!littleHomeAdultTimer&&!littleHomeAdultAnimation)scheduleNextLittleHomeAdultMove();
 };
 const runLittleHomeAdultMove=async()=>{
-  if(reducedMotion||!littleHomeAdults.length)return;
+  if(!littleHomeMotionAllowed()||!littleHomeAdults.length)return;
   const adult=littleHomeAdults[littleHomeAdultTurn%littleHomeAdults.length];
   littleHomeAdultTurn=(littleHomeAdultTurn+1)%littleHomeAdults.length;
   const route=littleHomeAdultRoutes[adult.dataset.activity]||littleHomeAdultRoutes.garden;
@@ -286,30 +301,33 @@ const runLittleHomeAdultMove=async()=>{
   const next=(current+1)%route.length;
   const duration=littleHomeRandom(LITTLE_HOME_ADULT_STEP_MIN,LITTLE_HOME_ADULT_STEP_MAX);
   adult.dataset.motionState='moving';
-  adult.dataset.moveCount=String(Number(adult.dataset.moveCount||0)+1);
-  adult.dataset.routeIndex=String(next);
   adult.dataset.stepDurationMs=String(Math.round(duration));
   if(littleHomeRoot)littleHomeRoot.dataset.activeAdult=adult.dataset.activity||'';
-  const animation=adult.animate([
-    {transform:littleHomeStepTransform(route[current])},
-    {transform:littleHomeStepTransform(route[next])}
-  ],{duration,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
-  try{await animation.finished}catch{}
-  adult.style.transform=littleHomeStepTransform(route[next]);
-  animation.cancel();
-  adult.dataset.motionState='idle';
+  const animation=adult.animate([{transform:littleHomeStepTransform(route[current])},{transform:littleHomeStepTransform(route[next])}],{duration,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
+  littleHomeAdultAnimation=animation;
+  let completed=false;try{await animation.finished;completed=true}catch{}
+  if(littleHomeAdultAnimation===animation)littleHomeAdultAnimation=null;
+  if(completed&&littleHomeMotionAllowed()){
+    adult.style.transform=littleHomeStepTransform(route[next]);
+    adult.dataset.routeIndex=String(next);
+    adult.dataset.moveCount=String(Number(adult.dataset.moveCount||0)+1);
+  }else{
+    adult.style.transform=littleHomeStepTransform(route[current]);
+    adult.dataset.routeIndex=String(current);
+  }
+  animation.cancel();adult.dataset.motionState='idle';
   if(littleHomeRoot)littleHomeRoot.dataset.activeAdult='';
-  scheduleNextLittleHomeAdultMove();
+  if(littleHomeMotionAllowed())scheduleNextLittleHomeAdultMove();
 };
 littleHomeAdults.forEach(adult=>{
-  adult.dataset.motionState='idle';
-  adult.dataset.moveCount='0';
-  adult.dataset.routeIndex='0';
+  adult.dataset.motionState='idle';adult.dataset.moveCount='0';adult.dataset.routeIndex='0';
   adult.style.transform=littleHomeStepTransform((littleHomeAdultRoutes[adult.dataset.activity]||littleHomeAdultRoutes.garden)[0]);
 });
-scheduleNextLittleHomeAdultMove();
+littleHomeMotionQuery.addEventListener?.('change',syncLittleHomeMotion);
+try{if(parent&&parent!==window&&parent.document?.body){littleHomeSceneActive=parent.document.body.dataset.screen==='home';new MutationObserver(()=>{littleHomeSceneActive=parent.document.body.dataset.screen==='home';syncLittleHomeMotion()}).observe(parent.document.body,{attributes:true,attributeFilter:['data-screen']})}}catch(_){}
+syncLittleHomeMotion();
 
-function restartLittleHomeTitle(){const logo=document.querySelector('#c2 .toy-logo');if(!logo||matchMedia('(prefers-reduced-motion: reduce)').matches)return;logo.classList.remove('title-drop-run');void logo.offsetWidth;logo.classList.add('title-drop-run')}
+function restartLittleHomeTitle(){const logo=document.querySelector('#c2 .toy-logo');if(!logo||littleHomeEffectiveReducedMotion()||!littleHomeSceneActive)return;logo.classList.remove('title-drop-run');void logo.offsetWidth;logo.classList.add('title-drop-run')}
 const buttons=[...document.querySelectorAll('.switcher button')],concepts=[...document.querySelectorAll('.concept')];function show(id,push=false){concepts.forEach(c=>c.classList.toggle('active',c.id===id));buttons.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.target===id)));if(id==='c2')restartLittleHomeTitle();if(push)history.replaceState(null,'',`?c=${id.slice(1)}`)}buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.target,true)));const requested=new URLSearchParams(location.search).get('c');if(['1','2','3'].includes(requested))show('c'+requested);
 
 function initProductionEmbed(){
@@ -322,7 +340,7 @@ function initProductionEmbed(){
  bindEmbed(c2.querySelector('.play'),'play');
  const secondary=c2.querySelectorAll('.secondary button');bindEmbed(secondary[0],'daily');bindEmbed(secondary[1],'levels');
  bindEmbed(c2.querySelector('.story-home'),'story');bindEmbed(c2.querySelector('.settings'),'settings');
- window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);phone.classList.remove('story-focus-mailbox','story-focus-pennant','story-focus-anchor','story-focus-bunting');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.focus==='pennant'){void phone.offsetWidth;phone.classList.add('story-focus-pennant');setTimeout(()=>phone.classList.remove('story-focus-pennant'),2200)}if(e.data.focus==='anchor'){void phone.offsetWidth;phone.classList.add('story-focus-anchor');setTimeout(()=>phone.classList.remove('story-focus-anchor'),2200)}if(e.data.focus==='bunting'){void phone.offsetWidth;phone.classList.add('story-focus-bunting');setTimeout(()=>phone.classList.remove('story-focus-bunting'),2200)}if(e.data.replay)restartLittleHomeTitle()});
+ window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';syncLittleHomeMotion();if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);phone.classList.remove('story-focus-mailbox','story-focus-pennant','story-focus-anchor','story-focus-bunting');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.focus==='pennant'){void phone.offsetWidth;phone.classList.add('story-focus-pennant');setTimeout(()=>phone.classList.remove('story-focus-pennant'),2200)}if(e.data.focus==='anchor'){void phone.offsetWidth;phone.classList.add('story-focus-anchor');setTimeout(()=>phone.classList.remove('story-focus-anchor'),2200)}if(e.data.focus==='bunting'){void phone.offsetWidth;phone.classList.add('story-focus-bunting');setTimeout(()=>phone.classList.remove('story-focus-bunting'),2200)}if(e.data.replay)restartLittleHomeTitle()});
  parent.postMessage({source:'latchlings-home',action:'ready'},location.origin);
 }
 initProductionEmbed();

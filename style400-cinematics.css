@@ -85,3 +85,21 @@ body.cinematic-open{overflow:hidden}
 @media(max-width:430px){.cinematic-shell{border-radius:22px}.cinematic-stage{min-height:210px}.cinematic-copy{padding:11px 14px 13px}.cinematic-copy h2{font-size:24px}.cinematic-lines p{font-size:11.5px}.cin-helper-story{padding:14px}.cin-helper-story .story-side,.cin-helper-story .crew-side{height:135px}.cinematic-library{grid-template-columns:1fr}}
 @media(max-height:720px){.cinematic-shell{grid-template-rows:auto minmax(170px,31vh) minmax(0,1fr)}.cinematic-copy{padding-top:9px}.cinematic-copy h2{font-size:22px}.cinematic-copy h3{margin-bottom:5px}.cinematic-lines{gap:3px}.cinematic-lines p{padding-top:4px;padding-bottom:4px;font-size:10.5px}.cinematic-progress{margin:7px 0}.cinematic-next{min-height:42px}.cin-home-island{scale:.84}.cin-demo-board{inset:9px 15px}}
 @media(prefers-reduced-motion:reduce){.cinematic-overlay *{animation:none!important;transition:none!important}.cinematic-overlay:not(.beat-ready) .cinematic-stage>*{opacity:1}.cin-island,.cin-route,.cin-character,.cin-map-sheet,.cin-network .wire,.cin-prism-beam,.cin-aurora i{translate:0 0!important;rotate:0deg}}
+
+
+/* Astra audit R5: persistent cinematic navigation stays outside the scrolling story copy. */
+.cinematic-shell{grid-template-rows:auto minmax(205px,36vh) minmax(0,1fr) auto}
+.cinematic-copy{padding-bottom:10px}
+.cinematic-footer{position:relative;z-index:60;flex:0 0 auto;padding:8px 18px calc(14px + env(safe-area-inset-bottom));background:rgba(255,249,238,.97);border-top:1px solid rgba(188,157,113,.35);box-shadow:0 -5px 14px rgba(38,54,70,.08)}
+.cinematic-footer .cinematic-progress{margin:0 0 8px}
+.cinematic-footer .cinematic-next{margin:0;min-height:48px}
+.cinematic-skip{min-height:44px;min-width:60px;padding:7px 12px}
+html[data-text-size="large"] .cinematic-lines .narrator-only{font-size:15px;line-height:1.45}
+html[data-text-size="large"] .cinematic-copy h3{font-size:15px;line-height:1.3}
+@media(max-height:620px){
+ .cinematic-shell{grid-template-rows:auto minmax(145px,29vh) minmax(0,1fr) auto}
+ .cinematic-head{min-height:48px;padding:5px 8px 5px 12px}
+ .cinematic-copy{padding:8px 12px 6px}
+ .cinematic-footer{padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
+ .cinematic-footer .cinematic-progress{margin:0 0 6px}
+}
