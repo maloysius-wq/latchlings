@@ -1,0 +1,155 @@
+name: Astra ending promote and committed-live verify
+
+on:
+  push:
+    branches: [astra-ending-closure-candidate]
+    paths:
+      - '.github/workflows/astra-ending-promote-live.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  promote-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Require exact promotion base
+        run: test "$(git rev-parse HEAD)" = "540f5af60d9b4fe3ea2078a1f7956e42d4eaf885"
+
+      - name: Snapshot protected accepted sources
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/ending-promote-campaign.sha256
+          sha256sum game400-a.js game400-b.js story-theme400.js style400-story-theme.css \
+            cinematics400.js cinematic-dialogue400.js style400-cinematics.css \
+            gameplay-story-rail400.js style400-story-rail-board.css \
+            title-island-concepts/index.html style400-skyway-atlas.css \
+            style400-atlas-progression.css pass3-chapter5-prism.js \
+            pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
+            pass3-chapter8-aurora.js > /tmp/ending-promote-protected.sha256
+
+      - name: Import exact accepted ending product
+        run: |
+          git fetch origin astra-ending-closure-candidate
+          git show e3ac2e999c4781e8f4e9789552a5025e93b3466e:index.html > index.html
+          git show e3ac2e999c4781e8f4e9789552a5025e93b3466e:style400-ui.css > style400-ui.css
+          test "$(git show e3ac2e999c4781e8f4e9789552a5025e93b3466e:index.html | sha256sum | cut -d' ' -f1)" = "$(sha256sum index.html | cut -d' ' -f1)"
+          test "$(git show e3ac2e999c4781e8f4e9789552a5025e93b3466e:style400-ui.css | sha256sum | cut -d' ' -f1)" = "$(sha256sum style400-ui.css | cut -d' ' -f1)"
+          sha256sum -c /tmp/ending-promote-campaign.sha256
+          sha256sum -c /tmp/ending-promote-protected.sha256
+          test "$(git diff --name-only 540f5af60d9b4fe3ea2078a1f7956e42d4eaf885 | sort | tr '\n' ' ')" = "index.html style400-ui.css "
+
+      - name: Commit exact accepted ending product to main
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html style400-ui.css
+          git diff --cached --quiet && { echo 'No ending product diff'; exit 1; }
+          git commit -m "Promote accepted Astra ending closure"
+          git rev-parse HEAD > /tmp/ending-main-product-sha
+          git push origin HEAD:main
+
+      - name: Fresh-check committed main product
+        run: |
+          product_sha="$(cat /tmp/ending-main-product-sha)"
+          git fetch origin main
+          git checkout --force "origin/main"
+          test "$(git rev-parse HEAD)" = "$product_sha"
+          test "$(git show e3ac2e999c4781e8f4e9789552a5025e93b3466e:index.html | sha256sum | cut -d' ' -f1)" = "$(sha256sum index.html | cut -d' ' -f1)"
+          test "$(git show e3ac2e999c4781e8f4e9789552a5025e93b3466e:style400-ui.css | sha256sum | cut -d' ' -f1)" = "$(sha256sum style400-ui.css | cut -d' ' -f1)"
+          test "$(git diff --name-only 540f5af60d9b4fe3ea2078a1f7956e42d4eaf885 HEAD | sort | tr '\n' ' ')" = "index.html style400-ui.css "
+          echo "Committed main ending product: $product_sha"
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Validate committed-main ending runtime
+        run: |
+          mkdir -p /tmp/astra-ending-committed-live
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-live-http.log 2>&1 &
+          echo $! >/tmp/astra-ending-live-http.pid
+          cat > .astra-ending-live.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          const results=[];
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage(); const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>screen('complete'));
+            await page.waitForTimeout(850);
+            const state=await page.evaluate(()=>{
+              const hero=document.querySelector('.ending-hero-pass4'),title=hero.querySelector('h1'),hr=hero.getBoundingClientRect(),tr=title.getBoundingClientRect();
+              return {
+                nodes:document.querySelectorAll('.ending-skyway-node').length,
+                links:document.querySelectorAll('.ending-network-link').length,
+                homeNodes:document.querySelectorAll('.ending-skyway-node[data-home-node="true"]').length,
+                label:document.querySelector('.ending-network-stage')?.getAttribute('aria-label')||'',
+                fieldAnimation:getComputedStyle(document.querySelector('.ending-network-field')).animationName,
+                focusAnimation:getComputedStyle(document.querySelector('.ending-home-focus')).animationName,
+                parcelAnimation:getComputedStyle(document.querySelector('.ending-parcel')).animationName,
+                frameSrc:document.querySelector('.ending-home-frame')?.getAttribute('src')||'',
+                primary:document.querySelector('.ending-actions button:first-child')?.textContent.trim()||'',
+                primaryId:document.querySelector('.ending-actions button:first-child')?.id||'',
+                copy:[...document.querySelectorAll('.ending-hero-pass4>p')].map(x=>x.textContent.trim()),
+                bottom:hr.bottom,
+                title:{left:tr.left,right:tr.right,heroLeft:hr.left,heroRight:hr.right,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,font:getComputedStyle(title).fontSize},
+                outgoing:!!document.querySelector('.screen-transition-outgoing')
+              };
+            });
+            if(state.nodes!==6||state.links<6||state.homeNodes!==1)throw new Error(`${size.name}: network semantics ${JSON.stringify(state)}`);
+            if(!/communities/i.test(state.label)||!/Little Home/i.test(state.label)||!/parcel/i.test(state.label))throw new Error(`${size.name}: meaningful equivalent ${state.label}`);
+            if(!state.fieldAnimation.includes('endingNetworkWide')||!state.focusAnimation.includes('endingNetworkHomeward')||!state.parcelAnimation.includes('endingPass4Parcel'))throw new Error(`${size.name}: visual sequence missing ${JSON.stringify(state)}`);
+            if(!state.frameSrc.includes('title-island-concepts/')||!state.frameSrc.includes('ending=1'))throw new Error(`${size.name}: canonical Little Home missing`);
+            if(state.primaryId!=='completeHome'||state.primary!=='Return to Little Home')throw new Error(`${size.name}: Home-first action regressed`);
+            if(state.copy[0]!=='Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.'||state.copy[1]!=='Ordinary life continues. That is the victory.')throw new Error(`${size.name}: ending copy regressed ${JSON.stringify(state.copy)}`);
+            if(state.bottom>size.height+0.5)throw new Error(`${size.name}: ending overflow ${JSON.stringify(state)}`);
+            if(state.title.left<state.title.heroLeft-0.5||state.title.right>state.title.heroRight+0.5||state.title.scrollWidth>state.title.clientWidth+1)throw new Error(`${size.name}: title clipped ${JSON.stringify(state.title)}`);
+            if(state.outgoing)throw new Error(`${size.name}: outgoing transition did not settle`);
+            if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join('; ')}`);
+            await page.screenshot({path:`/tmp/astra-ending-committed-live/${size.name}-viewport.png`,fullPage:false});
+            results.push({size:size.name,state});
+            await context.close();
+          }
+          for(const mode of ['os','game']){
+            const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:mode==='os'?'reduce':'no-preference'});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(mode=>{if(mode==='game')window.LatchlingsPrefs.set('motion','reduced');screen('complete')},mode);
+            await page.waitForTimeout(120);
+            const reduced=await page.evaluate(()=>({
+              pref:window.LatchlingsPrefs.reducedMotion(),
+              animations:[...document.querySelectorAll('.ending-network-stage *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none'),
+              outgoing:!!document.querySelector('.screen-transition-outgoing'),
+              primary:document.querySelector('.ending-actions button:first-child')?.id||'',
+              nodes:document.querySelectorAll('.ending-skyway-node').length,
+              bottom:document.querySelector('.ending-hero-pass4').getBoundingClientRect().bottom
+            }));
+            if(!reduced.pref||reduced.animations.length||reduced.outgoing||reduced.primary!=='completeHome'||reduced.nodes!==6||reduced.bottom>844.5)throw new Error(`${mode}: Reduced Motion contract ${JSON.stringify(reduced)}`);
+            await page.screenshot({path:`/tmp/astra-ending-committed-live/${mode}-reduced-viewport.png`,fullPage:false});
+            await context.close();
+          }
+          fs.writeFileSync('/tmp/astra-ending-committed-live/results.json',JSON.stringify(results,null,2));
+          await browser.close();
+          JS
+          node .astra-ending-live.mjs
+          rm -f .astra-ending-live.mjs
+          kill $(cat /tmp/astra-ending-live-http.pid) || true
+
+      - name: Upload committed-live evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-ending-committed-live-evidence
+          path: /tmp/astra-ending-committed-live
