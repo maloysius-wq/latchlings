@@ -56,7 +56,7 @@ jobs:
             const page=await context.newPage(); const errors=[];
             page.on('pageerror',e=>errors.push(e.message)); page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
             await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
-            await page.evaluate(()=>screen('complete')); await page.waitForTimeout(520);
+            await page.evaluate(()=>screen('complete')); await page.waitForTimeout(850);
             const state=await page.evaluate(()=>({
               nodes:document.querySelectorAll('.ending-skyway-node').length,
               links:document.querySelectorAll('.ending-network-link').length,
