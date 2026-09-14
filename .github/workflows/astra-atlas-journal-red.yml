@@ -1,0 +1,82 @@
+name: Astra Atlas journal RED
+
+on:
+  push:
+    branches: [astra-atlas-journal-candidate]
+    paths:
+      - '.github/workflows/astra-atlas-journal-red.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-atlas-journal-candidate
+          fetch-depth: 0
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Expected Atlas and journal behavior
+        shell: bash
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/atlas-journal-red-http.log 2>&1 &
+          echo $! >/tmp/atlas-journal-red-http.pid
+          cat > .astra-atlas-journal-red.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844}});
+          await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+
+          await page.evaluate(()=>{progress={unlocked:251,stars:{50:3,100:3,150:3,200:3,250:3}};chapterView=6;rangeView=0;screen('levels');renderChapter()});
+          await page.waitForTimeout(80);
+          const atlas=await page.evaluate(()=>({
+            regionDots:document.querySelectorAll('#chapterNav .atlas-region-dot').length,
+            chapterTargets:[...document.querySelectorAll('#chapterNav button')].map(b=>{const r=b.getBoundingClientRect();return {w:r.width,h:r.height}}),
+            rangeTabs:document.querySelectorAll('#rangeNav .atlas-waypoint-tab').length,
+            rangeCurrent:document.querySelector('#rangeNav .atlas-range-current')?.textContent?.replace(/\s+/g,' ').trim()||'',
+            rangeButtons:[...document.querySelectorAll('#rangeNav button')].map(b=>{const r=b.getBoundingClientRect();return {w:r.width,h:r.height,label:b.getAttribute('aria-label')}}),
+            nodeStates:[...document.querySelectorAll('#levelGrid .atlas-node')].map(n=>({level:n.dataset.level,state:n.dataset.state,badge:n.querySelector('.atlas-state-badge')?.textContent?.trim()||''}))
+          }));
+          if(atlas.regionDots!==0)throw new Error(`Expected no region-dot navigation, found ${atlas.regionDots}`);
+          if(atlas.chapterTargets.some(r=>r.w<44||r.h<44))throw new Error(`Expected >=44px chapter nav targets: ${JSON.stringify(atlas.chapterTargets)}`);
+          if(atlas.rangeTabs!==0)throw new Error(`Expected one compact range control, found ${atlas.rangeTabs} old tabs`);
+          if(!atlas.rangeCurrent.includes('Levels 251–260')||atlas.rangeCurrent.length<18)throw new Error(`Expected full selected range name: ${atlas.rangeCurrent}`);
+          if(atlas.rangeButtons.length!==2||atlas.rangeButtons.some(r=>r.w<44||r.h<44))throw new Error(`Expected two >=44px range arrows: ${JSON.stringify(atlas.rangeButtons)}`);
+          if(atlas.nodeStates.some(n=>!['restored','current','available','locked'].includes(n.state)))throw new Error(`Expected explicit node state data: ${JSON.stringify(atlas.nodeStates)}`);
+          if(!atlas.nodeStates.some(n=>n.state==='restored'&&n.badge==='✓'))throw new Error('Expected a non-color restored badge');
+          if(!atlas.nodeStates.some(n=>n.state==='current'&&n.badge==='◆'))throw new Error('Expected a non-color current badge');
+
+          await page.evaluate(()=>openStoryScreen());
+          await page.waitForTimeout(60);
+          const journal=await page.evaluate(()=>({
+            tablist:document.querySelector('#story .story-section-tabs')?.getAttribute('role')||'',
+            tabs:[...document.querySelectorAll('#story [role="tab"]')].map(t=>({id:t.id,text:t.textContent.trim(),selected:t.getAttribute('aria-selected'),target:t.getAttribute('aria-controls')})),
+            visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id),
+            nowText:document.querySelector('#storyNowPanel')?.textContent?.replace(/\s+/g,' ').trim()||''
+          }));
+          if(journal.tablist!=='tablist'||journal.tabs.length!==4)throw new Error(`Expected four journal tabs: ${JSON.stringify(journal)}`);
+          if(journal.tabs.map(t=>t.text).join('|')!=='Now|Residents|Journey|Cinematics')throw new Error(`Unexpected journal tabs: ${JSON.stringify(journal.tabs)}`);
+          if(journal.visible.length!==1||journal.visible[0]!=='storyNowPanel')throw new Error(`Expected Now only on open: ${JSON.stringify(journal.visible)}`);
+          if(!journal.nowText.includes('Current question')||!journal.nowText.includes('Latest discovery'))throw new Error(`Now panel missing concise earned summary: ${journal.nowText}`);
+
+          await page.click('#storyTabCinematics');
+          const cinema=await page.evaluate(()=>({visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id),cards:document.querySelectorAll('#storyCinematics button').length,selected:document.querySelector('#storyTabCinematics')?.getAttribute('aria-selected')}));
+          if(cinema.visible.length!==1||cinema.visible[0]!=='storyCinematicsPanel'||cinema.selected!=='true')throw new Error(`Cinematics tab did not become sole panel: ${JSON.stringify(cinema)}`);
+          if(cinema.cards<1)throw new Error('Cinematics replay library is not directly reachable');
+
+          await page.focus('#storyTabCinematics');
+          await page.keyboard.press('ArrowLeft');
+          const keyboard=await page.evaluate(()=>({active:document.activeElement?.id,selected:document.querySelector('[role="tab"][aria-selected="true"]')?.id,visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id)}));
+          if(keyboard.active!=='storyTabJourney'||keyboard.selected!=='storyTabJourney'||keyboard.visible[0]!=='storyJourneyPanel')throw new Error(`Arrow-key tab navigation failed: ${JSON.stringify(keyboard)}`);
+
+          await browser.close();
+          JS
+          node .astra-atlas-journal-red.mjs
+          rm -f .astra-atlas-journal-red.mjs
+          kill $(cat /tmp/atlas-journal-red-http.pid) || true
