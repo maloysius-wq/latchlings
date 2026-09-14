@@ -11,13 +11,8 @@
 <link rel="stylesheet" href="style400-skyway-atlas.css?v=20260912-ch4pass3-1">
 <link rel="stylesheet" href="style400-story-theme.css?v=20260913-audit-r1r5-1">
 <link rel="stylesheet" href="style400-story-rail-board.css?v=20260913-audit-r1r5-1">
-<link rel="stylesheet" href="style400-cinematics.css?v=20260913-audit-r1r5-1">
-<link rel="stylesheet" href="style400-cinematics-polish.css">
-<link rel="stylesheet" href="style400-cinematics-refine.css">
-<link rel="stylesheet" href="style400-cinematics-refine2.css">
+<link rel="stylesheet" href="style400-cinematics.css?v=20260914-auditfull-1">
 <link rel="stylesheet" href="style400-whimsy-font.css">
-<link rel="stylesheet" href="style400-cinematics-dialogue.css?v=20260913-audit-r1r5-1">
-<link rel="stylesheet" href="style400-cinematics-geometry.css">
 <link rel="stylesheet" href="style400-atlas-progression.css">
 <link rel="stylesheet" href="style400-board-surfaces.css">
 <link rel="stylesheet" href="style400-production-slice.css?v=20260912-ch4pass3-1">
@@ -31,7 +26,7 @@
   <div class="chapter-material-backdrop" id="chapterMaterialBackdrop" aria-hidden="true"></div>
   <main id="home" class="screen active production-home" aria-label="Latchlings home">
     <div class="production-home-wrap">
-      <iframe id="homeTitleFrame" class="production-home-frame" src="title-island-concepts/?c=2&amp;embed=1&amp;v=20260913-audit-r1r5-1" title="Latchlings Little Home" scrolling="no"></iframe>
+      <iframe id="homeTitleFrame" class="production-home-frame" src="title-island-concepts/?c=2&amp;embed=1&amp;v=20260914-auditfull-1" title="Latchlings Little Home" scrolling="no"></iframe>
     </div>
   </main>
 
@@ -52,21 +47,12 @@
 
   <main id="story" class="screen story-screen" aria-label="Story and residents">
     <div class="topbar card story-topbar"><button class="iconbtn" id="storyBack" aria-label="Back"></button><div class="game-title" style="font-size:22px">Story &amp; Residents</div><div class="spacer"></div><button class="story-rules-btn" id="storyRules">Rules</button></div>
-    <section class="story-screen-card card">
-      <div class="theme-kicker">The Latchlands</div>
-      <h1>Little Home</h1>
-      <p id="storyPremise"></p>
-      <div id="storyBriefing"></div>
-      <div class="story-role-card" id="storyRole"></div>
-      <h2>Residents</h2>
-      <div class="story-cast" id="storyCast"></div>
-      <h2>Current chapter</h2>
-      <div class="story-current-chapter" id="storyChapter"></div>
-      <h2>Journey so far</h2>
-      <div class="story-journey" id="storyJourney"></div>
-      <h2>Story Cinematics</h2>
-      <p class="story-cinematic-intro">Replay the major story moments you have reached in the campaign.</p>
-      <div class="cinematic-library" id="storyCinematics"></div>
+    <section class="story-screen-card card" data-story-section="now">
+      <header class="story-now-summary" data-story-panel="now"><div class="theme-kicker">The Latchlands</div><h1>Little Home</h1><p id="storyPremise"></p><div id="storyBriefing"></div><div class="story-role-card" id="storyRole"></div><div class="story-current-chapter" id="storyChapter"></div></header>
+      <nav class="story-section-tabs" aria-label="Story sections"><button class="story-section-tab" data-story-section="now" aria-selected="true">Now</button><button class="story-section-tab" data-story-section="residents">Residents</button><button class="story-section-tab" data-story-section="journey">Journey</button><button class="story-section-tab" data-story-section="films">Cinematics</button></nav>
+      <section class="story-section-panel" data-story-panel="residents" hidden><h2>Residents</h2><p class="story-section-intro">Who lives at Little Home, what they notice, and how they help the Waykeeper.</p><div class="story-cast" id="storyCast"></div></section>
+      <section class="story-section-panel" data-story-panel="journey" hidden><h2>Journey so far</h2><div class="story-journey" id="storyJourney"></div></section>
+      <section class="story-section-panel" data-story-panel="films" hidden><h2>Story Cinematics</h2><p class="story-cinematic-intro">Replay the major story moments you have reached.</p><div class="cinematic-library" id="storyCinematics"></div></section>
     </section>
   </main>
 
@@ -85,26 +71,17 @@
 <button class="dpad-cycle" id="cycleLatchlingBtn" aria-label="Select next Latchling" title="Select next Latchling"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="cycle-ring" d="M18 23a18 18 0 0 1 29-5"/><path class="cycle-ring" d="M46 41a18 18 0 0 1-29 5"/><path class="cycle-tip" d="m43 11 5 8-9 1"/><path class="cycle-tip" d="m21 53-5-8 9-1"/><circle cx="24" cy="32" r="3.5"/><circle cx="32" cy="32" r="3.5"/><circle cx="40" cy="32" r="3.5"/></svg></button><button class="dpad-hit up" data-dir="U" aria-label="Move up"></button><button class="dpad-hit left" data-dir="L" aria-label="Move left"></button><button class="dpad-hit right" data-dir="R" aria-label="Move right"></button><button class="dpad-hit down" data-dir="D" aria-label="Move down"></button></div><button class="side-action" id="hintBtn"><span id="hintIcon"></span><span>Hint</span></button></div>
   </main>
 
-  <main id="complete" class="screen" aria-label="Campaign complete">
-    <div class="home-main"><section class="hero card ending-hero">
-      <div class="logo" style="font-size:24px">Latchlings<small></small></div>
-      <div class="ending-kicker">Little Home · Level 400</div>
-      <h1>Skyway Restored</h1>
-      <p>The islands keep drifting. Now the routes move with them, tended by neighbors and Waykeepers across the Latchlands.</p>
-      <div class="island ending-island" aria-label="Little Home surrounded by connected islands and its five residents">
-        <div class="ending-route route-one" aria-hidden="true"></div><div class="ending-route route-two" aria-hidden="true"></div><div class="ending-route route-three" aria-hidden="true"></div>
-        <div class="ending-far-island far-one" aria-hidden="true"></div><div class="ending-far-island far-two" aria-hidden="true"></div><div class="ending-far-island far-three" aria-hidden="true"></div>
-        <div class="island-base"></div><div class="home-house"></div>
-        <div class="ending-latchling ending-pippa expr-curious" data-character="Pippa" role="img" aria-label="Pippa, lavender club Latchling" style="--ending-light:#c3a0f1;--ending-color:#9a72df;--ending-dark:#724fbd;--ending-blink-duration:4.55s;--ending-blink-delay:-1.15s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12a19 19 0 0 1 12 34 20 20 0 1 1 9 37c-9 0-15-5-18-11 1 10 5 16 12 21H35c7-5 11-11 12-21-3 6-9 11-18 11a20 20 0 1 1 9-37A19 19 0 0 1 50 12Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
-        <div class="ending-latchling ending-bramble expr-smug" data-character="Bramble" role="img" aria-label="Bramble, coral diamond Latchling" style="--ending-light:#ff9297;--ending-color:#ef5f66;--ending-dark:#c33d49;--ending-blink-duration:5.10s;--ending-blink-delay:-2.70s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 7 88 50 50 93 12 50Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
-        <div class="ending-latchling ending-rowan expr-happy" data-character="Rowan" role="img" aria-label="Rowan, mint heart Latchling" style="--ending-light:#94dc98;--ending-color:#66bd72;--ending-dark:#469852;--ending-blink-duration:4.80s;--ending-blink-delay:-3.35s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
-        <div class="ending-latchling ending-pip ending-child expr-determined" data-character="Pip" role="img" aria-label="Pip, blue spade Latchling" style="--ending-light:#79aff9;--ending-color:#4c8ff4;--ending-dark:#2e69c8;--ending-blink-duration:5.35s;--ending-blink-delay:-1.85s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8C43 22 14 36 14 60c0 13 10 23 23 23 8 0 13-4 16-10-1 9-5 15-12 20h18c-7-5-11-11-12-20 3 6 8 10 16 10 13 0 23-10 23-23C86 36 57 22 50 8Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
-        <div class="ending-latchling ending-tansy ending-child expr-surprised" data-character="Tansy" role="img" aria-label="Tansy, coral heart Latchling" style="--ending-light:#ff9297;--ending-color:#ef5f66;--ending-dark:#c33d49;--ending-blink-duration:4.25s;--ending-blink-delay:-2.25s"><span class="ending-suit"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg></span><span class="ending-face"><span class="ending-eyes"><i></i><i></i></span><i class="ending-mouth"></i></span></div>
-      </div>
-      <div class="ending-resolution" aria-label="What Skyway Restored means"><p><strong>No master switch.</strong> Nobody stopped the islands from moving.</p><p><strong>No final map.</strong> Every community learned to watch its own routes and share what changes.</p><p><strong>A living Skyway.</strong> Little Home is one connected node among many, and tomorrow’s route can change again.</p></div>
-      <p class="ending-note">Ordinary life continues. That is the victory.</p>
-      <button class="primary-btn" id="completeLevels">Level Select</button><button class="secondary-btn" id="completeHome" style="margin-top:12px">Return to Little Home</button>
-    </section></div>
+  <main id="complete" class="screen ending-screen" aria-label="Campaign complete">
+    <div class="ending-canonical-wrap">
+      <iframe id="endingHomeFrame" class="ending-home-frame" src="title-island-concepts/?c=2&amp;embed=1&amp;ending=1&amp;v=20260914-auditfull-1" title="Little Home after the Skyway restoration" scrolling="no"></iframe>
+      <section class="ending-resolution-card card" aria-labelledby="endingTitle">
+        <div class="ending-kicker">Level 400 · Homeward</div><h1 id="endingTitle">The Skyway lives because people keep tending it.</h1>
+        <p>Little Home has not stopped moving. Neither has anyone else. The difference is that the routes move with them now.</p>
+        <div class="ending-ordinary-list" aria-label="Ordinary life after the restoration"><span>Watering gets done.</span><span>A visitor arrives.</span><span>Pip still chooses the interesting route.</span></div>
+        <p class="ending-note"><strong>No master switch. No final map.</strong> Home is the place you keep finding a way back to.</p>
+        <div class="ending-actions"><button class="primary-btn" id="completeHome">Return to Little Home</button><button class="secondary-btn" id="completeLevels">View the living Skyway</button></div>
+      </section>
+    </div>
   </main>
 </div>
 <div class="story-card-overlay" id="storyCardOverlay" aria-hidden="true">
@@ -133,20 +110,18 @@
 <script src="campaign400-6.js"></script>
 <script src="campaign400-7.js"></script>
 <script src="campaign400-8.js"></script>
-<script src="story400.js?v=20260912-ch2pass3-1"></script>
+<script src="story400.js?v=20260914-auditfull-1"></script>
 <script src="story-grounding400.js?v=20260912-ch2pass3-1"></script>
-<script src="cinematics400.js?v=20260913-audit-r1r5-1"></script>
-<script src="cinematic-dialogue400.js?v=20260912-pass1"></script>
-<script src="game400-a.js?v=20260913-audit-r1r5-1"></script>
-<script src="game400-b.js?v=20260913-audit-r1r5-1"></script>
+<script src="cinematics400.js?v=20260914-auditfull-1"></script>
+<script src="game400-a.js?v=20260914-auditfull-1"></script>
+<script src="game400-b.js?v=20260914-auditfull-1"></script>
 <script src="pass3-chapter5-prism.js?v=20260913-ch5modular-1"></script>
 <script src="pass3-chapter6-copperline.js?v=20260913-ch6pass3-1"></script>
 <script src="pass3-chapter7-stormswitch.js?v=20260913-ch7pass3-1"></script>
 <script src="pass3-chapter8-aurora.js?v=20260913-ch8pass3-1"></script>
 <script src="music400.js?v=20260911-atlaspace1"></script>
 <script src="sfx400.js?v=20260912-pass1"></script>
-<script src="story-theme400.js?v=20260911-narrative1"></script>
-<script src="gameplay-story-rail400.js?v=20260913-audit-r1r5-1"></script>
-<script src="cinematic-geometry400.js?v=20260911-bubblestable1"></script>
+<script src="story-theme400.js?v=20260914-auditfull-1"></script>
+<script src="gameplay-story-rail400.js?v=20260914-auditfull-1"></script>
 </body>
 </html>

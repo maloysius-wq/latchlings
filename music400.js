@@ -3,6 +3,7 @@
 (() => {
   const MUSIC_KEY = 'latchlings_music_enabled_v1';
   const TARGET_VOLUME = 0.24;
+  const DUCK_VOLUME = 0.09;
   const FADE_MS = 360;
   const ATLAS_FADE_MS = Math.round(FADE_MS * 1.7);
   const TRACKS = {
@@ -53,7 +54,9 @@
   }
 
   function atlasChapterKey() {
-    const app = document.getElementById('app');
+    const bodyObserver=new MutationObserver(()=>queueMicrotask(()=>syncMusic()));bodyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+
+  const app = document.getElementById('app');
     const cls = app && Array.from(app.classList).find(name => /^theme-ch[1-8]$/.test(name));
     return cls ? cls.slice(8) : null;
   }
@@ -79,6 +82,8 @@
     return Math.max(0, Math.min(1, value));
   }
 
+  function desiredVolume(){return document.body.classList.contains('cinematic-open')||document.body.classList.contains('modal-open')?DUCK_VOLUME:TARGET_VOLUME;}
+
   function fadeTo(target, duration = FADE_MS, token = transitionToken) {
     cancelFade();
     const start = performance.now();
@@ -101,7 +106,7 @@
     try {
       await audio.play();
       if (token !== transitionToken) return;
-      await fadeTo(TARGET_VOLUME, fadeMs, token);
+      await fadeTo(desiredVolume(), fadeMs, token);
     } catch (_) {
       // Browsers may still block playback until a later user gesture.
       // The next pointer/key interaction retries through unlockAudio().
@@ -114,6 +119,7 @@
     if (!TRACKS[key] || !enabled || !unlocked) return;
     if (currentKey === key && audio.src) {
       if (audio.paused) beginCurrentTrack(transitionToken, fadeMs);
+      else fadeTo(desiredVolume(),fadeMs,transitionToken);
       return;
     }
 

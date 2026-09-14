@@ -89,3 +89,6 @@
 
 #board[data-board-range] .nest{background:linear-gradient(145deg,rgba(255,255,255,.96),color-mix(in srgb,var(--sq-a) 30%,#fff3dd));box-shadow:inset 0 0 0 3px rgba(255,255,255,.72),0 0 0 2px color-mix(in srgb,var(--sq-edge) 58%,transparent),0 2px 5px rgba(30,43,54,.16)}
 #board[data-board-range] .rail,#board[data-board-range] .turner,#board[data-board-range] .switch-tile,#board[data-board-range] .door-tile,#board[data-board-range] .anchor{outline:2px solid color-mix(in srgb,var(--sq-edge) 62%,transparent);outline-offset:1px}
+
+/* Full audit closure: five recognizable movement rims without adding cell clutter */
+#game .board[data-board-range="1"]{outline:2px solid color-mix(in srgb,var(--themeAccent) 22%,transparent);outline-offset:2px}#game .board[data-board-range="2"]{box-shadow:0 16px 34px rgba(30,48,65,.24),inset 0 0 0 4px color-mix(in srgb,var(--themeAccent) 10%,transparent)}#game .board[data-board-range="3"]{border-radius:22px 14px 22px 14px}#game .board[data-board-range="4"]{border-style:double;border-width:4px}#game .board[data-board-range="5"]{box-shadow:0 16px 34px rgba(30,48,65,.26),inset 0 0 0 2px rgba(255,255,255,.48),0 0 0 3px color-mix(in srgb,var(--themeAccent) 16%,transparent)}

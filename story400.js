@@ -8,6 +8,7 @@ const CAST=[
  {name:'Tansy',color:'coral',suit:'heart',role:'Co-conspirator and collector',shortRole:'Collector & commentator',voice:'Expressive, imaginative, and unusually good at noticing what a change means to people.'}
 ];
 
+window.LATCHLINGS_CAST=CAST;
 const CHAPTERS=[
  {
   name:'Morning Routes',theme:'Sunpetal Meadows',mechanic:'Edges, rocks, and clean continuous snaps',color:'#b9dcf4',
