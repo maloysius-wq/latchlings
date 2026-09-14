@@ -51,7 +51,7 @@ rail_lines = {
  'Older Than the Market':'The suit marks predate today’s market stalls.',
  'Distant Stations':'Keep records link travel windows to distant stations.',
  'Market Saved':'The market works, and old route records are pouring in.',
- 'The View Gets Wider':'From Prism’s high paths, neighboring islands sit farther from their old markers.',
+ 'The View Gets Wider':'From Prism’s high paths, nearby islands sit beyond their old markers.',
  'A Familiar Island, Farther Away':'A familiar island is farther from its old connection.',
  'The Porch Light':'Twin lanterns still mark a friend’s porch across the drift.',
  'Yesterday Will Not Fit':'Aligning one old region throws another out of place.',
