@@ -58,6 +58,21 @@ css += r'''
   .ending-skyway-node{scale:.86}
   .ending-skyway-node.node-home{scale:.9}
 }
+@media(max-height:600px){
+  .screen#complete{padding-top:6px;padding-bottom:6px}
+  #complete .home-main{padding:0;gap:0;justify-content:flex-start}
+  .ending-hero-pass4{padding:7px 10px 9px;border-radius:22px}
+  .ending-hero-pass4>.logo{display:none}
+  .ending-kicker{margin-top:0;font-size:9px;line-height:1.1}
+  .ending-hero-pass4 h1{font-size:28px;margin:2px 0}
+  .ending-hero-pass4>p:not(.ending-note){font-size:11.5px;line-height:1.25;margin-bottom:4px;max-width:290px}
+  .ending-homecoming{height:140px;margin:0 auto 3px;border-radius:20px}
+  .ending-home-focus{inset:4% 4% 2%;border-radius:16px}
+  .ending-skyway-node{scale:.72}
+  .ending-skyway-node.node-home{scale:.76}
+  .ending-note{font-size:12px!important;line-height:1.15;margin:0 auto 5px!important}
+  .ending-actions{gap:5px}
+}
 @media(prefers-reduced-motion:reduce){.ending-network-field,.ending-home-focus{animation:none!important}.ending-network-field{opacity:.52!important;transform:scale(1.06)!important}.ending-home-focus{opacity:1!important;transform:scale(1)!important}}
 html[data-motion="reduced"] .ending-network-field,html[data-motion="reduced"] .ending-home-focus{animation:none!important;transition:none!important}
 html[data-motion="reduced"] .ending-network-field{opacity:.52!important;transform:scale(1.06)!important}
