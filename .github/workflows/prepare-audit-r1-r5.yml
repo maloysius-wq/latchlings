@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build targeted R1-R5 files
-        run: python .github/tmp/prepare-audit-r1-r5.py
+        run: |
+          python .github/tmp/prepare-audit-r1-r5.py
+          python .github/tmp/fix-audit-r1-r5-candidate.py
       - name: Create remote Git blobs without moving main
         env:
           GH_TOKEN: ${{ github.token }}
