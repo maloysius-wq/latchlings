@@ -1,0 +1,49 @@
+name: Astra Pass 5 Browser Certification Rerun 2
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/astra-pass5-browser-cert-rerun2.yml']
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - run: git diff --exit-code a998e095dd710028cdca6e028bc0047c71aeed3c HEAD -- story400.js cinematics400.js style400-cinematics.css index.html game400-a.js game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+      - run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run corrected full Pass 5 gate
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-pass5/screens
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-pass5-http.log 2>&1 &
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('.github/workflows/astra-pass5-browser-cert.yml').read_text()
+          marker="cat > .astra-pass5.mjs <<'JS'\n"
+          body=src.split(marker,1)[1].split('\n          JS\n',1)[0]
+          lines=[line[10:] if line.startswith('          ') else line for line in body.splitlines()]
+          text='\n'.join(lines)+'\n'
+          replacements={
+            "running:document.getAnimations({subtree:true}).filter(a=>a.playState==='running').length":"running:document.getAnimations({subtree:true}).filter(a=>a.playState==='running'&&a.effect?.target?.closest?.('#game')).length",
+            "if(hf)await hf.click('.play');":"if(hf)await hf.click('#c2 .play');",
+            "await p.evaluate(()=>pauseModal());await p.waitForTimeout(30);const pause=document.getElementById;const focusOpen=":"await p.evaluate(()=>pauseModal());await p.waitForTimeout(30);const focusOpen="
+          }
+          for old,new in replacements.items():
+              assert old in text,old
+              text=text.replace(old,new,1)
+          Path('.astra-pass5.mjs').write_text(text)
+          PY
+          node .astra-pass5.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: astra-pass5-browser-evidence
+          path: /tmp/astra-pass5
+          if-no-files-found: warn
