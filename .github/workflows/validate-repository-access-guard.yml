@@ -1,3 +1,4 @@
+# Final Astra closure validation trigger: 2026-09-14
 name: Validate Repository Access Guard
 
 on:
