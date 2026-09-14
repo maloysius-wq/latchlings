@@ -1,0 +1,33 @@
+name: Fix full audit short-screen Large Text
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths: ['.github/workflows/fix-full-audit-short-large.yml']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+      - name: Tighten short-screen Large Text layout budget
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('style400-game.css')
+          s=p.read_text()
+          marker='/* Full audit short-screen Large Text containment */'
+          assert marker not in s
+          s += '''\n\n/* Full audit short-screen Large Text containment */\n@media(max-height:620px) and (max-width:380px){\n html[data-text-size="large"] #game .board{width:min(100%,480px,36svh)}\n html[data-text-size="large"] #game .game-top{margin-bottom:2px}\n html[data-text-size="large"] #game .story-rail-slot{margin-bottom:2px}\n html[data-text-size="large"] #game .controls{padding-top:1px}\n}\n'''
+          p.write_text(s)
+          PY
+          git diff --check
+      - name: Commit fix
+        run: |
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add style400-game.css
+          git commit -m 'Fit Large Text on short phone screens'
+          git push origin HEAD:audit-full-closure-candidate
