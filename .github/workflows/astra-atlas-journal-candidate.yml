@@ -1,0 +1,192 @@
+name: Astra Atlas journal candidate
+
+on:
+  push:
+    branches: [astra-atlas-journal-candidate]
+    paths:
+      - '.github/workflows/astra-atlas-journal-candidate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: astra-atlas-journal-candidate
+          fetch-depth: 0
+
+      - name: Snapshot protected accepted sources
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css title-island-concepts/index.html pass3-chapter5-prism.js pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js pass3-chapter8-aurora.js > /tmp/accepted-before.sha256
+
+      - name: Apply candidate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/astra_atlas_journal_candidate.py')
+          s=p.read_text()
+          # Keep all navigation controls at the accepted 44px minimum even on short phones.
+          s=s.replace("@media(max-height:720px){.atlas-chapter-nav{min-height:40px}.atlas-chapter-arrow{width:40px;height:40px;min-width:40px}.atlas-waypoint-nav{min-height:42px}.atlas-range-arrow{width:40px;height:40px;min-width:40px}.atlas-range-current{height:40px;padding-top:4px;padding-bottom:3px}", "@media(max-height:720px){.atlas-chapter-nav{min-height:44px}.atlas-chapter-arrow{width:44px;height:44px;min-width:44px}.atlas-waypoint-nav{min-height:44px}.atlas-range-arrow{width:44px;height:44px;min-width:44px}.atlas-range-current{height:44px;padding-top:4px;padding-bottom:3px}")
+          s=s.replace("@media(max-height:600px){.atlas-chapter-nav{min-height:36px}.atlas-chapter-arrow{width:36px;height:36px;min-width:36px}.atlas-waypoint-nav{min-height:38px}.atlas-range-arrow{width:38px;height:38px;min-width:38px}.atlas-range-current{height:38px}", "@media(max-height:600px){.atlas-chapter-nav{min-height:44px}.atlas-chapter-arrow{width:44px;height:44px;min-width:44px}.atlas-waypoint-nav{min-height:44px}.atlas-range-arrow{width:44px;height:44px;min-width:44px}.atlas-range-current{height:44px}")
+          s=s.replace("@media(max-width:360px){.story-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.story-section-tab{min-height:40px}", "@media(max-width:360px){.story-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.story-section-tab{min-height:44px}")
+          s=s.replace("@media(max-height:620px){.story-journal-shell{padding-top:10px}.story-journal-heading{padding-bottom:5px}.story-journal-heading>p{display:none}.story-section-tabs{margin-bottom:6px}.story-section-tab{min-height:38px;padding:5px}", "@media(max-height:620px){.story-journal-shell{padding-top:10px}.story-journal-heading{padding-bottom:5px}.story-journal-heading>p{display:none}.story-section-tabs{margin-bottom:6px}.story-section-tab{min-height:44px;padding:5px}")
+          s=s.replace('html[data-text-size="large"] .story-journal-heading>p,html[data-text-size="large"] .story-section-heading p,html[data-text-size="large"] .story-now-chapter>p,html[data-text-size="large"] .story-now-grid p{font-size:1.08em}', 'html[data-text-size="large"] .story-journal-heading>p,html[data-text-size="large"] .story-section-heading p,html[data-text-size="large"] .story-now-chapter>p,html[data-text-size="large"] .story-now-grid p{font-size:12.5px}')
+          p.write_text(s)
+          PY
+          python .github/tmp/astra_atlas_journal_candidate.py
+
+      - name: Protect campaigns and previously accepted slices
+        shell: bash
+        run: |
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/accepted-before.sha256
+          git diff --exit-code 99912672237fc7841244cd3ac1637bb39062f6db -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css title-island-concepts/index.html pass3-chapter5-prism.js pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js pass3-chapter8-aurora.js
+
+      - name: Static syntax and acceptance assertions
+        shell: bash
+        run: |
+          node --check game400-a.js
+          node --check game400-b.js
+          python - <<'PY'
+          from pathlib import Path
+          a=Path('game400-a.js').read_text(); b=Path('game400-b.js').read_text(); i=Path('index.html').read_text(); atlas=Path('style400-skyway-atlas.css').read_text(); story=Path('style400-story-theme.css').read_text(); prog=Path('style400-atlas-progression.css').read_text()
+          assert 'atlas-region-dot' not in a[a.index('function renderChapter'):]
+          assert 'atlas-range-current' in a and 'data-state="${state}"' in a
+          assert "reward-working" in a and 'effectiveReducedMotion()' in a
+          assert "STORY_SECTION_ORDER=['Now','Residents','Journey','Cinematics']" in b
+          assert 'function storyModal(){closeModal();openStoryScreen()}' in b
+          assert i.count('role="tab"') == 4 and 'storyNowPanel' in i and 'storyCinematicsPanel' in i
+          assert 'Astra Atlas hierarchy coherence' in atlas
+          assert 'Astra journal section coherence' in story
+          assert 'Astra working-landmark arrival' in prog
+          assert 'min-height:36px}.atlas-chapter-arrow' not in atlas
+          assert 'min-height:38px;padding:5px' not in story
+          print('Static Atlas/journal acceptance assertions passed.')
+          PY
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-atlas-journal-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-atlas-journal-http.log 2>&1 &
+          echo $! >/tmp/astra-atlas-journal-http.pid
+          cat > .astra-atlas-journal-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const results=[];
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(`pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+
+            await page.evaluate(()=>{progress={unlocked:255,stars:{50:3,100:3,150:3,200:3,250:3,251:3,252:3,253:3,254:3}};chapterView=6;rangeView=0;screen('levels');renderChapter()});
+            await page.waitForTimeout(100);
+            const atlas=await page.evaluate(()=>({
+              dots:document.querySelectorAll('#chapterNav .atlas-region-dot').length,
+              chapterTargets:[...document.querySelectorAll('#chapterNav button')].map(b=>{const r=b.getBoundingClientRect();return {w:r.width,h:r.height}}),
+              oldRangeTabs:document.querySelectorAll('#rangeNav .atlas-waypoint-tab').length,
+              range:document.querySelector('#rangeNav .atlas-range-current')?.textContent?.replace(/\s+/g,' ').trim()||'',
+              rangeTargets:[...document.querySelectorAll('#rangeNav button')].map(b=>{const r=b.getBoundingClientRect();return {w:r.width,h:r.height}}),
+              states:[...document.querySelectorAll('#levelGrid .atlas-node')].map(n=>({level:n.dataset.level,state:n.dataset.state,badge:n.querySelector('.atlas-state-badge')?.textContent?.trim()||''})),
+              caption:document.querySelectorAll('#levelGrid .atlas-route-caption').length,
+              map:(()=>{const r=document.getElementById('levelGrid').getBoundingClientRect();return {top:r.top,bottom:r.bottom,h:r.height}})(),
+              footer:(()=>{const r=document.getElementById('continueBtn').getBoundingClientRect();return {top:r.top,bottom:r.bottom}})()
+            }));
+            if(atlas.dots!==0||atlas.oldRangeTabs!==0||atlas.caption!==0)throw new Error(`${size.name}: obsolete Atlas navigation remains ${JSON.stringify(atlas)}`);
+            if(atlas.chapterTargets.length!==2||atlas.chapterTargets.some(r=>r.w<44||r.h<44))throw new Error(`${size.name}: chapter targets ${JSON.stringify(atlas.chapterTargets)}`);
+            if(atlas.rangeTargets.length!==2||atlas.rangeTargets.some(r=>r.w<44||r.h<44))throw new Error(`${size.name}: range targets ${JSON.stringify(atlas.rangeTargets)}`);
+            if(!atlas.range.includes('Levels 251–260')||atlas.range.length<18)throw new Error(`${size.name}: selected range is not full-name ${atlas.range}`);
+            if(!atlas.states.some(n=>n.state==='restored'&&n.badge==='✓')||!atlas.states.some(n=>n.state==='current'&&n.badge==='◆')||!atlas.states.every(n=>['restored','current','available','locked'].includes(n.state)))throw new Error(`${size.name}: state semantics ${JSON.stringify(atlas.states)}`);
+            if(atlas.footer.bottom>size.height+0.5)throw new Error(`${size.name}: Atlas Continue below viewport ${JSON.stringify(atlas.footer)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-atlas-journal-evidence/atlas-phone.png',fullPage:true});
+
+            // Arrival must expose a visible working-landmark state without changing puzzle data.
+            await page.evaluate(()=>{progress={unlocked:251,stars:{250:3}};chapterView=6;rangeView=0;renderChapter();atlasRevealDestination({to:252})});
+            const working=await page.evaluate(()=>({state:document.querySelector('.atlas-node[data-level="252"]')?.dataset.state,working:document.querySelector('.atlas-node[data-level="252"]')?.classList.contains('reward-working'),badge:document.querySelector('.atlas-node[data-level="252"] .atlas-state-badge')?.textContent?.trim()}));
+            if(working.state!=='current'||!working.working||working.badge!=='◆')throw new Error(`${size.name}: working landmark arrival ${JSON.stringify(working)}`);
+
+            await page.evaluate(()=>{progress={unlocked:255,stars:{50:3,100:3,150:3,200:3,250:3,251:3,252:3,253:3,254:3}};openStoryScreen()});
+            await page.waitForTimeout(80);
+            const journal=await page.evaluate(()=>({
+              tabs:[...document.querySelectorAll('#story [role="tab"]')].map(t=>({id:t.id,text:t.textContent.trim(),selected:t.getAttribute('aria-selected'),tabIndex:t.tabIndex,r:(()=>{const x=t.getBoundingClientRect();return {w:x.width,h:x.height}})()})),
+              visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id),
+              now:document.querySelector('#storyNowPanel')?.textContent?.replace(/\s+/g,' ').trim()||'',
+              shell:(()=>{const x=document.querySelector('.story-journal-shell').getBoundingClientRect();return {top:x.top,bottom:x.bottom}})()
+            }));
+            if(journal.tabs.map(t=>t.text).join('|')!=='Now|Residents|Journey|Cinematics'||journal.visible.join('|')!=='storyNowPanel')throw new Error(`${size.name}: journal structure ${JSON.stringify(journal)}`);
+            if(journal.tabs.some(t=>t.r.h<44))throw new Error(`${size.name}: journal tab target below 44px ${JSON.stringify(journal.tabs)}`);
+            if(!journal.now.includes('Current question')||!journal.now.includes('Latest discovery')||!journal.now.includes('Your work'))throw new Error(`${size.name}: Now summary missing roles ${journal.now}`);
+            if(journal.shell.bottom>size.height+0.5)throw new Error(`${size.name}: journal shell below viewport ${JSON.stringify(journal.shell)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-atlas-journal-evidence/journal-now.png',fullPage:true});
+
+            await page.click('#storyTabCinematics');
+            const cinema=await page.evaluate(()=>({visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id),selected:document.querySelector('#storyTabCinematics')?.getAttribute('aria-selected'),cards:document.querySelectorAll('#storyCinematics button').length}));
+            if(cinema.visible.join('|')!=='storyCinematicsPanel'||cinema.selected!=='true'||cinema.cards<1)throw new Error(`${size.name}: Cinematics direct access ${JSON.stringify(cinema)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-atlas-journal-evidence/journal-cinematics.png',fullPage:true});
+
+            await page.focus('#storyTabCinematics');await page.keyboard.press('ArrowLeft');
+            const key=await page.evaluate(()=>({active:document.activeElement?.id,selected:document.querySelector('[role="tab"][aria-selected="true"]')?.id,visible:[...document.querySelectorAll('#story [role="tabpanel"]')].filter(p=>!p.hidden).map(p=>p.id)}));
+            if(key.active!=='storyTabJourney'||key.selected!=='storyTabJourney'||key.visible.join('|')!=='storyJourneyPanel')throw new Error(`${size.name}: keyboard tabs ${JSON.stringify(key)}`);
+
+            // Large Text must genuinely enlarge journal body copy without breaking section navigation.
+            await page.click('#storyTabNow');
+            const normalSize=parseFloat(await page.locator('.story-now-grid p').first().evaluate(el=>getComputedStyle(el).fontSize));
+            await page.evaluate(()=>window.LatchlingsPrefs.set('textSize','large'));
+            await page.waitForTimeout(30);
+            const large=await page.locator('.story-now-grid p').first().evaluate(el=>({size:parseFloat(getComputedStyle(el).fontSize),tabs:[...document.querySelectorAll('#story [role="tab"]')].map(t=>t.getBoundingClientRect().height)}));
+            if(!(large.size>normalSize)||large.tabs.some(h=>h<44))throw new Error(`${size.name}: Large Text journal regression normal=${normalSize}, large=${JSON.stringify(large)}`);
+
+            // Previously accepted Little Home context/memory behavior must survive game runtime edits.
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('textSize','normal');progress={unlocked:251,stars:{50:3,100:3,150:3,200:3,250:3}};screen('home');updateHome(false)});
+            await page.waitForTimeout(100);
+            const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+            const home=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',keepsakes:document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length}));
+            if(home.label!=='Continue Old Ways'||home.keepsakes!==5)throw new Error(`${size.name}: Little Home regression ${JSON.stringify(home)}`);
+
+            if(errors.length)throw new Error(`${size.name}: ${errors.join('; ')}`);
+            results.push({size:size.name,atlas,journalTabs:journal.tabs.map(t=>t.text),normalSize,largeSize:large.size,home});
+            await context.close();
+          }
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-atlas-journal-evidence/results.json',JSON.stringify(results,null,2));
+          console.log(JSON.stringify(results,null,2));
+          JS
+          node .astra-atlas-journal-check.mjs
+          rm -f .astra-atlas-journal-check.mjs
+          kill $(cat /tmp/astra-atlas-journal-http.pid) || true
+
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add game400-a.js game400-b.js index.html style400-skyway-atlas.css style400-story-theme.css style400-atlas-progression.css
+          git commit -m "Stage Atlas hierarchy and journal sections"
+          git push origin HEAD:astra-atlas-journal-candidate
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-atlas-journal-candidate-evidence
+          path: /tmp/astra-atlas-journal-evidence
+          if-no-files-found: warn
