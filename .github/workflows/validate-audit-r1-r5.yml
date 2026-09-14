@@ -79,6 +79,15 @@ jobs:
           set -euo pipefail
           sed -i 's/window.__dummy=0;//' .github/tmp/validate-audit-r1-r5.mjs
           sed -i 's/updateStoryScreen?\.()/window.updateStoryScreen?.()/g' .github/tmp/validate-audit-r1-r5.mjs
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/validate-audit-r1-r5.mjs')
+          t=p.read_text(encoding='utf-8')
+          old="await settleGame(page,201);await page.click('#hintBtn');"
+          new="await settleGame(page,201);await page.waitForTimeout(320);await page.evaluate(()=>window.LatchlingsStoryTheme?.close(false));await page.waitForTimeout(20);await page.click('#hintBtn');"
+          if t.count(old)!=1: raise SystemExit(f'hint setup patch expected once, found {t.count(old)}')
+          p.write_text(t.replace(old,new,1),encoding='utf-8')
+          PY
           python3 -m http.server 4173 -d /tmp/r1r5-site >/tmp/r1r5-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
