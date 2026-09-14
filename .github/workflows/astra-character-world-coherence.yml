@@ -1,0 +1,44 @@
+name: Astra Character World Coherence
+
+on:
+  push:
+    branches: [astra-character-world-coherence]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  coherence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: RED acceptance contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          checks = []
+          rail = Path('gameplay-story-rail400.js').read_text()
+          theme = Path('story-theme400.js').read_text()
+          grounding = Path('story-grounding400.js').read_text()
+          home = Path('title-island-concepts/index.html').read_text()
+          game = Path('game400-a.js').read_text()
+          checks += [
+            ('N04 immediate motive role', 'data-story-role="motive"' in rail and 'MOVEMENT_RAIL_LINES' not in rail),
+            ('N04 movement clue role', 'data-story-role="movement-clue"' in theme),
+            ('V06 complete keepsake use map', all(f"keepsake:'{k}'" in home for k in ['mailbox','pennant','anchor','bunting','telescope','relic','dock'])),
+            ('N05 Pip authored behavior', 'data-resident="Pip"' in home and "resident:'Pip'" in home),
+            ('N05 Tansy authored behavior', 'data-resident="Tansy"' in home and "resident:'Tansy'" in home),
+            ('N05 line-sensitive expressions', 'expressionForLine' in theme),
+            ('V07 shared world fixture contract', 'movementFixtureFor' in grounding and 'data-fixture' in theme),
+            ('V12 authored Atlas destinations', 'data-landmark-label' in game and 'atlasLandmarkFor' in game),
+          ]
+          missing = [name for name, ok in checks if not ok]
+          print('\n'.join(f"{'PASS' if ok else 'RED'}  {name}" for name, ok in checks))
+          if missing:
+            raise SystemExit('Expected missing coherence behavior: ' + '; '.join(missing))
+          raise SystemExit('RED contract unexpectedly passed on the pre-change product')
+          PY
