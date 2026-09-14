@@ -36,22 +36,23 @@ function openingDockHtml(id,index,groups){
 function accessibleDialogueHtml(groups){if(!groups.length)return'';return `<span class="cin-dialogue-a11y">${groups.map(([name,texts])=>`${escapeHtml(name)}: ${texts.map(escapeHtml).join(' ')}`).join(' ')}</span>`}
 let scheduled=false,processing=false;
 function postProcess(){
- scheduled=false;if(processing)return;const id=API.active,index=API.beat,c=API.CINEMATICS[id],beat=c&&c.beats[index],overlay=document.getElementById('cinematicOverlay'),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines');
- if(!id||!beat||!overlay||!stage||!lines)return;if(overlay.dataset.cinematic!==id||overlay.dataset.visual!==beat.visual)return;
+ scheduled=false;if(processing)return;
+ const id=API.active,index=API.beat,lineIndex=Math.max(0,Number(API.line)||0),c=API.CINEMATICS[id],beat=c&&c.beats[index],line=beat&&beat.lines&&beat.lines[lineIndex],overlay=document.getElementById('cinematicOverlay'),stage=document.getElementById('cinematicStage'),lines=document.getElementById('cinematicLines');
+ if(!id||!beat||!line||!overlay||!stage||!lines)return;if(overlay.dataset.cinematic!==id||overlay.dataset.visual!==beat.visual)return;
  processing=true;
  try{
-  const groups=dialogueGroups(beat),narration=narratorLines(beat),copy=lines.closest('.cinematic-copy'),beatKey=`${id}:${index+1}`;
+  const speaker=line[0],text=line[1],groups=CAST[speaker]?[[speaker,[text]]]:[],narration=speaker==='Narrator'?[text]:[],copy=lines.closest('.cinematic-copy'),turnKey=`${id}:${index+1}:${lineIndex+1}`;
   stage.querySelectorAll(':scope > .cin-dialogue-layer').forEach(node=>node.remove());
   let dock=copy?.querySelector(':scope > .cin-opening-dialogue-dock')||null;
-  if(dock&&dock.dataset.key!==beatKey){dock.remove();dock=null}
-  if(groups.length&&copy&&!dock){lines.insertAdjacentHTML('afterend',openingDockHtml(id,index,groups));dock=copy.querySelector(':scope > .cin-opening-dialogue-dock');if(dock)dock.dataset.key=beatKey}
+  if(dock&&dock.dataset.key!==turnKey){dock.remove();dock=null}
+  if(groups.length&&copy&&!dock){lines.insertAdjacentHTML('afterend',openingDockHtml(id,index,groups));dock=copy.querySelector(':scope > .cin-opening-dialogue-dock');if(dock)dock.dataset.key=turnKey}
   if(!groups.length&&dock)dock.remove();
   if(!lines.classList.contains('cinematic-narration-only'))lines.classList.add('cinematic-narration-only');
   lines.dataset.narratorCount=String(narration.length);
-  const desired=narration.map(text=>`<p class="narrator-only"><span>${escapeHtml(text)}</span></p>`).join('');
+  const desired=narration.map(value=>`<p class="narrator-only"><span>${escapeHtml(value)}</span></p>`).join('');
   if(lines.innerHTML!==desired)lines.innerHTML=desired;
   lines.hidden=!narration.length;
-  overlay.dataset.dialogueCount=String(groups.length);overlay.dataset.narratorCount=String(narration.length);
+  overlay.dataset.dialogueCount=String(groups.length);overlay.dataset.narratorCount=String(narration.length);overlay.dataset.turn=String(lineIndex);
  }finally{processing=false}
 }
 function schedule(){if(processing||scheduled)return;scheduled=true;queueMicrotask(postProcess)}

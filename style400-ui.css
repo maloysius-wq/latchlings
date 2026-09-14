@@ -130,3 +130,27 @@ body[data-screen="home"] .chapter-material-backdrop{display:none!important}
 
 /* User-facing accessibility preferences. System remains the default. */
 html[data-motion="reduced"] *,html[data-motion="reduced"] *:before,html[data-motion="reduced"] *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}html[data-text-size="large"] .story-screen-card,html[data-text-size="large"] .story-briefing,html[data-text-size="large"] .story-current-chapter{font-size:1.08em}
+
+
+/* Astra Pass 4 canonical ending */
+.ending-hero-pass4{padding:18px 16px 17px;background:linear-gradient(180deg,#fff9ed 0%,#f8ead6 66%,#f2dfc3 100%)}
+.ending-hero-pass4 h1{margin-bottom:5px}.ending-hero-pass4>p:not(.ending-note){margin-bottom:9px}
+.ending-homecoming{position:relative;width:min(100%,430px);height:286px;margin:0 auto 7px;border-radius:26px;overflow:hidden;background:linear-gradient(#b7dff6,#eef5f2);border:1px solid rgba(165,139,101,.35);box-shadow:inset 0 1px rgba(255,255,255,.82),0 12px 24px rgba(43,67,82,.14);isolation:isolate}
+.ending-home-frame{position:absolute;inset:-8% -5% -12%;width:110%;height:120%;border:0;pointer-events:none;z-index:1}
+.ending-living-routes{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.ending-living-routes i{position:absolute;height:4px;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(93,180,239,.92) 18%,#fff0a2 50%,rgba(93,180,239,.92) 82%,transparent);box-shadow:0 0 10px rgba(85,170,232,.58);transform-origin:left center;animation:endingPass4Route 3.1s ease-in-out infinite}
+.ending-living-routes .route-a{width:178px;left:-26px;top:65%;rotate:-10deg}.ending-living-routes .route-b{width:184px;right:-38px;top:58%;rotate:11deg;animation-delay:-1.2s}.ending-living-routes .route-c{width:150px;left:37%;top:24%;rotate:-3deg;animation-delay:-2.1s}
+.ending-parcel{position:absolute;left:10%;top:58%;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#fff7da;border:1px solid rgba(155,119,66,.34);box-shadow:0 5px 12px rgba(40,70,90,.16);font-style:normal;animation:endingPass4Parcel 5.2s ease-in-out infinite}
+.ending-porch-light{position:absolute;right:12%;top:45%;width:14px;height:14px;border-radius:50%;background:#ffe87e;box-shadow:0 0 0 5px rgba(255,232,126,.15),0 0 22px rgba(255,218,84,.8);animation:endingPass4Porch 3s ease-in-out infinite}
+.ending-actions{display:grid;gap:10px;justify-items:center}.ending-actions .primary-btn{min-height:64px;font-size:24px}.ending-actions .secondary-btn{min-height:48px;width:min(78%,320px);padding:8px 12px}
+@keyframes endingPass4Route{0%,100%{opacity:.45;filter:saturate(.85)}50%{opacity:1;filter:saturate(1.25)}}
+@keyframes endingPass4Parcel{0%,15%{translate:-28px 8px;opacity:0}28%{opacity:1}72%{translate:210px -34px;opacity:1}86%,100%{translate:235px -42px;opacity:0}}
+@keyframes endingPass4Porch{0%,45%{opacity:.3;scale:.8}58%,100%{opacity:1;scale:1}}
+@media(max-height:640px){.ending-homecoming{height:230px}.ending-hero-pass4{padding-top:13px}.ending-actions .primary-btn{min-height:56px;font-size:21px}.ending-actions{gap:7px}.ending-hero-pass4>p:not(.ending-note){font-size:13px}}
+@media(prefers-reduced-motion:reduce){.ending-living-routes i,.ending-parcel,.ending-porch-light{animation:none!important}.ending-parcel{translate:125px -20px;opacity:1}.ending-porch-light{opacity:1;scale:1}}
+
+
+/* Astra Pass 4 ending in-game reduced motion */
+html[data-motion="reduced"] .ending-homecoming *{animation:none!important;transition:none!important}
+html[data-motion="reduced"] .ending-parcel{translate:125px -20px;opacity:1}
+html[data-motion="reduced"] .ending-porch-light{opacity:1;scale:1}

@@ -103,3 +103,80 @@ html[data-text-size="large"] .cinematic-copy h3{font-size:15px;line-height:1.3}
  .cinematic-footer{padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
  .cinematic-footer .cinematic-progress{margin:0 0 6px}
 }
+
+
+/* Astra Pass 4 action staging */
+.cinematic-lines p.is-current{min-height:64px;align-content:start;animation:cinDialogueTurn .22s ease-out both}
+.cinematic-overlay[data-turn="0"] .cinematic-stage{--turn-shift:0}
+.cinematic-stage{background:linear-gradient(180deg,#acd7f2 0%,#dceefa 61%,#f5efe0 100%)}
+.cinematic-stage:before{content:"";position:absolute;inset:auto -8% -20px;height:62%;background:radial-gradient(ellipse at center,rgba(255,248,220,.52),rgba(255,255,255,0) 68%);pointer-events:none;z-index:0}
+
+/* Opening: observable drift, chores, a missed basket, then volunteers. */
+.cinematic-overlay[data-cinematic="opening"][data-visual="archipelago"] .cin-island.i1{animation-name:cinPass4DriftLeft}
+.cinematic-overlay[data-cinematic="opening"][data-visual="archipelago"] .cin-island.i3{animation-name:cinPass4DriftRight}
+.cinematic-overlay[data-cinematic="opening"][data-visual="morning"] .cin-breakfast-route .basket{animation:cinPass4BasketMiss 2.8s ease-in-out infinite}
+.cin-volunteer-scene{position:absolute;inset:0;overflow:hidden}
+.cin-volunteer-scene .volunteer-islands{opacity:.72;scale:.92}
+.volunteer-route-stake{position:absolute;left:50%;top:48%;width:9px;height:54px;border-radius:6px;background:#8a6748;box-shadow:0 0 0 4px rgba(255,247,218,.65);z-index:4}
+.volunteer-route-stake:before{content:"";position:absolute;left:-17px;top:-3px;width:43px;height:20px;border-radius:5px;background:#fff0c3;border:2px solid #b99057;rotate:-3deg}
+.volunteer-bramble{left:42%;top:55%;z-index:6}
+.volunteer-helper{z-index:6}.volunteer-helper.h1{left:24%;top:44%}.volunteer-helper.h2{right:22%;top:40%}.volunteer-helper.h3{right:30%;top:65%}
+.volunteer-line{position:absolute;height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(72,153,211,.1),#77c6ef,#fff1a1);transform-origin:left center;z-index:3;animation:cinPass4RouteWrite 1.2s ease-out both}
+.volunteer-line.l1{width:112px;left:29%;top:52%;rotate:6deg}.volunteer-line.l2{width:112px;left:51%;top:51%;rotate:-11deg;animation-delay:.18s}.volunteer-line.l3{width:95px;left:51%;top:58%;rotate:18deg;animation-delay:.34s}
+
+/* Across the Drift: old lines stay put while endpoints visibly move. */
+.cinematic-overlay[data-visual="network-miss"] .cin-islands.misaligned .i1{animation:cinPass4EndpointA 4s ease-in-out infinite}
+.cinematic-overlay[data-visual="network-miss"] .cin-islands.misaligned .i3{animation:cinPass4EndpointB 4s ease-in-out infinite}
+.cinematic-overlay[data-visual="network-miss"] .cin-ghost-map{opacity:.75}
+.cinematic-overlay[data-visual="map-mismatch"] .cin-overlay-map .old{animation:cinPass4MapAlign 3.6s ease-in-out infinite}
+.cinematic-overlay[data-visual="new-route"] .cin-route-drafting i{animation:cinPass4RouteWrite 1.5s ease-out both}
+
+/* Old Maps: the physical evidence moves and the stale system visibly stops responding. */
+.cinematic-overlay[data-visual="map-drawer"] .cin-drawer{animation:cinPass4DrawerOpen .65s cubic-bezier(.2,.85,.2,1) both}
+.cinematic-overlay[data-visual="dated-maps"] .cin-map-sheet b{font-size:12px;letter-spacing:.06em}
+.cinematic-overlay[data-visual="map-sequence"] .cin-map-sheet{animation:cinPass4MapSequence 4.8s ease-in-out infinite}
+.cinematic-overlay[data-visual="automation"] .machine .gear{animation-duration:5.6s}
+.cinematic-overlay[data-visual="frozen-network"] .cin-island{animation-duration:4.7s}
+.cinematic-overlay[data-visual="frozen-network"] .cin-frozen-lines{filter:grayscale(.35);opacity:.76}
+
+/* Homeward: people do distributed work; signals cause the next response. */
+.cin-community-work{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;gap:8px;padding:36px 20px 24px}
+.work-station{position:relative;height:132px;border-radius:24px;background:rgba(255,249,232,.76);border:1px solid rgba(163,135,96,.32);box-shadow:0 10px 22px rgba(42,70,88,.12);overflow:hidden}
+.work-station .cin-character{left:50%;top:20px;translate:-50% 0;z-index:3}
+.work-station b{position:absolute;left:5px;right:5px;bottom:10px;text-align:center;font-size:8px;letter-spacing:.08em;color:#31516e}
+.work-prop{position:absolute;left:50%;bottom:35px;translate:-50% 0;width:44px;height:25px;z-index:2}
+.route-marker{border-left:5px solid #7a6248;border-right:5px solid #7a6248;border-top:4px solid #efc875}
+.anchor-ring{width:31px;height:31px;border:5px solid #5b8fa6;border-radius:50%;box-shadow:0 0 0 4px rgba(113,206,220,.18)}
+.anchor-ring:after{content:"";position:absolute;left:50%;top:7px;width:5px;height:30px;background:#5b8fa6;translate:-50% 0}
+.map-roll{height:31px;border-radius:4px;background:linear-gradient(135deg,#f7e8c9,#fff8e7);border:2px solid #b98e59;rotate:-6deg}
+.work-signal{position:absolute;height:3px;border-radius:999px;background:linear-gradient(90deg,transparent,#8bd3f3,#fff0a2,#8bd3f3,transparent);z-index:5;animation:cinPass4Signal 2.6s ease-in-out infinite}.work-signal.s1{width:110px;left:28%;top:47%;rotate:-4deg}.work-signal.s2{width:110px;right:27%;top:54%;rotate:5deg;animation-delay:-1.3s}
+.cinematic-overlay[data-visual="signals"] .cin-network .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .node-landmark{animation:cinPass4LandmarkAnswer 2.8s ease-in-out infinite}
+.cinematic-overlay[data-visual="signals"] .cin-network .n2 .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .n2 .node-landmark{animation-delay:-.4s}.cinematic-overlay[data-visual="signals"] .cin-network .n3 .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .n3 .node-landmark{animation-delay:-.8s}.cinematic-overlay[data-visual="signals"] .cin-network .n4 .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .n4 .node-landmark{animation-delay:-1.2s}.cinematic-overlay[data-visual="signals"] .cin-network .n5 .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .n5 .node-landmark{animation-delay:-1.6s}.cinematic-overlay[data-visual="signals"] .cin-network .n6 .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .n6 .node-landmark{animation-delay:-2s}.cinematic-overlay[data-visual="signals"] .cin-network .n7 .node-landmark,.cinematic-overlay[data-visual="living-network"] .cin-network .n7 .node-landmark{animation-delay:-2.4s}
+
+@keyframes cinDialogueTurn{from{opacity:0;translate:0 5px}to{opacity:1;translate:0 0}}
+@keyframes cinPass4DriftLeft{0%,100%{translate:0 0}50%{translate:-12px 3px}}
+@keyframes cinPass4DriftRight{0%,100%{translate:0 0}50%{translate:14px -2px}}
+@keyframes cinPass4BasketMiss{0%,18%{translate:-34px -5px;rotate:-8deg}58%{translate:36px 4px;rotate:7deg}72%,100%{translate:45px 16px;rotate:14deg}}
+@keyframes cinPass4RouteWrite{from{scale:0 1;opacity:.2}to{scale:1 1;opacity:1}}
+@keyframes cinPass4EndpointA{0%,100%{translate:0 0}50%{translate:-18px 8px}}
+@keyframes cinPass4EndpointB{0%,100%{translate:0 0}50%{translate:18px -8px}}
+@keyframes cinPass4MapAlign{0%,100%{translate:-8px 0}50%{translate:8px 0}}
+@keyframes cinPass4DrawerOpen{from{translate:0 -18px;opacity:.4}to{translate:0 0;opacity:1}}
+@keyframes cinPass4MapSequence{0%,100%{translate:0 0;rotate:-1deg}33%{translate:7px -3px;rotate:1deg}66%{translate:-5px 3px;rotate:-2deg}}
+@keyframes cinPass4Signal{0%,100%{opacity:.2;filter:saturate(.7)}50%{opacity:1;filter:saturate(1.3)}}
+@keyframes cinPass4LandmarkAnswer{0%,70%,100%{filter:brightness(1);scale:1}82%{filter:brightness(1.35);scale:1.08}}
+
+@media(prefers-reduced-motion:reduce){
+ .cinematic-lines p.is-current,.cin-volunteer-scene *, .cin-community-work *,
+ .cinematic-overlay[data-visual="network-miss"] .cin-island,
+ .cinematic-overlay[data-visual="map-mismatch"] .cin-overlay-map .old,
+ .cinematic-overlay[data-visual="map-drawer"] .cin-drawer,
+ .cinematic-overlay[data-visual="map-sequence"] .cin-map-sheet,
+ .cinematic-overlay[data-visual="signals"] .node-landmark,
+ .cinematic-overlay[data-visual="living-network"] .node-landmark{animation:none!important}
+}
+
+
+/* Astra Pass 4 in-game reduced motion */
+html[data-motion="reduced"] .cinematic-stage *,
+html[data-motion="reduced"] .cinematic-copy *{animation:none!important;transition:none!important}
