@@ -80,6 +80,11 @@ Implementation/validation contract:
 
 Next action: Character/world coherence candidate. Preserve all accepted product slices while finishing the remaining source-defined behavior/world gaps: sharpen N04 information roles across during-play motive, movement-opening clue, milestone result, and recap; complete V06 resident use for earned keepsakes; add Pip/Tansy behavior and broader line-appropriate expressions for N05; improve V07 cross-region fixture consistency and V12 destination distinctiveness without changing authored puzzle definitions.
 
+#### Active character/world coherence candidate
+**Status: IN PROGRESS**
+
+Candidate branch: `astra-character-world-coherence`, branched from protected `main` head `e913ba53681bbf16ae0b2c6f9a8ca0a49abf8665`. TDD RED run `34890084992` correctly failed all eight intended pre-change contracts for N04, V06, N05, V07, and V12. Planned product scope is limited to presentation/story-role code, Little Home choreography, Atlas landmark presentation, and cache keys. Authored campaign files `campaign400-1.js` through `campaign400-8.js` remain protected and unchanged. Candidate acceptance requires short/normal/wide phone browser checks, Reduced Motion/offscreen checks for new Home behavior, shared fixture identity across Story and Atlas, five distinct authored destinations per Atlas chapter, manual settled screenshot review, and committed-main revalidation before closure.
+
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
 
