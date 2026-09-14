@@ -238,3 +238,26 @@ body[data-screen="levels"] #app{overflow:hidden}
 .theme-ch4 .atlas-map.atlas-range-3 .atlas-scene em{left:8%;bottom:10%;width:76px;height:72px;border:10px solid rgba(201,188,186,.82);border-bottom:0;border-radius:38px 38px 0 0;background:linear-gradient(180deg,rgba(225,128,145,.34) 0 12%,rgba(38,28,48,.28) 12% 100%);box-shadow:0 7px 12px rgba(22,15,29,.26);opacity:.94;rotate:0deg}
 .theme-ch4 .atlas-map.atlas-range-3 .atlas-scene em:before{content:"♠  ♦  ♣  ♥";position:absolute;left:-7px;right:-7px;top:20px;height:18px;padding:2px 3px;border-radius:5px;background:rgba(226,216,211,.88);border:1px solid rgba(141,113,82,.72);color:#241d2f;font-family:Georgia,serif;font-size:10px;font-weight:900;letter-spacing:2px;text-align:center;line-height:13px;box-shadow:0 2px 4px rgba(28,19,33,.18)}
 .theme-ch4 .atlas-map.atlas-range-3 .atlas-scene em:after{content:"";position:absolute;right:-15px;top:-7px;width:47px;height:17px;background:linear-gradient(90deg,#d98390,#ad6073);clip-path:polygon(0 0,100% 10%,78% 54%,100% 100%,0 84%);filter:drop-shadow(0 2px 2px rgba(30,20,34,.18))}
+
+
+/* Astra Atlas hierarchy coherence */
+.atlas-chapter-nav{min-height:44px;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px}
+.atlas-chapter-arrow{width:44px;height:44px;min-width:44px;border-radius:17px;background:rgba(255,255,255,.38);box-shadow:inset 0 0 0 1px rgba(255,255,255,.44),0 3px 8px rgba(20,45,65,.08)}
+.atlas-chapter-current{min-width:0;align-self:center;text-align:center;line-height:1.05}
+.atlas-chapter-current span{display:block;font-size:7.5px;font-weight:950;letter-spacing:.11em;text-transform:uppercase;opacity:.62;margin-bottom:2px}
+.atlas-chapter-current b{display:block;font-family:Georgia,"Times New Roman",serif;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atlas-waypoint-nav{min-height:46px;grid-template-columns:44px minmax(0,1fr) 44px;gap:7px}
+.atlas-range-arrow{width:44px;height:44px;min-width:44px;border:0;border-radius:16px;background:rgba(255,255,255,.34);box-shadow:inset 0 0 0 1px rgba(255,255,255,.42);font-size:20px;font-weight:950;cursor:pointer;backdrop-filter:blur(5px)}
+.atlas-range-arrow:disabled{opacity:.25;cursor:default}
+.atlas-range-current{height:44px;min-width:0;padding:5px 10px 4px;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.80),var(--atlas-accent-soft,#dff1ae));box-shadow:0 4px 10px rgba(25,48,68,.11),inset 0 0 0 1px rgba(255,255,255,.68);text-align:center;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:8px;align-content:center}
+.atlas-range-current span{grid-column:1/3;display:block;font-family:Georgia,"Times New Roman",serif;font-size:12.5px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atlas-range-current b{font-size:8.5px;line-height:1.05;letter-spacing:.04em;text-align:left}.atlas-range-current small{font-size:7px;line-height:1.05;font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.62;text-align:right}
+.atlas-route-caption{display:none!important}
+.atlas-state-badge{position:absolute;right:2px;bottom:5px;z-index:12;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#fffaf0;border:1px solid rgba(35,59,73,.28);box-shadow:0 2px 5px rgba(25,42,54,.20);font-size:11px;font-weight:1000;line-height:1;color:#24445f}
+.atlas-node.state-restored .atlas-state-badge{background:#fff5bd}.atlas-node.state-current .atlas-state-badge{border-radius:5px;rotate:45deg;background:#fff0a3}.atlas-node.state-current .atlas-state-badge{font-size:9px}.atlas-node.state-current .atlas-state-badge::first-letter{rotate:-45deg}
+.atlas-node.state-available .atlas-state-badge{background:rgba(255,255,255,.82);border-width:2px}.atlas-node.state-locked .atlas-state-badge{display:none}
+.atlas-node.state-restored .atlas-island-top{clip-path:polygon(8% 4%,92% 4%,100% 45%,86% 93%,50% 100%,14% 93%,0 45%)}
+.atlas-node.state-available .atlas-island{opacity:.82}.atlas-node.state-available .atlas-island-top{box-shadow:inset 0 2px rgba(255,255,255,.36),inset 0 -5px color-mix(in srgb,var(--atlas-top,#87c66c) 64%,#52615a)}
+@media(max-height:720px){.atlas-chapter-nav{min-height:44px}.atlas-chapter-arrow{width:44px;height:44px;min-width:44px}.atlas-waypoint-nav{min-height:44px}.atlas-range-arrow{width:44px;height:44px;min-width:44px}.atlas-range-current{height:44px;padding-top:4px;padding-bottom:3px}.atlas-range-current span{font-size:11px}.atlas-range-current b{font-size:7.8px}.atlas-range-current small{font-size:6.5px}}
+@media(max-height:600px){.atlas-chapter-nav{min-height:44px}.atlas-chapter-arrow{width:44px;height:44px;min-width:44px}.atlas-waypoint-nav{min-height:44px}.atlas-range-arrow{width:44px;height:44px;min-width:44px}.atlas-range-current{height:44px}.atlas-chapter-current span{display:none}.atlas-chapter-current b{font-size:12px}}
+@media(max-width:340px){.atlas-chapter-nav{gap:5px}.atlas-waypoint-nav{gap:4px}.atlas-range-current{padding-left:7px;padding-right:7px}.atlas-range-current span{font-size:10.5px}.atlas-range-current small{display:none}}

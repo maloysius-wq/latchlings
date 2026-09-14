@@ -142,3 +142,30 @@
 /* Astra audit R1: route teaching is essential text, never a two-line ellipsis. */
 #game .mechanic-note.mechanic-chip{height:auto;align-items:flex-start}
 #game .mechanic-chip-copy{display:block!important;-webkit-line-clamp:unset!important;-webkit-box-orient:initial!important;overflow:visible!important;white-space:normal}
+
+
+/* Astra journal section coherence */
+#story.story-screen{overflow:hidden}
+#story .story-topbar{flex:0 0 auto}
+.story-journal-shell{flex:1;min-height:0;padding:14px 14px 13px;display:flex;flex-direction:column;overflow:hidden}
+.story-journal-heading{flex:0 0 auto;padding:0 3px 8px}.story-journal-heading h1{margin:1px 0 3px;font-family:Georgia,"Times New Roman",serif;font-size:27px;line-height:1}.story-journal-heading>p{margin:0;color:#587184;font-size:10.5px;line-height:1.28}
+.story-section-tabs{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 9px}
+.story-section-tab{min-width:0;min-height:44px;padding:7px 5px;border:1px solid rgba(81,104,117,.18);border-radius:14px;background:rgba(255,255,255,.42);color:#476175;font-size:10.5px;font-weight:900;cursor:pointer;box-shadow:inset 0 1px rgba(255,255,255,.58)}
+.story-section-tab[aria-selected="true"]{background:linear-gradient(145deg,#fffaf0,color-mix(in srgb,var(--themeAccent,#79b95b) 18%,#fff6df));color:#173a67;border-color:color-mix(in srgb,var(--themeAccent,#79b95b) 38%,#c5a877);box-shadow:0 4px 10px rgba(29,51,68,.10),inset 0 1px #fff}
+.story-section-tab:focus-visible{outline:3px solid #173a67;outline-offset:2px}
+.story-section-panels{flex:1;min-height:0;position:relative}.story-section-panel{height:100%;overflow:auto;padding:2px 3px 8px;scrollbar-gutter:stable}.story-section-panel[hidden]{display:none!important}.story-section-panel:focus{outline:none}.story-section-panel:focus-visible{outline:2px solid rgba(23,58,103,.58);outline-offset:2px;border-radius:12px}
+.story-section-heading{margin:2px 0 9px}.story-section-heading>span{display:block;color:#6a806f;font-size:8px;font-weight:950;letter-spacing:.09em;text-transform:uppercase}.story-section-heading h2{margin:2px 0 3px;font-family:Georgia,"Times New Roman",serif;font-size:22px}.story-section-heading p{margin:0;color:#5a7182;font-size:10.5px;line-height:1.3}
+.story-now-chapter{padding:12px 13px;border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.70),color-mix(in srgb,var(--themeAccent,#79b95b) 10%,rgba(255,244,216,.72)));border:1px solid rgba(112,126,101,.18);box-shadow:0 5px 12px rgba(37,61,74,.08)}.story-now-chapter>span{display:block;color:#607867;font-size:8px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.story-now-chapter>strong{display:block;margin:2px 0 4px;font-family:Georgia,"Times New Roman",serif;font-size:20px;color:#173a67}.story-now-chapter>p{margin:0;color:#536d7e;font-size:10.8px;line-height:1.32}
+.story-now-grid{display:grid;gap:8px;margin-top:9px}.story-now-grid>div{padding:10px 11px;border-radius:15px;background:rgba(255,249,235,.67);border:1px solid rgba(173,142,99,.18)}.story-now-grid strong{display:block;color:#456c5d;font-size:8px;letter-spacing:.08em;text-transform:uppercase}.story-now-grid p{margin:3px 0 0;color:#37566f;font-size:11px;line-height:1.35}.story-now-grid small{display:block;margin-top:4px;color:#6b7e8c;font-size:9px;line-height:1.28}.story-section-empty{color:#667d8e;font-size:12px;text-align:center;padding:24px 12px}
+#storyResidentsPanel .story-helper-explain{margin-top:10px}
+html[data-text-size="large"] .story-journal-heading>p,html[data-text-size="large"] .story-section-heading p,html[data-text-size="large"] .story-now-chapter>p,html[data-text-size="large"] .story-now-grid p{font-size:12.5px}html[data-text-size="large"] .story-section-tab{font-size:11.5px}html[data-text-size="large"] .story-now-grid small{font-size:10px}
+@media(max-width:360px){.story-section-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.story-section-tab{min-height:44px}.story-journal-heading h1{font-size:23px}}
+@media(max-height:620px){.story-journal-shell{padding-top:10px}.story-journal-heading{padding-bottom:5px}.story-journal-heading>p{display:none}.story-section-tabs{margin-bottom:6px}.story-section-tab{min-height:44px;padding:5px}.story-now-chapter{padding:9px 10px}.story-now-grid{gap:5px;margin-top:6px}.story-now-grid>div{padding:7px 9px}}
+
+
+/* Astra journal viewport containment */
+#story.story-screen.active{display:flex!important;flex-direction:column;height:100dvh;min-height:0;overflow:hidden;box-sizing:border-box}
+#story.story-screen.active .story-topbar{flex:0 0 auto}
+#story.story-screen.active .story-journal-shell{flex:1 1 auto;height:auto;min-height:0;max-height:none;overflow:hidden;margin-bottom:0;box-sizing:border-box}
+#story.story-screen.active .story-section-panels{flex:1 1 auto;min-height:0;overflow:hidden}
+#story.story-screen.active .story-section-panel{height:100%;max-height:100%;overflow:auto;overscroll-behavior:contain}

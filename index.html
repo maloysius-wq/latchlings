@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="style400-ui.css?v=20260914-astra-pass4-candidate1">
 <link rel="stylesheet" href="style400-game.css?v=20260913-audit-r1r5-1">
 <link rel="stylesheet" href="style400-themes.css">
-<link rel="stylesheet" href="style400-skyway-atlas.css?v=20260912-ch4pass3-1">
-<link rel="stylesheet" href="style400-story-theme.css?v=20260913-audit-r1r5-1">
+<link rel="stylesheet" href="style400-skyway-atlas.css?v=20260914-atlas-journal-candidate1">
+<link rel="stylesheet" href="style400-story-theme.css?v=20260914-atlas-journal-candidate1">
 <link rel="stylesheet" href="style400-story-rail-board.css?v=20260913-audit-r1r5-1">
 <link rel="stylesheet" href="style400-cinematics.css?v=20260914-astra-pass4-candidate1">
 <link rel="stylesheet" href="style400-cinematics-polish.css">
@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="style400-whimsy-font.css">
 <link rel="stylesheet" href="style400-cinematics-dialogue.css?v=20260913-audit-r1r5-1">
 <link rel="stylesheet" href="style400-cinematics-geometry.css">
-<link rel="stylesheet" href="style400-atlas-progression.css">
+<link rel="stylesheet" href="style400-atlas-progression.css?v=20260914-atlas-journal-candidate1">
 <link rel="stylesheet" href="style400-board-surfaces.css">
 <link rel="stylesheet" href="style400-production-slice.css?v=20260912-ch4pass3-1">
 <link rel="stylesheet" href="pass3-chapter5-prism.css?v=20260913-ch5modular-1">
@@ -52,21 +52,20 @@
 
   <main id="story" class="screen story-screen" aria-label="Story and residents">
     <div class="topbar card story-topbar"><button class="iconbtn" id="storyBack" aria-label="Back"></button><div class="game-title" style="font-size:22px">Story &amp; Residents</div><div class="spacer"></div><button class="story-rules-btn" id="storyRules">Rules</button></div>
-    <section class="story-screen-card card">
-      <div class="theme-kicker">The Latchlands</div>
-      <h1>Little Home</h1>
-      <p id="storyPremise"></p>
-      <div id="storyBriefing"></div>
-      <div class="story-role-card" id="storyRole"></div>
-      <h2>Residents</h2>
-      <div class="story-cast" id="storyCast"></div>
-      <h2>Current chapter</h2>
-      <div class="story-current-chapter" id="storyChapter"></div>
-      <h2>Journey so far</h2>
-      <div class="story-journey" id="storyJourney"></div>
-      <h2>Story Cinematics</h2>
-      <p class="story-cinematic-intro">Replay the major story moments you have reached in the campaign.</p>
-      <div class="cinematic-library" id="storyCinematics"></div>
+    <section class="story-screen-card card story-journal-shell">
+      <header class="story-journal-heading"><div class="theme-kicker">The Latchlands</div><h1>Little Home Journal</h1><p>What matters now, who lives here, and what the Skyway has taught you.</p></header>
+      <div class="story-section-tabs" role="tablist" aria-label="Story journal sections">
+        <button class="story-section-tab" id="storyTabNow" role="tab" aria-selected="true" aria-controls="storyNowPanel" tabindex="0">Now</button>
+        <button class="story-section-tab" id="storyTabResidents" role="tab" aria-selected="false" aria-controls="storyResidentsPanel" tabindex="-1">Residents</button>
+        <button class="story-section-tab" id="storyTabJourney" role="tab" aria-selected="false" aria-controls="storyJourneyPanel" tabindex="-1">Journey</button>
+        <button class="story-section-tab" id="storyTabCinematics" role="tab" aria-selected="false" aria-controls="storyCinematicsPanel" tabindex="-1">Cinematics</button>
+      </div>
+      <div class="story-section-panels">
+        <section class="story-section-panel" id="storyNowPanel" role="tabpanel" aria-labelledby="storyTabNow" tabindex="0"><div id="storyNowSummary"></div></section>
+        <section class="story-section-panel" id="storyResidentsPanel" role="tabpanel" aria-labelledby="storyTabResidents" tabindex="0" hidden><div class="story-section-heading"><span>Little Home</span><h2>Residents</h2></div><div class="story-cast" id="storyCast"></div></section>
+        <section class="story-section-panel" id="storyJourneyPanel" role="tabpanel" aria-labelledby="storyTabJourney" tabindex="0" hidden><div class="story-section-heading"><span>Earned recap</span><h2>Journey so far</h2></div><div class="story-journey" id="storyJourney"></div></section>
+        <section class="story-section-panel" id="storyCinematicsPanel" role="tabpanel" aria-labelledby="storyTabCinematics" tabindex="0" hidden><div class="story-section-heading"><span>Replay</span><h2>Story Cinematics</h2><p>Revisit the major story moments you have reached.</p></div><div class="cinematic-library" id="storyCinematics"></div></section>
+      </div>
     </section>
   </main>
 
@@ -130,8 +129,8 @@
 <script src="story-grounding400.js?v=20260912-ch2pass3-1"></script>
 <script src="cinematics400.js?v=20260914-astra-pass4-candidate1"></script>
 <script src="cinematic-dialogue400.js?v=20260914-astra-pass4-candidate1"></script>
-<script src="game400-a.js?v=20260914-home-coherence-candidate1"></script>
-<script src="game400-b.js?v=20260914-home-coherence-candidate1"></script>
+<script src="game400-a.js?v=20260914-atlas-journal-candidate1"></script>
+<script src="game400-b.js?v=20260914-atlas-journal-candidate1"></script>
 <script src="pass3-chapter5-prism.js?v=20260913-ch5modular-1"></script>
 <script src="pass3-chapter6-copperline.js?v=20260913-ch6pass3-1"></script>
 <script src="pass3-chapter7-stormswitch.js?v=20260913-ch7pass3-1"></script>
