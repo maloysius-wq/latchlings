@@ -1,0 +1,72 @@
+name: Astra Presentation Accessibility Rerun 2
+
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths:
+      - '.github/workflows/astra-presentation-accessibility-rerun2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+          fetch-depth: 0
+      - name: Apply candidate and keepsake followup
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematic-dialogue400.js style400-cinematics-dialogue.css style400-cinematics-geometry.css cinematic-geometry400.js gameplay-story-rail400.js story-grounding400.js story-theme400.js style400-story-rail-board.css style400-atlas-progression.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css > /tmp/protected-before.sha256
+          python .github/tmp/astra_pa_patch.py
+          python .github/tmp/astra_pa_keepsake_followup.py
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/protected-before.sha256
+          node --check story400.js
+          node --check cinematics400.js
+          node --check game400-b.js
+          git diff --check
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run corrected browser matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-pa-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-pa-http.log 2>&1 &
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('.github/workflows/astra-presentation-accessibility-candidate.yml').read_text()
+          marker="cat > .astra-pa-green.mjs <<'JS'\n"
+          body=s.split(marker,1)[1].split('\n          JS\n',1)[0]
+          lines=[line[10:] if line.startswith('          ') else line for line in body.splitlines()]
+          text='\n'.join(lines)+'\n'
+          old='''const memoryEffective=await homeFrame.evaluate(()=>[...document.querySelectorAll('.story-keepsake[role="button"]')].filter(x=>getComputedStyle(x).display!==\'none\').map(x=>{const r=x.getBoundingClientRect();return {key:x.dataset.memory,w:r.width+16,h:r.height+16}}));if(memoryEffective.some(x=>x.w<44||x.h<44))fail(size.name,\'keepsake effective target\',memoryEffective);'''
+          new='''const memoryEffective=await homeFrame.evaluate(()=>[...document.querySelectorAll('.story-keepsake[role="button"]')].filter(x=>getComputedStyle(x).display!=='none').map(x=>{const r=x.getBoundingClientRect(),ps=getComputedStyle(x,'::after'),cx=r.left+r.width/2,cy=r.top+r.height/2,w=Math.max(r.width,parseFloat(ps.width)||0),h=Math.max(r.height,parseFloat(ps.height)||0);return {key:x.dataset.memory,w,h,l:cx-w/2,r:cx+w/2,t:cy-h/2,b:cy+h/2}}));if(memoryEffective.some(x=>x.w<44||x.h<44))fail(size.name,'keepsake effective target',memoryEffective);for(let i=0;i<memoryEffective.length;i++)for(let j=i+1;j<memoryEffective.length;j++){const a=memoryEffective[i],b=memoryEffective[j],ow=Math.min(a.r,b.r)-Math.max(a.l,b.l),oh=Math.min(a.b,b.b)-Math.max(a.t,b.t);if(ow>4&&oh>4)fail(size.name,'keepsake target overlap',{a:a.key,b:b.key,ow,oh})}'''
+          assert old in text
+          text=text.replace(old,new,1)
+          Path('.astra-pa-green.mjs').write_text(text)
+          PY
+          node .astra-pa-green.mjs
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html
+          git add -u style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          git diff --cached --check
+          git commit -m "Stage presentation accessibility consolidation [skip ci]"
+          git push origin HEAD:astra-presentation-accessibility-candidate
+          git rev-parse HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-presentation-accessibility-evidence
+          path: /tmp/astra-pa-evidence
+          if-no-files-found: error
