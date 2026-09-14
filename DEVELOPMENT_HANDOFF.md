@@ -15,7 +15,7 @@ User goal: reconcile the entire original [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LA
 
 Source acceptance contract:
 - Canonical audit source: [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md), committed to `main` on 2026-09-14 as `2ece5dd46d8fcb50b3591b62c77dd65b46cd02ab`; original audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`.
-- Canonical implementation-review source: [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md), committed to `main` on 2026-09-14 as `85f2b597de1ec3ee3daf12f0a84ade26e6cf1502`; reviewed-head baseline `d6e39c0866505795c2aa6a26777896072e16e7df`.
+- Canonical implementation-review source: [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md), exact uploaded bytes finalized on `main` as `307abc8854c5f69eab288c1f2cef4b7dca20b241` (Git blob `9b7413371d8833d7e1fc5c26b89373244ac3dc86`); reviewed-head baseline `d6e39c0866505795c2aa6a26777896072e16e7df`.
 - [`ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`](ASTRA_AUDIT_ACCEPTANCE_MATRIX.md) is the living reconciliation ledger against those two source documents and current `main`. The audit/review documents define the requested findings and acceptance language; the matrix records their current implementation status and evidence.
 - R1-R5 usability work is completed and protected by candidate run `34853875486`, committed-live run `34855339189`, final Pages run `34856135214`, and final guard run `34856138001`.
 
