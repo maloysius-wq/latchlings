@@ -13,6 +13,7 @@ jobs:
         run: |
           python .github/tmp/prepare-audit-r1-r5.py
           python .github/tmp/fix-audit-r1-r5-candidate.py
+          python .github/tmp/finalize-audit-r4.py
       - name: Create remote Git blobs without moving main
         env:
           GH_TOKEN: ${{ github.token }}
