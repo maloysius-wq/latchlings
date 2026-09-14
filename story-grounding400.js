@@ -120,4 +120,71 @@ STORY.beatForLevel=function(level){
  else nextLead='The final route is not a permanent map. It is a promise to keep watching, communicating, and adjusting.';
  return {...beat,resultLabel:beat.local===50?'Chapter result':'What we learned',movementTitle:m.title,questionResolved:m.question,nextLead};
 };
+
+/* Astra character/world coherence: one shared physical-fixture vocabulary for movement clues, Story postcards and Atlas destinations. */
+const MOVEMENT_FIXTURES=[
+ [
+  {id:'morning-route-table',label:'Breakfast Route Table',kind:'table'},
+  {id:'route-mailbox',label:'Little Home Route Mailbox',kind:'mailbox'},
+  {id:'waykeeper-marker',label:'Old Waykeeper Marker',kind:'marker'},
+  {id:'sunpetal-safe-stop',label:'Sunpetal Safe-Stop Garden',kind:'garden'},
+  {id:'sunpetal-return-post',label:'Sunpetal Return Post',kind:'mailbox'}
+ ],
+ [
+  {id:'lanternwood-crossing',label:'Lanternwood Crossing',kind:'porch'},
+  {id:'travel-window-post',label:'Shared Travel-Window Post',kind:'signal'},
+  {id:'twin-lantern-porch',label:'Twin-Lantern Porch',kind:'porch'},
+  {id:'shared-stop-marker',label:'Neighborhood Stop Marker',kind:'marker'},
+  {id:'visitor-pennant',label:'Visitor Pennant Landing',kind:'pennant'}
+ ],
+ [
+  {id:'buried-anchor',label:'Buried Anchor Station',kind:'anchor'},
+  {id:'waykeeper-marker',label:'Old Waykeeper Marker',kind:'marker'},
+  {id:'maintenance-log-desk',label:'Community Maintenance Desk',kind:'archive'},
+  {id:'shifted-anchor-line',label:'Shifted Anchor Line',kind:'anchor'},
+  {id:'restored-anchor',label:'Restored Anchor Station',kind:'anchor'}
+ ],
+ [
+  {id:'market-outer-gate',label:'Outer Market Gate',kind:'gate'},
+  {id:'suit-lane',label:'Suit-Marked Market Lane',kind:'gate'},
+  {id:'old-suit-plaque',label:'Old Civic Suit Arch',kind:'gate'},
+  {id:'distant-station-board',label:'Distant Station Board',kind:'signal'},
+  {id:'market-bunting',label:'Market Bunting Square',kind:'bunting'}
+ ],
+ [
+  {id:'prism-lookout',label:'Prism Lookout',kind:'observatory'},
+  {id:'drift-sighting',label:'Long-Drift Sighting Arch',kind:'observatory'},
+  {id:'twin-lantern-porch',label:'Twin-Lantern Porch',kind:'porch'},
+  {id:'map-overlay-table',label:'Yesterday Map Table',kind:'archive'},
+  {id:'prism-telescope',label:'Prism Telescope Terrace',kind:'telescope'}
+ ],
+ [
+  {id:'route-plate-archive',label:'Approved Route-Plate Archive',kind:'archive'},
+  {id:'dated-map-rack',label:'Dated Map Rack',kind:'archive'},
+  {id:'three-date-map-gallery',label:'Three-Date Map Gallery',kind:'archive'},
+  {id:'automation-desk',label:'Old Automation Desk',kind:'relay'},
+  {id:'waykeeper-compass',label:'Waykeeper Compass Platform',kind:'compass'}
+ ],
+ [
+  {id:'shared-relay',label:'Two-Region Relay',kind:'relay'},
+  {id:'travel-window-dial',label:'Shared Travel-Window Dial',kind:'signal'},
+  {id:'correction-lamp',label:'Correction-Lamp Relay',kind:'relay'},
+  {id:'living-signal-board',label:'Living Signal Board',kind:'relay'},
+  {id:'arrival-platform',label:'Little Home Arrival Platform',kind:'dock'}
+ ],
+ [
+  {id:'crown-convergence',label:'Crown Convergence Beacon',kind:'crown'},
+  {id:'living-map',label:'Living Skyway Map',kind:'archive'},
+  {id:'twin-lantern-porch',label:'Twin-Lantern Porch',kind:'porch'},
+  {id:'little-home-route-desk',label:'Little Home Route Desk',kind:'table'},
+  {id:'tomorrow-beacon',label:'Tomorrow Route Beacon',kind:'crown'}
+ ]
+];
+function movementFixtureFor(level){
+ const m=movementForLevel(level),chapter=Math.max(1,Math.min(8,m.chapter)),index=Math.max(0,Math.min(4,m.index)),fixture=MOVEMENT_FIXTURES[chapter-1][index];
+ return {...fixture,chapter,index,level:(chapter-1)*50+(index+1)*10};
+}
+STORY.movementFixtureFor=movementFixtureFor;
+STORY.movementFixtures=MOVEMENT_FIXTURES;
+
 })();
