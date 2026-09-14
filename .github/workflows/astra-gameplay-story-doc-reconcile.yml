@@ -1,0 +1,127 @@
+name: Astra gameplay story docs reconcile
+
+on:
+  push:
+    branches: [astra-gameplay-story-candidate]
+    paths:
+      - '.github/workflows/astra-gameplay-story-doc-reconcile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out accepted main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Require accepted gameplay product head
+        run: test "$(git rev-parse HEAD)" = "4f9e27b01f3a0ae158ee44c8ac36b4c11e2fa033"
+
+      - name: Reconcile matrix and handoff
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          matrix=Path('ASTRA_AUDIT_ACCEPTANCE_MATRIX.md')
+          m=matrix.read_text(encoding='utf-8')
+          replacements={
+          "against current `main` after the accepted R1-R5 usability pass, Astra Pass 4 cinematic slice, Little Home coherence slice, and Atlas + Story/Journal coherence slice.":
+          "against current `main` after the accepted R1-R5 usability pass, Astra Pass 4 cinematic slice, Little Home coherence slice, Atlas + Story/Journal coherence slice, and Gameplay / Story coherence slice.",
+          "| V01 quiet board floors | PARTIAL | Pass 3 materially quieted all eight chapter families. Residual decorative-cell ambiguity still needs cleanup, especially badge/ring-like decoration that can resemble mechanics. |":
+          "| V01 quiet board floors | COMPLETED | Pass 3 quieted the eight chapter families, and the accepted Gameplay / Story slice moves decorative `level-props` behind the playable board with no hit behavior. Committed-main closure run `34881048866` verified this at the implementation-review Level 201 case and the dense Level 366 exception; settled screenshots were manually reviewed before reconciliation. |",
+          "| N02 earned knowledge | PARTIAL | Pass 4 moved cinematic exposition toward observable cause/effect and reduced repeated beat-level explanation. Fresh journal/briefing spoilers were improved earlier. Later movement authorship and repeated information across play/Story-card/milestone surfaces still need consolidation. |":
+          "| N02 earned knowledge | PARTIAL | Pass 4 moved cinematic exposition toward observable cause/effect and reduced repeated beat-level explanation. Fresh journal/briefing spoilers were improved earlier, and regular Story cards now avoid the previous stack of context/flavor/objective paragraphs. Later movement authorship and repeated information across play/movement-opening/milestone surfaces still need consolidation. |",
+          "| V07 depth hierarchy | PARTIAL | Board hierarchy improved; residual decorative ambiguity and cross-region fixture consistency remain. |":
+          "| V07 depth hierarchy | PARTIAL | Playable-board hierarchy and decorative overlap are now accepted under V01. Complete cross-region fixture/decoration consistency remains a separate unfinished part of this finding. |",
+          "| V09 readable nests | PARTIAL | Suit-plus-color identity is preserved and nests are clearer. Arrival acknowledgement/completed-destination resolution still needs refinement. |":
+          "| V09 readable nests | COMPLETED | Suit-plus-color identity remains intact; completed nests now retain a resolved state/checkmark and arrivals receive a short `just-arrived` acknowledgement. Candidate and committed-live browser matrices verified persistent resolved state without simplifying identity to color alone. |",
+          "| V10 mechanic-state causality | PARTIAL | Explicit switch-to-door relationship, open/closed causality, rail/turn readability, and rejected-blocker feedback remain. |":
+          "| V10 mechanic-state causality | COMPLETED | Switches and doors expose matching letter identities, doors expose explicit OPEN/CLOSED state and matching aria text, rails/turners retain direction-by-shape with text equivalents, and rejected moves identify/highlight the relevant blocker. Committed-main closure run `34881048866` preserved those cues under achromatopsia, protanopia, deuteranopia, and tritanopia simulation; screenshots were manually reviewed. |",
+          "| U09 mastery copy | PARTIAL | Move wording/pluralization is corrected. Star criteria still need discoverability before evaluation. |":
+          "| U09 mastery copy | COMPLETED | Correct move wording is retained and every gameplay route now exposes its 3★ / 2★ / 1★ criteria before evaluation. Candidate run `34871805806` verified the rubric at 320x568, 390x844, and 430x932; the short-phone layout retains ≥44px direction hit areas. |",
+          "| N04 information-layer roles | PARTIAL | The accepted journal slice gives recap/replay clear jobs: `Now` carries current question/latest discovery/player work, Journey carries earned recap, Residents biographies, and Cinematics replay. During-play motive, movement-opening clue, milestone result, full Story card, and some repeated exposition still need sharper separation, so the source audit is not fully satisfied yet. |":
+          "| N04 information-layer roles | PARTIAL | The journal gives recap/replay clear jobs, and regular Story cards now reduce themselves to one character line, one goal, and optional context instead of duplicating multiple explanatory blocks. During-play motive, movement-opening clue, milestone result, and remaining repeated exposition still need sharper separation, so the source audit is not fully satisfied yet. |",
+          "| V16 story postcards | OPEN | Chapter rewards gained postcard-like treatment, but regular Story cards still need authored place/prop crops, one concise character line, and one goal. |":
+          "| V16 story postcards | COMPLETED | Regular Story cards now use a metadata-specific place/prop vignette, one concise character line, one explicit goal, and collapsed optional context. Settled visual run `34880369639` manually verified the Level 2 Watering Can card at 390x844; the three-phone candidate matrix verifies containment. |",
+          "| V17 chapter reward | PARTIAL | Dedicated chapter rewards exist across all eight chapters with keepsakes and Home/Continue choices. Late reward copy still needs trimming, especially Aurora. |":
+          "| V17 chapter reward | COMPLETED | Dedicated chapter rewards remain across all eight chapters with visible stars, keepsakes/results, and Little Home/Continue choices. The implementation-review-specific Aurora repetition is trimmed to one 24-word result sentence; candidate and committed-live validation enforce the concise reward. |",
+          "### Gameplay / Story coherence\n**OPEN / next closure slice.** Complete residual decorative-cell cleanup, mechanic-state causality/rejected-blocker feedback, destination/completed-nest feedback, star-criteria discoverability, sharper play/movement/milestone/journal roles, regular Story-card postcard treatment, late reward-copy trimming, remaining resident/keepsake characterization, and cross-region landmark consistency.":
+          "### Gameplay / Story coherence\n**ACCEPTED core slice.** TDD RED run `34871396998` failed on the intended missing pre-win mastery rubric. Candidate run `34871805806` then passed exact campaign/accepted-source protection and the three-phone browser matrix after earlier attempts exposed a real 320x568 controls overflow; accepted candidate product commit `d2639e7`. Candidate artifact `10362672460`, SHA-256 `2ce5522db5357e1a59936ef6ebe592c3768c6f6652e36940c3dd9ae593ac177a`. Settled visual run `34880369639`, artifact `10363160590`, SHA-256 `9b2e5380ad8a899834a9a6d66fbd5e919b5df704e6446dfcb4583b8581269392`, was manually reviewed. Promotion/live run `34880640526` promoted only the six accepted product files to `main` as `4f9e27b01f3a0ae158ee44c8ac36b4c11e2fa033` and independently revalidated committed runtime; live artifact `10362788052`, SHA-256 `d6f73cb853179295b6c6b9115d91e4654eec4404323b1a171c1cead2d3088ead`. Follow-up committed-main closure run `34881048866`, artifact `10363266549`, SHA-256 `764e8dfb2782d9b286e13691dd9347714c966066600eb8ddc4ad77400acebbd0`, manually verified dense Levels 201/366 and grayscale/color-vision mechanic readability. V01/V09/V10/U09/V16/V17 are complete. N04 remains partial; V06/N05/V07/V12 and related authorship/world-consistency work remain for a later focused slice."
+          }
+          for old,new in replacements.items():
+              assert old in m, f'matrix anchor missing: {old[:70]}'
+              m=m.replace(old,new,1)
+          old_contract="- Preserve all R1-R5 certified behavior, accepted Pass 4 behavior, accepted Little Home coherence behavior, and accepted Atlas/journal hierarchy/state/accessibility behavior."
+          new_contract="- Preserve all R1-R5 certified behavior, accepted Pass 4 behavior, accepted Little Home coherence behavior, accepted Atlas/journal hierarchy/state/accessibility behavior, and accepted Gameplay / Story mechanic/postcard/mastery behavior."
+          assert old_contract in m
+          m=m.replace(old_contract,new_contract,1)
+          matrix.write_text(m,encoding='utf-8')
+
+          handoff=Path('DEVELOPMENT_HANDOFF.md')
+          h=handoff.read_text(encoding='utf-8')
+          anchor="Remaining closure work:\n"
+          assert anchor in h
+          checkpoint="""Accepted Gameplay / Story coherence checkpoint (2026-09-14):
+- TDD RED run `34871396998` failed on the intended missing pre-win star-criteria behavior. Candidate run `34871805806` later passed exact campaign/accepted-source protection plus the full 320x568 / 390x844 / 430x932 browser matrix after earlier attempts caught and drove correction of a genuine short-phone controls overflow.
+- Accepted candidate product commit: `d2639e7`. The accepted six-file product is `game400-a.js`, `game400-b.js`, `story-theme400.js`, `style400-story-theme.css`, `index.html`, and `pass3-chapter8-aurora.js`. Candidate artifact `10362672460`, SHA-256 `2ce5522db5357e1a59936ef6ebe592c3768c6f6652e36940c3dd9ae593ac177a`.
+- Settled visual-review run `34880369639` verified product provenance and captured clean short-phone gameplay, rejected-blocker feedback, and a regular Story Card with automatic overlays deliberately closed through the real runtime. Artifact `10363160590`, SHA-256 `9b2e5380ad8a899834a9a6d66fbd5e919b5df704e6446dfcb4583b8581269392`; screenshots were manually reviewed before promotion.
+- Promotion/live run `34880640526` required the exact prior `main` base, rechecked protected sources, imported only the six accepted product files, and promoted them as `4f9e27b01f3a0ae158ee44c8ac36b4c11e2fa033`. Its fresh committed-main browser job independently revalidated the accepted behavior. Live artifact `10362788052`, SHA-256 `d6f73cb853179295b6c6b9115d91e4654eec4404323b1a171c1cead2d3088ead`.
+- Committed-main closure run `34881048866` targeted the remaining source wording for V01/V10: Levels 201 and 366 keep decorative props behind rules space, and switch/door/rail/turn identity remains readable under achromatopsia, protanopia, deuteranopia, and tritanopia emulation. Artifact `10363266549`, SHA-256 `764e8dfb2782d9b286e13691dd9347714c966066600eb8ddc4ad77400acebbd0`; representative captures were manually reviewed.
+- V01 quiet board floors, V09 readable nests, V10 mechanic-state causality, U09 mastery copy, V16 story postcards, and V17 chapter reward are accepted complete. N04 remains partial because the audit still requires clearer role separation among during-play motive, movement-opening clue, milestone result, and remaining exposition. V06/N05/V07/V12 remain partial for their separate characterization/world-consistency requirements.
+
+"""
+          h=h.replace(anchor,checkpoint+anchor,1)
+          old_remaining="""Remaining closure work:
+1. Gameplay + story coherence: residual decorative-cell ambiguity; clearer destination/arrival resolution; explicit mechanic-state causality and rejected-blocker feedback; star-criteria discoverability; sharper play/movement/milestone/journal information roles; regular Story-card postcard treatment; late chapter-reward copy trimming; remaining keepsake/resident-use and Pip/Tansy behavior characterization; and cross-region/landmark consistency where nodes still feel interchangeable.
+2. Ending closure: add the true living-Skyway-to-home visual pullback while preserving the accepted concise ending and Home-first action.
+3. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
+4. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
+5. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
+"""
+          new_remaining="""Remaining closure work:
+1. Ending closure: add the true living-Skyway-to-home visual pullback while preserving the accepted concise ending and Home-first action.
+2. Character/world coherence: finish N04 information-role separation, remaining keepsake/resident-use behavior, Pip/Tansy characterization, cross-region fixture consistency, and Atlas landmark distinctiveness where nodes still feel interchangeable.
+3. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
+4. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
+5. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
+"""
+          assert old_remaining in h
+          h=h.replace(old_remaining,new_remaining,1)
+          old_next="Next action: gameplay + story coherence candidate. Work inside the existing board/story/result presentation rather than creating another broad override layer. Prioritize source-defined remaining blockers that can be accepted objectively: remove decorative playable-cell ambiguity; make switch/door, gate/rail/turn and rejected-move causality explicit; improve arrival/completed-destination acknowledgement; explain star criteria before evaluation; give regular Story cards a concise postcard structure with one place/prop image, one character line and one goal; reduce remaining duplicated information roles; and trim late reward copy. Protect authored puzzle definitions and all previously accepted slices, then validate candidate-first across representative mechanic chapters and short/normal/wide phone sizes before promotion."
+          new_next="Next action: ending closure candidate. Preserve the accepted concise completion copy and Home-first action, but make the final visual sequence itself carry the thesis: show the living Skyway working across communities, pull back to canonical Little Home as one moving node, and land on an ordinary delivery/visit/morning action that visibly succeeds. Protect campaign definitions and all previously accepted presentation slices; validate candidate-first at short/normal/wide phone sizes before promotion."
+          assert old_next in h
+          h=h.replace(old_next,new_next,1)
+          old_state="- The accepted Atlas + Story/Journal coherence slice is promoted and protected; current product source is on `main`, not the candidate branch."
+          new_state=old_state+"\n- The accepted Gameplay / Story coherence slice is promoted and protected; V01/V09/V10/U09/V16/V17 are complete, while N04 and separate characterization/world-consistency items remain tracked as partial."
+          assert old_state in h
+          h=h.replace(old_state,new_state,1)
+          handoff.write_text(h,encoding='utf-8')
+          print('Audit matrix and handoff reconciled to accepted Gameplay / Story evidence.')
+          PY
+
+      - name: Verify only documentation changed
+        run: |
+          git diff --check
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "ASTRA_AUDIT_ACCEPTANCE_MATRIX.md DEVELOPMENT_HANDOFF.md "
+          grep -F '| V01 quiet board floors | COMPLETED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F '| V09 readable nests | COMPLETED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F '| V10 mechanic-state causality | COMPLETED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F '| U09 mastery copy | COMPLETED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F '| V16 story postcards | COMPLETED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F '| V17 chapter reward | COMPLETED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F '| N04 information-layer roles | PARTIAL |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -F 'Next action: ending closure candidate.' DEVELOPMENT_HANDOFF.md
+
+      - name: Commit documentation reconciliation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add ASTRA_AUDIT_ACCEPTANCE_MATRIX.md DEVELOPMENT_HANDOFF.md
+          git commit -m "Reconcile gameplay and Story audit acceptance"
+          git push origin HEAD:main
