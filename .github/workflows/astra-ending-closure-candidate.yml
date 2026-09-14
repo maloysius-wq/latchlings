@@ -1,0 +1,133 @@
+name: Astra ending closure candidate
+
+on:
+  push:
+    branches: [astra-ending-closure-candidate]
+    paths:
+      - '.github/workflows/astra-ending-closure-candidate.yml'
+      - '.github/tmp/astra_ending_closure_candidate.py'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: astra-ending-closure-candidate
+          fetch-depth: 0
+
+      - name: Require accepted main base ancestry
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor 69b6f80e794963f0e46ad1e54d90701f7caa5300 HEAD
+
+      - name: Protect authored campaigns and accepted slices
+        run: |
+          git diff --exit-code 69b6f80e794963f0e46ad1e54d90701f7caa5300 -- \
+            campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js \
+            campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js \
+            game400-a.js game400-b.js story-theme400.js style400-story-theme.css \
+            cinematics400.js cinematic-dialogue400.js style400-cinematics.css \
+            gameplay-story-rail400.js style400-story-rail-board.css \
+            title-island-concepts/index.html style400-skyway-atlas.css \
+            style400-atlas-progression.css pass3-chapter5-prism.js \
+            pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
+            pass3-chapter8-aurora.js
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser ending acceptance
+        run: |
+          mkdir -p /tmp/astra-ending-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-http.log 2>&1 &
+          echo $! >/tmp/astra-ending-http.pid
+          cat > .astra-ending-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          const results=[];
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            const errors=[]; page.on('pageerror',e=>errors.push(e.message)); page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>screen('complete'));
+            await page.waitForTimeout(100);
+            const ending=await page.evaluate(()=>{
+              const stage=document.querySelector('.ending-network-stage');
+              const focus=document.querySelector('.ending-home-focus');
+              const field=document.querySelector('.ending-network-field');
+              const actions=document.querySelector('.ending-actions');
+              const primary=actions?.querySelector('button:first-child');
+              const homeFrame=document.querySelector('.ending-home-frame');
+              const hero=document.querySelector('.ending-hero-pass4');
+              return {
+                stage:!!stage,
+                label:stage?.getAttribute('aria-label')||'',
+                nodes:document.querySelectorAll('.ending-skyway-node').length,
+                links:document.querySelectorAll('.ending-network-link').length,
+                homeNodes:document.querySelectorAll('.ending-skyway-node[data-home-node="true"]').length,
+                focusAnimation:focus?getComputedStyle(focus).animationName:'',
+                fieldAnimation:field?getComputedStyle(field).animationName:'',
+                parcelAnimation:getComputedStyle(document.querySelector('.ending-parcel')).animationName,
+                frameSrc:homeFrame?.getAttribute('src')||'',
+                primaryId:primary?.id||'',
+                primaryText:primary?.textContent?.trim()||'',
+                copy:[...hero.querySelectorAll(':scope>p')].map(x=>x.textContent.trim()),
+                bottom:hero?.getBoundingClientRect().bottom||0,
+                viewport:innerHeight
+              };
+            });
+            if(!ending.stage)throw new Error(`${size.name}: missing living-Skyway ending stage`);
+            if(ending.nodes<5||ending.links<4||ending.homeNodes!==1)throw new Error(`${size.name}: network does not establish communities + one Little Home node ${JSON.stringify(ending)}`);
+            if(!/communities/i.test(ending.label)||!/Little Home/i.test(ending.label)||!/parcel/i.test(ending.label))throw new Error(`${size.name}: ending art lacks meaningful equivalent ${ending.label}`);
+            if(!ending.focusAnimation.includes('endingNetworkHomeward')||!ending.fieldAnimation.includes('endingNetworkWide'))throw new Error(`${size.name}: missing network-to-home camera sequence ${JSON.stringify(ending)}`);
+            if(!ending.parcelAnimation.includes('endingPass4Parcel'))throw new Error(`${size.name}: ordinary parcel action missing`);
+            if(!ending.frameSrc.includes('title-island-concepts/')||!ending.frameSrc.includes('ending=1'))throw new Error(`${size.name}: canonical Little Home frame missing`);
+            if(ending.primaryId!=='completeHome'||ending.primaryText!=='Return to Little Home')throw new Error(`${size.name}: Home-first completion action regressed ${JSON.stringify(ending)}`);
+            if(ending.copy[0]!=='Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.'||ending.copy[1]!=='Ordinary life continues. That is the victory.')throw new Error(`${size.name}: accepted concise ending copy changed ${JSON.stringify(ending.copy)}`);
+            if(ending.bottom>size.height+0.5)throw new Error(`${size.name}: ending below viewport ${JSON.stringify(ending)}`);
+            if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join('; ')}`);
+            await page.screenshot({path:`/tmp/astra-ending-evidence/${size.name}-normal.png`,fullPage:true});
+            results.push({size:size.name,ending});
+            await context.close();
+          }
+
+          for(const mode of ['os','game']){
+            const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:mode==='os'?'reduce':'no-preference'});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(mode=>{if(mode==='game')document.documentElement.dataset.motion='reduced';screen('complete')},mode);
+            await page.waitForTimeout(80);
+            const reduced=await page.evaluate(()=>({
+              animations:[...document.querySelectorAll('.ending-network-stage *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none'),
+              primary:document.querySelector('.ending-actions button:first-child')?.id||'',
+              nodes:document.querySelectorAll('.ending-skyway-node').length
+            }));
+            if(reduced.animations.length)throw new Error(`${mode}: ending animations still running ${JSON.stringify(reduced.animations)}`);
+            if(reduced.primary!=='completeHome'||reduced.nodes<5)throw new Error(`${mode}: reduced-motion final tableau incomplete ${JSON.stringify(reduced)}`);
+            await page.screenshot({path:`/tmp/astra-ending-evidence/reduced-${mode}.png`,fullPage:true});
+            await context.close();
+          }
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-ending-evidence/results.json',JSON.stringify(results,null,2));
+          JS
+          node .astra-ending-check.mjs
+          rm -f .astra-ending-check.mjs
+          kill $(cat /tmp/astra-ending-http.pid) || true
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-ending-candidate-evidence
+          path: /tmp/astra-ending-evidence
