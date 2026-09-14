@@ -1,0 +1,182 @@
+name: Astra Pass 4 candidate
+
+on:
+  push:
+    branches:
+      - astra-pass4-candidate
+    paths:
+      - '.github/workflows/astra-pass4-candidate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: astra-pass4-candidate
+
+      - name: Snapshot protected campaign sources
+        shell: bash
+        run: sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+
+      - name: Apply Pass 4 candidate
+        run: python .github/tmp/astra_pass4_candidate.py
+
+      - name: Protect campaign definitions and accepted R1-R5 source
+        shell: bash
+        run: |
+          sha256sum -c /tmp/campaign-before.sha256
+          git diff --exit-code eb88684040f99cf4a7ec0b423d9b0f54f4210ead -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js
+          git diff --exit-code eb88684040f99cf4a7ec0b423d9b0f54f4210ead -- gameplay-story-rail400.js style400-story-rail-board.css style400-story-theme.css game400-b.js title-island-concepts/index.html
+
+      - name: Static syntax and acceptance assertions
+        shell: bash
+        run: |
+          node --check cinematics400.js
+          python - <<'PY'
+          from pathlib import Path
+          cin=Path('cinematics400.js').read_text()
+          idx=Path('index.html').read_text()
+          ui=Path('style400-ui.css').read_text()
+          css=Path('style400-cinematics.css').read_text()
+          assert cin.count("label:'") == 25
+          assert 'function renderTurn()' in cin
+          assert 'activeLine' in cin
+          assert 'cin-community-work' in cin
+          assert 'cin-volunteer-scene' in cin
+          assert 'ending-home-frame' in idx
+          assert 'ending-resolution' not in idx
+          assert idx.index('id="completeHome"') < idx.index('id="completeLevels"')
+          assert 'Astra Pass 4 canonical ending' in ui
+          assert 'Astra Pass 4 action staging' in css
+          assert idx.count('style400-ui.css?v=20260914-astra-pass4-candidate1') == 1
+          assert idx.count('style400-cinematics.css?v=20260914-astra-pass4-candidate1') == 1
+          assert idx.count('cinematics400.js?v=20260914-astra-pass4-candidate1') == 1
+          print('Static acceptance assertions passed.')
+          PY
+
+      - name: Install Chromium validation runtime
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-pass4-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/latchlings-http.log 2>&1 &
+          echo $! >/tmp/latchlings-http.pid
+          cat > /tmp/astra-pass4-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const browser = await chromium.launch({headless:true});
+          const errors=[];
+          const results=[];
+          const viewports=[
+            {name:'short',width:320,height:568},
+            {name:'phone',width:390,height:844},
+            {name:'wide',width:430,height:932}
+          ];
+          const films=['opening','across-drift','old-maps','homeward'];
+
+          for (const viewport of viewports) {
+            const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            page.on('pageerror',e=>errors.push(`${viewport.name}: pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`${viewport.name}: console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>localStorage.clear());
+
+            for (const film of films) {
+              await page.evaluate(id=>window.LatchlingsCinematics.show(id,{markSeen:false}),film);
+              await page.waitForSelector('#cinematicOverlay.show');
+              const spec=await page.evaluate(id=>window.LatchlingsCinematics.CINEMATICS[id],film);
+              for (let bi=0;bi<spec.beats.length;bi++) {
+                const beat=spec.beats[bi];
+                for (let li=0;li<beat.lines.length;li++) {
+                  const state=await page.evaluate(()=>({beat:window.LatchlingsCinematics.beat,line:window.LatchlingsCinematics.line,count:document.querySelectorAll('#cinematicLines p').length,speaker:document.querySelector('#cinematicLines strong')?.textContent||'',text:document.querySelector('#cinematicLines span')?.textContent||'',visual:document.querySelector('#cinematicOverlay')?.dataset.visual||''}));
+                  if(state.beat!==bi||state.line!==li) throw new Error(`${viewport.name} ${film}: state ${state.beat}/${state.line}, expected ${bi}/${li}`);
+                  if(state.count!==1) throw new Error(`${viewport.name} ${film} beat ${bi}: expected one dialogue turn, found ${state.count}`);
+                  if(state.speaker!==beat.lines[li][0]||state.text!==beat.lines[li][1]) throw new Error(`${viewport.name} ${film} beat ${bi} line ${li}: dialogue order mismatch`);
+                  if(state.visual!==beat.visual) throw new Error(`${viewport.name} ${film} beat ${bi}: visual mismatch`);
+                  const nav=await page.evaluate(()=>{
+                    const ids=['cinematicSkip','cinematicNext'];
+                    return ids.map(id=>{const r=document.getElementById(id).getBoundingClientRect();return {id,top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}});
+                  });
+                  for(const r of nav){if(r.top<0||r.bottom>viewport.height+0.5||r.left<0||r.right>viewport.width+0.5) throw new Error(`${viewport.name} ${film}: ${r.id} outside viewport ${JSON.stringify(r)}`)}
+                  await page.click('#cinematicNext');
+                  await page.waitForTimeout(45);
+                }
+              }
+              await page.waitForTimeout(60);
+              if(await page.locator('#cinematicOverlay.show').count()) throw new Error(`${viewport.name} ${film}: cinematic did not close after final action`);
+            }
+
+            await page.evaluate(()=>{
+              document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+              document.getElementById('complete').classList.add('active');
+              document.body.dataset.screen='complete';
+            });
+            await page.waitForTimeout(250);
+            const ending=await page.evaluate(()=>{
+              const home=document.getElementById('completeHome');
+              const levels=document.getElementById('completeLevels');
+              const frame=document.querySelector('.ending-home-frame');
+              const hr=home.getBoundingClientRect(),lr=levels.getBoundingClientRect(),fr=frame.getBoundingClientRect();
+              return {homeTop:hr.top,levelsTop:lr.top,frameW:fr.width,frameH:fr.height,note:document.querySelector('.ending-note')?.textContent||'',resolution:!!document.querySelector('.ending-resolution')};
+            });
+            if(!(ending.homeTop<ending.levelsTop)) throw new Error(`${viewport.name}: Return to Little Home is not primary/first`);
+            if(ending.frameW<250||ending.frameH<180) throw new Error(`${viewport.name}: canonical Little Home frame is too small`);
+            if(ending.resolution) throw new Error(`${viewport.name}: explanatory ending-resolution essay still present`);
+            if(!ending.note.includes('Ordinary life continues')) throw new Error(`${viewport.name}: canonical ordinary-life line missing`);
+            await page.screenshot({path:`/tmp/astra-pass4-evidence/ending-${viewport.name}.png`,fullPage:true});
+            results.push({viewport,ending});
+            await context.close();
+          }
+
+          const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+          const rpage=await reduced.newPage();
+          rpage.on('pageerror',e=>errors.push(`reduced: pageerror ${e.message}`));
+          await rpage.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          await rpage.evaluate(()=>window.LatchlingsCinematics.show('homeward',{markSeen:false}));
+          await rpage.waitForTimeout(120);
+          const motion=await rpage.evaluate(()=>({
+            volunteerAnimations:[...document.querySelectorAll('.cinematic-stage *')].flatMap(el=>el.getAnimations()).length,
+            footer:getComputedStyle(document.querySelector('.cinematic-footer')).position
+          }));
+          await rpage.screenshot({path:'/tmp/astra-pass4-evidence/homeward-reduced.png',fullPage:true});
+          results.push({reducedMotion:motion});
+          await reduced.close();
+
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-pass4-evidence/results.json',JSON.stringify({results,errors},null,2));
+          if(errors.length) throw new Error(errors.join('\n'));
+          console.log(JSON.stringify(results,null,2));
+          JS
+          node /tmp/astra-pass4-check.mjs
+          kill $(cat /tmp/latchlings-http.pid) || true
+
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add cinematics400.js style400-cinematics.css style400-ui.css index.html
+          git commit -m "Stage Astra Pass 4 cinematic pacing and ending"
+          git push origin HEAD:astra-pass4-candidate
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-pass4-candidate-evidence
+          path: /tmp/astra-pass4-evidence
+          if-no-files-found: warn
