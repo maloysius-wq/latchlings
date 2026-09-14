@@ -86,7 +86,10 @@ jobs:
           old="await settleGame(page,201);await page.click('#hintBtn');"
           new="await settleGame(page,201);await page.waitForTimeout(320);await page.evaluate(()=>window.LatchlingsStoryTheme?.close(false));await page.waitForTimeout(20);await page.click('#hintBtn');"
           if t.count(old)!=1: raise SystemExit(f'hint setup patch expected once, found {t.count(old)}')
-          p.write_text(t.replace(old,new,1),encoding='utf-8')
+          t=t.replace(old,new,1)
+          if t.count("#pauseResume")!=1: raise SystemExit(f'pause selector expected once, found {t.count("#pauseResume")}')
+          t=t.replace("#pauseResume","#resumeBtn",1)
+          p.write_text(t,encoding='utf-8')
           PY
           python3 -m http.server 4173 -d /tmp/r1r5-site >/tmp/r1r5-http.log 2>&1 &
           SERVER_PID=$!
