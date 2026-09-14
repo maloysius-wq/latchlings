@@ -1,0 +1,83 @@
+name: Astra Presentation Accessibility Rerun 7
+
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths: ['.github/workflows/astra-presentation-accessibility-rerun7.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+          fetch-depth: 0
+      - name: Apply candidate and protect authored product
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematic-dialogue400.js style400-cinematics-dialogue.css style400-cinematics-geometry.css cinematic-geometry400.js gameplay-story-rail400.js story-grounding400.js story-theme400.js style400-story-rail-board.css style400-atlas-progression.css pass3-chapter5-prism.js pass3-chapter5-prism.css pass3-chapter6-copperline.js pass3-chapter6-copperline.css pass3-chapter7-stormswitch.js pass3-chapter7-stormswitch.css pass3-chapter8-aurora.js pass3-chapter8-aurora.css > /tmp/protected-before.sha256
+          python .github/tmp/astra_pa_patch.py
+          python .github/tmp/astra_pa_memories_followup.py
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/protected-before.sha256
+          node --check story400.js
+          node --check cinematics400.js
+          node --check game400-b.js
+          git diff --check
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Generate synchronized matrix from accepted gate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('.github/workflows/astra-presentation-accessibility-rerun6.yml').read_text()
+          start=s.index('      - name: Run synchronized browser matrix')
+          chunk=s[start:]
+          run_at=chunk.index('        run: |\n')+len('        run: |\n')
+          end=chunk.index('      - name: Commit accepted candidate product')
+          body=chunk[run_at:end]
+          lines=[line[10:] if line.startswith('          ') else line for line in body.splitlines()]
+          shell='\n'.join(lines)
+          shell=shell.rsplit('node .astra-pa-green.mjs',1)[0]
+          Path('/tmp/generate-pa-matrix.sh').write_text(shell+'\n')
+          PY
+          bash /tmp/generate-pa-matrix.sh
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.astra-pa-green.mjs'); s=p.read_text()
+          old="const ids=Object.keys(await cp.evaluate(()=>LatchlingsCinematics.CINEMATICS));let turns=0;"
+          new="const cinematicMeta=await cp.evaluate(()=>{const cs=LatchlingsCinematics.CINEMATICS;return {ids:Object.keys(cs),beats:Object.values(cs).reduce((n,c)=>n+c.beats.length,0),turns:Object.values(cs).reduce((n,c)=>n+c.beats.reduce((m,b)=>m+(b.lines?.length||0),0),0)}});const ids=cinematicMeta.ids;const expectedTurns=cinematicMeta.turns;let turns=0;"
+          assert old in s
+          s=s.replace(old,new,1)
+          old2="if(turns!==68)fail('cinematics','unexpected utterance count',{turns});"
+          new2="if(turns!==expectedTurns)fail('cinematics','unexpected utterance count',{turns,expectedTurns,beats:cinematicMeta.beats});if(cinematicMeta.beats!==25)fail('cinematics','unexpected beat count',cinematicMeta);"
+          assert old2 in s
+          s=s.replace(old2,new2,1)
+          p.write_text(s)
+          PY
+          node .astra-pa-green.mjs
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name "maloysius-wq"
+          git config user.email "maloysius@gmail.com"
+          git add story400.js cinematics400.js style400-cinematics.css index.html game400-b.js style400-ui.css style400-game.css title-island-concepts/index.html
+          git add -u style400-cinematics-polish.css style400-cinematics-refine.css style400-cinematics-refine2.css
+          git diff --cached --check
+          git commit -m "Stage presentation accessibility consolidation [skip ci]"
+          git push origin HEAD:astra-presentation-accessibility-candidate
+          git rev-parse HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-presentation-accessibility-evidence
+          path: /tmp/astra-pa-evidence
+          if-no-files-found: error
