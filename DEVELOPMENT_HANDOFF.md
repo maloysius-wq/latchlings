@@ -16,22 +16,29 @@ User goal: reconcile the entire original `LATCHLINGS_VISUAL_STORY_AUDIT.md` and 
 Source acceptance contract:
 - Original audit baseline: `a5048dd25804fdd261639e5a22332a0cfd506682`.
 - Astra implementation review baseline: `d6e39c0866505795c2aa6a26777896072e16e7df`.
-- R1-R5 usability work is already completed and protected by candidate run `34853875486`, committed-live run `34855339189`, final Pages run `34856135214`, and final guard run `34856138001`.
-- The original standalone audit/review attachments are not repository files. Their complete repository-side reconciliation is now preserved in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`; use that matrix plus the dated baselines above as the durable closure checklist rather than depending on an external attachment.
+- R1-R5 usability work is completed and protected by candidate run `34853875486`, committed-live run `34855339189`, final Pages run `34856135214`, and final guard run `34856138001`.
+- The original standalone audit/review attachments are not repository files. Their complete repository-side reconciliation is preserved in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`; use that matrix plus the dated baselines above as the durable closure checklist rather than depending on an external attachment.
 
-Open work to reconcile and close:
-1. Pass 4: restage all 25 cinematic beats around purposeful action, visual cause/effect, one-speaker chronological dialogue, reduced-motion-safe staging, and a shared scenic system; revise opening pacing where the audit calls out diagram/exposition presentation.
-2. Ending: replace the simplified completion presentation with the canonical Little Home, ordinary-life resolution, living-Skyway pullback, concise thesis, and primary Return to Little Home action.
-3. Home/Atlas/journal/story coherence: keepsake resident use + revisit memories, contextual Home primary action, Atlas hierarchy/state readability/landmarks, journal section hierarchy, clearer information-layer roles, stronger authored movement/character progression, and reward-copy trimming.
-4. Gameplay/world polish: residual decorative-cell ambiguity, explicit mechanic-state causality/rejected-blocker feedback, destination/arrival feedback, star-criteria discoverability, and cross-region presentation consistency.
-5. Presentation/accessibility consolidation: all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override/documentation layers where safe.
+Accepted Astra Pass 4 checkpoint (2026-09-14):
+- Candidate run `34865335086` passed exact campaign/source protection, syntax/static assertions, every utterance in all 25 cinematic beats at 320x568 / 390x844 / 430x932, representative visual evidence, OS Reduced Motion, and in-game Reduced Motion.
+- Accepted candidate product commit: `b8f6addf83611b3f8daf71311372e10de3ed90b6`.
+- Exact accepted product bytes were promoted to `main` as `0e244bfb5e0ae71fad64f468cb99b301b01af713` after a second protected-source check.
+- V03 is now accepted complete. V18/N06 remain partial only because the final living-Skyway-to-Little-Home pullback is still implied rather than fully staged. V19 is partial: canonical utterance state is consolidated between the core cinematic renderer and dialogue layer, but broader presentation/CSS duplication remains.
+- Temporary Pass 4 promotion workflow was removed after promotion. The candidate branch retains its validation scaffolding/evidence history and is not the source of truth.
+
+Remaining closure work:
+1. Little Home coherence: purposeful resident destination actions, resident characterization through behavior/expression, keepsake use plus tap-to-revisit memories, contextual Home primary action, and ordinary-life cause/effect.
+2. Atlas/journal/story coherence: hierarchy/state readability/landmarks, journal `Now` / Residents / Journey / Cinematics structure, clearer information-layer roles, regular story postcard treatment, and late reward-copy trimming.
+3. Gameplay/world polish: residual decorative-cell ambiguity, explicit mechanic-state causality/rejected-blocker feedback, destination/arrival feedback, star-criteria discoverability, and cross-region presentation consistency.
+4. Ending closure: add the true living-Skyway-to-home visual pullback while preserving the accepted concise ending and Home-first action.
+5. Presentation/accessibility consolidation: all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
 6. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
 7. External-only certifications must remain explicitly unverified if this environment cannot perform them: real physical-phone touch/performance/battery behavior, genuine iOS Safari hardware behavior, exhaustive assistive-technology testing, and subjective real-speaker/headphone audio mixing/listening.
 
 Protected systems:
 - Exact authored puzzle definitions/solutions in `campaign400-1.js` through `campaign400-8.js` must not change.
 - Preserve accepted Pass 3 chapter art direction unless an audit item specifically requires a presentation-layer correction.
-- Preserve the R1-R5 behavior already certified.
+- Preserve all R1-R5 behavior and the accepted Pass 4 cinematic dialogue/navigation behavior.
 
 Implementation/validation contract:
 - Reconcile every original audit ID (`V01`-`V20`, `N01`-`N06`, `U01`-`U11`, `A01`, `P01`) and both documents' Pass 1-5 acceptance language against current code/runtime.
@@ -42,9 +49,7 @@ Implementation/validation contract:
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Reconciliation checkpoint (2026-09-14): `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` now records every original audit ID against current accepted behavior. No hidden product regression was found that must be repaired before feature work. R1-R5 close V02 and U07 and materially advance U03/U11/V20; the remaining first product slice is Pass 4 cinematics/ending, with V03, V18, N06, and presentation consolidation as the primary closure targets.
-
-Next action: implement Pass 4 through the existing cinematic/presentation stack without adding another broad override layer: one-speaker chronological pacing, purposeful/action-driven scenic restaging across all 25 beats, reduced-motion-safe information, opening pacing cleanup, and the canonical Little Home ending. Validate candidate-first against protected campaign/story hashes and the R1-R5 acceptance contract.
+Next action: Little Home coherence candidate. Modify the existing Little Home implementation rather than adding another presentation layer. Give each adult an authored work route with recognizable destination/action/return phases; preserve R2 pause/reduced-motion semantics; make unlocked keepsakes focusable/tappable and route them to concise memory/reward recall; change the primary Home action from generic `Play` to chapter/level context; validate at short/normal/wide phone sizes with both motion modes and campaign source protection before promotion.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
@@ -59,11 +64,12 @@ Completed scope:
 Accepted product promotion: `f241d816242f245c0ea41ad3c33dd9d496d7c849`.
 Committed-live acceptance: run `34855339189` / success, evidence artifact `10353096127`, SHA-256 `14d8a3d710f1168bba2839cb7fe7eb16e2579c7646263725716be0cd55de5c44`.
 Cleanup commit: `404c319d39c96799ecb368933a27a9626c705e5a`.
-Final R1-R5 exact head: `7e2643d2e78b1a5c25b6b5364225e1566e19a5cd`; Pages `34856135214` success; repository guard `34856138001` success.
+Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b5364225e1566e19a5cd`; Pages `34856135214` success; repository guard `34856138001` success.
 
 ## Durable project state
 - The eight-chapter Pass 3 visual/story campaign is complete and protected.
 - The Astra R1-R5 usability pass is complete and protected.
+- The accepted Pass 4 cinematic slice is promoted and tracked in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`.
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the durable repository-side item-by-item closure checklist for the original visual/story audit and implementation review.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
