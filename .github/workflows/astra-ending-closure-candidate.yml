@@ -1,13 +1,14 @@
-name: Astra ending closure accepted candidate verification
+name: Astra ending closure candidate finalization
 
 on:
   push:
     branches: [astra-ending-closure-candidate]
     paths:
       - '.github/workflows/astra-ending-closure-candidate.yml'
+      - '.github/tmp/astra_ending_short_title_fix.py'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -20,7 +21,7 @@ jobs:
           ref: astra-ending-closure-candidate
           fetch-depth: 0
 
-      - name: Verify exact accepted product and protected slices
+      - name: Verify pre-fix product and protected slices
         run: |
           test "$(git show 64fe6f447f486e0bfe79e59401432ab4ad3e9741:index.html | sha256sum | cut -d' ' -f1)" = "$(sha256sum index.html | cut -d' ' -f1)"
           test "$(git show 64fe6f447f486e0bfe79e59401432ab4ad3e9741:style400-ui.css | sha256sum | cut -d' ' -f1)" = "$(sha256sum style400-ui.css | cut -d' ' -f1)"
@@ -35,17 +36,25 @@ jobs:
             pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
             pass3-chapter8-aurora.js
 
+      - name: Apply short title fix
+        run: python .github/tmp/astra_ending_short_title_fix.py
+
+      - name: Verify product-only patch
+        run: |
+          git diff --exit-code 64fe6f447f486e0bfe79e59401432ab4ad3e9741 -- index.html
+          test "$(git diff --name-only 64fe6f447f486e0bfe79e59401432ab4ad3e9741 -- style400-ui.css)" = "style400-ui.css"
+
       - name: Install Chromium
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Validate accepted ending runtime
+      - name: Validate ending runtime
         run: |
-          mkdir -p /tmp/astra-ending-accepted
-          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-accepted-http.log 2>&1 &
-          echo $! >/tmp/astra-ending-accepted-http.pid
-          cat > .astra-ending-accepted.mjs <<'JS'
+          mkdir -p /tmp/astra-ending-final
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-final-http.log 2>&1 &
+          echo $! >/tmp/astra-ending-final-http.pid
+          cat > .astra-ending-final.mjs <<'JS'
           import { chromium } from 'playwright';
           import fs from 'node:fs';
           const browser=await chromium.launch({headless:true});
@@ -72,7 +81,7 @@ jobs:
                 primaryId:document.querySelector('.ending-actions button:first-child')?.id||'',
                 copy:[...document.querySelectorAll('.ending-hero-pass4>p')].map(x=>x.textContent.trim()),
                 bottom:hr.bottom,
-                title:{left:tr.left,right:tr.right,width:tr.width,heroLeft:hr.left,heroRight:hr.right,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth},
+                title:{left:tr.left,right:tr.right,width:tr.width,heroLeft:hr.left,heroRight:hr.right,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth,font:getComputedStyle(title).fontSize},
                 outgoing:!!document.querySelector('.screen-transition-outgoing')
               };
             });
@@ -86,6 +95,7 @@ jobs:
             if(state.title.left<state.title.heroLeft-0.5||state.title.right>state.title.heroRight+0.5||state.title.scrollWidth>state.title.clientWidth+1)throw new Error(`${size.name}: ending title clipped ${JSON.stringify(state.title)}`);
             if(state.outgoing)throw new Error(`${size.name}: outgoing screen transition did not settle`);
             if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join('; ')}`);
+            await page.screenshot({path:`/tmp/astra-ending-final/${size.name}-viewport.png`,fullPage:false});
             results.push({size:size.name,state}); await context.close();
           }
           for(const mode of ['os','game']){
@@ -101,17 +111,26 @@ jobs:
               bottom:document.querySelector('.ending-hero-pass4').getBoundingClientRect().bottom
             }));
             if(!reduced.pref||reduced.animations.length||reduced.outgoing||reduced.primary!=='completeHome'||reduced.nodes!==6||reduced.bottom>844.5)throw new Error(`${mode}: Reduced Motion contract ${JSON.stringify(reduced)}`);
-            await page.screenshot({path:`/tmp/astra-ending-accepted/${mode}-reduced-viewport.png`,fullPage:false}); await context.close();
+            await page.screenshot({path:`/tmp/astra-ending-final/${mode}-reduced-viewport.png`,fullPage:false}); await context.close();
           }
-          await browser.close(); fs.writeFileSync('/tmp/astra-ending-accepted/results.json',JSON.stringify(results,null,2));
+          await browser.close(); fs.writeFileSync('/tmp/astra-ending-final/results.json',JSON.stringify(results,null,2));
           JS
-          node .astra-ending-accepted.mjs
-          rm -f .astra-ending-accepted.mjs
-          kill $(cat /tmp/astra-ending-accepted-http.pid) || true
+          node .astra-ending-final.mjs
+          rm -f .astra-ending-final.mjs
+          kill $(cat /tmp/astra-ending-final-http.pid) || true
 
-      - name: Upload accepted-candidate evidence
+      - name: Commit final accepted candidate product
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add style400-ui.css
+          git diff --cached --quiet && { echo 'No title containment diff'; exit 1; }
+          git commit -m "Accept short ending title containment fix"
+          git push origin HEAD:astra-ending-closure-candidate
+
+      - name: Upload final candidate evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: astra-ending-accepted-candidate-evidence
-          path: /tmp/astra-ending-accepted
+          name: astra-ending-final-candidate-evidence
+          path: /tmp/astra-ending-final
