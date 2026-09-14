@@ -1,0 +1,169 @@
+name: Astra Little Home coherence candidate v3
+
+on:
+  push:
+    branches: [astra-little-home-candidate]
+    paths:
+      - '.github/workflows/astra-little-home-candidate-v3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-little-home-candidate
+          fetch-depth: 0
+
+      - name: Protect accepted sources and apply candidate
+        shell: bash
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/campaign-before.sha256
+          sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css style400-story-theme.css > /tmp/accepted-before.sha256
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/astra_little_home_candidate.py')
+          s=p.read_text()
+          s=s.replace("assert h.count('data-memory=')==7", "assert h.count('aria-label=\\\"Memory:')==7")
+          s=s.replace("{x:0,y:0,target:'potting table',action:'putting the watering can away',hold:450}", "{x:0,y:0,target:'potting table',action:'putting the watering can away',hold:450,record:false}")
+          s=s.replace("{x:0,y:0,target:'cottage porch',action:'marking the route complete',hold:450}", "{x:0,y:0,target:'cottage porch',action:'marking the route complete',hold:450,record:false}")
+          s=s.replace("{x:0,y:0,target:'tree path',action:'putting the tools away',hold:450}", "{x:0,y:0,target:'tree path',action:'putting the tools away',hold:450,record:false}")
+          s=s.replace("adult.dataset.lastWorkTarget=next.target||'';adult.dataset.lastWorkAction=next.action;", "if(next.record!==false){adult.dataset.lastWorkTarget=next.target||'';adult.dataset.lastWorkAction=next.action;}")
+          p.write_text(s)
+          PY
+          python .github/tmp/astra_little_home_candidate.py
+          sha256sum -c /tmp/campaign-before.sha256
+          sha256sum -c /tmp/accepted-before.sha256
+          git diff --exit-code 75a22e57ef5a04964a70bf8446e642ffe1935a32 -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css style400-story-theme.css
+          node --check game400-a.js
+          node --check game400-b.js
+
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser acceptance matrix
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-home-evidence
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/latchlings-home-http.log 2>&1 &
+          echo $! >/tmp/latchlings-home-http.pid
+          cat > .astra-home-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const results=[];
+          const errors=[];
+          const sizes=[{name:'short',width:320,height:568},{name:'phone',width:390,height:844},{name:'wide',width:430,height:932}];
+          const fail=m=>{errors.push(m);throw new Error(m)};
+          for(const size of sizes){
+            const context=await browser.newContext({viewport:{width:size.width,height:size.height},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            page.on('pageerror',e=>errors.push(`${size.name}: pageerror ${e.message}`));
+            page.on('console',m=>{if(m.type()==='error')errors.push(`${size.name}: console ${m.text()}`)});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            const frame=page.frames().find(f=>f.url().includes('title-island-concepts'));
+            if(!frame)fail(`${size.name}: Little Home frame missing`);
+            await frame.waitForSelector('#c2 .play');
+            await page.waitForTimeout(150);
+            const fresh=await frame.evaluate(()=>({
+              label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',
+              meta:document.querySelector('#c2 .home-primary-copy small')?.textContent||'',
+              unlocked:document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length,
+              h:document.querySelector('#c2 .play')?.getBoundingClientRect().height||0
+            }));
+            if(!fresh.label.startsWith('Begin ')||fresh.meta!=='Level 1 · Chapter 1'||fresh.unlocked!==0||fresh.h<44)fail(`${size.name}: fresh Home mismatch ${JSON.stringify(fresh)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-fresh.png',fullPage:true});
+
+            await page.evaluate(()=>{progress={unlocked:251,stars:{50:3,100:3,150:3,200:3,250:3}};saveProgress();updateHome(true)});
+            await page.waitForTimeout(180);
+            const expectedChapter=await page.evaluate(()=>CHAPTERS[5].name);
+            const mid=await frame.evaluate(()=>({
+              label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',
+              meta:document.querySelector('#c2 .home-primary-copy small')?.textContent||'',
+              unlocked:[...document.querySelectorAll('#c2 .story-keepsake.memory-unlocked')].map(el=>({key:el.dataset.memory,tab:el.tabIndex,hidden:el.getAttribute('aria-hidden')}))
+            }));
+            if(!mid.label.includes(expectedChapter)||!mid.meta.startsWith('Level 251')||mid.unlocked.length!==5||mid.unlocked.some(k=>k.tab!==0||k.hidden!=='false'))fail(`${size.name}: returning Home mismatch ${JSON.stringify(mid)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-stage5.png',fullPage:true});
+
+            const memoryActivated=await frame.evaluate(()=>{const el=document.querySelector('[data-memory="telescope"]');if(!el)return false;el.click();return true});
+            if(!memoryActivated)fail(`${size.name}: telescope memory control missing`);
+            await page.waitForSelector('#overlay.show');
+            const memoryTitle=(await page.locator('#modal h2').textContent())?.trim();
+            if(memoryTitle!=='Prism Telescope')fail(`${size.name}: memory title mismatch ${memoryTitle}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-memory.png',fullPage:true});
+            await page.click('#homeMemoryClose');
+
+            await page.evaluate(()=>{progress={unlocked:351,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3}};saveProgress();window.LatchlingsPrefs.set('motion','system');updateHome(true)});
+            await page.waitForTimeout(140);
+            const stage7=await frame.evaluate(()=>document.querySelectorAll('#c2 .story-keepsake.memory-unlocked').length);
+            if(stage7!==7)fail(`${size.name}: stage-7 keepsakes ${stage7}`);
+
+            if(size.name==='phone'){
+              const expected=[['Pippa','blue flowers'],['Bramble','visitor pennant'],['Rowan','Waykeeper compass']];
+              for(let turn=0;turn<3;turn++){
+                const data=await frame.evaluate(async turn=>{
+                  stopLittleHomeAdultMotion();littleHomeSceneActive=true;document.documentElement.dataset.motion='system';littleHomeStoryStage=7;littleHomeAdultTurn=turn;
+                  await runLittleHomeAdultMove();
+                  const adult=littleHomeAdults[turn];
+                  const out={resident:adult.dataset.resident,last:adult.dataset.lastWorkTarget,action:adult.dataset.lastWorkAction,moves:Number(adult.dataset.moveCount||0),cycles:Number(adult.dataset.completedWorkCycles||0)};
+                  stopLittleHomeAdultMotion();return out;
+                },turn);
+                if(data.resident!==expected[turn][0]||data.last!==expected[turn][1]||!data.action||data.moves<2||data.cycles<1)fail(`work cycle ${turn} ${JSON.stringify(data)}`);
+                results.push({work:data});
+              }
+              await frame.evaluate(()=>{stopLittleHomeAdultMotion();littleHomeSceneActive=true;document.documentElement.dataset.motion='system';littleHomeStoryStage=7;littleHomeAdultTurn=0;void runLittleHomeAdultMove()});
+              await frame.waitForSelector('#c2 .resident.work-active',{state:'attached',timeout:5000});
+              await page.screenshot({path:'/tmp/astra-home-evidence/home-purposeful-work.png',fullPage:true});
+              await frame.evaluate(()=>stopLittleHomeAdultMotion());
+            }
+
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('motion','reduced');updateHome(true)});
+            await page.waitForTimeout(120);
+            const reduced=await frame.evaluate(()=>({motion:document.documentElement.dataset.motion,next:document.querySelector('#c2')?.dataset.nextAdultMoveMs||'',running:[...document.querySelectorAll('#c2 .resident')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length,active:document.querySelectorAll('#c2 .resident.work-active').length}));
+            if(reduced.motion!=='reduced'||reduced.next!=='paused'||reduced.running!==0||reduced.active!==0)fail(`${size.name}: reduced-motion regression ${JSON.stringify(reduced)}`);
+            if(size.name==='phone')await page.screenshot({path:'/tmp/astra-home-evidence/home-reduced.png',fullPage:true});
+
+            await page.evaluate(()=>{window.LatchlingsPrefs.set('motion','system');screen('levels')});
+            await page.waitForTimeout(100);
+            const offscreen=await frame.evaluate(()=>({scene:document.documentElement.dataset.sceneActive,next:document.querySelector('#c2')?.dataset.nextAdultMoveMs||'',running:[...document.querySelectorAll('#c2 .resident.adult')].flatMap(el=>el.getAnimations()).filter(a=>a.playState==='running').length}));
+            if(offscreen.scene!=='false'||offscreen.next!=='paused'||offscreen.running!==0)fail(`${size.name}: offscreen-motion regression ${JSON.stringify(offscreen)}`);
+
+            await page.evaluate(()=>{screen('home');progress={unlocked:400,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3,400:3}};saveProgress();updateHome(true)});
+            await page.waitForTimeout(120);
+            const completed=await frame.evaluate(()=>({label:document.querySelector('#c2 .home-primary-copy strong')?.textContent||'',meta:document.querySelector('#c2 .home-primary-copy small')?.textContent||''}));
+            if(completed.label!=='Replay Aurora Crown'||!completed.meta.startsWith('Level 400'))fail(`${size.name}: completed Home mismatch ${JSON.stringify(completed)}`);
+            results.push({size:size.name,fresh,mid:{label:mid.label,meta:mid.meta,unlocked:mid.unlocked.length},stage7,reduced,offscreen,completed});
+            await context.close();
+          }
+          await browser.close();
+          fs.writeFileSync('/tmp/astra-home-evidence/results.json',JSON.stringify({results,errors},null,2));
+          if(errors.length)throw new Error(errors.join('\n'));
+          console.log(JSON.stringify(results,null,2));
+          JS
+          node .astra-home-check.mjs
+          rm -f .astra-home-check.mjs
+          kill $(cat /tmp/latchlings-home-http.pid) || true
+
+      - name: Commit accepted candidate product
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add game400-a.js game400-b.js title-island-concepts/index.html index.html
+          git commit -m "Stage Little Home purposeful life and memories"
+          git push origin HEAD:astra-little-home-candidate
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-little-home-candidate-v3-evidence
+          path: /tmp/astra-home-evidence
+          if-no-files-found: warn
