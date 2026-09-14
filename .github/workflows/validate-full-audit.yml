@@ -1,5 +1,5 @@
 name: Validate full Astra audit closure
-# Candidate acceptance rerun after winning-layer short-screen Large Text fix.
+# Candidate acceptance rerun using keyboard activation for moving Home keepsakes.
 on:
   push:
     branches: [audit-full-closure-candidate]
