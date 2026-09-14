@@ -18,10 +18,9 @@ jobs:
         with:
           ref: astra-atlas-journal-candidate
           fetch-depth: 0
-      - name: Require accepted product parent
+      - name: Require exact accepted product bytes
         shell: bash
         run: |
-          test "$(git rev-parse HEAD^)" = "b359b522961f01287dbe1c5a25a60d848c0fdead"
           git diff --exit-code b359b522961f01287dbe1c5a25a60d848c0fdead -- game400-a.js game400-b.js index.html style400-skyway-atlas.css style400-story-theme.css style400-atlas-progression.css
           node --check game400-a.js
           node --check game400-b.js
