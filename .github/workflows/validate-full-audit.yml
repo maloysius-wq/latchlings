@@ -1,5 +1,5 @@
 name: Validate full Astra audit closure
-# Candidate acceptance rerun using keyboard activation for moving Home keepsakes.
+# Candidate acceptance rerun with deterministic polling for purposeful Home chores.
 on:
   push:
     branches: [audit-full-closure-candidate]
