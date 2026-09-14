@@ -1,0 +1,77 @@
+name: Astra gameplay story short diagnostic
+
+on:
+  push:
+    branches: [astra-gameplay-story-candidate]
+    paths:
+      - '.github/workflows/astra-gameplay-story-short-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: astra-gameplay-story-candidate
+
+      - name: Apply candidate
+        run: python .github/tmp/astra_gameplay_story_candidate.py
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Measure short-phone geometry
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-short-http.log 2>&1 &
+          echo $! >/tmp/astra-short-http.pid
+          cat > .astra-short-diagnostic.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:320,height:568}});
+          await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          await page.evaluate(()=>{startLevel(1);window.LatchlingsStoryTheme?.close(false)});
+          await page.waitForTimeout(150);
+          const out=await page.evaluate(()=>{
+            const describe=(el)=>{const r=el.getBoundingClientRect(),cs=getComputedStyle(el);return {tag:el.tagName,id:el.id,className:el.className,rect:{x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,right:r.right},display:cs.display,width:cs.width,height:cs.height,minHeight:cs.minHeight,maxHeight:cs.maxHeight,margin:cs.margin,padding:cs.padding,gap:cs.gap,flex:cs.flex,gridTemplateColumns:cs.gridTemplateColumns,gridTemplateRows:cs.gridTemplateRows,alignItems:cs.alignItems,overflow:cs.overflow,position:cs.position}};
+            const pick=(s)=>[...document.querySelectorAll(s)].map(describe);
+            const dpad=document.querySelector('#game .dpad');
+            const hits=[...document.querySelectorAll('#game .dpad-hit')].map(describe);
+            return {
+              viewport:{width:innerWidth,height:innerHeight},
+              game:pick('#game'),
+              top:pick('#game .game-top'),
+              boardWrap:pick('#game .board-wrap'),
+              board:pick('#board'),
+              note:pick('#mechanicNote'),
+              controls:pick('#game .controls'),
+              children:pick('#game .controls > *'),
+              dpad:pick('#game .dpad'),
+              hits,
+              sideActions:pick('#game .side-action'),
+              dpadInlineStyle:dpad?.getAttribute('style')||'',
+              styleSheets:[...document.styleSheets].map(s=>s.href||'inline')
+            };
+          });
+          fs.writeFileSync('short-diagnostic.json',JSON.stringify(out,null,2));
+          console.log(JSON.stringify(out,null,2));
+          await page.screenshot({path:'short-diagnostic.png',fullPage:true});
+          await browser.close();
+          JS
+          node .astra-short-diagnostic.mjs
+          kill $(cat /tmp/astra-short-http.pid) || true
+
+      - name: Upload diagnostic evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-gameplay-short-diagnostic
+          path: |
+            short-diagnostic.json
+            short-diagnostic.png
