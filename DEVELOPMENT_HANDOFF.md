@@ -64,6 +64,12 @@ Accepted Character/world coherence checkpoint (2026-09-14):
 - Promotion run `34892253671` rechecked protected sources and imported only `story-grounding400.js`, `gameplay-story-rail400.js`, `story-theme400.js`, `game400-a.js`, `game400-b.js`, `title-island-concepts/index.html`, `style400-story-theme.css`, `style400-skyway-atlas.css`, and `index.html`. Exact product bytes were promoted to `main` as `c7d78aa61080513ac6f7ea31d9e82d7cd4ee2a4e`.
 - Committed-main run `34892359817` independently revalidated the exact promoted bytes. Artifact `10367985257`, SHA-256 `0ad54fffb528a8f8733cbe974ca3059e81442f81c51984afe07a7556bb017708`. N04, V06, N05, V07, and V12 are accepted complete.
 
+Presentation/accessibility consolidation checkpoint (2026-09-14):
+- **Status: IN PROGRESS.** Candidate branch `astra-presentation-accessibility-candidate` is based on the cleaned Character/world accepted head.
+- TDD RED run `34893568352` failed for the intended missing behaviors and produced 37 concrete failures across 320x568, 360x800, 390x844, 430x932, 768x1024, and 844x390: duplicated cinematic presentation layers, duplicated cast visual identity, missing modal focus entry/trap/Escape restoration, short/landscape viewport overflow, and gameplay Web Animations still running under in-game Reduced Motion.
+- U02 closure will certify non-overlapping 44px action controls and the cycle+D-pad path; spatial board-piece taps remain a convenience and will not be enlarged into overlapping hit targets on dense boards.
+- Candidate implementation must preserve authored campaign files and every previously accepted product slice, use existing core runtime/style layers rather than another broad override file, and pass candidate browser + manual visual review before promotion.
+
 Remaining closure work:
 1. Presentation/accessibility consolidation: material-language consistency, all-controls target/focus audit, safe-area/text-scaling/reading-order checks, motion interruption/offscreen animation checks, shared cast/presentation tokens/renderer cleanup, and removal of obsolete override layers where safe.
 2. Pass 5 browser-addressable coverage: 320x568, 360x800, 390x844, 430x932, tablet and landscape decisions; fresh onboarding/skipped opening/returning player; all films/dialogue turns; 40 movement starts/results; Daily/replay/campaign isolation; contrast/non-color identity; keyboard/focus/text scaling; sound-toggle persistence/interruption behavior; asset/cache integrity; frame-time/memory/loading measurements in available browser runtimes.
