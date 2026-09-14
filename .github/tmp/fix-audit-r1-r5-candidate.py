@@ -15,7 +15,7 @@ for old, new, label in replacements:
         raise SystemExit(f'{label}: expected 1 occurrence, found {count}')
     text = text.replace(old, new, 1)
 
-text += '''\n\n/* Astra audit R1/R4 narrow-phone correction: preserve the current three-part rail in one row. */\n@media(max-width:430px){\n .story-level-rail{grid-template-columns:44px minmax(0,1fr) 50px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n@media(max-height:720px){\n .story-level-rail{grid-template-columns:38px minmax(0,1fr) 46px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n\n/* Large Text and short phones yield puzzle-surface space before sacrificing copy or controls. */\nhtml[data-text-size="large"] #game .board{width:min(92vw,470px)}\n@media(max-height:620px){\n #game .board{width:min(84vw,270px);max-height:270px}\n}\n'''
+text += '''\n\n/* Astra audit R1/R4 narrow-phone correction: preserve the current three-part rail in one row. */\n@media(max-width:430px){\n .story-level-rail{grid-template-columns:44px minmax(0,1fr) 50px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n@media(max-height:720px){\n .story-level-rail{grid-template-columns:38px minmax(0,1fr) 46px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n\n/* Large Text and short phones yield puzzle-surface space before sacrificing copy or controls. */\nhtml[data-text-size="large"] #game .board{width:min(90vw,460px)}\n@media(max-height:620px){\n #game .board{width:min(84vw,270px);max-height:270px}\n}\n'''
 
 path.write_text(text, encoding='utf-8')
 manifest_path = root / 'manifest.json'
