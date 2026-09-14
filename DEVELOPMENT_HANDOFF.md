@@ -17,6 +17,7 @@ Source acceptance contract:
 - Original audit baseline: `a5048dd25804fdd261639e5a22332a0cfd506682`.
 - Astra implementation review baseline: `d6e39c0866505795c2aa6a26777896072e16e7df`.
 - R1-R5 usability work is already completed and protected by candidate run `34853875486`, committed-live run `34855339189`, final Pages run `34856135214`, and final guard run `34856138001`.
+- The original standalone audit/review attachments are not repository files. Their complete repository-side reconciliation is now preserved in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`; use that matrix plus the dated baselines above as the durable closure checklist rather than depending on an external attachment.
 
 Open work to reconcile and close:
 1. Pass 4: restage all 25 cinematic beats around purposeful action, visual cause/effect, one-speaker chronological dialogue, reduced-motion-safe staging, and a shared scenic system; revise opening pacing where the audit calls out diagram/exposition presentation.
@@ -41,7 +42,9 @@ Implementation/validation contract:
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Next action: inspect current cinematic, ending, Home, Atlas, journal, mechanic-feedback, presentation-stack, accessibility/audio, and performance source against the two audit documents; build a complete item-by-item gap matrix before product edits.
+Reconciliation checkpoint (2026-09-14): `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` now records every original audit ID against current accepted behavior. No hidden product regression was found that must be repaired before feature work. R1-R5 close V02 and U07 and materially advance U03/U11/V20; the remaining first product slice is Pass 4 cinematics/ending, with V03, V18, N06, and presentation consolidation as the primary closure targets.
+
+Next action: implement Pass 4 through the existing cinematic/presentation stack without adding another broad override layer: one-speaker chronological pacing, purposeful/action-driven scenic restaging across all 25 beats, reduced-motion-safe information, opening pacing cleanup, and the canonical Little Home ending. Validate candidate-first against protected campaign/story hashes and the R1-R5 acceptance contract.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
@@ -61,5 +64,6 @@ Final R1-R5 exact head: `7e2643d2e78b1a5c25b6b5364225e1566e19a5cd`; Pages `34856
 ## Durable project state
 - The eight-chapter Pass 3 visual/story campaign is complete and protected.
 - The Astra R1-R5 usability pass is complete and protected.
+- `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the durable repository-side item-by-item closure checklist for the original visual/story audit and implementation review.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
