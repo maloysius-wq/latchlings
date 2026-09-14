@@ -1,0 +1,39 @@
+name: Astra PA Cinematic Inspect 2
+
+on:
+  push:
+    branches: [astra-presentation-accessibility-candidate]
+    paths:
+      - '.github/workflows/astra-pa-cinematic-inspect2.yml'
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-presentation-accessibility-candidate
+      - name: Apply candidate
+        run: |
+          python .github/tmp/astra_pa_patch.py
+          python .github/tmp/astra_pa_memories_followup.py
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Inspect first cinematic
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/http.log 2>&1 &
+          cat > .astra-inspect.mjs <<'JS'
+          import {chromium} from 'playwright';
+          const b=await chromium.launch({headless:true});const c=await b.newContext({viewport:{width:320,height:568}});const p=await c.newPage();
+          const errors=[];p.on('pageerror',e=>errors.push('PAGEERROR '+e.message));p.on('console',m=>{if(m.type()==='error')errors.push('CONSOLE '+m.text())});
+          await p.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          console.log('before',JSON.stringify(await p.evaluate(()=>({source:LatchlingsCinematics.castIdentitySource,ids:Object.keys(LatchlingsCinematics.CINEMATICS).slice(0,3),hasLines:!!document.getElementById('cinematicLines')}))));
+          console.log('showResult',await p.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false})));
+          await p.waitForTimeout(100);
+          console.log('after',JSON.stringify(await p.evaluate(()=>({active:LatchlingsCinematics.active,beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line,linesHTML:document.getElementById('cinematicLines')?.innerHTML,count:document.querySelectorAll('#cinematicLines .is-current').length,allCurrent:[...document.querySelectorAll('.is-current')].map(x=>({tag:x.tagName,id:x.id,cls:x.className,text:x.textContent?.slice(0,100)})),dialogue:[...document.querySelectorAll('.cinematic-dialogue-line,.cinematic-dialogue-copy,.cinematic-copy,.dialogue,.narrator')].map(x=>({tag:x.tagName,id:x.id,cls:x.className,text:x.textContent?.slice(0,120)}))}))));
+          console.log('errors',JSON.stringify(errors));await b.close();
+          JS
+          node .astra-inspect.mjs
