@@ -23,13 +23,40 @@ for old, new, label in replacements:
         raise SystemExit(f'{label}: expected 1 occurrence, found {count}')
     text = text.replace(old, new, 1)
 
-text += '''\n\n/* Astra audit R1/R4 narrow-phone correction: preserve the current three-part rail in one row. */\n@media(max-width:430px){\n .story-level-rail{grid-template-columns:44px minmax(0,1fr) 50px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n@media(max-height:720px){\n .story-level-rail{grid-template-columns:38px minmax(0,1fr) 46px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n\n/* Large Text yields a little puzzle-surface width before sacrificing readable copy. */\nhtml[data-text-size="large"] #game .board{width:min(90vw,460px)}\n\n/* 320x568-class phones reclaim chrome space, not text size or touch-target safety. */\n@media(max-height:620px){\n #game.screen{padding:4px 8px}\n #game .topbar{min-height:48px;margin-bottom:3px;padding:1px 8px}\n #game .story-rail-slot{margin-bottom:1px}\n #game .story-level-rail{grid-template-columns:34px minmax(0,1fr) 44px;gap:4px;padding:3px 5px}\n #game .story-rail-person{height:auto}\n #game .rail-latchling{width:30px;height:30px}\n #game .rail-latchling.child{width:28px;height:28px}\n #game .story-rail-story-btn{min-width:44px;min-height:44px}\n #game .controls{grid-template-columns:68px minmax(0,1fr) 68px;gap:6px;padding-top:1px}\n #game .dpad{width:138px;height:138px}\n #game .side-action{min-height:54px}\n}\n'''
+text += '''\n\n/* Astra audit R1/R4 narrow-phone correction: preserve the current three-part rail in one row. */\n@media(max-width:430px){\n .story-level-rail{grid-template-columns:44px minmax(0,1fr) 50px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n@media(max-height:720px){\n .story-level-rail{grid-template-columns:38px minmax(0,1fr) 46px;align-items:center}\n .story-rail-person,.story-rail-main{height:auto;min-height:0}\n}\n\n/* Large Text yields a little puzzle-surface width before sacrificing readable copy. */\nhtml[data-text-size="large"] #game .board{width:min(90vw,460px)}\n\n/* 320x568-class phones reclaim chrome space, not text size or touch-target safety. */\n@media(max-height:620px){\n #game.screen{padding:4px 8px}\n #game .topbar{min-height:48px;margin-bottom:3px;padding:1px 8px}\n #game .story-rail-slot{margin-bottom:1px}\n #game .story-level-rail{grid-template-columns:34px minmax(0,1fr) 44px;gap:4px;padding:3px 5px}\n #game .story-rail-person{height:auto}\n #game .rail-latchling{width:30px;height:30px}\n #game .rail-latchling.child{width:28px;height:28px}\n #game .story-rail-story-btn{min-width:44px;min-height:44px}\n html[data-text-size="large"] #game .board{width:min(76vw,240px)}\n #game .controls{grid-template-columns:68px minmax(0,1fr) 68px;gap:6px;padding-top:1px}\n #game .dpad{width:138px;height:138px}\n #game .side-action{min-height:54px}\n}\n'''
 path.write_text(text, encoding='utf-8')
 refresh(path)
 
 # R1: the always-visible rail is a concise gameplay beat. Full setup/question/stakes remain in Story.
 path = root / 'gameplay-story-rail400.js'
 text = path.read_text(encoding='utf-8')
+early = [
+ ('Pippa','Breakfast basket missed a stop that worked yesterday.'),
+ ('Rowan','The watering marker shifted a whole garden bed.'),
+ ('Pip','My kite missed the same crossing. That makes two.'),
+ ('Bramble','East Sunpetal bread missed by the same distance.'),
+ ('Tansy','Neighbors report the same shifted crossings.'),
+ ('Pippa','Today’s stops no longer line up with yesterday’s map.'),
+ ('Rowan','The islands are fine. The routes fell behind.'),
+ ('Bramble','More households sent the same route report.'),
+ ('Pippa','Let’s build a temporary circuit from today’s positions.'),
+ ('Tansy','The new circuit works. People arrive where they meant to.'),
+ ('Rowan','The repair held, but fresh drift already changed things.'),
+ ('Pippa','One repair is not enough. Routes must keep changing.'),
+ ('Bramble','Send current coordinates and missed stops to Little Home.'),
+ ('Pip','An old marker points to where this island used to be.'),
+ ('Tansy','A vanished crossing cost a family their visiting hour.'),
+ ('Rowan','Local crews are testing new stops around old markers.'),
+ ('Pippa','The hardware works. Yesterday’s map is the problem.'),
+ ('Bramble','Shared reports let us repair routes faster together.'),
+ ('Pip','More old markers point to yesterday’s island positions.'),
+ ('Tansy','Sunpetal works for today. Now we rebuild beyond it.')
+]
+early_block = 'const EARLY_STORY=[' + ','.join("{speaker:%r,line:%r}" % pair for pair in early) + '];'
+text, n = re.subn(r"const EARLY_STORY=\[.*?\];", early_block, text, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit(f'concise EARLY_STORY: expected 1 block, found {n}')
+
 rail_lines = {
  'A Pattern at Breakfast':'Several morning routes are missing by nearly the same amount.',
  'The Route Desk':'Fresh drift keeps changing the temporary route.',
@@ -76,11 +103,6 @@ block = 'const MOVEMENT_RAIL_LINES={\n' + ''.join(f" {k!r}:{v!r},\n" for k,v in 
 text, n = re.subn(r"const MOVEMENT_RAIL_LINES=\{.*?\};", block, text, count=1, flags=re.S)
 if n != 1:
     raise SystemExit(f'expanded movement rail lines: expected 1 block, found {n}')
-old = "{speaker:'Tansy',line:'A family across the meadow missed visiting hour when their crossing vanished. This is bigger than errands.'}"
-new = "{speaker:'Tansy',line:'A vanished crossing cost a family their visiting hour. This is bigger than errands.'}"
-if text.count(old) != 1:
-    raise SystemExit('early L15 rail line not found exactly once')
-text = text.replace(old, new, 1)
 path.write_text(text, encoding='utf-8')
 refresh(path)
 
