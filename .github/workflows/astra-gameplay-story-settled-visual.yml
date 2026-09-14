@@ -1,0 +1,114 @@
+name: Astra gameplay story settled visual
+
+on:
+  push:
+    branches: [astra-gameplay-story-candidate]
+    paths:
+      - '.github/workflows/astra-gameplay-story-settled-visual.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out accepted candidate branch
+        uses: actions/checkout@v4
+        with:
+          ref: astra-gameplay-story-candidate
+          fetch-depth: 0
+
+      - name: Verify accepted product provenance
+        run: |
+          git diff --exit-code d2639e7 -- game400-a.js game400-b.js story-theme400.js style400-story-theme.css index.html pass3-chapter8-aurora.js
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture settled product states
+        run: |
+          mkdir -p /tmp/astra-gameplay-story-settled
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-settled-http.log 2>&1 &
+          echo $! >/tmp/astra-settled-http.pid
+          cat > .astra-gameplay-story-settled.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const summary={};
+
+          // Short-phone gameplay with no automatic overlays.
+          {
+            const context=await browser.newContext({viewport:{width:320,height:568}});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>{startLevel(2);window.LatchlingsStoryTheme?.close(false);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true)});
+            await page.waitForTimeout(380);
+            await page.evaluate(()=>{window.LatchlingsStoryTheme?.close(false);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true)});
+            summary.short=await page.evaluate(()=>({controlsBottom:document.querySelector('#game .controls').getBoundingClientRect().bottom,dpad:document.querySelector('#game .dpad').getBoundingClientRect().width,hits:[...document.querySelectorAll('#game .dpad-hit')].map(x=>{const r=x.getBoundingClientRect();return {w:r.width,h:r.height}}),mastery:document.getElementById('masteryGuide')?.textContent.trim()}));
+            if(summary.short.controlsBottom>568.5||summary.short.hits.some(x=>x.w<44||x.h<44))throw new Error(`Short gameplay geometry invalid ${JSON.stringify(summary.short)}`);
+            await page.screenshot({path:'/tmp/astra-gameplay-story-settled/short-gameplay.png',fullPage:true});
+            await context.close();
+          }
+
+          // Rejected mechanic move after delayed Story Card opportunity has passed and been closed.
+          {
+            const context=await browser.newContext({viewport:{width:390,height:844}});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            const blocker=await page.evaluate(()=>{
+              const dirs={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]};
+              for(let L=151;L<=400;L++){
+                const lev=LEVELS[L-1],occ=new Set(lev.pieces.map(p=>p.pos.join(',')));
+                for(let pi=0;pi<lev.pieces.length;pi++)for(const [dir,[dr,dc]] of Object.entries(dirs)){
+                  const p=lev.pieces[pi],r=p.pos[0]+dr,c=p.pos[1]+dc,key=`${r},${c}`;
+                  if(r<0||c<0||r>=lev.size||c>=lev.size)continue;
+                  if((lev.rocks||[]).some(x=>x[0]===r&&x[1]===c)||[...occ].some(x=>x===key&&x!==p.pos.join(',')))continue;
+                  const door=(lev.doors||[]).find(x=>x[0]===r&&x[1]===c);if(door)return {L,pi,dir,type:'door'};
+                  const sg=(lev.suitGates||[]).find(x=>x[0]===r&&x[1]===c);if(sg&&sg[2]!==p.suit)return {L,pi,dir,type:'suitGate'};
+                  const cg=(lev.colorGates||[]).find(x=>x[0]===r&&x[1]===c);if(cg&&cg[2]!==p.color)return {L,pi,dir,type:'colorGate'};
+                  const rail=(lev.rails||[]).find(x=>x[0]===r&&x[1]===c);if(rail&&rail[2]!==dir)return {L,pi,dir,type:'rail'};
+                }
+              }
+              return null;
+            });
+            await page.evaluate(b=>{startLevel(b.L);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true)},blocker);
+            await page.waitForTimeout(380);
+            await page.evaluate(b=>{window.LatchlingsStoryTheme?.close(false);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true);selected=b.pi;renderPieces(LEVELS[currentLevel-1]);moveSelected(b.dir)},blocker);
+            await page.waitForTimeout(90);
+            summary.blocker=await page.evaluate(()=>({feedback:document.getElementById('mechanicNote')?.dataset.feedback,text:document.getElementById('mechanicNote')?.textContent.replace(/\s+/g,' ').trim(),storyOpen:document.getElementById('storyCardOverlay')?.classList.contains('show'),cinematicOpen:!!window.LatchlingsCinematics?.active}));
+            if(summary.blocker.feedback!=='blocked'||summary.blocker.storyOpen||summary.blocker.cinematicOpen)throw new Error(`Blocker settled state invalid ${JSON.stringify(summary.blocker)}`);
+            await page.screenshot({path:'/tmp/astra-gameplay-story-settled/blocker-feedback.png',fullPage:true});
+            await context.close();
+          }
+
+          // Regular route Story Card, deliberately not an opening/cinematic trigger.
+          {
+            const context=await browser.newContext({viewport:{width:390,height:844}});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(()=>{startLevel(2);window.LatchlingsStoryTheme?.close(false);if(window.LatchlingsCinematics?.active)window.LatchlingsCinematics.finish(true)});
+            await page.waitForTimeout(320);
+            await page.evaluate(()=>{window.LatchlingsStoryTheme.close(false);window.LatchlingsStoryTheme.show(2,true)});
+            await page.waitForTimeout(80);
+            summary.card=await page.evaluate(()=>({title:document.getElementById('storyCardTitle')?.textContent.trim(),line:document.getElementById('storyCardLine')?.textContent.replace(/\s+/g,' ').trim(),goal:document.getElementById('storyCardGoal')?.textContent.replace(/\s+/g,' ').trim(),moreOpen:document.getElementById('storyCardMore')?.open,cinematicOpen:!!window.LatchlingsCinematics?.active,panelBottom:document.getElementById('storyCardPanel')?.getBoundingClientRect().bottom}));
+            if(!summary.card.title||!summary.card.line||!summary.card.goal||summary.card.moreOpen||summary.card.cinematicOpen||summary.card.panelBottom>844.5)throw new Error(`Story Card settled state invalid ${JSON.stringify(summary.card)}`);
+            await page.screenshot({path:'/tmp/astra-gameplay-story-settled/story-card.png',fullPage:true});
+            await context.close();
+          }
+
+          fs.writeFileSync('/tmp/astra-gameplay-story-settled/results.json',JSON.stringify(summary,null,2));
+          console.log(JSON.stringify(summary,null,2));
+          await browser.close();
+          JS
+          node .astra-gameplay-story-settled.mjs
+          kill $(cat /tmp/astra-settled-http.pid) || true
+
+      - name: Upload settled evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-gameplay-story-settled-evidence
+          path: /tmp/astra-gameplay-story-settled
