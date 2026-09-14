@@ -238,6 +238,24 @@ html[data-scene-active="false"] #c2 *{animation-play-state:paused!important}
 @keyframes buntingRewardFocus{0%{opacity:.25;transform:translateY(-7px) rotate(-2deg) scale(.82)}28%{opacity:1;transform:translateY(1px) rotate(2deg) scale(1.10)}55%{transform:translateY(-1px) rotate(0deg) scale(.99)}100%{opacity:1;transform:rotate(4deg)}}
 @keyframes buntingRewardHalo{0%{opacity:0;scale:.62}28%{opacity:1;scale:1}100%{opacity:0;scale:1.16}}
 @media(prefers-reduced-motion:reduce){#c2 .phone.story-focus-bunting .story-bunting,#c2 .phone.story-focus-bunting .story-bunting:before{animation:none!important}}
+
+
+/* Astra Little Home coherence */
+#c2 .play .home-primary-copy{display:grid;gap:2px;text-align:left;min-width:0;position:relative;z-index:1}
+#c2 .play .home-primary-copy strong{font-size:20px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:265px}
+#c2 .play .home-primary-copy small{font-size:10px;line-height:1.1;letter-spacing:.06em;text-transform:uppercase;color:#61778b;font-weight:850;text-shadow:none}
+#c2 .story-keepsake.memory-unlocked{pointer-events:auto;cursor:pointer;outline:none;touch-action:manipulation}
+#c2 .story-keepsake.memory-unlocked:focus-visible{filter:drop-shadow(0 0 6px rgba(48,89,126,.9));box-shadow:0 0 0 4px rgba(255,248,220,.92),0 0 0 7px rgba(43,82,118,.82)}
+#c2 .story-anchor.memory-unlocked:focus-visible{border-radius:10px}
+#c2 .resident.work-active{z-index:24;filter:drop-shadow(0 0 5px rgba(255,229,129,.92));transition:filter .16s ease}
+#c2 .resident.work-active:before{content:"";position:absolute;left:50%;top:-9px;width:7px;height:7px;border-radius:50%;background:#ffe681;box-shadow:-8px 4px 0 -2px #fff3ad,8px 5px 0 -2px #fff3ad;translate:-50% 0;animation:littleHomeWorkSpark .8s ease-in-out infinite alternate;pointer-events:none}
+#c2 .resident.work-active .eyes{transform:translateY(1px) scaleY(.82)}
+#c2 .resident.work-active .mouth{width:7px;height:3px;border-bottom:2px solid #17375b;border-radius:0 0 8px 8px}
+#c2 .resident[data-work-target="mailbox"].work-active+.resident{} /* stable selector marker for validation */
+@keyframes littleHomeWorkSpark{from{opacity:.55;translate:-50% 1px}to{opacity:1;translate:-50% -2px}}
+html[data-motion="reduced"] #c2 .resident.work-active:before{animation:none!important}
+@media(max-width:350px),(max-height:740px){#c2 .play .home-primary-copy strong{font-size:17px;max-width:225px}#c2 .play .home-primary-copy small{font-size:9px}}
+
 </style>
 </head>
 <body>
@@ -246,7 +264,7 @@ html[data-scene-active="false"] #c2 *{animation-play-state:paused!important}
 <nav class="switcher" aria-label="Concept selector"><button type="button" data-target="c1" aria-selected="true">1 · Quiet Perch</button><button type="button" data-target="c2" aria-selected="false">2 · Little Home</button><button type="button" data-target="c3" aria-selected="false">3 · Island Life</button></nav>
 <main class="viewer">
 <section class="concept active" id="c1" data-concept="1"><div class="label"><strong>1 · Quiet Perch</strong><span>Minimal lived-in island, with a procedural tree, rest deck, fence and a few small details.</span></div><div class="phone"><div class="skywash"></div><div class="cloud a"></div><div class="cloud b"></div><div class="cloud c"></div><div class="cloud d"></div><div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div><div class="brand"><h2>Latchlings</h2><p>Little lives · clever routes</p><div class="brand-rule"><i></i></div></div><div class="scene"><div class="island-model"><div class="island-shadow"></div><div class="island-side"></div><div class="island-rim"></div><div class="island-top"></div><div class="path"></div><div class="tree"><div class="trunk"></div><div class="crown one"></div><div class="crown two"></div><div class="crown three"></div></div><div class="deck wood-surface"></div><div class="fence"><i></i><i></i><i></i></div><div class="rock r1"></div><div class="rock r2"></div><div class="flower f1"></div><div class="flower f2"></div><div class="latchling large l1" data-color="lavender" data-suit="heart" data-expr="sleepy"></div><div class="latchling l2" data-color="mint" data-suit="club" data-expr="curious"></div><div class="latchling small l3" data-color="blue" data-suit="spade" data-expr="smug"></div><div class="latchling l4" data-color="coral" data-suit="diamond" data-expr="happy"></div><div class="latchling small l5" data-color="gold" data-suit="star" data-expr="determined"></div><div class="latchling small l6" data-color="coral" data-suit="heart" data-expr="surprised"></div></div></div><button class="play">Play<svg viewBox="0 0 20 20"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button><div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div></div><p class="variant-note"><b>Read:</b> the quietest direction. The island is still clearly a modeled place, but the Latchlings carry most of the personality.</p></section>
-<section class="concept" id="c2" data-concept="2"><div class="label"><strong>2 · Little Home</strong><span>A five-Latchling household lives here: three adults keep the island running while two smaller kids play through the yard.</span></div><div class="phone"><div class="skywash"></div><div class="cloud a"></div><div class="cloud b"></div><div class="cloud c"></div><div class="cloud d"></div><div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><div class="home-tools"><button class="story-home" aria-label="Story &amp; Residents" title="Story &amp; Residents"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.6-.9 5.2-.5 8 1.2v12c-2.8-1.7-5.4-2.1-8-1.2zM20 5.5c-2.6-.9-5.2-.5-8 1.2v12c2.8-1.7 5.4-2.1 8-1.2z"/><path d="M12 6.7v12"/></svg></button><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div></div><div class="brand toy-brand"><h2 class="toy-logo" aria-label="Latchlings"><span aria-hidden="true">L</span><span aria-hidden="true">a</span><span aria-hidden="true">t</span><span aria-hidden="true">c</span><span aria-hidden="true">h</span><span aria-hidden="true">l</span><span aria-hidden="true">i</span><span aria-hidden="true">n</span><span aria-hidden="true">g</span><span aria-hidden="true">s</span></h2><p class="toy-tagline">Small friends. Smart puzzles.</p></div><div class="scene"><div class="story-distant-islands" aria-hidden="true"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div><div class="island-model"><div class="island-shadow"></div><div class="float-pebbles" aria-hidden="true"><i class="float-pebble pebble-1"></i><i class="float-pebble pebble-2"></i><i class="float-pebble pebble-3"></i><i class="float-pebble pebble-4"></i><i class="float-pebble pebble-5"></i><i class="float-pebble pebble-6"></i></div><i class="story-keepsake story-mailbox"></i><i class="story-keepsake story-pennant"></i><div class="story-keepsake story-anchor"><svg viewBox="0 0 24 28"><circle cx="12" cy="4" r="2.2"/><path d="M12 6.2v15M7 10h10M5 17c1 5 4 8 7 8s6-3 7-8M5 17l-3 2M19 17l3 2"/></svg></div><i class="story-keepsake story-bunting"><b></b><b></b><b></b><b></b><b></b></i><i class="story-keepsake story-telescope"></i><i class="story-keepsake story-relic"></i><i class="story-keepsake story-dock"></i><div class="island-side"></div><div class="island-rim"></div><div class="island-top"></div><div class="path"></div><div class="tree little-home-tree"><div class="tree-ground-shadow"></div><i class="root root-a"></i><i class="root root-b"></i><i class="root root-c"></i><div class="trunk"></div><i class="branch branch-a"></i><i class="branch branch-b"></i><i class="branch branch-c"></i><div class="foliage"><i class="leaf-cluster leaf-a"></i><i class="leaf-cluster leaf-b"></i><i class="leaf-cluster leaf-c"></i><i class="leaf-cluster leaf-d"></i><i class="leaf-cluster leaf-e"></i><i class="leaf-cluster leaf-f"></i><i class="leaf-cluster leaf-g"></i></div></div><div class="cottage"><div class="house-front"></div><div class="house-side"></div><div class="roof-a"></div><div class="roof-b"></div><div class="door"></div><div class="window"></div></div><div class="rock r1"></div><div class="flower f1"></div><div class="flower f2"></div><div class="flower blue f3"></div><div class="play-ball" aria-hidden="true"></div><div class="latchling resident adult life-garden l1" data-role="adult" data-activity="garden" data-color="lavender" data-suit="club" data-expr="happy"></div><div class="latchling resident adult life-parcel l2" data-role="adult" data-activity="parcel" data-color="coral" data-suit="diamond" data-expr="curious"></div><div class="latchling resident adult life-tree l3" data-role="adult" data-activity="tree" data-color="mint" data-suit="heart" data-expr="happy"></div><div class="latchling resident child kid-one l5" data-role="child" data-activity="play" data-color="blue" data-suit="spade" data-expr="happy"></div><div class="latchling resident child kid-two l6" data-role="child" data-activity="play" data-color="coral" data-suit="heart" data-expr="surprised"></div></div></div><button class="play">Play<svg viewBox="0 0 20 20"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button><div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div></div><p class="variant-note"><b>Read:</b> a tiny five-resident home in motion. Three adults tend the island and cottage while two smaller children chase and play through the shared yard.</p></section>
+<section class="concept" id="c2" data-concept="2"><div class="label"><strong>2 · Little Home</strong><span>A five-Latchling household lives here: three adults keep the island running while two smaller kids play through the yard.</span></div><div class="phone"><div class="skywash"></div><div class="cloud a"></div><div class="cloud b"></div><div class="cloud c"></div><div class="cloud d"></div><div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><div class="home-tools"><button class="story-home" aria-label="Story &amp; Residents" title="Story &amp; Residents"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.6-.9 5.2-.5 8 1.2v12c-2.8-1.7-5.4-2.1-8-1.2zM20 5.5c-2.6-.9-5.2-.5-8 1.2v12c2.8-1.7 5.4-2.1 8-1.2z"/><path d="M12 6.7v12"/></svg></button><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div></div><div class="brand toy-brand"><h2 class="toy-logo" aria-label="Latchlings"><span aria-hidden="true">L</span><span aria-hidden="true">a</span><span aria-hidden="true">t</span><span aria-hidden="true">c</span><span aria-hidden="true">h</span><span aria-hidden="true">l</span><span aria-hidden="true">i</span><span aria-hidden="true">n</span><span aria-hidden="true">g</span><span aria-hidden="true">s</span></h2><p class="toy-tagline">Small friends. Smart puzzles.</p></div><div class="scene"><div class="story-distant-islands" aria-hidden="true"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div><div class="island-model"><div class="island-shadow"></div><div class="float-pebbles" aria-hidden="true"><i class="float-pebble pebble-1"></i><i class="float-pebble pebble-2"></i><i class="float-pebble pebble-3"></i><i class="float-pebble pebble-4"></i><i class="float-pebble pebble-5"></i><i class="float-pebble pebble-6"></i></div><i class="story-keepsake story-mailbox" data-memory="mailbox" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Sunpetal mailbox"></i><i class="story-keepsake story-pennant" data-memory="pennant" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Lanternwood visitor pennant"></i><div class="story-keepsake story-anchor" data-memory="anchor" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Lodestone restored anchor"><svg viewBox="0 0 24 28"><circle cx="12" cy="4" r="2.2"/><path d="M12 6.2v15M7 10h10M5 17c1 5 4 8 7 8s6-3 7-8M5 17l-3 2M19 17l3 2"/></svg></div><i class="story-keepsake story-bunting" data-memory="bunting" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Masquerade market bunting"><b></b><b></b><b></b><b></b><b></b></i><i class="story-keepsake story-telescope" data-memory="telescope" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Prism telescope"></i><i class="story-keepsake story-relic" data-memory="relic" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Copperline Waykeeper compass"></i><i class="story-keepsake story-dock" data-memory="dock" role="button" tabindex="-1" aria-hidden="true" aria-label="Memory: Stormswitch arrival platform"></i><div class="island-side"></div><div class="island-rim"></div><div class="island-top"></div><div class="path"></div><div class="tree little-home-tree"><div class="tree-ground-shadow"></div><i class="root root-a"></i><i class="root root-b"></i><i class="root root-c"></i><div class="trunk"></div><i class="branch branch-a"></i><i class="branch branch-b"></i><i class="branch branch-c"></i><div class="foliage"><i class="leaf-cluster leaf-a"></i><i class="leaf-cluster leaf-b"></i><i class="leaf-cluster leaf-c"></i><i class="leaf-cluster leaf-d"></i><i class="leaf-cluster leaf-e"></i><i class="leaf-cluster leaf-f"></i><i class="leaf-cluster leaf-g"></i></div></div><div class="cottage"><div class="house-front"></div><div class="house-side"></div><div class="roof-a"></div><div class="roof-b"></div><div class="door"></div><div class="window"></div></div><div class="rock r1"></div><div class="flower f1"></div><div class="flower f2"></div><div class="flower blue f3"></div><div class="play-ball" aria-hidden="true"></div><div class="latchling resident adult life-garden l1" data-role="adult" data-resident="Pippa" data-activity="garden" data-color="lavender" data-suit="club" data-expr="happy"></div><div class="latchling resident adult life-parcel l2" data-role="adult" data-resident="Bramble" data-activity="parcel" data-color="coral" data-suit="diamond" data-expr="curious"></div><div class="latchling resident adult life-tree l3" data-role="adult" data-resident="Rowan" data-activity="tree" data-color="mint" data-suit="heart" data-expr="happy"></div><div class="latchling resident child kid-one l5" data-role="child" data-activity="play" data-color="blue" data-suit="spade" data-expr="happy"></div><div class="latchling resident child kid-two l6" data-role="child" data-activity="play" data-color="coral" data-suit="heart" data-expr="surprised"></div></div></div><button class="play"><span class="home-primary-copy"><strong>Begin Sunpetal Meadows</strong><small>Level 1 · Chapter 1</small></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button><div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div></div><p class="variant-note"><b>Read:</b> a tiny five-resident home in motion. Three adults tend the island and cottage while two smaller children chase and play through the shared yard.</p></section>
 <section class="concept" id="c3" data-concept="3"><div class="label"><strong>3 · Island Life</strong><span>A little more motion and activity, with a procedural plank bridge, perch deck, tree and animated residents.</span></div><div class="phone"><div class="skywash"></div><div class="cloud a"></div><div class="cloud b"></div><div class="cloud c"></div><div class="cloud d"></div><div class="topline"><div class="progress"><i class="progress-star"></i><span>148</span></div><button class="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm8.1 4.9v-2.2l-2.1-.7a6.8 6.8 0 0 0-.6-1.5l1-2-1.6-1.6-2 1a6.8 6.8 0 0 0-1.5-.6L12.6 3h-2.2l-.7 2.1a6.8 6.8 0 0 0-1.5.6l-2-1-1.6 1.6 1 2a6.8 6.8 0 0 0-.6 1.5l-2.1.7v2.2l2.1.7c.1.5.3 1 .6 1.5l-1 2 1.6 1.6 2-1c.5.3 1 .5 1.5.6l.7 2.1h2.2l.7-2.1c.5-.1 1-.3 1.5-.6l2 1 1.6-1.6-1-2c.3-.5.5-1 .6-1.5l2.1-.7Z" fill="currentColor"/></svg></button></div><div class="brand"><h2>Latchlings</h2><p>A tiny world in motion</p><div class="brand-rule"><i></i></div></div><div class="scene"><div class="island-model"><div class="island-shadow"></div><div class="island-side"></div><div class="island-rim"></div><div class="island-top"></div><div class="path"></div><div class="tree"><div class="trunk"></div><div class="crown one"></div><div class="crown two"></div><div class="crown three"></div></div><div class="bridge"><i></i><i></i><i></i><i></i></div><div class="deck wood-surface"></div><div class="fence"><i></i><i></i><i></i></div><div class="rock r1"></div><div class="rock r2"></div><div class="flower f1"></div><div class="flower f2"></div><div class="latchling small l1 motion-hop" data-color="coral" data-suit="heart" data-expr="happy"></div><div class="latchling l2 motion-hover" data-color="gold" data-suit="star" data-expr="surprised"></div><div class="latchling l3 motion-hop" data-color="coral" data-suit="diamond" data-expr="determined"></div><div class="latchling small l4" data-color="mint" data-suit="club" data-expr="curious"></div><div class="latchling small l5 motion-hop" data-color="blue" data-suit="spade" data-expr="happy"></div><div class="latchling small l6" data-color="lavender" data-suit="heart" data-expr="smug"></div><div class="latchling small l7" data-color="gold" data-suit="diamond" data-expr="sleepy"></div></div></div><button class="play">Play<svg viewBox="0 0 20 20"><path d="M6 3.6 15 10l-9 6.4Z"/></svg></button><div class="secondary"><button><strong>Daily Puzzle</strong><span>Today’s little route.</span><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M10 4v6M22 4v6M5 13h22M12 20h8"/></svg></button><button><strong>Level Select</strong><span>Choose a chapter.</span><svg viewBox="0 0 32 32"><path d="m5 7 7-3 8 3 7-3v21l-7 3-8-3-7 3Z"/><path d="M12 4v21M20 7v21"/></svg></button></div></div><p class="variant-note"><b>Read:</b> the liveliest direction, but the procedural environment still stays secondary to the actual game-faithful Latchlings.</p></section>
 </main></div>
 <script>
@@ -255,16 +273,34 @@ const SUITS={heart:'M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6
 document.querySelectorAll('.latchling').forEach((el,i)=>{const p=PALETTES[el.dataset.color];el.style.setProperty('--piece-color',p[0]);el.style.setProperty('--light',p[1]);el.style.setProperty('--dark',p[2]);el.style.setProperty('--blink-duration',(3.35+((17+i*29)%37)/10).toFixed(2)+'s');el.style.setProperty('--blink-delay',(-((23+i*41)%59)/10).toFixed(2)+'s');el.style.setProperty('--idle-delay',(-((11+i*7)%23)/10).toFixed(2)+'s');el.classList.add('expr-'+el.dataset.expr);el.innerHTML=`<span class="suit-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="${SUITS[el.dataset.suit]}"></path></svg></span><span class="face"><span class="eyes"><i class="eye"></i><i class="eye"></i></span><i class="mouth"></i></span>`});
 
 /* Little Home adults make one discrete route step at a time. */
-const LITTLE_HOME_ADULT_GAP_MIN=4000;
-const LITTLE_HOME_ADULT_GAP_MAX=10000;
-const LITTLE_HOME_ADULT_STEP_MIN=750;
-const LITTLE_HOME_ADULT_STEP_MAX=1150;
+const LITTLE_HOME_ADULT_GAP_MIN=4200;
+const LITTLE_HOME_ADULT_GAP_MAX=8200;
+const LITTLE_HOME_ADULT_STEP_MIN=620;
+const LITTLE_HOME_ADULT_STEP_MAX=920;
 const littleHomeRandom=(min,max)=>min+Math.random()*(max-min);
+let littleHomeStoryStage=0;
 const littleHomeAdultRoutes={
-  garden:[{x:0,y:0,r:0},{x:13,y:-7,r:0},{x:20,y:-4,r:3},{x:13,y:3,r:0},{x:-3,y:7,r:0},{x:-9,y:2,r:-3},{x:4,y:-3,r:0}],
-  parcel:[{x:0,y:0,r:0},{x:14,y:-6,r:0},{x:30,y:-14,r:0},{x:43,y:-18,r:0},{x:29,y:-9,r:0},{x:7,y:4,r:0},{x:-8,y:1,r:0}],
-  tree:[{x:0,y:0,r:0},{x:-8,y:-8,r:0},{x:4,y:-13,r:0},{x:14,y:-5,r:0},{x:11,y:6,r:0},{x:-3,y:8,r:0},{x:-10,y:2,r:0}]
+ garden:[
+  {x:0,y:0,target:'potting table',action:'sorting seeds',hold:500},
+  {x:16,y:-4,target:'yellow flowers',action:'watering flowers',hold:900},
+  {x:-26,y:-24,target:'blue flowers',action:'checking new growth',hold:900},
+  {x:0,y:0,target:'potting table',action:'putting the watering can away',hold:450,record:false}
+ ],
+ parcel:[
+  {x:0,y:0,target:'cottage porch',action:'checking the delivery list',hold:500},
+  {x:28,y:-10,target:'garden path',action:'carrying a parcel',hold:350},
+  {x:54,y:5,target:'mailbox',action:'delivering the morning mail',hold:1000,minStage:1},
+  {x:40,y:9,target:'visitor pennant',action:'checking for visitors',hold:800,minStage:2},
+  {x:0,y:0,target:'cottage porch',action:'marking the route complete',hold:450,record:false}
+ ],
+ tree:[
+  {x:0,y:0,target:'tree path',action:'gathering the yard tools',hold:450},
+  {x:7,y:12,target:'old tree',action:'tending the roots',hold:900},
+  {x:2,y:32,target:'Waykeeper compass',action:'checking the old compass',hold:1000,minStage:6},
+  {x:0,y:0,target:'tree path',action:'putting the tools away',hold:450,record:false}
+ ]
 };
+const littleHomeRouteFor=adult=>(littleHomeAdultRoutes[adult.dataset.activity]||littleHomeAdultRoutes.garden).filter(step=>!step.minStage||littleHomeStoryStage>=step.minStage);
 const littleHomeAdults=[...document.querySelectorAll('#c2 .resident.adult')];
 const littleHomeMotionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 const littleHomeRoot=document.querySelector('#c2');
@@ -272,56 +308,61 @@ const littleHomeStepTransform=step=>`translate(${step.x}px,${step.y}px) rotate($
 let littleHomeAdultTimer=0;
 let littleHomeAdultTurn=0;
 let littleHomeAdultAnimation=null;
+let littleHomeHoldTimer=0;
+let littleHomeHoldResolve=null;
 let littleHomeSceneActive=true;
 const littleHomeEffectiveReducedMotion=()=>littleHomeMotionQuery.matches||document.documentElement.dataset.motion==='reduced';
 const littleHomeMotionAllowed=()=>littleHomeSceneActive&&!littleHomeEffectiveReducedMotion();
+const clearLittleHomeWorkState=adult=>{if(!adult)return;adult.classList.remove('work-active');adult.dataset.motionState='idle';adult.dataset.workAction=''};
+const littleHomeDelay=ms=>new Promise(resolve=>{littleHomeHoldResolve=resolve;littleHomeHoldTimer=setTimeout(()=>{littleHomeHoldTimer=0;littleHomeHoldResolve=null;resolve()},ms)});
 const stopLittleHomeAdultMotion=()=>{
-  clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
-  if(littleHomeAdultAnimation){littleHomeAdultAnimation.cancel();littleHomeAdultAnimation=null}
-  if(littleHomeRoot){littleHomeRoot.dataset.activeAdult='';littleHomeRoot.dataset.nextAdultMoveMs='paused'}
+ clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
+ if(littleHomeHoldTimer){clearTimeout(littleHomeHoldTimer);littleHomeHoldTimer=0;if(littleHomeHoldResolve){const done=littleHomeHoldResolve;littleHomeHoldResolve=null;done()}}
+ if(littleHomeAdultAnimation){littleHomeAdultAnimation.cancel();littleHomeAdultAnimation=null}
+ littleHomeAdults.forEach(clearLittleHomeWorkState);
+ if(littleHomeRoot){littleHomeRoot.dataset.activeAdult='';littleHomeRoot.dataset.nextAdultMoveMs='paused'}
 };
 const scheduleNextLittleHomeAdultMove=()=>{
-  clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
-  if(!littleHomeMotionAllowed()||!littleHomeAdults.length)return;
-  const wait=littleHomeRandom(LITTLE_HOME_ADULT_GAP_MIN,LITTLE_HOME_ADULT_GAP_MAX);
-  if(littleHomeRoot)littleHomeRoot.dataset.nextAdultMoveMs=String(Math.round(wait));
-  littleHomeAdultTimer=setTimeout(()=>{littleHomeAdultTimer=0;runLittleHomeAdultMove()},wait);
+ clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
+ if(!littleHomeMotionAllowed()||!littleHomeAdults.length)return;
+ const wait=littleHomeRandom(LITTLE_HOME_ADULT_GAP_MIN,LITTLE_HOME_ADULT_GAP_MAX);
+ if(littleHomeRoot)littleHomeRoot.dataset.nextAdultMoveMs=String(Math.round(wait));
+ littleHomeAdultTimer=setTimeout(()=>{littleHomeAdultTimer=0;runLittleHomeAdultMove()},wait);
 };
 const syncLittleHomeMotion=()=>{
-  document.documentElement.dataset.sceneActive=littleHomeSceneActive?'true':'false';
-  if(!littleHomeMotionAllowed()){stopLittleHomeAdultMotion();return}
-  if(!littleHomeAdultTimer&&!littleHomeAdultAnimation)scheduleNextLittleHomeAdultMove();
+ document.documentElement.dataset.sceneActive=littleHomeSceneActive?'true':'false';
+ if(!littleHomeMotionAllowed()){stopLittleHomeAdultMotion();return}
+ if(!littleHomeAdultTimer&&!littleHomeAdultAnimation&&!littleHomeHoldTimer)scheduleNextLittleHomeAdultMove();
 };
 const runLittleHomeAdultMove=async()=>{
-  if(!littleHomeMotionAllowed()||!littleHomeAdults.length)return;
-  const adult=littleHomeAdults[littleHomeAdultTurn%littleHomeAdults.length];
-  littleHomeAdultTurn=(littleHomeAdultTurn+1)%littleHomeAdults.length;
-  const route=littleHomeAdultRoutes[adult.dataset.activity]||littleHomeAdultRoutes.garden;
-  const current=Number(adult.dataset.routeIndex||0)%route.length;
-  const next=(current+1)%route.length;
-  const duration=littleHomeRandom(LITTLE_HOME_ADULT_STEP_MIN,LITTLE_HOME_ADULT_STEP_MAX);
-  adult.dataset.motionState='moving';
-  adult.dataset.stepDurationMs=String(Math.round(duration));
-  if(littleHomeRoot)littleHomeRoot.dataset.activeAdult=adult.dataset.activity||'';
-  const animation=adult.animate([{transform:littleHomeStepTransform(route[current])},{transform:littleHomeStepTransform(route[next])}],{duration,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
+ if(!littleHomeMotionAllowed()||!littleHomeAdults.length)return;
+ clearTimeout(littleHomeAdultTimer);littleHomeAdultTimer=0;
+ const adult=littleHomeAdults[littleHomeAdultTurn%littleHomeAdults.length];
+ littleHomeAdultTurn=(littleHomeAdultTurn+1)%littleHomeAdults.length;
+ const route=littleHomeRouteFor(adult);
+ if(route.length<2){scheduleNextLittleHomeAdultMove();return}
+ adult.dataset.motionState='moving';
+ if(littleHomeRoot)littleHomeRoot.dataset.activeAdult=adult.dataset.resident||adult.dataset.activity||'';
+ let current=route[0];adult.style.transform=littleHomeStepTransform(current);
+ for(let i=1;i<route.length&&littleHomeMotionAllowed();i++){
+  const next=route[i],duration=littleHomeRandom(LITTLE_HOME_ADULT_STEP_MIN,LITTLE_HOME_ADULT_STEP_MAX);
+  adult.dataset.stepDurationMs=String(Math.round(duration));adult.dataset.workTarget=next.target||'';adult.dataset.workAction=next.action||'';
+  const animation=adult.animate([{transform:littleHomeStepTransform(current)},{transform:littleHomeStepTransform(next)}],{duration,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
   littleHomeAdultAnimation=animation;
   let completed=false;try{await animation.finished;completed=true}catch{}
   if(littleHomeAdultAnimation===animation)littleHomeAdultAnimation=null;
-  if(completed&&littleHomeMotionAllowed()){
-    adult.style.transform=littleHomeStepTransform(route[next]);
-    adult.dataset.routeIndex=String(next);
-    adult.dataset.moveCount=String(Number(adult.dataset.moveCount||0)+1);
-  }else{
-    adult.style.transform=littleHomeStepTransform(route[current]);
-    adult.dataset.routeIndex=String(current);
-  }
-  animation.cancel();adult.dataset.motionState='idle';
-  if(littleHomeRoot)littleHomeRoot.dataset.activeAdult='';
-  if(littleHomeMotionAllowed())scheduleNextLittleHomeAdultMove();
+  if(!completed||!littleHomeMotionAllowed()){animation.cancel();break}
+  adult.style.transform=littleHomeStepTransform(next);animation.cancel();adult.dataset.moveCount=String(Number(adult.dataset.moveCount||0)+1);
+  if(next.action){adult.classList.add('work-active');adult.dataset.motionState='working';if(next.record!==false){adult.dataset.lastWorkTarget=next.target||'';adult.dataset.lastWorkAction=next.action;}await littleHomeDelay(next.hold||550);adult.classList.remove('work-active');adult.dataset.motionState='moving'}
+  current=next;
+ }
+ clearLittleHomeWorkState(adult);adult.dataset.completedWorkCycles=String(Number(adult.dataset.completedWorkCycles||0)+1);
+ if(littleHomeRoot)littleHomeRoot.dataset.activeAdult='';
+ if(littleHomeMotionAllowed())scheduleNextLittleHomeAdultMove();
 };
 littleHomeAdults.forEach(adult=>{
-  adult.dataset.motionState='idle';adult.dataset.moveCount='0';adult.dataset.routeIndex='0';
-  adult.style.transform=littleHomeStepTransform((littleHomeAdultRoutes[adult.dataset.activity]||littleHomeAdultRoutes.garden)[0]);
+ adult.dataset.motionState='idle';adult.dataset.moveCount='0';adult.dataset.completedWorkCycles='0';adult.dataset.lastWorkTarget='';adult.dataset.lastWorkAction='';
+ adult.style.transform=littleHomeStepTransform(littleHomeRouteFor(adult)[0]);
 });
 littleHomeMotionQuery.addEventListener?.('change',syncLittleHomeMotion);
 try{if(parent&&parent!==window&&parent.document?.body){littleHomeSceneActive=parent.document.body.dataset.screen==='home';new MutationObserver(()=>{littleHomeSceneActive=parent.document.body.dataset.screen==='home';syncLittleHomeMotion()}).observe(parent.document.body,{attributes:true,attributeFilter:['data-screen']})}}catch(_){}
@@ -336,11 +377,17 @@ function initProductionEmbed(){
  document.body.classList.add('embed-mode');if(cinematic){document.documentElement.classList.add('cinematic-mode');document.body.classList.add('cinematic-mode')}show('c2');
  const c2=document.getElementById('c2'),phone=c2.querySelector('.phone'),progress=c2.querySelector('.progress span');
  const send=action=>{if(parent&&typeof parent.LatchlingsHomeAction==='function'){parent.LatchlingsHomeAction(action);return}parent.postMessage({source:'latchlings-home',action},location.origin)};
+ const primary=c2.querySelector('.play'),primaryStrong=primary?.querySelector('.home-primary-copy strong'),primarySmall=primary?.querySelector('.home-primary-copy small');
+ const keepsakeDefs=[['mailbox',1],['pennant',2],['anchor',3],['bunting',4],['telescope',5],['relic',6],['dock',7]];
+ const keepsakeEls=keepsakeDefs.map(([key,stage])=>({key,stage,el:c2.querySelector(`[data-memory="${key}"]`)}));
+ keepsakeEls.forEach(({key,el})=>{if(!el)return;const activate=()=>{if(el.classList.contains('memory-unlocked'))send(`memory:${key}`)};el.addEventListener('click',activate);el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&el.classList.contains('memory-unlocked')){e.preventDefault();activate()}})});
+ const syncKeepsakes=stage=>keepsakeEls.forEach(({stage:required,el})=>{if(!el)return;const unlocked=stage>=required;el.classList.toggle('memory-unlocked',unlocked);el.tabIndex=unlocked?0:-1;el.setAttribute('aria-hidden',String(!unlocked))});
+
  const bindEmbed=(el,action)=>{if(!el)return;el.addEventListener('click',()=>{if(el.dataset.parentBound==='1')return;send(action)})};
  bindEmbed(c2.querySelector('.play'),'play');
  const secondary=c2.querySelectorAll('.secondary button');bindEmbed(secondary[0],'daily');bindEmbed(secondary[1],'levels');
  bindEmbed(c2.querySelector('.story-home'),'story');bindEmbed(c2.querySelector('.settings'),'settings');
- window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';syncLittleHomeMotion();if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);phone.classList.remove('story-focus-mailbox','story-focus-pennant','story-focus-anchor','story-focus-bunting');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.focus==='pennant'){void phone.offsetWidth;phone.classList.add('story-focus-pennant');setTimeout(()=>phone.classList.remove('story-focus-pennant'),2200)}if(e.data.focus==='anchor'){void phone.offsetWidth;phone.classList.add('story-focus-anchor');setTimeout(()=>phone.classList.remove('story-focus-anchor'),2200)}if(e.data.focus==='bunting'){void phone.offsetWidth;phone.classList.add('story-focus-bunting');setTimeout(()=>phone.classList.remove('story-focus-bunting'),2200)}if(e.data.replay)restartLittleHomeTitle()});
+ window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.source!=='latchlings-game'||e.data.type!=='home-state')return;document.documentElement.dataset.motion=e.data.motion||'system';document.documentElement.dataset.textSize=e.data.textSize||'normal';if(progress)progress.textContent=String(e.data.stars??0);for(let i=1;i<=8;i++)phone.classList.remove('story-stage-'+i);const stage=Math.max(0,Math.min(8,Number(e.data.stage)||0));littleHomeStoryStage=stage;for(let i=1;i<=stage;i++)phone.classList.add('story-stage-'+i);syncKeepsakes(stage);if(primaryStrong&&e.data.primaryLabel)primaryStrong.textContent=e.data.primaryLabel;if(primarySmall&&e.data.primaryMeta)primarySmall.textContent=e.data.primaryMeta;syncLittleHomeMotion();phone.classList.remove('story-focus-mailbox','story-focus-pennant','story-focus-anchor','story-focus-bunting');if(e.data.focus==='mailbox'){void phone.offsetWidth;phone.classList.add('story-focus-mailbox');setTimeout(()=>phone.classList.remove('story-focus-mailbox'),2200)}if(e.data.focus==='pennant'){void phone.offsetWidth;phone.classList.add('story-focus-pennant');setTimeout(()=>phone.classList.remove('story-focus-pennant'),2200)}if(e.data.focus==='anchor'){void phone.offsetWidth;phone.classList.add('story-focus-anchor');setTimeout(()=>phone.classList.remove('story-focus-anchor'),2200)}if(e.data.focus==='bunting'){void phone.offsetWidth;phone.classList.add('story-focus-bunting');setTimeout(()=>phone.classList.remove('story-focus-bunting'),2200)}if(e.data.replay)restartLittleHomeTitle()});
  parent.postMessage({source:'latchlings-home',action:'ready'},location.origin);
 }
 initProductionEmbed();
