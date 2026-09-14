@@ -11,13 +11,13 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ### Full Astra visual/story audit closure
 **Status: IN PROGRESS**
 
-User goal: reconcile the entire original `LATCHLINGS_VISUAL_STORY_AUDIT.md` and the later `LATCHLINGS_IMPLEMENTATION_REVIEW.md` against current `main`, finish every remaining software-addressable item, validate the complete acceptance matrix, clean temporary validation machinery, deploy, and close out without treating untested external-device work as complete.
+User goal: reconcile the entire original [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md) and the later [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md) against current `main`, finish every remaining software-addressable item, validate the complete acceptance matrix, clean temporary validation machinery, deploy, and close out without treating untested external-device work as complete.
 
 Source acceptance contract:
-- Original audit baseline: `a5048dd25804fdd261639e5a22332a0cfd506682`.
-- Astra implementation review baseline: `d6e39c0866505795c2aa6a26777896072e16e7df`.
+- Canonical audit source: [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md), committed to `main` on 2026-09-14 as `2ece5dd46d8fcb50b3591b62c77dd65b46cd02ab`; original audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`.
+- Canonical implementation-review source: [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md), committed to `main` on 2026-09-14 as `85f2b597de1ec3ee3daf12f0a84ade26e6cf1502`; reviewed-head baseline `d6e39c0866505795c2aa6a26777896072e16e7df`.
+- [`ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`](ASTRA_AUDIT_ACCEPTANCE_MATRIX.md) is the living reconciliation ledger against those two source documents and current `main`. The audit/review documents define the requested findings and acceptance language; the matrix records their current implementation status and evidence.
 - R1-R5 usability work is completed and protected by candidate run `34853875486`, committed-live run `34855339189`, final Pages run `34856135214`, and final guard run `34856138001`.
-- The original standalone audit/review attachments are not repository files. Their complete repository-side reconciliation is preserved in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`; use that matrix plus the dated baselines above as the durable closure checklist rather than depending on an external attachment.
 
 Accepted Astra Pass 4 checkpoint (2026-09-14):
 - Candidate run `34865335086` passed exact campaign/source protection, syntax/static assertions, every utterance in all 25 cinematic beats at 320x568 / 390x844 / 430x932, representative visual evidence, OS Reduced Motion, and in-game Reduced Motion.
@@ -41,6 +41,7 @@ Protected systems:
 - Preserve all R1-R5 behavior and the accepted Pass 4 cinematic dialogue/navigation behavior.
 
 Implementation/validation contract:
+- Read both canonical audit source documents above when reconciling an item; do not rely on the acceptance matrix as a substitute for their original wording.
 - Reconcile every original audit ID (`V01`-`V20`, `N01`-`N06`, `U01`-`U11`, `A01`, `P01`) and both documents' Pass 1-5 acceptance language against current code/runtime.
 - Record each item as COMPLETED, PARTIAL/EXTERNAL, or intentionally non-blocking with concrete evidence; do not use “improved” as closure.
 - Use candidate-first browser validation for broad presentation changes, then committed-live validation before cleanup.
@@ -70,6 +71,7 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - The eight-chapter Pass 3 visual/story campaign is complete and protected.
 - The Astra R1-R5 usability pass is complete and protected.
 - The accepted Pass 4 cinematic slice is promoted and tracked in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`.
-- `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the durable repository-side item-by-item closure checklist for the original visual/story audit and implementation review.
+- `LATCHLINGS_VISUAL_STORY_AUDIT.md` and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` are canonical repository source documents for the Astra closure effort.
+- `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
