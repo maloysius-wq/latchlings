@@ -27,7 +27,20 @@ jobs:
           sha256sum cinematics400.js cinematic-dialogue400.js style400-cinematics.css gameplay-story-rail400.js style400-story-rail-board.css style400-story-theme.css > /tmp/accepted-before.sha256
 
       - name: Apply Little Home candidate
-        run: python .github/tmp/astra_little_home_candidate.py
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/tmp/astra_little_home_candidate.py')
+          s=p.read_text()
+          s=s.replace("assert h.count('data-memory=')==7", "assert h.count('aria-label=\\\"Memory:')==7")
+          s=s.replace("{x:0,y:0,target:'potting table',action:'putting the watering can away',hold:450}", "{x:0,y:0,target:'potting table',action:'putting the watering can away',hold:450,record:false}")
+          s=s.replace("{x:0,y:0,target:'cottage porch',action:'marking the route complete',hold:450}", "{x:0,y:0,target:'cottage porch',action:'marking the route complete',hold:450,record:false}")
+          s=s.replace("{x:0,y:0,target:'tree path',action:'putting the tools away',hold:450}", "{x:0,y:0,target:'tree path',action:'putting the tools away',hold:450,record:false}")
+          s=s.replace("adult.dataset.lastWorkTarget=next.target||'';adult.dataset.lastWorkAction=next.action;", "if(next.record!==false){adult.dataset.lastWorkTarget=next.target||'';adult.dataset.lastWorkAction=next.action;}")
+          p.write_text(s)
+          PY
+          python .github/tmp/astra_little_home_candidate.py
 
       - name: Protect campaign and accepted cinematic/story behavior
         shell: bash
@@ -46,8 +59,8 @@ jobs:
           a=Path('game400-a.js').read_text(); b=Path('game400-b.js').read_text(); h=Path('title-island-concepts/index.html').read_text(); i=Path('index.html').read_text()
           assert 'primaryLabel' in a and 'primaryMeta' in a
           assert 'HOME_KEEPSAKE_MEMORIES' in b and "startsWith('memory:')" in b
-          assert h.count('data-memory=') == 7
-          assert 'completedWorkCycles' in h and 'lastWorkTarget' in h
+          assert h.count('aria-label="Memory:') == 7
+          assert 'completedWorkCycles' in h and 'lastWorkTarget' in h and 'record:false' in h
           assert 'memory-unlocked' in h and 'home-primary-copy' in h
           assert "document.documentElement.dataset.motion==='reduced'" in h
           assert i.count('game400-a.js?v=20260914-home-coherence-candidate1') == 1
