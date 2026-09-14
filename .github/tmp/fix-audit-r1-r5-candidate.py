@@ -58,46 +58,46 @@ if n != 1:
     raise SystemExit(f'concise EARLY_STORY: expected 1 block, found {n}')
 
 rail_lines = {
- 'A Pattern at Breakfast':'Several morning routes are missing by nearly the same amount.',
- 'The Route Desk':'Fresh drift keeps changing the temporary route.',
- 'Markers in the Grass':'Old markers point to where the islands used to be.',
- 'Build for Today':'Local crews are testing stops from today’s coordinates.',
- 'The Drift Continues':'The repair works, but the islands keep moving.',
- 'Almost Connected':'Lanternwood’s homes are close, but their crossings no longer meet.',
- 'Travel Windows':'Neighbors coordinate where and when routes stay open.',
- 'A Porch Worth Reaching':'The twin-lantern porch is slipping out of easy visiting range.',
- 'The Missing Assumption':'Old routes only work when neighbors cooperate.',
- 'Neighborhood Circuit':'Shared stops are becoming one neighborhood circuit.',
- 'The Buried Stop':'An old anchor still answers beneath Lodestone.',
- 'Made to Move':'Waykeeper marks show anchors approved in many positions.',
- 'Everybody’s Job':'Old logs show ordinary crews once maintained the routes.',
- 'When the Cavern Shifts':'A local shift breaks yesterday’s perfect route.',
- 'Holding, Not Freezing':'The anchors create reliable moments while everything keeps moving.',
- 'Market Anyway':'The market opens while its outer lanes drift out of line.',
- 'The Right Stall':'Suit gates only help when the right route reaches them.',
- 'Older Than the Market':'The suit marks predate today’s market stalls.',
- 'Distant Stations':'Keep records link travel windows to distant stations.',
- 'Market Saved':'The market works, and old route records are pouring in.',
- 'The View Gets Wider':'From Prism’s high paths, nearby islands sit beyond their old markers.',
- 'A Familiar Island, Farther Away':'A familiar island is farther from its old connection.',
- 'The Porch Light':'Twin lanterns still mark a friend’s porch across the drift.',
- 'Yesterday Will Not Fit':'Aligning one old region throws another out of place.',
- 'New Coordinates':'The Waykeeper drafts a route the old map never had.',
- 'The Instructions Disagree':'Copperline’s approved maps contradict one another.',
- 'Look at the Dates':'Each approved map comes from a different year.',
- 'They Were All Correct':'Every old map fit the islands of its own time.',
- 'What Automation Hid':'Automation kept routes running while revisions faded.',
- 'Off the Old Map':'The Waykeeper draws a route with no historical precedent.',
- 'One Switch, Two Regions':'One switch changes route options across two regions.',
- 'Same Travel Window':'Distant regions are sharing one timed travel window.',
- 'Useful Failure':'A mistimed handoff gives every region better timing data.',
- 'Faster Than Yesterday':'The network is adapting before drift becomes an emergency.',
- 'Waykeepers Everywhere':'Every region now maintains part of the same living map.',
- 'Old and New Together':'Aurora Crown joins historical lines with brand-new routes.',
- 'Back on the Same Map':'Separated island groups are connected on one living map again.',
- 'Visiting Without a Crisis Plan':'A visit no longer needs a rescue plan around a failing crossing.',
- 'One Node Among Many':'Little Home is busy, but no longer controls every decision.',
- 'Tomorrow’s Route':'Route lights keep adjusting while the islands drift.'
+ 'A Pattern at Breakfast':'Morning routes shifted together.',
+ 'The Route Desk':'Fresh drift changed the route.',
+ 'Markers in the Grass':'Old markers show past positions.',
+ 'Build for Today':'Crews test today’s stops.',
+ 'The Drift Continues':'The islands keep moving.',
+ 'Almost Connected':'Lanternwood crossings miss.',
+ 'Travel Windows':'Neighbors time shared routes.',
+ 'A Porch Worth Reaching':'The twin-lantern porch drifts.',
+ 'The Missing Assumption':'Old routes need cooperation.',
+ 'Neighborhood Circuit':'Shared stops form a circuit.',
+ 'The Buried Stop':'An old anchor still answers.',
+ 'Made to Move':'Anchors were built to move.',
+ 'Everybody’s Job':'Ordinary crews kept routes.',
+ 'When the Cavern Shifts':'A shift breaks yesterday’s route.',
+ 'Holding, Not Freezing':'Anchors create reliable moments.',
+ 'Market Anyway':'The market opens through drift.',
+ 'The Right Stall':'Suit gates need matching routes.',
+ 'Older Than the Market':'Suit marks predate the market.',
+ 'Distant Stations':'Records link distant stations.',
+ 'Market Saved':'The market works again.',
+ 'The View Gets Wider':'Nearby islands moved outward.',
+ 'A Familiar Island, Farther Away':'A familiar island drifted farther.',
+ 'The Porch Light':'Twin lanterns still mark home.',
+ 'Yesterday Will Not Fit':'One old map breaks another region.',
+ 'New Coordinates':'The Waykeeper draws a new route.',
+ 'The Instructions Disagree':'Approved maps contradict.',
+ 'Look at the Dates':'The maps come from different years.',
+ 'They Were All Correct':'Each old map once fit.',
+ 'What Automation Hid':'Automation hid route revisions.',
+ 'Off the Old Map':'A route leaves the old map.',
+ 'One Switch, Two Regions':'One switch changes two regions.',
+ 'Same Travel Window':'Regions share one travel window.',
+ 'Useful Failure':'Bad timing improves the network.',
+ 'Faster Than Yesterday':'The network adapts faster.',
+ 'Waykeepers Everywhere':'Every region keeps the map.',
+ 'Old and New Together':'Old and new routes connect.',
+ 'Back on the Same Map':'Island groups reconnect.',
+ 'Visiting Without a Crisis Plan':'Visits no longer need rescue plans.',
+ 'One Node Among Many':'Little Home is one busy node.',
+ 'Tomorrow’s Route':'Route lights keep adjusting.'
 }
 block = 'const MOVEMENT_RAIL_LINES={\n' + ''.join(f" {k!r}:{v!r},\n" for k,v in rail_lines.items()) + '};'
 text, n = re.subn(r"const MOVEMENT_RAIL_LINES=\{.*?\};", block, text, count=1, flags=re.S)
@@ -106,5 +106,15 @@ if n != 1:
 path.write_text(text, encoding='utf-8')
 refresh(path)
 
+# R1/R4: keep route teaching distinct but brief enough to remain visible with Large Text on short phones.
+path = root / 'game400-a.js'
+text = path.read_text(encoding='utf-8')
+route_block = "const ROUTE_TIPS=['Use edges and rocks for stops.','Park helpers as stopping walls.','Anchors make exact stops.','Suit gates read black suit marks.','Color gates read body color.','Rails limit entry; turners bend.','Switches toggle doors.','Plan several board states ahead.'];\nfunction chapterNote(L){const k=(L-1)%50+1,ch=Math.ceil(L/50),tip=ROUTE_TIPS[ch-1];if(k>=46)return 'Expert route: plan blockers.';return tip}"
+text, n = re.subn(r"const ROUTE_TIPS=\[.*?\];\nfunction chapterNote\(L\)\{.*?\}", route_block, text, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit(f'compact route tips: expected 1 block, found {n}')
+path.write_text(text, encoding='utf-8')
+refresh(path)
+
 manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
-print(json.dumps({k: manifest[k] for k in ['style400-story-rail-board.css','gameplay-story-rail400.js']}, indent=2))
+print(json.dumps({k: manifest[k] for k in ['style400-story-rail-board.css','gameplay-story-rail400.js','game400-a.js']}, indent=2))
