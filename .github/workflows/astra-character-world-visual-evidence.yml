@@ -1,0 +1,59 @@
+name: Astra Character World Visible Atlas Evidence
+
+on:
+  push:
+    branches: [astra-character-world-coherence]
+    paths:
+      - '.github/workflows/astra-character-world-visual-evidence.yml'
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c4cab777dceb1b2162efa42fbd2fa126ef57b84a
+          fetch-depth: 0
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Capture visibly active Atlas
+        run: |
+          mkdir -p /tmp/astra-character-world-visible
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/http.log 2>&1 &
+          cat > .astra-visible-atlas.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const cases=[
+            {name:'short-copperline',w:320,h:568,ch:6,r:2},
+            {name:'lanternwood-porch',w:390,h:844,ch:2,r:2},
+            {name:'market-arch',w:390,h:844,ch:4,r:2},
+            {name:'prism-lookout',w:390,h:844,ch:5,r:0},
+            {name:'copperline-map-gallery',w:390,h:844,ch:6,r:2},
+            {name:'stormswitch-relay',w:390,h:844,ch:7,r:2},
+            {name:'aurora-crown',w:390,h:844,ch:8,r:0},
+            {name:'wide-copperline',w:430,h:932,ch:6,r:2}
+          ];
+          const results=[];
+          for(const c of cases){
+            const context=await browser.newContext({viewport:{width:c.w,height:c.h}});const page=await context.newPage();const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(({ch,r})=>{progress={unlocked:400,stars:{50:3,100:3,150:3,200:3,250:3,300:3,350:3}};chapterView=ch;rangeView=r;screen('levels');renderChapter()},{ch:c.ch,r:c.r});
+            await page.waitForTimeout(520);
+            const state=await page.evaluate(()=>{const screen=document.getElementById('levels'),map=document.getElementById('levelGrid'),node=map.querySelector('.atlas-node.milestone'),caption=map.querySelector('.atlas-landmark-caption'),mark=node?.querySelector('.atlas-landmark-mark'),mr=map.getBoundingClientRect(),cr=caption?.getBoundingClientRect(),nr=node?.getBoundingClientRect();return {body:document.body.dataset.screen,screenActive:screen.classList.contains('active'),label:node?.dataset.landmarkLabel||'',fixture:node?.dataset.fixture||'',kind:node?.dataset.landmarkKind||'',caption:caption?.textContent?.replace(/\s+/g,' ').trim()||'',mark:!!mark,map:{l:mr.left,r:mr.right,t:mr.top,b:mr.bottom},cap:cr?{l:cr.left,r:cr.right,t:cr.top,b:cr.bottom}:null,node:nr?{l:nr.left,r:nr.right,t:nr.top,b:nr.bottom}:null,hOverflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}});
+            if(state.body!=='levels'||!state.screenActive||!state.label||!state.mark||!state.caption.includes(state.label)||state.hOverflow)throw new Error(`${c.name}: visible Atlas state ${JSON.stringify(state)}`);
+            if(!state.cap||state.cap.l<state.map.l-1||state.cap.r>state.map.r+1||state.cap.t<state.map.t-1||state.cap.b>state.map.b+1)throw new Error(`${c.name}: caption bounds ${JSON.stringify(state)}`);
+            await page.screenshot({path:`/tmp/astra-character-world-visible/${c.name}.png`,fullPage:true});results.push({case:c,state,errors});await context.close();
+          }
+          fs.writeFileSync('/tmp/astra-character-world-visible/results.json',JSON.stringify(results,null,2));await browser.close();
+          JS
+          node .astra-visible-atlas.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-character-world-visible-atlas
+          path: /tmp/astra-character-world-visible
+          if-no-files-found: error
