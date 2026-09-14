@@ -26,8 +26,24 @@ jobs:
           git fetch origin main
           git merge-base --is-ancestor 69b6f80e794963f0e46ad1e54d90701f7caa5300 HEAD
 
+      - name: Snapshot protected accepted sources
+        run: |
+          sha256sum campaign400-{1,2,3,4,5,6,7,8}.js > /tmp/ending-campaign-before.sha256
+          sha256sum game400-a.js game400-b.js story-theme400.js style400-story-theme.css \
+            cinematics400.js cinematic-dialogue400.js style400-cinematics.css \
+            gameplay-story-rail400.js style400-story-rail-board.css \
+            title-island-concepts/index.html style400-skyway-atlas.css \
+            style400-atlas-progression.css pass3-chapter5-prism.js \
+            pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
+            pass3-chapter8-aurora.js > /tmp/ending-accepted-before.sha256
+
+      - name: Apply ending candidate
+        run: python .github/tmp/astra_ending_closure_candidate.py
+
       - name: Protect authored campaigns and accepted slices
         run: |
+          sha256sum -c /tmp/ending-campaign-before.sha256
+          sha256sum -c /tmp/ending-accepted-before.sha256
           git diff --exit-code 69b6f80e794963f0e46ad1e54d90701f7caa5300 -- \
             campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js \
             campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js \
@@ -38,6 +54,24 @@ jobs:
             style400-atlas-progression.css pass3-chapter5-prism.js \
             pass3-chapter6-copperline.js pass3-chapter7-stormswitch.js \
             pass3-chapter8-aurora.js
+
+      - name: Static ending assertions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          i=Path('index.html').read_text(encoding='utf-8')
+          c=Path('style400-ui.css').read_text(encoding='utf-8')
+          assert 'ending-network-stage' in i
+          assert i.count('class="ending-skyway-node') == 6
+          assert i.count('ending-network-link') >= 6
+          assert i.count('data-home-node="true"') == 1
+          assert 'Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.' in i
+          assert 'Ordinary life continues. That is the victory.' in i
+          assert 'id="completeHome">Return to Little Home</button>' in i
+          assert 'endingNetworkWide' in c and 'endingNetworkHomeward' in c
+          assert 'Astra ending closure: living Skyway to Little Home' in c
+          print('Static ending assertions passed.')
+          PY
 
       - name: Install Chromium
         run: |
@@ -124,6 +158,15 @@ jobs:
           node .astra-ending-check.mjs
           rm -f .astra-ending-check.mjs
           kill $(cat /tmp/astra-ending-http.pid) || true
+
+      - name: Commit accepted candidate product
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html style400-ui.css
+          git diff --cached --quiet && { echo 'No candidate product diff'; exit 1; }
+          git commit -m "Accept living Skyway ending closure candidate"
+          git push origin HEAD:astra-ending-closure-candidate
 
       - name: Upload candidate evidence
         if: always()
