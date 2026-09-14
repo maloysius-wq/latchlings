@@ -1,0 +1,80 @@
+name: Astra ending geometry diagnostic
+
+on:
+  push:
+    branches: [astra-ending-closure-candidate]
+    paths:
+      - '.github/workflows/astra-ending-geometry-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@v4
+        with:
+          ref: astra-ending-closure-candidate
+          fetch-depth: 0
+
+      - name: Apply candidate product in working tree
+        run: python .github/tmp/astra_ending_closure_candidate.py
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Measure baseline and candidate short-screen geometry
+        run: |
+          mkdir -p /tmp/astra-ending-geometry
+          cat > /tmp/measure-ending.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import { spawn } from 'node:child_process';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const measure=async(url,label)=>{
+            const context=await browser.newContext({viewport:{width:320,height:568},reducedMotion:'no-preference'});
+            const page=await context.newPage();
+            await page.goto(url,{waitUntil:'networkidle'});
+            await page.evaluate(()=>screen('complete'));
+            await page.waitForTimeout(80);
+            const data=await page.evaluate(()=>{
+              const sels={screen:'#complete',main:'#complete .home-main',hero:'.ending-hero-pass4',logo:'.ending-hero-pass4>.logo',kicker:'.ending-kicker',title:'.ending-hero-pass4>h1',lead:'.ending-hero-pass4>p:not(.ending-note)',stage:'.ending-homecoming',note:'.ending-note',actions:'.ending-actions',primary:'#completeHome',secondary:'#completeLevels'};
+              const out={viewport:{w:innerWidth,h:innerHeight},bodyScroll:document.documentElement.scrollHeight};
+              for(const [name,sel] of Object.entries(sels)){
+                const el=document.querySelector(sel);if(!el){out[name]=null;continue}
+                const r=el.getBoundingClientRect(),cs=getComputedStyle(el);
+                out[name]={top:r.top,bottom:r.bottom,height:r.height,marginTop:parseFloat(cs.marginTop)||0,marginBottom:parseFloat(cs.marginBottom)||0,padTop:parseFloat(cs.paddingTop)||0,padBottom:parseFloat(cs.paddingBottom)||0,font:parseFloat(cs.fontSize)||0,line:parseFloat(cs.lineHeight)||cs.lineHeight,minHeight:parseFloat(cs.minHeight)||0};
+              }
+              return out;
+            });
+            await page.screenshot({path:`/tmp/astra-ending-geometry/${label}.png`,fullPage:true});
+            await context.close();return data;
+          };
+          const candidateServer=spawn('python',['-m','http.server','8000','--bind','127.0.0.1'],{stdio:'ignore'});
+          await new Promise(r=>setTimeout(r,400));
+          const candidate=await measure('http://127.0.0.1:8000/index.html','candidate');
+          candidateServer.kill();
+          // Serve pristine accepted main from a temporary git archive directory.
+          const {execSync}=await import('node:child_process');
+          execSync('rm -rf /tmp/accepted-main && mkdir /tmp/accepted-main && git archive 69b6f80e794963f0e46ad1e54d90701f7caa5300 | tar -x -C /tmp/accepted-main');
+          const baselineServer=spawn('python',['-m','http.server','8001','--bind','127.0.0.1'],{cwd:'/tmp/accepted-main',stdio:'ignore'});
+          await new Promise(r=>setTimeout(r,400));
+          const baseline=await measure('http://127.0.0.1:8001/index.html','baseline');
+          baselineServer.kill();
+          await browser.close();
+          const result={baseline,candidate};
+          fs.writeFileSync('/tmp/astra-ending-geometry/geometry.json',JSON.stringify(result,null,2));
+          console.log(JSON.stringify(result,null,2));
+          JS
+          node /tmp/measure-ending.mjs
+
+      - name: Upload geometry evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-ending-geometry
+          path: /tmp/astra-ending-geometry
