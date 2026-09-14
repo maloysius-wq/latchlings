@@ -2,13 +2,8 @@
 (function(){
 const SEEN_KEY='latchlings_cinematics_seen_v1';
 const TRIGGERS={1:'opening',251:'across-drift',301:'old-maps',351:'homeward'};
-const CAST={
- Pippa:{color:'#9a72df',light:'#c3a0f1',dark:'#724fbd',suit:'club',expr:'curious'},
- Bramble:{color:'#ef5f66',light:'#ff9297',dark:'#c33d49',suit:'diamond',expr:'smug'},
- Rowan:{color:'#66bd72',light:'#94dc98',dark:'#469852',suit:'heart',expr:'happy'},
- Pip:{color:'#4c8ff4',light:'#79aff9',dark:'#2e69c8',suit:'spade',expr:'determined',child:true},
- Tansy:{color:'#ef5f66',light:'#ff9297',dark:'#c33d49',suit:'heart',expr:'surprised',child:true}
-};
+const CAST=Object.fromEntries((window.LATCHLINGS_STORY?.cast||[]).map(person=>[person.name,{...person.visual,suit:person.visual?.suit||person.suit}]));
+if(!Object.keys(CAST).length)throw new Error('Canonical Latchlings cast identity is unavailable');
 const CINEMATICS={
  opening:{
   title:'The Skyway',chapter:'Before Level 1',finalLabel:'Begin Level 1',unlock:1,
@@ -141,5 +136,5 @@ function finish(skipped){if(!activeId)return;const id=activeId,cb=onDone,shouldM
 function maybeShowBeforeLevel(level,unlocked,onComplete){const id=TRIGGERS[Number(level)];if(!id||hasSeen(id))return false;const c=CINEMATICS[id];if(Number(level)>1&&Number(unlocked||1)<c.unlock)return false;return show(id,{onComplete,markSeen:true})}
 function renderLibrary(container,unlocked){if(typeof container==='string')container=document.getElementById(container);if(!container)return;const u=Math.max(1,Number(unlocked)||1),order=['opening','across-drift','old-maps','homeward'];container.innerHTML=order.map(id=>{const c=CINEMATICS[id],locked=u<c.unlock,seen=hasSeen(id);return `<button class="cinematic-library-card ${locked?'locked':''}" type="button" data-cinematic-id="${id}" ${locked?'disabled':''}><span class="cinematic-library-status">${locked?`Unlocks after Level ${c.unlock-1}`:seen?'Replay cinematic':'Watch cinematic'}</span><strong>${escapeHtml(c.title)}</strong><small>${escapeHtml(c.chapter)}</small></button>`}).join('');container.querySelectorAll('.cinematic-library-card:not(.locked)').forEach(b=>b.onclick=()=>show(b.dataset.cinematicId,{markSeen:false}))}
 document.addEventListener('keydown',e=>{if(!activeId)return;if(e.key==='Escape'){e.preventDefault();finish(true);return}if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();next()}});
-window.LatchlingsCinematics={TRIGGERS,CINEMATICS,show,next,finish,hasSeen,reset,maybeShowBeforeLevel,renderLibrary,get active(){return activeId},get beat(){return activeIndex},get line(){return activeLine}};
+window.LatchlingsCinematics={TRIGGERS,CINEMATICS,show,next,finish,hasSeen,reset,maybeShowBeforeLevel,renderLibrary,castIdentitySource:'LATCHLINGS_STORY.cast',get active(){return activeId},get beat(){return activeIndex},get line(){return activeLine}};
 })();
