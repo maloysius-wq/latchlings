@@ -1,0 +1,83 @@
+name: Astra ending settled visual review
+
+on:
+  push:
+    branches: [astra-ending-closure-candidate]
+    paths:
+      - '.github/workflows/astra-ending-settled-visual.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@v4
+        with:
+          ref: astra-ending-closure-candidate
+          fetch-depth: 0
+
+      - name: Verify accepted product provenance
+        run: |
+          test "$(git show 64fe6f447f486e0bfe79e59401432ab4ad3e9741:index.html | sha256sum | cut -d' ' -f1)" = "$(sha256sum index.html | cut -d' ' -f1)"
+          test "$(git show 64fe6f447f486e0bfe79e59401432ab4ad3e9741:style400-ui.css | sha256sum | cut -d' ' -f1)" = "$(sha256sum style400-ui.css | cut -d' ' -f1)"
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture actual viewport sequence
+        run: |
+          mkdir -p /tmp/astra-ending-settled
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-ending-settled-http.log 2>&1 &
+          echo $! >/tmp/astra-ending-settled-http.pid
+          cat > .astra-ending-settled.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true});
+          const captures=[];
+          async function capture(width,height,name,reduced='no-preference',gameReduced=false){
+            const context=await browser.newContext({viewport:{width,height},reducedMotion:reduced});
+            const page=await context.newPage();
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            await page.evaluate(gameReduced=>{if(gameReduced)document.documentElement.dataset.motion='reduced';screen('complete')},gameReduced);
+            const snap=async(label)=>{
+              const state=await page.evaluate(()=>({
+                scrollHeight:document.documentElement.scrollHeight,
+                innerHeight,
+                heroBottom:document.querySelector('.ending-hero-pass4').getBoundingClientRect().bottom,
+                stage:document.querySelector('.ending-network-stage').getBoundingClientRect().toJSON(),
+                focus:{opacity:getComputedStyle(document.querySelector('.ending-home-focus')).opacity,transform:getComputedStyle(document.querySelector('.ending-home-focus')).transform},
+                field:{opacity:getComputedStyle(document.querySelector('.ending-network-field')).opacity,transform:getComputedStyle(document.querySelector('.ending-network-field')).transform},
+                animations:[...document.querySelectorAll('.ending-network-stage *')].map(x=>getComputedStyle(x).animationName).filter(x=>x&&x!=='none')
+              }));
+              if(state.heroBottom>height+0.5)throw new Error(`${name}-${label}: hero overflow ${JSON.stringify(state)}`);
+              await page.screenshot({path:`/tmp/astra-ending-settled/${name}-${label}-viewport.png`,fullPage:false});
+              await page.locator('.ending-network-stage').screenshot({path:`/tmp/astra-ending-settled/${name}-${label}-stage.png`});
+              captures.push({name,label,state});
+            };
+            if(reduced==='reduce'||gameReduced){await page.waitForTimeout(120);await snap('resolved')}
+            else {await page.waitForTimeout(120);await snap('wide');await page.waitForTimeout(2700);await snap('homeward');await page.waitForTimeout(3900);await snap('settled')}
+            await context.close();
+          }
+          await capture(320,568,'short');
+          await capture(390,844,'phone');
+          await capture(430,932,'wide');
+          await capture(390,844,'os-reduced','reduce',false);
+          await capture(390,844,'game-reduced','no-preference',true);
+          fs.writeFileSync('/tmp/astra-ending-settled/results.json',JSON.stringify(captures,null,2));
+          await browser.close();
+          JS
+          node .astra-ending-settled.mjs
+          rm -f .astra-ending-settled.mjs
+          kill $(cat /tmp/astra-ending-settled-http.pid) || true
+
+      - name: Upload settled evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-ending-settled-evidence
+          path: /tmp/astra-ending-settled
