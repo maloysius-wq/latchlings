@@ -6,6 +6,7 @@ on:
       - '.github/workflows/validate-audit-r1-r5.yml'
       - '.github/tmp/validate-audit-r1-r5.mjs'
       - '.github/tmp/prepare-audit-r1-r5.py'
+      - '.github/tmp/fix-audit-r1-r5-candidate.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,6 +38,7 @@ jobs:
         run: |
           set -euo pipefail
           python .github/tmp/prepare-audit-r1-r5.py
+          python .github/tmp/fix-audit-r1-r5-candidate.py
           rm -rf /tmp/r1r5-site
           mkdir -p /tmp/r1r5-site
           cp -a . /tmp/r1r5-site/
@@ -61,6 +63,7 @@ jobs:
           grep -q 'littleHomeEffectiveReducedMotion' /tmp/r1r5-site/title-island-concepts/index.html
           grep -q 'MOVEMENT_RAIL_LINES' /tmp/r1r5-site/gameplay-story-rail400.js
           grep -q 'ROUTE_TIPS' /tmp/r1r5-site/game400-a.js
+          grep -q '.story-rail-main{min-height:0;overflow:visible}' /tmp/r1r5-site/style400-story-rail-board.css
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -88,6 +91,8 @@ jobs:
           mkdir -p /tmp/audit-r1-r5-evidence
           cp /tmp/r1r5-prepared/manifest.json /tmp/audit-r1-r5-evidence/prepared-manifest.json 2>/dev/null || true
           cp /tmp/r1r5-prepared/blob-shas.json /tmp/audit-r1-r5-evidence/prepared-blob-shas.json 2>/dev/null || true
+          cp /tmp/audit-r1-r5-evidence/* /tmp/audit-r1-r5-evidence/ 2>/dev/null || true
+          cp /tmp/audit-r1-r5-evidence/results.json /tmp/audit-r1-r5-evidence/results.json 2>/dev/null || true
           cp /tmp/r1r5-http.log /tmp/audit-r1-r5-evidence/http.log 2>/dev/null || true
           git status --short > /tmp/audit-r1-r5-evidence/status.txt
       - name: Upload R1-R5 evidence
