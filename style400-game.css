@@ -152,3 +152,29 @@ html[data-text-size="large"] .story-cinematic-intro{font-size:16px;line-height:1
 @media(max-height:620px){
  html[data-text-size="large"] #game .mechanic-chip-copy{font-size:15px!important;line-height:1.28}
 }
+
+
+/* Presentation/accessibility consolidation */
+html[data-motion="reduced"] #game *,
+html[data-motion="reduced"] #game *::before,
+html[data-motion="reduced"] #game *::after{animation:none!important;transition:none!important}
+#game.screen.active{min-height:0;height:100dvh;max-height:100dvh;overflow:hidden}
+@media(max-height:600px) and (orientation:portrait){
+  #game .topbar{margin-bottom:5px}
+  #game .controls{padding-top:2px}
+  #game .side-action{min-height:62px}
+  #game .dpad{width:min(184px,45vw);height:min(184px,45vw)}
+}
+@media(orientation:landscape) and (max-height:520px){
+  #game.screen.active{max-width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,340px);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top top" "story controls" "board controls" "note controls";gap:4px 10px;padding-top:max(6px,env(safe-area-inset-top));padding-bottom:max(6px,env(safe-area-inset-bottom))}
+  #game .game-top{grid-area:top;min-height:48px;margin:0;padding:4px 8px}
+  #game .game-title{font-size:20px}
+  #game .moves-box strong{font-size:22px}
+  #game .story-rail-slot{grid-area:story;min-height:0;margin:0}
+  #game .board-wrap{grid-area:board;min-height:0;align-self:stretch}
+  #game .board{width:min(52vh,360px);height:min(52vh,360px);max-height:none}
+  #game .mechanic-note{grid-area:note;margin:0;max-width:none;padding:5px 8px;font-size:11px}
+  #game .controls{grid-area:controls;align-self:center;display:grid;grid-template-columns:64px minmax(150px,190px) 64px;gap:5px;padding:0}
+  #game .side-action{min-height:60px;font-size:11px;border-radius:16px}
+  #game .dpad{width:min(190px,45vh);height:min(190px,45vh)}
+}

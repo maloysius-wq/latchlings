@@ -1,11 +1,11 @@
 'use strict';
 (function(){
 const CAST=[
- {name:'Pippa',color:'lavender',suit:'club',role:'Gardener and household organizer',shortRole:'Gardener & organizer',voice:'Practical, patient, quietly stubborn about doing things properly.'},
- {name:'Bramble',color:'coral',suit:'diamond',role:'Courier, errand-runner, and enthusiastic fixer',shortRole:'Courier & fixer',voice:'Curious, optimistic, and always convinced there is a clever shortcut.'},
- {name:'Rowan',color:'mint',suit:'heart',role:'Tree-tender and island caretaker',shortRole:'Island caretaker',voice:'Observant, patient, and usually the first to notice when the island itself has changed.'},
- {name:'Pip',color:'blue',suit:'spade',role:'Explorer, according to Pip',shortRole:'Explorer',voice:'Bold, competitive, inventive, and suspicious of unnecessary detours.'},
- {name:'Tansy',color:'coral',suit:'heart',role:'Co-conspirator and collector',shortRole:'Collector & commentator',voice:'Expressive, imaginative, and unusually good at noticing what a change means to people.'}
+ {name:'Pippa',color:'lavender',suit:'club',role:'Gardener and household organizer',shortRole:'Gardener & organizer',voice:'Practical, patient, quietly stubborn about doing things properly.',visual:{color:'#9a72df',light:'#c3a0f1',dark:'#724fbd',suit:'club',expr:'curious',child:false}},
+ {name:'Bramble',color:'coral',suit:'diamond',role:'Courier, errand-runner, and enthusiastic fixer',shortRole:'Courier & fixer',voice:'Curious, optimistic, and always convinced there is a clever shortcut.',visual:{color:'#ef5f66',light:'#ff9297',dark:'#c33d49',suit:'diamond',expr:'smug',child:false}},
+ {name:'Rowan',color:'mint',suit:'heart',role:'Tree-tender and island caretaker',shortRole:'Island caretaker',voice:'Observant, patient, and usually the first to notice when the island itself has changed.',visual:{color:'#66bd72',light:'#94dc98',dark:'#469852',suit:'heart',expr:'happy',child:false}},
+ {name:'Pip',color:'blue',suit:'spade',role:'Explorer, according to Pip',shortRole:'Explorer',voice:'Bold, competitive, inventive, and suspicious of unnecessary detours.',visual:{color:'#4c8ff4',light:'#79aff9',dark:'#2e69c8',suit:'spade',expr:'determined',child:true}},
+ {name:'Tansy',color:'coral',suit:'heart',role:'Co-conspirator and collector',shortRole:'Collector & commentator',voice:'Expressive, imaginative, and unusually good at noticing what a change means to people.',visual:{color:'#ef5f66',light:'#ff9297',dark:'#c33d49',suit:'heart',expr:'surprised',child:true}}
 ];
 
 const CHAPTERS=[
