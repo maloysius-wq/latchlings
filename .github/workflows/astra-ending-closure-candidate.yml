@@ -72,7 +72,7 @@ jobs:
                 primaryId:document.querySelector('.ending-actions button:first-child')?.id||'',
                 copy:[...document.querySelectorAll('.ending-hero-pass4>p')].map(x=>x.textContent.trim()),
                 bottom:hr.bottom,
-                title:{left:tr.left,right:tr.right,width:tr.width,heroLeft:hr.left,heroRight:hr.right},
+                title:{left:tr.left,right:tr.right,width:tr.width,heroLeft:hr.left,heroRight:hr.right,clientWidth:title.clientWidth,scrollWidth:title.scrollWidth},
                 outgoing:!!document.querySelector('.screen-transition-outgoing')
               };
             });
@@ -83,7 +83,7 @@ jobs:
             if(state.primaryId!=='completeHome'||state.primary!=='Return to Little Home')throw new Error(`${size.name}: Home-first action regressed`);
             if(state.copy[0]!=='Morning reaches Little Home. A parcel lands, a porch answers, and the islands keep drifting.'||state.copy[1]!=='Ordinary life continues. That is the victory.')throw new Error(`${size.name}: ending copy regressed ${JSON.stringify(state.copy)}`);
             if(state.bottom>size.height+0.5)throw new Error(`${size.name}: ending overflow ${JSON.stringify(state)}`);
-            if(state.title.left<state.title.heroLeft-0.5||state.title.right>state.title.heroRight+0.5)throw new Error(`${size.name}: ending title clipped ${JSON.stringify(state.title)}`);
+            if(state.title.left<state.title.heroLeft-0.5||state.title.right>state.title.heroRight+0.5||state.title.scrollWidth>state.title.clientWidth+1)throw new Error(`${size.name}: ending title clipped ${JSON.stringify(state.title)}`);
             if(state.outgoing)throw new Error(`${size.name}: outgoing screen transition did not settle`);
             if(errors.length)throw new Error(`${size.name}: runtime errors ${errors.join('; ')}`);
             results.push({size:size.name,state}); await context.close();
