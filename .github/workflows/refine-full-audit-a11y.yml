@@ -1,0 +1,33 @@
+name: Refine full Astra audit accessibility
+on:
+  push:
+    branches: [audit-full-closure-candidate]
+    paths:
+      - '.github/tmp/refine-full-audit-a11y.py'
+      - '.github/workflows/refine-full-audit-a11y.yml'
+permissions:
+  contents: write
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit-full-closure-candidate
+          fetch-depth: 0
+      - name: Apply focus refinement
+        run: python .github/tmp/refine-full-audit-a11y.py
+      - name: Static checks
+        run: |
+          node --check game400-b.js
+          node --check story-theme400.js
+          node --check cinematics400.js
+          git diff --exit-code e9ab6846a002c87f29979792bb5a87005413cdd0 -- campaign400-1.js campaign400-2.js campaign400-3.js campaign400-4.js campaign400-5.js campaign400-6.js campaign400-7.js campaign400-8.js story-grounding400.js STORY_BIBLE.md
+      - name: Commit refinement
+        run: |
+          git config user.name 'maloysius-wq'
+          git config user.email 'maloysius@gmail.com'
+          git add game400-b.js story-theme400.js cinematics400.js
+          git commit -m 'Refine audit dialog focus behavior'
+          git push origin HEAD:audit-full-closure-candidate
