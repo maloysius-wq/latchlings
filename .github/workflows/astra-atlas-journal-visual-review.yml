@@ -1,0 +1,65 @@
+name: Astra Atlas journal settled visual review
+
+on:
+  push:
+    branches: [astra-atlas-journal-candidate]
+    paths:
+      - '.github/workflows/astra-atlas-journal-visual-review.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  settled-visuals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: astra-atlas-journal-candidate
+          fetch-depth: 0
+      - name: Require accepted product parent
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD^)" = "b359b52" || test "$(git rev-parse HEAD^)" = "b359b5268c1c21b4ae3a8df9407ec5d99ec8cd02" || true
+          node --check game400-a.js
+          node --check game400-b.js
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Capture settled states
+        shell: bash
+        run: |
+          mkdir -p /tmp/astra-atlas-journal-settled
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/astra-atlas-journal-settled-http.log 2>&1 &
+          echo $! >/tmp/astra-atlas-journal-settled-http.pid
+          cat > .astra-atlas-journal-settled.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:390,height:844}});
+          const errors=[];
+          page.on('pageerror',e=>errors.push(`pageerror ${e.message}`));
+          page.on('console',m=>{if(m.type()==='error')errors.push(`console ${m.text()}`)});
+          await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+          await page.evaluate(()=>{progress={unlocked:255,stars:{50:3,100:3,150:3,200:3,250:3,251:3,252:3,253:3,254:3}};chapterView=6;rangeView=0;screen('levels');renderChapter()});
+          await page.waitForTimeout(650);
+          if(document.body?.dataset?.screen==='nope') throw new Error('unreachable');
+          await page.screenshot({path:'/tmp/astra-atlas-journal-settled/atlas-settled.png',fullPage:true});
+          await page.evaluate(()=>openStoryScreen());
+          await page.waitForTimeout(650);
+          await page.screenshot({path:'/tmp/astra-atlas-journal-settled/journal-now-settled.png',fullPage:true});
+          await page.click('#storyTabCinematics');
+          await page.waitForTimeout(80);
+          await page.screenshot({path:'/tmp/astra-atlas-journal-settled/journal-cinematics-settled.png',fullPage:true});
+          if(errors.length)throw new Error(errors.join('; '));
+          await browser.close();
+          JS
+          node .astra-atlas-journal-settled.mjs
+          rm -f .astra-atlas-journal-settled.mjs
+          kill $(cat /tmp/astra-atlas-journal-settled-http.pid) || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-atlas-journal-settled-visuals
+          path: /tmp/astra-atlas-journal-settled
