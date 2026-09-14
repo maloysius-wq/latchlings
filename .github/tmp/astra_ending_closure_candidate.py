@@ -49,7 +49,15 @@ css += r'''
 .ending-network-stage .ending-porch-light{animation:endingPass4Porch 2.7s ease-in-out 4.35s 1 both}
 @keyframes endingNetworkWide{0%,25%{opacity:1;transform:scale(.94)}58%{opacity:.78}100%{opacity:.52;transform:scale(1.06)}}
 @keyframes endingNetworkHomeward{0%,18%{opacity:.28;transform:scale(.48) translateY(7%)}42%{opacity:.72;transform:scale(.67) translateY(3%)}72%{opacity:1;transform:scale(.92) translateY(0)}100%{opacity:1;transform:scale(1) translateY(0)}}
-@media(max-height:640px){.ending-network-stage .ending-skyway-node b{display:none}.ending-home-focus{inset:6% 5% 3%}.ending-skyway-node{scale:.86}.ending-skyway-node.node-home{scale:.9}}
+@media(max-height:640px){
+  .ending-hero-pass4 h1{font-size:31px;line-height:1;letter-spacing:-1px;white-space:nowrap;margin-top:2px;margin-bottom:3px}
+  .ending-kicker{margin-top:6px}
+  .ending-homecoming{height:190px;margin-bottom:5px}
+  .ending-network-stage .ending-skyway-node b{display:none}
+  .ending-home-focus{inset:6% 5% 3%}
+  .ending-skyway-node{scale:.86}
+  .ending-skyway-node.node-home{scale:.9}
+}
 @media(prefers-reduced-motion:reduce){.ending-network-field,.ending-home-focus{animation:none!important}.ending-network-field{opacity:.52!important;transform:scale(1.06)!important}.ending-home-focus{opacity:1!important;transform:scale(1)!important}}
 html[data-motion="reduced"] .ending-network-field,html[data-motion="reduced"] .ending-home-focus{animation:none!important;transition:none!important}
 html[data-motion="reduced"] .ending-network-field{opacity:.52!important;transform:scale(1.06)!important}
