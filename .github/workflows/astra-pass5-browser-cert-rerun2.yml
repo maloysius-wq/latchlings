@@ -33,7 +33,10 @@ jobs:
           replacements={
             "running:document.getAnimations({subtree:true}).filter(a=>a.playState==='running').length":"running:document.getAnimations({subtree:true}).filter(a=>a.playState==='running'&&a.effect?.target?.closest?.('#game')).length",
             "if(hf)await hf.click('.play');":"if(hf)await hf.click('#c2 .play');",
-            "await p.evaluate(()=>pauseModal());await p.waitForTimeout(30);const pause=document.getElementById;const focusOpen=":"await p.evaluate(()=>pauseModal());await p.waitForTimeout(30);const focusOpen="
+            "await p.evaluate(()=>pauseModal());await p.waitForTimeout(30);const pause=document.getElementById;const focusOpen=":"await p.click('#pauseBtn');await p.waitForTimeout(30);const focusOpen=",
+            "const fontBefore=await p.$eval('#storyNowPanel',e=>parseFloat(getComputedStyle(e).fontSize));":"const fontBefore=await p.$eval('#storyNowPanel .story-now-chapter>p',e=>parseFloat(getComputedStyle(e).fontSize));",
+            "const fontAfter=await p.$eval('#storyNowPanel',e=>parseFloat(getComputedStyle(e).fontSize));":"const fontAfter=await p.$eval('#storyNowPanel .story-now-chapter>p',e=>parseFloat(getComputedStyle(e).fontSize));",
+            "if(hf)await hf.click('.settings');":"if(hf)await hf.click('#c2 .settings');"
           }
           for old,new in replacements.items():
               assert old in text,old
