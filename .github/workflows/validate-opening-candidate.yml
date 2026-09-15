@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/opening-cinematic-rebuild-20260915
+      - main
     paths:
       - index.html
       - cinematics400.js
