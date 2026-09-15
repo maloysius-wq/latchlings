@@ -12,18 +12,18 @@ function create({character,suitSvg}){
   <div class="opening-world">
    <span class="opening-cloud cloud-a"></span><span class="opening-cloud cloud-b"></span>
    <svg class="opening-route-map" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
-    <path id="opening-route-working" class="opening-route route-working" data-target="#opening-anchor-working" d="M80 150 C150 115 230 122 310 150"/>
-    <circle id="opening-anchor-working" class="opening-anchor" cx="310" cy="150" r="4"/>
-    <path id="opening-route-basket" class="opening-route route-basket" data-target="#opening-anchor-basket" d="M205 260 C330 210 505 270 650 315"/>
-    <circle id="opening-anchor-basket" class="opening-anchor old-stop" cx="650" cy="315" r="9"/>
-    <path id="opening-route-water" class="opening-route route-water" data-target="#opening-anchor-water" d="M690 350 C680 390 695 415 720 430"/>
-    <circle id="opening-anchor-water" class="opening-anchor old-stop" cx="720" cy="430" r="9"/>
-    <path id="opening-route-play" class="opening-route route-play" data-target="#opening-anchor-play" d="M745 440 C760 455 775 472 790 485"/>
-    <circle id="opening-anchor-play" class="opening-anchor old-stop" cx="790" cy="485" r="9"/>
-    <path id="opening-route-call" class="opening-route route-call" data-target="#opening-anchor-player" d="M705 285 C560 150 350 72 155 102"/>
+    <path id="opening-route-working" class="opening-route route-working" data-target="#opening-anchor-working" d="M80 180 C160 145 245 152 330 180"/>
+    <circle id="opening-anchor-working" class="opening-anchor" cx="330" cy="180" r="4"/>
+    <path id="opening-route-basket" class="opening-route route-basket" data-target="#opening-anchor-basket" d="M205 260 C355 208 565 220 750 258"/>
+    <circle id="opening-anchor-basket" class="opening-anchor old-stop" data-near=".opening-porch" cx="750" cy="258" r="9"/>
+    <path id="opening-route-water" class="opening-route route-water" data-target="#opening-anchor-water" d="M720 250 C760 260 802 282 835 300"/>
+    <circle id="opening-anchor-water" class="opening-anchor old-stop" data-near=".opening-garden" cx="835" cy="300" r="9"/>
+    <path id="opening-route-play" class="opening-route route-play" data-target="#opening-anchor-play" d="M466 284 C471 283 476 281 480 280"/>
+    <circle id="opening-anchor-play" class="opening-anchor old-stop" data-near=".opening-play-rock" cx="480" cy="280" r="9"/>
+    <path id="opening-route-call" class="opening-route route-call" data-target="#opening-anchor-player" d="M632 164 C520 105 330 72 155 102"/>
     <circle id="opening-anchor-player" class="opening-anchor player-anchor" cx="155" cy="102" r="10"/>
-    <path id="opening-route-crew" class="opening-route route-crew" data-target="#opening-anchor-crew" d="M420 455 C475 438 525 428 575 420"/>
-    <circle id="opening-anchor-crew" class="opening-anchor crew-anchor" cx="575" cy="420" r="6"/>
+    <path id="opening-route-crew" class="opening-route route-crew" data-target="#opening-anchor-crew" d="M440 455 C420 400 395 335 380 282"/>
+    <circle id="opening-anchor-crew" class="opening-anchor crew-anchor" cx="380" cy="282" r="6"/>
    </svg>
    <div class="opening-island opening-neighbor"><i class="opening-earth island-side"></i><i class="opening-grass island-top"></i><i class="opening-wood neighbor-bakery"></i></div>
    <div class="opening-island opening-distant"><i class="opening-earth island-side"></i><i class="opening-grass island-top"></i><i class="opening-wood distant-tree"></i></div>
@@ -46,9 +46,9 @@ function create({character,suitSvg}){
   ${boardHtml(suitSvg)}
  </div>`;
 }
-function point(path,t){const p=path.getPointAtLength(path.getTotalLength()*t);return {left:(p.x/10)+'%',top:(p.y/6)+'%'}}
-function place(root,selector,pathId,t){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;Object.assign(el.style,point(path,t))}
-function travel(root,selector,pathId,duration){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;el.getAnimations().forEach(a=>a.cancel());const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced';if(reduced){place(root,selector,pathId,1);return}const frames=[];for(let i=0;i<=16;i++)frames.push(point(path,i/16));el.animate(frames,{duration,easing:'ease-in-out',fill:'forwards'})}
+function point(root,el,path,t){const p=path.getPointAtLength(path.getTotalLength()*t),centered=el.classList.contains('opening-person');return {left:(p.x/10-(centered?el.offsetWidth/root.clientWidth*50:0))+'%',top:(p.y/6-(centered?el.offsetHeight/root.clientHeight*50:0))+'%'}}
+function place(root,selector,pathId,t){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;Object.assign(el.style,point(root,el,path,t))}
+function travel(root,selector,pathId,duration){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;el.getAnimations().forEach(a=>a.cancel());const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced';if(reduced){place(root,selector,pathId,1);return}const frames=[];for(let i=0;i<=16;i++)frames.push(point(root,el,path,i/16));el.animate(frames,{duration,easing:'ease-in-out',fill:'forwards'})}
 function sync(stage,step,helpers){
  let root=stage.querySelector('.cin-opening-continuous');if(!root){stage.innerHTML=create(helpers);root=stage.querySelector('.cin-opening-continuous')}
  const previous=Number(root.dataset.step||0);root.dataset.step=String(step);
@@ -60,4 +60,5 @@ function sync(stage,step,helpers){
 function buttonLabel(step){if(step===13)return'Send the Call';if(step===15)return'Answer';if(step===21)return'Help Little Home';return'Continue'}
 window.LatchlingsOpeningScene={create,sync,buttonLabel};
 })();
+
 
