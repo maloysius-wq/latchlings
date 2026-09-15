@@ -1,11 +1,19 @@
 /* Post-Astra control restoration.
-   Preserve the original pre-Astra gameplay D-pad sizing and hit geometry from style400-game.css
-   while leaving the later story, accessibility, and presentation layers intact. */
+   Restore the complete portrait control cluster from the pre-Astra audit baseline,
+   while leaving board, story, header, accessibility, and landscape presentation intact. */
+@media (orientation:portrait){
+#game.screen .controls{width:auto!important;margin:0!important;grid-template-columns:78px minmax(0,1fr) 78px!important;justify-content:stretch!important;gap:10px!important;padding:10px 4px 0!important}
+#game.screen .controls .side-action{min-height:80px!important;border-radius:22px!important;font-size:13px!important}
+#game.screen .controls .side-action svg{width:28px!important;height:28px!important}
 #game.screen .controls .dpad{width:min(224px,53vw)!important;height:min(224px,53vw)!important}
 #game.screen .dpad-hit.up{left:34%!important;width:32%!important}
 #game.screen .dpad-hit.down{left:34%!important;width:32%!important}
 #game.screen .dpad-hit.left{top:34%!important;height:32%!important}
 #game.screen .dpad-hit.right{top:34%!important;height:32%!important}
 @media (max-height:720px){
+  #game.screen .controls{padding-top:5px!important}
+  #game.screen .controls .side-action{min-height:66px!important}
   #game.screen .controls .dpad{width:min(190px,45vw)!important;height:min(190px,45vw)!important}
 }
+}
+
