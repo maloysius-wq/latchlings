@@ -47,7 +47,7 @@ function create({character,suitSvg}){
  </div>`;
 }
 function point(root,el,path,t){const p=path.getPointAtLength(path.getTotalLength()*t),centered=el.classList.contains('opening-person');return {left:(p.x/10-(centered?el.offsetWidth/root.clientWidth*50:0))+'%',top:(p.y/6-(centered?el.offsetHeight/root.clientHeight*50:0))+'%'}}
-function place(root,selector,pathId,t){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;Object.assign(el.style,point(root,el,path,t))}
+function place(root,selector,pathId,t){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;el.getAnimations().forEach(a=>a.cancel());Object.assign(el.style,point(root,el,path,t))}
 function travel(root,selector,pathId,duration){const el=root.querySelector(selector),path=root.querySelector(pathId);if(!el||!path)return;el.getAnimations().forEach(a=>a.cancel());const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced';if(reduced){place(root,selector,pathId,1);return}const frames=[];for(let i=0;i<=16;i++)frames.push(point(root,el,path,i/16));el.animate(frames,{duration,easing:'ease-in-out',fill:'forwards'})}
 function sync(stage,step,helpers){
  let root=stage.querySelector('.cin-opening-continuous');if(!root){stage.innerHTML=create(helpers);root=stage.querySelector('.cin-opening-continuous')}
@@ -60,5 +60,4 @@ function sync(stage,step,helpers){
 function buttonLabel(step){if(step===13)return'Send the Call';if(step===15)return'Answer';if(step===21)return'Help Little Home';return'Continue'}
 window.LatchlingsOpeningScene={create,sync,buttonLabel};
 })();
-
 
