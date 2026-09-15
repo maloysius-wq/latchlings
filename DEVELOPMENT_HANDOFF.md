@@ -8,6 +8,17 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Opening story balance pass
+**Status: IN PROGRESS**
+
+User playtest feedback on 2026-09-15: the five-step first-run Opening created by the Astra second-review pacing pass feels under-explained and does not give the characters/world enough room to hook a new player.
+
+Approved bounded design: restore a richer first-run Opening using canonical dialogue only, targeting ten meaningful advances while preserving the complete canonical 8-beat / 18-utterance Opening in Journal replay. The first-run sequence must establish the moving-islands hook, introduce all five principal Little Home voices, explain that Little Home is healthy while stale routes miss where it moved, state what the Skyway does, establish the Waykeeper call, teach the basic movement input, and land on Pip's breakfast beat before play. Preserve later cinematics, accepted visual staging, Reduced Motion, restored pre-Astra controls, accessibility behavior, and authored campaign definitions/solutions.
+
+Target first-run canonical coordinates: `[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]`.
+
+Validation contract: TDD RED before product edits; exact ten-step first-run order at 320x568 / 390x844 / 430x932; full 18-utterance Opening replay unchanged; all 56 canonical cinematic utterances remain replayable; cinematic controls remain visible and >=44px; no viewport overflow; Reduced Motion stays resolved/non-animated; exact authored campaign files remain unchanged; candidate-first validation before promotion; committed-main revalidation; temporary workflow cleanup; final Pages and repository guard.
+
 ### Astra second-review finishing pass
 **Status: COMPLETED / BOUNDED FINISHING PASS ACCEPTED**
 
