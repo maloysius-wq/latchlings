@@ -1,0 +1,130 @@
+name: Promote opening story balance
+
+on:
+  push:
+    branches:
+      - opening-story-balance
+    paths:
+      - '.github/workflows/opening-story-promote-live.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  promote-and-live-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Promote exact accepted cinematic bytes to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACCEPTED=a710738756472142c906f71d956652ceb1a5f749
+          BASE=9015bdb6b2f60e30b98afddc677e990ba8b1bff4
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$BASE"
+          test -z "$(git diff --name-only "$BASE" "$ACCEPTED" -- 'campaign400-*.js' style400-control-restoration.css style400-whimsy-font.css)"
+          candidate_blob=$(git rev-parse "$ACCEPTED:cinematics400.js")
+          git checkout -B main origin/main
+          git checkout "$ACCEPTED" -- cinematics400.js
+          test "$(git hash-object cinematics400.js)" = "$candidate_blob"
+          test "$(git diff --name-only)" = "cinematics400.js"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cinematics400.js
+          git commit -m "Restore richer first-run opening story"
+          git push origin HEAD:main
+          echo "PROMOTED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "PRODUCT_BLOB=$candidate_blob" >> "$GITHUB_ENV"
+      - name: Verify exact committed-main product and protected sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          test "$(git rev-parse HEAD)" = "$PROMOTED_SHA"
+          test "$(git rev-parse HEAD:cinematics400.js)" = "$PRODUCT_BLOB"
+          test -z "$(git diff --name-only 9015bdb6b2f60e30b98afddc677e990ba8b1bff4 HEAD -- 'campaign400-*.js' style400-control-restoration.css style400-whimsy-font.css)"
+          python3 - <<'PY'
+          from pathlib import Path
+          import ast,re
+          src=Path('cinematics400.js').read_text()
+          m=re.search(r'const OPENING_FIRST_RUN_STEPS=(\[[^;]+\]);',src)
+          assert m
+          assert ast.literal_eval(m.group(1)) == [[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]
+          PY
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Revalidate committed main in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p opening-story-live-evidence
+          python3 -m http.server 8000 >/tmp/latchlings-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const coords=[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]];
+          const sizes=[[320,568],[390,844],[430,932]];
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function state(page){return page.evaluate(()=>{
+            const api=window.LatchlingsCinematics;
+            const [speaker,canonicalText]=api.CINEMATICS[api.active].beats[api.beat].lines[api.line];
+            const overlay=document.querySelector('#cinematicOverlay');
+            const lines=document.querySelector('#cinematicLines');
+            let renderedSpeaker,renderedText;
+            if(speaker==='Narrator'){
+              renderedSpeaker='Narrator';renderedText=lines?.querySelector('.narrator-only span')?.textContent?.trim()||null;
+            }else{
+              const row=document.querySelector(`.cinematic-copy > .cin-opening-dialogue-dock [data-speaker="${CSS.escape(speaker)}"]`);
+              renderedSpeaker=row?.dataset?.speaker||null;renderedText=row?.querySelector('.cin-opening-bubble > span')?.textContent?.trim()||null;
+            }
+            const b=document.querySelector('#cinematicNext'),r=b.getBoundingClientRect();
+            return {mode:api.mode,step:api.step,beat:api.beat,line:api.line,speaker,canonicalText,renderedSpeaker,renderedText,counter:document.querySelector('#cinematicCounter')?.textContent?.trim(),dialogueCount:overlay?.dataset?.dialogueCount,narratorCount:overlay?.dataset?.narratorCount,button:{x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right},scrollW:overlay.scrollWidth,clientW:overlay.clientWidth,scrollH:overlay.scrollHeight,clientH:overlay.clientHeight};
+          })}
+          function checkPresentation(s,label){
+            if(s.renderedSpeaker!==s.speaker||s.renderedText!==s.canonicalText)throw new Error(`${label}: ${JSON.stringify(s)}`);
+            if(s.speaker==='Narrator'&&(s.narratorCount!=='1'||s.dialogueCount!=='0'))throw new Error(`${label}: narrator counts ${JSON.stringify(s)}`);
+            if(s.speaker!=='Narrator'&&(s.dialogueCount!=='1'||s.narratorCount!=='0'))throw new Error(`${label}: dialogue counts ${JSON.stringify(s)}`);
+          }
+          async function compact(page,label){
+            if(!await page.evaluate(()=>window.LatchlingsCinematics.show('opening',{compact:true,markSeen:false})))throw new Error(`${label}: start failed`);
+            const out=[];
+            for(let i=0;i<coords.length;i++){
+              await sleep(90);const s=await state(page);const [b,l]=coords[i];
+              if(s.mode!=='first-run'||s.step!==i||s.beat!==b||s.line!==l||s.counter!==`${i+1} / 10`)throw new Error(`${label}: coordinate ${i+1}: ${JSON.stringify(s)}`);
+              checkPresentation(s,`${label} ${i+1}`);
+              const vp=page.viewportSize();
+              if(s.button.h<44||s.button.w<44||s.button.x< -1||s.button.y< -1||s.button.right>vp.width+1||s.button.bottom>vp.height+1)throw new Error(`${label}: button ${JSON.stringify(s.button)}`);
+              if(s.scrollW>s.clientW+1||s.scrollH>s.clientH+1)throw new Error(`${label}: overflow`);
+              out.push(s);await page.click('#cinematicNext');await sleep(90);
+            }
+            if(await page.evaluate(()=>!!window.LatchlingsCinematics.active))throw new Error(`${label}: did not finish`);
+            return out;
+          }
+          async function replay(page,id){
+            const count=await page.evaluate(id=>window.LatchlingsCinematics.CINEMATICS[id].beats.reduce((n,b)=>n+b.lines.length,0),id);
+            if(!await page.evaluate(id=>window.LatchlingsCinematics.show(id,{markSeen:false}),id))throw new Error(`${id}: replay start failed`);
+            for(let i=0;i<count;i++){await sleep(70);const s=await state(page);if(s.mode!=='full')throw new Error(`${id}: compact`);checkPresentation(s,`${id} ${i+1}`);await page.click('#cinematicNext');await sleep(70)}
+            if(await page.evaluate(()=>!!window.LatchlingsCinematics.active))throw new Error(`${id}: did not finish`);return count;
+          }
+          (async()=>{
+            const browser=await chromium.launch({headless:true});const result={compact:{},full:{},reduced:null,dpad:null};
+            for(const [w,h] of sizes){const p=await browser.newPage({viewport:{width:w,height:h}});await p.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});result.compact[`${w}x${h}`]=await compact(p,`${w}x${h}`);if(w===390)await p.screenshot({path:'opening-story-live-evidence/opening-live-final.png',fullPage:true});await p.close()}
+            const p=await browser.newPage({viewport:{width:390,height:844}});await p.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});let total=0;for(const id of ['opening','across-drift','old-maps','homeward']){result.full[id]=await replay(p,id);total+=result.full[id]}if(result.full.opening!==18||total!==56)throw new Error(`replay counts ${JSON.stringify(result.full)} total ${total}`);await p.evaluate(()=>{document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));document.querySelector('#game').classList.add('active');document.body.dataset.screen='game'});result.dpad=await p.evaluate(()=>{const r=document.querySelector('#game .dpad').getBoundingClientRect();return {w:r.width,h:r.height}});if(Math.abs(result.dpad.w-206.7)>1.2||Math.abs(result.dpad.h-206.7)>1.2)throw new Error(`dpad ${JSON.stringify(result.dpad)}`);await p.close();
+            const rp=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});await rp.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});await rp.evaluate(()=>window.LatchlingsCinematics.show('opening',{compact:true,markSeen:false}));await sleep(180);result.reduced=await rp.evaluate(()=>({running:document.getAnimations().filter(a=>a.playState==='running').length,counter:document.querySelector('#cinematicCounter')?.textContent?.trim(),mode:window.LatchlingsCinematics.mode}));if(result.reduced.running!==0||result.reduced.counter!=='1 / 10'||result.reduced.mode!=='first-run')throw new Error(`reduced ${JSON.stringify(result.reduced)}`);await rp.close();
+            fs.writeFileSync('opening-story-live-evidence/results.json',JSON.stringify(result,null,2));await browser.close();console.log('OPENING_STORY_COMMITTED_MAIN_OK');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Upload committed-main evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: opening-story-live-evidence
+          path: opening-story-live-evidence
