@@ -9,7 +9,7 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Physical-phone opening geometry and puzzle-control restoration
-**Status: PARTIAL / MERGED TO MAIN, REGRESSION CONFIRMED**
+**Status: IN PROGRESS / FIXING COMMITTED-MAIN 360×800 ROWAN OVERLAP**
 
 Verification follow-up after Codex usage exhaustion found a reproducible committed-main regression. PR #2 is merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`, and its repository guard (`35019203103`) plus Pages deployment (`35019202230`) passed. However, fresh verification run `35021684052` executed the repository's exact shipped `npm test` command and failed twice in `tests/phone-visual-regressions.browser.cjs` at 360×800: `arrived props must not cover residents`, specifically overlapping `opening-rowan` (first attempt reported `opening-rowan:339`; confirmation rerun reported `opening-rowan:235`). Because the first browser suite aborts on this assertion, the remaining three suites did not execute in that fresh committed-main run. Initial run `35021561796` was harness-only and did not reach tests because `npm ci` was invalid without a lockfile; it is not product evidence. Do not treat this slice as fully verified until the 360×800 overlap is fixed and the complete shipped `npm test` command passes on committed `main`.
 

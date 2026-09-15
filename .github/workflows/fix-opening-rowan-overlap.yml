@@ -1,0 +1,63 @@
+name: Fix Opening Rowan Overlap
+
+on:
+  push:
+    branches:
+      - fix/opening-rowan-overlap-20260915
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mark-in-progress:
+    if: ${{ github.ref_name == 'fix/opening-rowan-overlap-20260915' && !contains(github.event.head_commit.message, '[opening-rowan-action]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/opening-rowan-overlap-20260915
+      - name: Mark handoff in progress
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('DEVELOPMENT_HANDOFF.md')
+          text = p.read_text()
+          old = '**Status: PARTIAL / MERGED TO MAIN, REGRESSION CONFIRMED**'
+          new = '**Status: IN PROGRESS / FIXING COMMITTED-MAIN 360×800 ROWAN OVERLAP**'
+          if new in text:
+              print('Handoff already marked in progress.')
+          elif old in text:
+              p.write_text(text.replace(old, new, 1))
+          else:
+              raise SystemExit('Expected current-work status marker not found')
+      - name: Commit handoff status
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- DEVELOPMENT_HANDOFF.md; then
+            echo 'No handoff change needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEVELOPMENT_HANDOFF.md
+          git commit -m '[opening-rowan-action] Mark overlap fix in progress'
+          git push origin HEAD:fix/opening-rowan-overlap-20260915
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run targeted phone regression
+        run: node tests/phone-visual-regressions.browser.cjs
+      - name: Run full shipped test suite
+        run: npm test
