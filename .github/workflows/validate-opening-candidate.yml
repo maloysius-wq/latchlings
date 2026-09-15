@@ -13,6 +13,18 @@ on:
       - package.json
       - tests/**
       - .github/workflows/validate-opening-candidate.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - index.html
+      - cinematics400.js
+      - cinematic-dialogue400.js
+      - opening-cinematic400.js
+      - style400-opening-cinematic.css
+      - package.json
+      - tests/**
+      - .github/workflows/validate-opening-candidate.yml
 
 jobs:
   cinematic-browser-contract:
