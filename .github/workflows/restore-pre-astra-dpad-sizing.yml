@@ -10,13 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify restoration cascade contract
+        with:
+          ref: main
+      - name: Verify committed-main restoration cascade contract
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = "9015bdb6b2f60e30b98afddc677e990ba8b1bff4"
           grep -Fq '.dpad{width:min(224px,53vw);height:min(224px,53vw)' style400-game.css
           grep -Fq '.dpad{width:min(190px,45vw);height:min(190px,45vw)' style400-game.css
           grep -Fq "@import url('style400-control-restoration.css?v=20260915-pre-astra-controls1');" style400-whimsy-font.css
+          grep -Fq '#game.screen .controls .dpad{width:min(224px,53vw)!important;height:min(224px,53vw)!important}' style400-control-restoration.css
           grep -Fq '#game.screen .controls .dpad{width:min(190px,45vw)!important;height:min(190px,45vw)!important}' style400-control-restoration.css
           grep -Fq '#game.screen .dpad-hit.up{left:34%!important;width:32%!important}' style400-control-restoration.css
           grep -Fq '#game.screen .dpad-hit.down{left:34%!important;width:32%!important}' style400-control-restoration.css
@@ -31,7 +35,7 @@ jobs:
               html.index('style400-whimsy-font.css'),
           ]
           assert order == sorted(order), 'restoration host stylesheet must load after Astra gameplay overrides'
-          print('RESTORATION_CASCADE_STATIC_OK')
+          print('COMMITTED_MAIN_RESTORATION_CASCADE_OK')
           PY
       - name: Install browser validation runtime
         shell: bash
@@ -39,7 +43,7 @@ jobs:
           set -euo pipefail
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Verify computed D-pad geometry in Chromium
+      - name: Verify committed-main computed D-pad geometry in Chromium
         shell: bash
         run: |
           set -euo pipefail
@@ -84,13 +88,11 @@ jobs:
               if (Math.abs(result.width - c.expected) > tol || Math.abs(result.height - c.expected) > tol) {
                 throw new Error(`${c.width}x${c.height}: D-pad ${result.width}x${result.height}, expected ${c.expected}`);
               }
-              if (c.height <= 600) {
-                const expectedUpLeft = c.expected * .34;
-                const expectedUpWidth = c.expected * .32;
-                if (Math.abs(result.upLeft - expectedUpLeft) > tol || Math.abs(result.upWidth - expectedUpWidth) > tol ||
-                    Math.abs(result.leftTop - expectedUpLeft) > tol || Math.abs(result.leftHeight - expectedUpWidth) > tol) {
-                  throw new Error(`${c.width}x${c.height}: direction hit geometry is not the pre-Astra 34%/32% layout: ${JSON.stringify(result)}`);
-                }
+              const expectedUpLeft = c.expected * .34;
+              const expectedUpWidth = c.expected * .32;
+              if (Math.abs(result.upLeft - expectedUpLeft) > tol || Math.abs(result.upWidth - expectedUpWidth) > tol ||
+                  Math.abs(result.leftTop - expectedUpLeft) > tol || Math.abs(result.leftHeight - expectedUpWidth) > tol) {
+                throw new Error(`${c.width}x${c.height}: direction hit geometry is not the pre-Astra 34%/32% layout: ${JSON.stringify(result)}`);
               }
               console.log(`${c.width}x${c.height}: D-pad ${result.width.toFixed(1)}px OK`);
               await page.close();
