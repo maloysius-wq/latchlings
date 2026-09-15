@@ -1,0 +1,12 @@
+/* Post-Astra control restoration.
+   Preserve the original pre-Astra gameplay D-pad sizing and hit geometry from style400-game.css
+   while leaving the later story, accessibility, and presentation layers intact. */
+@media (max-height:720px){
+  #game.screen .controls .dpad{width:min(190px,45vw)!important;height:min(190px,45vw)!important}
+}
+@media (max-height:600px){
+  #game.screen .dpad-hit.up{left:34%!important;width:32%!important}
+  #game.screen .dpad-hit.down{left:34%!important;width:32%!important}
+  #game.screen .dpad-hit.left{top:34%!important;height:32%!important}
+  #game.screen .dpad-hit.right{top:34%!important;height:32%!important}
+}
