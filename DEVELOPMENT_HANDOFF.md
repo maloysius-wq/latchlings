@@ -9,7 +9,9 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Physical-phone opening geometry and puzzle-control restoration
-**Status: COMPLETED / ACCEPTED CANDIDATE**
+**Status: IN PROGRESS / COMMITTED-MAIN VERIFICATION**
+
+Verification follow-up requested after Codex usage exhaustion: PR #2 is already merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh committed-main execution of the shipped browser suites is in progress before final acceptance is recorded.
 
 User-provided Android screenshots on 2026-09-15 exposed two root causes: the Opening positioned residents against the whole stage while Little Home occupied only a narrow portion of it, and independently floating islands drifted away from fixed SVG routes; the earlier control restoration enlarged only the D-pad while leaving Astra's compact 330px / 64px–148px–64px grid in force, which displaced or hid Hint.
 
