@@ -44,3 +44,20 @@ jobs:
           git add DEVELOPMENT_HANDOFF.md
           git commit -m '[opening-rowan-action] Mark overlap fix in progress'
           git push origin HEAD:fix/opening-rowan-overlap-20260915
+
+  reproduce-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/opening-rowan-overlap-20260915
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Reproduce phone visual regression
+        run: node tests/phone-visual-regressions.browser.cjs
