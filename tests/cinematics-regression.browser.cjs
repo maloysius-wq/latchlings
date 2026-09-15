@@ -27,7 +27,7 @@ const server = http.createServer((request, response) => {
 
 (async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch({ channel: process.env.CI ? undefined : 'chrome', headless: true });
   const pageErrors = [];
   for (const [width, height] of [[320, 568], [390, 844], [430, 932]]) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
