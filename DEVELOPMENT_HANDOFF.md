@@ -8,6 +8,20 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Astra second-review finishing pass
+**Status: IN PROGRESS**
+
+Source: [`LATCHLINGS_SECOND_REVIEW.md`](LATCHLINGS_SECOND_REVIEW.md), reviewing main `9dffa07d9f1fcd0c48029e13e8a641596c630fc8`. Preserve independently reverified R1-R5, authored campaign definitions/solutions, accepted Home/Atlas/journal/ending behavior, and completed browser-addressable certification.
+
+Approved bounded scope:
+- S1: visually stage the Opening beat-1 breakfast-basket travel and Across the Drift beat-5 reconnection to the same twin-lantern porch; add a small unattended-desk cue to Old Maps beat 4 only if it fits the existing composition cleanly.
+- S2: shorten first-run opening pacing to roughly five meaningful advances while retaining the complete canonical 8-beat / 18-utterance opening in Journal replay.
+- S3: raise journal primary body copy to a comfortable phone-reading baseline around 14px Normal / 16px Large and let the existing internal panels scroll.
+- S4: leave as deliberately deferred art-direction refinement unless the bounded S1-S3 changes naturally improve it.
+
+Validation contract: TDD RED before product edits; candidate-first browser validation at 320x568 / 390x844 / 430x932; visual proof screenshots for Opening beat 1 and Across beat 5 with dialogue hidden; full canonical cinematic replay preserved; journal text-size/containment regression checks; exact authored campaign hash protection; committed-main revalidation; temporary-workflow cleanup; final Pages and repository guard.
+
+
 ### Full Astra visual/story audit closure
 **Status: BROWSER-ADDRESSABLE CLOSURE COMPLETE**
 
@@ -95,7 +109,7 @@ Implementation/validation contract:
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Next action: Presentation/accessibility consolidation candidate. Preserve every accepted product slice while closing V04/V19/U02/U03/U11/V20 and the browser-addressable portions of A01/P01 where the source audit can be tested here; then run the full Pass 5 browser certification matrix. External physical-device, genuine iOS Safari, exhaustive assistive-technology, and subjective real-speaker/headphone certifications must remain explicitly unverified.
+Next action: Complete the approved bounded second-review S1-S3 finishing pass on `astra-second-review-finishing`; keep S4 deliberately deferred unless a bounded change naturally improves it. External physical-device, genuine iOS Safari, exhaustive assistive-technology, and subjective real-speaker/headphone certifications remain explicitly unverified.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
