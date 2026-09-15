@@ -58,5 +58,15 @@ jobs:
         run: npm install
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Add ephemeral overlap diagnostics
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('tests/phone-visual-regressions.browser.cjs')
+          text = p.read_text()
+          needle = "  const routes=await openingGeometry(page,10);\n"
+          if needle not in text:
+              raise SystemExit('Could not find route geometry line')
+          p.write_text(text.replace(needle, needle + "  console.log(`${viewport.width}x${viewport.height} prop overlaps`, JSON.stringify(routes.propOverlaps));\n", 1))
       - name: Reproduce phone visual regression
         run: node tests/phone-visual-regressions.browser.cjs
