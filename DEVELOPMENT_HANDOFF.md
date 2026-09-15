@@ -9,9 +9,9 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Physical-phone opening geometry and puzzle-control restoration
-**Status: IN PROGRESS / COMMITTED-MAIN VERIFICATION**
+**Status: PARTIAL / MERGED TO MAIN, REGRESSION CONFIRMED**
 
-Verification follow-up requested after Codex usage exhaustion: PR #2 is already merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh committed-main execution of the shipped browser suites is in progress before final acceptance is recorded.
+Verification follow-up after Codex usage exhaustion found a reproducible committed-main regression. PR #2 is merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`, and its repository guard (`35019203103`) plus Pages deployment (`35019202230`) passed. However, fresh verification run `35021684052` executed the repository's exact shipped `npm test` command and failed twice in `tests/phone-visual-regressions.browser.cjs` at 360×800: `arrived props must not cover residents`, specifically overlapping `opening-rowan` (first attempt reported `opening-rowan:339`; confirmation rerun reported `opening-rowan:235`). Because the first browser suite aborts on this assertion, the remaining three suites did not execute in that fresh committed-main run. Initial run `35021561796` was harness-only and did not reach tests because `npm ci` was invalid without a lockfile; it is not product evidence. Do not treat this slice as fully verified until the 360×800 overlap is fixed and the complete shipped `npm test` command passes on committed `main`.
 
 User-provided Android screenshots on 2026-09-15 exposed two root causes: the Opening positioned residents against the whole stage while Little Home occupied only a narrow portion of it, and independently floating islands drifted away from fixed SVG routes; the earlier control restoration enlarged only the D-pad while leaving Astra's compact 330px / 64px–148px–64px grid in force, which displaced or hid Hint.
 
@@ -153,7 +153,7 @@ Implementation/validation contract:
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Next action: real-device playtesting. Verify physical-phone touch/safe areas/performance/battery behavior and genuine iOS Safari when hardware is available; perform subjective speaker/headphone listening separately. Revisit S4 material consistency only if the user deliberately chooses another art-direction pass after device testing.
+Next action: diagnose and fix the reproducible 360×800 Opening overlap where an arrived prop covers Rowan, then rerun the complete shipped `npm test` command on committed `main`. Only after that browser regression is green should real-device touch/safe-area/performance testing resume. Genuine iOS Safari, exhaustive assistive-technology testing, subjective speaker/headphone listening, and optional S4 art-direction work remain separate follow-ups.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
