@@ -67,6 +67,7 @@ jobs:
           needle = "  const routes=await openingGeometry(page,10);\n"
           if needle not in text:
               raise SystemExit('Could not find route geometry line')
-          p.write_text(text.replace(needle, needle + "  console.log(`${viewport.width}x${viewport.height} prop overlaps`, JSON.stringify(routes.propOverlaps));\n", 1))
+          extra = "  console.log(`${viewport.width}x${viewport.height} prop overlaps`, JSON.stringify(routes.propOverlaps));\n  console.log(`${viewport.width}x${viewport.height} people`, JSON.stringify(routes.people));\n  console.log(`${viewport.width}x${viewport.height} basket`, JSON.stringify(await page.locator('.opening-basket').evaluate(el=>el.getBoundingClientRect().toJSON())));\n  console.log(`${viewport.width}x${viewport.height} porch`, JSON.stringify(await page.locator('.opening-porch').evaluate(el=>el.getBoundingClientRect().toJSON())));\n"
+          p.write_text(text.replace(needle, needle + extra, 1))
       - name: Reproduce phone visual regression
         run: node tests/phone-visual-regressions.browser.cjs
