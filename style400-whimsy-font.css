@@ -1,4 +1,5 @@
 @import url('style400-level-variation-reactive.css');
+@import url('style400-control-restoration.css?v=20260915-pre-astra-controls1');
 /* Warmer, more whimsical production typography. The Latchlings title/logo and the title-island tagline keep their existing typography. */
 :root{
  --latch-ui-font:ui-rounded,"SF Pro Rounded","Avenir Next Rounded","Arial Rounded MT Bold","Trebuchet MS",system-ui,-apple-system,sans-serif;
