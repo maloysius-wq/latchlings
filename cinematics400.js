@@ -51,7 +51,7 @@ const CINEMATICS={
   ]
  }
 };
-const OPENING_FIRST_RUN_STEPS=[[0,0],[2,2],[4,0],[6,0],[7,0]];
+const OPENING_FIRST_RUN_STEPS=[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]];
 let activeId=null,activeIndex=0,activeLine=0,activeFlow=null,activeStep=0,onDone=null,markOnDone=false,lastFocus=null;
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
