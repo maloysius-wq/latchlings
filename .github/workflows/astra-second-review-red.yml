@@ -34,7 +34,7 @@ jobs:
           python3 -m http.server 4173 >/tmp/latchlings-red-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
-          cat > /tmp/astra-second-red.cjs <<'NODE'
+          cat > astra-second-red.cjs <<'NODE'
           const { chromium } = require('playwright');
           const assert = require('assert');
           (async()=>{
@@ -102,4 +102,4 @@ jobs:
             await browser.close();
           })().catch(err=>{console.error('EXPECTED_RED:',err.message);process.exit(1)});
           NODE
-          node /tmp/astra-second-red.cjs
+          node astra-second-red.cjs
