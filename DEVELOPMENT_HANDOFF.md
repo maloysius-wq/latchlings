@@ -9,7 +9,7 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Astra second-review finishing pass
-**Status: IN PROGRESS**
+**Status: COMPLETED / BOUNDED FINISHING PASS ACCEPTED**
 
 Source: [`LATCHLINGS_SECOND_REVIEW.md`](LATCHLINGS_SECOND_REVIEW.md), reviewing main `9dffa07d9f1fcd0c48029e13e8a641596c630fc8`. Preserve independently reverified R1-R5, authored campaign definitions/solutions, accepted Home/Atlas/journal/ending behavior, and completed browser-addressable certification.
 
@@ -21,30 +21,38 @@ Approved bounded scope:
 
 Validation contract: TDD RED before product edits; candidate-first browser validation at 320x568 / 390x844 / 430x932; visual proof screenshots for Opening beat 1 and Across beat 5 with dialogue hidden; full canonical cinematic replay preserved; journal text-size/containment regression checks; exact authored campaign hash protection; committed-main revalidation; temporary-workflow cleanup; final Pages and repository guard.
 
+Accepted evidence:
+- TDD RED run `34916255682` reached the browser and failed on the intended pre-change behavior: first-run Opening required 18 advances rather than the approved compact flow. Full replay had already passed at all 18 canonical opening utterances.
+- Candidate run `34916628626` passed the three-phone behavioral contract. Initial candidate `897cd8f82ea5dc3de51eb5db4f85be90e8ee93f0` preserved 18-utterance replay, reduced first-run Opening to exactly five canonical advances, raised Journal body copy to 14px Normal / 16px Large, preserved all 56 cinematic utterances, and kept Reduced Motion at zero running cinematic animations. Candidate artifact `10376266862`, SHA-256 `a90e5a8ddffed37266362bd011e869268a26d2ded0a46c22ededa9d059728abb`.
+- Manual visual review rejected the first Across-the-Drift beat-5 capture because the route destination was not visually legible despite passing DOM assertions. Visual-correction run `34916941697` fixed only `style400-cinematics.css`, reran the full bounded contract, and produced final candidate `bd0633290cbc01ce6dac398ab2ee49b8dcdb4f2c`. Settled artifact `10376767446`, SHA-256 `274efc0357a363056abb51c070bb3833635a3e7595e41bd9b921ff9b8136fc65`, was manually accepted: Opening beat 1 reads as a basket traveling toward Little Home; Across beat 5 visibly lands the new route on the same twin-lantern porch; Old Maps beat 4 shows an operating router beside an empty desk; Normal/Large Journal captures are clean and readable. Reduced Motion shows the resolved porch tableau without animation.
+- Exact accepted four-file product bytes were promoted to `main` as `4e18050462d5b58d326a35130b4e9ec6ebe231c9`. Committed-main run `34917299386` independently revalidated those exact blobs, campaign hashes, the three-phone contract, 56-turn replay, five-step first-run Opening, 14/16px Journal sizing, Reduced Motion, and settled visual captures. Artifact `10376628399`, SHA-256 `4d453c6248305103ff2e264a368bf22ac4315b94e54096517496fd90f99938a0`.
+- S1, S2, and S3 are accepted complete for this bounded second-review scope. S4 remains deliberately deferred as subjective art-direction refinement; it is not a functional regression or a reason to reopen the completed rollout.
+
 
 ### Full Astra visual/story audit closure
-**Status: BROWSER-ADDRESSABLE CLOSURE COMPLETE**
+**Status: BROWSER-ADDRESSABLE FUNCTIONAL CLOSURE COMPLETE / S4 ART-DIRECTION REFINEMENT DEFERRED**
 
 User goal: reconcile the entire original [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md) and the later [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md) against current `main`, finish every remaining software-addressable item, validate the complete acceptance matrix, clean temporary validation machinery, deploy, and close out without treating untested external-device work as complete.
 
 Source acceptance contract:
 - Canonical audit source: [`LATCHLINGS_VISUAL_STORY_AUDIT.md`](LATCHLINGS_VISUAL_STORY_AUDIT.md), committed to `main` on 2026-09-14 as `2ece5dd46d8fcb50b3591b62c77dd65b46cd02ab`; original audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`.
 - Canonical implementation-review source: [`LATCHLINGS_IMPLEMENTATION_REVIEW.md`](LATCHLINGS_IMPLEMENTATION_REVIEW.md), exact uploaded bytes finalized on `main` as `307abc8854c5f69eab288c1f2cef4b7dca20b241` (Git blob `9b7413371d8833d7e1fc5c26b89373244ac3dc86`); reviewed-head baseline `d6e39c0866505795c2aa6a26777896072e16e7df`.
-- [`ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`](ASTRA_AUDIT_ACCEPTANCE_MATRIX.md) is the living reconciliation ledger against those two source documents and current `main`. The audit/review documents define the requested findings and acceptance language; the matrix records their current implementation status and evidence.
+- Second independent review source: [`LATCHLINGS_SECOND_REVIEW.md`](LATCHLINGS_SECOND_REVIEW.md), reviewing exact head `9dffa07d9f1fcd0c48029e13e8a641596c630fc8`; it independently reverified R1-R5 and narrowed the remaining work to S1-S3 plus optional S4 art direction.
+- [`ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`](ASTRA_AUDIT_ACCEPTANCE_MATRIX.md) is the living reconciliation ledger against all three source documents and current `main`. The audit/review documents define the requested findings and acceptance language; the matrix records functional acceptance, visual acceptance, deliberately deferred recommendations, and external-only work separately.
 - R1-R5 usability work is completed and protected by candidate run `34853875486`, committed-live run `34855339189`, final Pages run `34856135214`, and final guard run `34856138001`.
 
 Accepted Astra Pass 4 checkpoint (2026-09-14):
 - Candidate run `34865335086` passed exact campaign/source protection, syntax/static assertions, every utterance in all 25 cinematic beats at 320x568 / 390x844 / 430x932, representative visual evidence, OS Reduced Motion, and in-game Reduced Motion.
 - Accepted candidate product commit: `b8f6addf83611b3f8daf71311372e10de3ed90b6`.
 - Exact accepted product bytes were promoted to `main` as `0e244bfb5e0ae71fad64f468cb99b301b01af713` after a second protected-source check.
-- V03 is accepted complete. The later Ending closure checkpoint below closes V18/N06 with the living-Skyway-to-Little-Home pullback. V19 remains partial: canonical utterance state is consolidated between the core cinematic renderer and dialogue layer, but broader presentation/CSS duplication remains.
+- V03 was accepted complete at this checkpoint. The later Ending closure closes V18/N06, and the later presentation/accessibility consolidation closes V19. Historical partial statements below describe then-current checkpoint state, not current project state.
 
 Accepted Little Home coherence checkpoint (2026-09-14):
 - Candidate run `34867918569` passed exact campaign/accepted-source protection plus browser checks at 320x568, 390x844, and 430x932. Accepted candidate product commit: `119ece1000cdab69c902ec75d2b0d89881372bd1`.
 - Candidate evidence artifact `10357697352`, SHA-256 `0864252f975ab553764fbaee7cf7157e7764e354c155f81573eb7f552f3c7ae3`, includes fresh Home, returning-progress Home, keepsake memory, purposeful-work, Reduced Motion, and results evidence.
 - Promotion run `34868354446` reverified protected sources and imported only `game400-a.js`, `game400-b.js`, `title-island-concepts/index.html`, and `index.html`. Exact accepted product bytes were promoted to `main` as `5003f8c8e8421713f49374ab6b8c39d2af1cc3f1`.
 - Committed-live run `34868476341` revalidated fresh/returning/completed contextual Home actions, telescope memory recall, purposeful Pippa work behavior, in-game Reduced Motion, and offscreen motion cancellation. Evidence artifact `10358421047`, SHA-256 `269400e89ca880bca3b5080cf7c01ca3ae0df6fa2d9b64367c5c15cf6ef24b93`.
-- V05 purposeful domestic actions and U05 contextual Home action are accepted complete. V06 and N05 remain partial for the narrower remaining behavior documented in the matrix.
+- V05 purposeful domestic actions and U05 contextual Home action were accepted complete here. V06/N05 were partial at this checkpoint and were later closed by the Character/world coherence slice.
 
 Accepted Atlas + Story/Journal coherence checkpoint (2026-09-14):
 - TDD RED run `34868949719` failed for the intended missing behavior (`8` legacy Atlas region-dot controls), proving the acceptance test detected the pre-change hierarchy.
@@ -54,7 +62,7 @@ Accepted Atlas + Story/Journal coherence checkpoint (2026-09-14):
 - Settled visual-review run `34870429364` verified the exact accepted product bytes and produced post-transition Atlas, Now, and Cinematics captures. Artifact `10358083089`, SHA-256 `2d78f1bc94d9b8d1677bd1010629a27ef1788b3ceaa99343614266607f32b258`. These settled screenshots were manually reviewed and accepted before promotion.
 - Promotion run `34870594463` reverified protected sources and imported only `game400-a.js`, `game400-b.js`, `index.html`, `style400-skyway-atlas.css`, `style400-story-theme.css`, and `style400-atlas-progression.css`. Exact accepted product bytes were promoted to `main` as `d9290e333fe41cb624b699259db2c6cc83f421fd`.
 - Committed-live run `34870670735` independently revalidated the promoted bytes at all three phone sizes, including Atlas hierarchy/state/arrival behavior, journal containment/direct replay/keyboard navigation/Large Text, and Little Home regression behavior. Evidence artifact `10359290640`, SHA-256 `1b21adc9e94a23c724b48a24d03dcab7d010b1df14697c550f44ecfc60dab349`.
-- V13 Atlas hierarchy, V14 restored-vs-available state distinction, V15 visible map repair, and U10 journal structure are accepted complete. N04 remains partial because the source audit additionally requires sharper role separation among during-play motive, movement-opening clue, milestone result, Story card, and journal recap.
+- V13 Atlas hierarchy, V14 restored-vs-available state distinction, V15 visible map repair, and U10 journal structure were accepted complete here. N04 was partial at this checkpoint and was later closed by the Character/world coherence slice.
 - Temporary `main` promotion/live workflows were removed after acceptance in cleanup commits `10b165e4bbddf8fc80d1c41fe93e4bb6e4ded6a6` and `c62983028350fed7fd1b7c9363362c421202784c`. One-shot candidate helper-wiring and settled-visual workflows were also removed after their evidence was captured. The candidate branch is validation history only and is not the source of truth.
 
 Accepted Gameplay / Story coherence checkpoint (2026-09-14):
@@ -63,7 +71,7 @@ Accepted Gameplay / Story coherence checkpoint (2026-09-14):
 - Settled visual-review run `34880369639` verified product provenance and captured clean short-phone gameplay, rejected-blocker feedback, and a regular Story Card with automatic overlays deliberately closed through the real runtime. Artifact `10363160590`, SHA-256 `9b2e5380ad8a899834a9a6d66fbd5e919b5df704e6446dfcb4583b8581269392`; screenshots were manually reviewed before promotion.
 - Promotion/live run `34880640526` required the exact prior `main` base, rechecked protected sources, imported only the six accepted product files, and promoted them as `4f9e27b01f3a0ae158ee44c8ac36b4c11e2fa033`. Its fresh committed-main browser job independently revalidated the accepted behavior. Live artifact `10362788052`, SHA-256 `d6f73cb853179295b6c6b9115d91e4654eec4404323b1a171c1cead2d3088ead`.
 - Committed-main closure run `34881048866` targeted the remaining source wording for V01/V10: Levels 201 and 366 keep decorative props behind rules space, and switch/door/rail/turn identity remains readable under achromatopsia, protanopia, deuteranopia, and tritanopia emulation. Artifact `10363266549`, SHA-256 `764e8dfb2782d9b286e13691dd9347714c966066600eb8ddc4ad77400acebbd0`; representative captures were manually reviewed.
-- V01 quiet board floors, V09 readable nests, V10 mechanic-state causality, U09 mastery copy, V16 story postcards, and V17 chapter reward are accepted complete. N04 remains partial because the audit still requires clearer role separation among during-play motive, movement-opening clue, milestone result, and remaining exposition. V06/N05/V07/V12 remain partial for their separate characterization/world-consistency requirements.
+- V01 quiet board floors, V09 readable nests, V10 mechanic-state causality, U09 mastery copy, V16 story postcards, and V17 chapter reward were accepted complete here. N04/V06/N05/V07/V12 were partial at this checkpoint and were later closed by the Character/world coherence slice.
 
 Accepted Ending closure checkpoint (2026-09-14):
 - **ACCEPTED.** TDD RED run `34881984533` failed for the intended missing behavior (`short: missing living-Skyway ending stage`). Final candidate run `34884153884` passed the three-phone ending contract and OS/in-game Reduced Motion on exact accepted product commit `e3ac2e999c4781e8f4e9789552a5025e93b3466e`; candidate artifact `10363603745`, SHA-256 `faa23518054ba810b16d0ee25116736fc22832192ef28c5b157b748dd7b7d23a`, was manually reviewed.
@@ -88,11 +96,12 @@ Presentation/accessibility consolidation checkpoint (2026-09-14):
 Final Pass 5 browser-addressable certification (2026-09-14):
 - **COMPLETED.** Final run `34898523134` passed with zero failures while guarding the exact accepted product bytes at `a998e095dd710028cdca6e028bc0047c71aeed3c`. Evidence artifact `10369612799`, SHA-256 `22e90d782e365232305be7dc98b3fd175c041b8ae53cbd5dc804b248e6231501`. Earlier Pass 5 attempts (`34897697765`, `34897918110`, `34898064440`) exposed harness-only selector/scope defects; those were corrected without changing product code.
 - Coverage: 320x568, 360x800, 390x844, 430x932, 768x1024 tablet, and 844x390 landscape; all 400 starting boards; all 40 chapter/range material variants; all 40 authored movement starts/results plus seven earned-knowledge chapter boundaries; fresh onboarding, skipped opening, returning player; isolated Daily/replay/campaign progression; all four films / 25 beats / 56 canonical utterances; non-color identity; keyboard/modal focus restoration; semantic journal tabs/panels; Large Text; audio controls/persistence/interruption; 71 loaded assets; and browser performance telemetry.
-- Pass 5 measured zero running gameplay animations under Reduced Motion in all six viewport classes and no tested viewport/control overflow. Large Text increased the representative Journal body copy from 10.8px to 12.5px.
+- Pass 5 measured zero running gameplay animations under Reduced Motion in all six viewport classes and no tested viewport/control overflow. The later second-review finishing pass raised primary Journal body copy from the independently measured 10.8px / 12.5px to 14px Normal / 16px Large.
 - Browser telemetry from the certification environment: navigation/load about 165.3ms; synthetic 400-board render loop about 117.4ms; 120 frame samples at about 16.7ms median / 16.7ms p95 / 16.8ms max; about 4.30MB used JS heap; 44 measured resources totaling about 0.93MB transferred. These are browser-runner measurements, not physical-phone performance claims.
 
 Remaining closure work:
-- **External-only, explicitly UNVERIFIED:** real physical-phone touch/performance/battery behavior; genuine iOS Safari hardware behavior; exhaustive assistive-technology testing; and subjective real-speaker/headphone audio mixing/listening. These do not reopen the completed browser-addressable audit implementation.
+- **DEFERRED ART DIRECTION:** S4 material consistency remains a subjective optional refinement. The second review specifically notes flatter Story-card props, simpler ending-network houses, and small Atlas landmarks. Do not restart the engine or broad presentation stack for this item; revisit only if the user chooses another art-direction pass after real-device playtesting.
+- **External-only, explicitly UNVERIFIED:** real physical-phone touch/performance/battery behavior; genuine iOS Safari hardware behavior; exhaustive assistive-technology testing; and subjective real-speaker/headphone audio mixing/listening. These do not reopen the completed browser-addressable functional implementation.
 
 Protected systems:
 - Exact authored puzzle definitions/solutions in `campaign400-1.js` through `campaign400-8.js` must not change.
@@ -100,16 +109,16 @@ Protected systems:
 - Preserve all R1-R5 behavior, accepted Pass 4 cinematic dialogue/navigation behavior, accepted Little Home contextual/memory/motion behavior, accepted Atlas/journal hierarchy/state/accessibility behavior, accepted Gameplay / Story behavior, and accepted ending network/Home-first/Reduced-Motion behavior.
 
 Implementation/validation contract:
-- Read both canonical audit source documents above when reconciling an item; do not rely on the acceptance matrix as a substitute for their original wording.
+- Read the original audit, first implementation review, and second implementation review above when reconciling an item; do not rely on the acceptance matrix as a substitute for their original wording.
 - Reconcile every original audit ID (`V01`-`V20`, `N01`-`N06`, `U01`-`U11`, `A01`, `P01`) and both documents' Pass 1-5 acceptance language against current code/runtime.
-- Record each item as COMPLETED, PARTIAL/EXTERNAL, or intentionally non-blocking with concrete evidence; do not use “improved” as closure.
+- Distinguish functional COMPLETED items, subjective/deferred art-direction recommendations, and EXTERNAL-only checks with concrete evidence; do not use “improved” as closure.
 - Use candidate-first browser validation for broad presentation changes, then committed-live validation before cleanup.
 - Protect campaign/story canon and authored solutions with exact diff/hash checks.
 - Manually review representative settled screenshots, especially cinematics, ending, Home, Atlas, journal, dense boards, Large Text, and reduced motion.
 - Remove temporary workflows/helpers before final closeout.
 - Final exact head must pass GitHub Pages and the permanent repository-access guard.
 
-Next action: Complete the approved bounded second-review S1-S3 finishing pass on `astra-second-review-finishing`; keep S4 deliberately deferred unless a bounded change naturally improves it. External physical-device, genuine iOS Safari, exhaustive assistive-technology, and subjective real-speaker/headphone certifications remain explicitly unverified.
+Next action: real-device playtesting. Verify physical-phone touch/safe areas/performance/battery behavior and genuine iOS Safari when hardware is available; perform subjective speaker/headphone listening separately. Revisit S4 material consistency only if the user deliberately chooses another art-direction pass after device testing.
 
 ### Astra audit R1-R5 usability pass
 **Status: COMPLETED**
@@ -132,10 +141,11 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - The accepted Pass 4 cinematic slice is promoted and tracked in `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md`.
 - The accepted Little Home coherence slice is promoted and protected.
 - The accepted Atlas + Story/Journal coherence slice is promoted and protected; current product source is on `main`, not the candidate branch.
-- The accepted Gameplay / Story coherence slice is promoted and protected; V01/V09/V10/U09/V16/V17 are complete, while N04 and separate characterization/world-consistency items remain tracked as partial.
+- The accepted Gameplay / Story coherence slice is promoted and protected; its later character/world follow-up closed N04/V06/N05/V07/V12 without changing authored puzzle definitions.
 - The Ending closure slice is promoted and protected; V18/N06 are complete on committed `main` with candidate, manual-visual, committed-live, and Reduced Motion evidence.
 - The Character/world coherence slice is promoted and protected; N04/V06/N05/V07/V12 are complete on committed `main` with candidate, manual Atlas visual review, and committed-main browser evidence.
-- `LATCHLINGS_VISUAL_STORY_AUDIT.md` and `LATCHLINGS_IMPLEMENTATION_REVIEW.md` are canonical repository source documents for the Astra closure effort.
+- The bounded Astra second-review finishing pass is promoted and protected on `main` as `4e18050462d5b58d326a35130b4e9ec6ebe231c9`; S1-S3 are accepted with candidate, manual stage-only visual review, Reduced Motion, typography, and committed-main evidence. S4 is deliberately deferred art direction.
+- `LATCHLINGS_VISUAL_STORY_AUDIT.md`, `LATCHLINGS_IMPLEMENTATION_REVIEW.md`, and `LATCHLINGS_SECOND_REVIEW.md` are the canonical repository source documents for the Astra review/closure effort.
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
