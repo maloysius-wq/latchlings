@@ -18,43 +18,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Mark handoff verification in progress
+      - name: Confirm handoff verification is in progress
         shell: bash
         run: |
           set -euo pipefail
-          EXPECTED_MAIN=4a9c62bb0bc50cef7d0b8e0e64473d59b9f11bf5
+          EXPECTED_MAIN=25b5215395d45680ec62a81623531f2eab13e72b
           git fetch origin main
           test "$(git rev-parse origin/main)" = "$EXPECTED_MAIN"
           git checkout -B main origin/main
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('DEVELOPMENT_HANDOFF.md')
-          s=p.read_text()
-          heading='### Physical-phone opening geometry and puzzle-control restoration\n'
-          start=s.index(heading)
-          status='**Status: COMPLETED / ACCEPTED CANDIDATE**'
-          pos=s.index(status,start)
-          s=s[:pos]+'**Status: IN PROGRESS / COMMITTED-MAIN VERIFICATION**'+s[pos+len(status):]
-          marker='\n\nUser-provided Android screenshots on 2026-09-15 exposed two root causes:'
-          insert='\n\nVerification follow-up requested after Codex usage exhaustion: PR #2 is already merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh committed-main execution of the shipped browser suites is in progress before final acceptance is recorded.'
-          idx=s.index(marker,start)
-          s=s[:idx]+insert+s[idx:]
-          p.write_text(s)
-          PY
-          git diff --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add DEVELOPMENT_HANDOFF.md
-          git commit -m "Mark Codex opening verification in progress"
-          git push origin HEAD:main
+          grep -Fq '**Status: IN PROGRESS / COMMITTED-MAIN VERIFICATION**' DEVELOPMENT_HANDOFF.md
 
       - name: Verify exact merged main
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin main
-          git reset --hard origin/main
-          npm ci
+          npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
           npm test | tee /tmp/npm-test.log
 
@@ -76,7 +54,7 @@ jobs:
           s=s[:pos]+'**Status: COMPLETED / ACCEPTED ON MAIN**'+s[pos+len(old):]
           oldnote='Verification follow-up requested after Codex usage exhaustion: PR #2 is already merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh committed-main execution of the shipped browser suites is in progress before final acceptance is recorded.'
           run=os.environ['GITHUB_RUN_ID']
-          newnote=f'Committed-main verification follow-up completed after Codex usage exhaustion. PR #2 was merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh GitHub Actions run `{run}` checked out the merged `main` lineage and ran the repository\'s exact shipped `npm test` command successfully, covering `phone-visual-regressions.browser.cjs`, `opening-continuous.browser.cjs`, `opening-flow.browser.cjs`, and `cinematics-regression.browser.cjs`. Post-merge repository guard `35019203103` and Pages deployment `35019202230` had already passed on the merge commit.'
+          newnote=f'Committed-main verification follow-up completed after Codex usage exhaustion. PR #2 was merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh GitHub Actions run `{run}` checked out committed `main` and ran the repository\'s exact shipped `npm test` command successfully, covering `phone-visual-regressions.browser.cjs`, `opening-continuous.browser.cjs`, `opening-flow.browser.cjs`, and `cinematics-regression.browser.cjs`. Post-merge repository guard `35019203103` and Pages deployment `35019202230` had already passed on the merge commit.'
           if oldnote not in s:
               raise SystemExit('in-progress note missing')
           s=s.replace(oldnote,newnote,1)
