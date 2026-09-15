@@ -1,0 +1,152 @@
+from pathlib import Path
+import re
+
+
+def replace_once(text, old, new, label):
+    if old not in text:
+        raise SystemExit(f'missing patch anchor: {label}')
+    return text.replace(old, new, 1)
+
+p = Path('cinematics400.js')
+s = p.read_text(encoding='utf-8')
+s = replace_once(s, "{label:'The Latchlands Move',visual:'archipelago'", "{label:'The Latchlands Move',visual:'breakfast-journey'", 'opening visual')
+s = replace_once(s, "{label:'New Coordinates',visual:'new-route'", "{label:'New Coordinates',visual:'porch-reconnect'", 'across visual')
+s = replace_once(s, "let activeId=null,activeIndex=0,activeLine=0,onDone=null,markOnDone=false,lastFocus=null;", "const OPENING_FIRST_RUN_STEPS=[[0,0],[2,2],[4,0],[6,0],[7,0]];\nlet activeId=null,activeIndex=0,activeLine=0,activeFlow=null,activeStep=0,onDone=null,markOnDone=false,lastFocus=null;", 'compact state')
+
+old_lookout = re.search(r"function lookoutHtml\(\)\{return `[^\n]*\n", s)
+if not old_lookout:
+    raise SystemExit('missing lookoutHtml')
+new_lookout = '''function familiarPorchIslandHtml(){return `<div class="porch-far-island"><i class="porch-island-side"></i><i class="porch-island-top"></i><i class="porch-tree"></i><i class="porch-house"></i><i class="porch-deck"></i><i class="porch-friend-lantern l1"></i><i class="porch-friend-lantern l2"></i></div>`}\nfunction lookoutHtml(){return `<div class="cin-lookout-scene cin-porch-production"><i class="porch-cloud c1"></i><i class="porch-cloud c2"></i>${familiarPorchIslandHtml()}<div class="porch-near-island"><i class="porch-crystal k1"></i><i class="porch-crystal k2"></i></div><div class="cin-telescope production-telescope"><i class="tube"></i><i class="lens"></i><span class="cin-telescope-mount"><b></b><b></b><b></b></span></div>${character('Tansy','lookout-tansy')}${character('Pip','lookout-pip')}<i class="cin-sightline"></i><i class="porch-depth-haze"></i></div>`}\nfunction breakfastJourneyHtml(){return `<div class="cin-breakfast-journey" data-story-action="breakfast-basket-travel">${islandsHtml('wide basket-journey')}<i class="breakfast-journey-route"></i><span class="breakfast-basket-traveler"><i class="basket-handle"></i><i class="basket-body"></i></span><span class="breakfast-home-destination"><i class="home-roof"></i><i class="home-body"></i><i class="home-door"></i><i class="home-lantern"></i></span></div>`}\nfunction porchReconnectHtml(){return `<div class="cin-lookout-scene cin-porch-production cin-porch-reconnect" data-story-action="route-reaches-familiar-porch"><i class="porch-cloud c1"></i><i class="porch-cloud c2"></i>${familiarPorchIslandHtml()}<div class="porch-route-origin"><i></i></div><i class="porch-reconnect-line"></i><span class="porch-route-pulse"></span>${routeDraftingHtml('NEW COORDINATES')}</div>`}\n'''
+s = s[:old_lookout.start()] + new_lookout + s[old_lookout.end():]
+
+old_auto = re.search(r"function automationHtml\(\)\{return `[^\n]*\n", s)
+if not old_auto:
+    raise SystemExit('missing automationHtml')
+new_auto = '''function automationHtml(){return `<div class="cin-automation"><div class="hand-map">${mapSheets('tiny')}</div><div class="machine"><i class="gear g1"></i><i class="gear g2"></i><span class="fixed-line"></span></div><div class="cin-unattended-desk" data-story-action="unattended-desk"><i class="desk-window"></i><i class="desk-surface"></i><i class="desk-note"></i><i class="desk-chair"></i></div></div>`}\n'''
+s = s[:old_auto.start()] + new_auto + s[old_auto.end():]
+
+s = replace_once(s, "function visualHtml(type){\n if(type==='archipelago')return islandsHtml('wide');", "function visualHtml(type){\n if(type==='breakfast-journey')return breakfastJourneyHtml();\n if(type==='porch-reconnect')return porchReconnectHtml();\n if(type==='archipelago')return islandsHtml('wide');", 'visual routes')
+
+render_turn = re.search(r"function renderTurn\(\)\{.*?\n\}\nfunction render\(\)\{", s, re.S)
+if not render_turn:
+    raise SystemExit('missing renderTurn block')
+new_render_turn = '''function renderTurn(){
+ const c=CINEMATICS[activeId],b=c&&c.beats[activeIndex],line=b&&b.lines[activeLine];
+ if(!c||!b||!line)return;
+ const o=ensureOverlay();
+ o.dataset.turn=String(activeLine);
+ const [speaker,text]=line;
+ document.getElementById('cinematicLines').innerHTML=`<p class="${speaker==='Narrator'?'narrator':'dialogue'} is-current"><strong>${escapeHtml(speaker)}</strong><span>${escapeHtml(text)}</span></p>`;
+ const nextBtn=document.getElementById('cinematicNext');
+ const compact=!!activeFlow,lastBeat=compact?activeStep===activeFlow.length-1:activeIndex===c.beats.length-1,lastLine=compact?true:activeLine===b.lines.length-1;
+ nextBtn.textContent=lastBeat&&lastLine?c.finalLabel:(lastLine?'Next scene':'Continue');
+ const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0;
+}
+function render(){'''
+s = s[:render_turn.start()] + new_render_turn + s[render_turn.end():]
+
+render_block = re.search(r"function render\(\)\{.*?\n\}\nfunction show\(", s, re.S)
+if not render_block:
+    raise SystemExit('missing render block')
+new_render = '''function render(){
+ const c=CINEMATICS[activeId],b=c&&c.beats[activeIndex];if(!c||!b)return;
+ const o=ensureOverlay(),displayIndex=activeFlow?activeStep:activeIndex,displayCount=activeFlow?activeFlow.length:c.beats.length;
+ o.dataset.cinematic=activeId;o.dataset.visual=b.visual;o.dataset.beat=String(activeIndex);o.dataset.mode=activeFlow?'first-run':'full';
+ document.getElementById('cinematicChapter').textContent=c.chapter;
+ document.getElementById('cinematicTitle').textContent=c.title;
+ document.getElementById('cinematicBeat').textContent=b.label;
+ document.getElementById('cinematicCounter').textContent=`${displayIndex+1} / ${displayCount}`;
+ document.getElementById('cinematicStage').innerHTML=visualHtml(b.visual);
+ document.getElementById('cinematicProgress').innerHTML=Array.from({length:displayCount},(_,i)=>`<i class="${i===displayIndex?'active':i<displayIndex?'done':''}"></i>`).join('');
+ renderTurn();
+ requestAnimationFrame(()=>o.classList.add('beat-ready'));
+}
+function show('''
+s = s[:render_block.start()] + new_render + s[render_block.end():]
+
+show_block = re.search(r"function show\(id,opts=\{\}\)\{[^\n]*\n", s)
+if not show_block:
+    raise SystemExit('missing show function')
+new_show = "function show(id,opts={}){const c=CINEMATICS[id];if(!c)return false;if(activeId)return false;const o=ensureOverlay();lastFocus=document.activeElement;activeId=id;activeFlow=id==='opening'&&opts.compact?OPENING_FIRST_RUN_STEPS:null;activeStep=0;if(activeFlow){activeIndex=activeFlow[0][0];activeLine=activeFlow[0][1]}else{activeIndex=0;activeLine=0}onDone=typeof opts.onComplete==='function'?opts.onComplete:null;markOnDone=opts.markSeen!==false;o.classList.remove('beat-ready');o.classList.add('show');o.setAttribute('aria-hidden','false');document.body.classList.add('cinematic-open');render();setTimeout(()=>{const b=document.getElementById('cinematicNext');if(b)try{b.focus({preventScroll:true})}catch(_){b.focus()}const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0},50);return true}\n"
+s = s[:show_block.start()] + new_show + s[show_block.end():]
+
+next_block = re.search(r"function next\(\)\{[^\n]*\n", s)
+if not next_block:
+    raise SystemExit('missing next function')
+new_next = "function next(){if(!activeId)return;const c=CINEMATICS[activeId],b=c.beats[activeIndex],o=ensureOverlay();if(activeFlow){if(activeStep>=activeFlow.length-1){finish(false);return}o.classList.remove('beat-ready');activeStep++;activeIndex=activeFlow[activeStep][0];activeLine=activeFlow[activeStep][1];setTimeout(render,35);return}if(activeLine<b.lines.length-1){activeLine++;renderTurn();return}if(activeIndex>=c.beats.length-1){finish(false);return}o.classList.remove('beat-ready');activeIndex++;activeLine=0;setTimeout(render,35)}\n"
+s = s[:next_block.start()] + new_next + s[next_block.end():]
+
+finish_block = re.search(r"function finish\(skipped\)\{[^\n]*\n", s)
+if not finish_block:
+    raise SystemExit('missing finish function')
+new_finish = "function finish(skipped){if(!activeId)return;const id=activeId,cb=onDone,shouldMark=markOnDone,o=ensureOverlay();if(shouldMark)markSeen(id);activeId=null;activeIndex=0;activeLine=0;activeFlow=null;activeStep=0;onDone=null;markOnDone=false;o.classList.remove('show','beat-ready');o.removeAttribute('data-cinematic');o.removeAttribute('data-visual');o.removeAttribute('data-mode');o.setAttribute('aria-hidden','true');document.body.classList.remove('cinematic-open');if(lastFocus&&typeof lastFocus.focus==='function')try{lastFocus.focus()}catch(_){}lastFocus=null;if(cb)setTimeout(()=>cb({id,skipped:!!skipped}),40)}\n"
+s = s[:finish_block.start()] + new_finish + s[finish_block.end():]
+
+s = replace_once(s, "function maybeShowBeforeLevel(level,unlocked,onComplete){const id=TRIGGERS[Number(level)];if(!id||hasSeen(id))return false;const c=CINEMATICS[id];if(Number(level)>1&&Number(unlocked||1)<c.unlock)return false;return show(id,{onComplete,markSeen:true})}", "function maybeShowBeforeLevel(level,unlocked,onComplete){const id=TRIGGERS[Number(level)];if(!id||hasSeen(id))return false;const c=CINEMATICS[id];if(Number(level)>1&&Number(unlocked||1)<c.unlock)return false;return show(id,{onComplete,markSeen:true,compact:id==='opening'})}", 'first-run compact trigger')
+old_api = "window.LatchlingsCinematics={TRIGGERS,CINEMATICS,show,next,finish,hasSeen,reset,maybeShowBeforeLevel,renderLibrary,castIdentitySource:'LATCHLINGS_STORY.cast',get active(){return activeId},get beat(){return activeIndex},get line(){return activeLine}};"
+new_api = "window.LatchlingsCinematics={TRIGGERS,CINEMATICS,OPENING_FIRST_RUN_STEPS,show,next,finish,hasSeen,reset,maybeShowBeforeLevel,renderLibrary,castIdentitySource:'LATCHLINGS_STORY.cast',get active(){return activeId},get beat(){return activeIndex},get line(){return activeLine},get mode(){return activeFlow?'first-run':'full'},get step(){return activeFlow?activeStep:null}};"
+s = replace_once(s, old_api, new_api, 'cinematic API')
+p.write_text(s, encoding='utf-8')
+
+p = Path('style400-story-theme.css')
+s = p.read_text(encoding='utf-8')
+replacements = [
+    ('.story-journal-heading>p{margin:0;color:#587184;font-size:10.5px;line-height:1.28}', '.story-journal-heading>p{margin:0;color:#587184;font-size:12.5px;line-height:1.4}'),
+    ('.story-section-heading p{margin:0;color:#5a7182;font-size:10.5px;line-height:1.3}', '.story-section-heading p{margin:0;color:#5a7182;font-size:12.5px;line-height:1.42}'),
+    ('.story-now-chapter>p{margin:0;color:#536d7e;font-size:10.8px;line-height:1.32}', '.story-now-chapter>p{margin:0;color:#536d7e;font-size:14px;line-height:1.45}'),
+    ('.story-now-grid p{margin:3px 0 0;color:#37566f;font-size:11px;line-height:1.35}', '.story-now-grid p{margin:3px 0 0;color:#37566f;font-size:13.5px;line-height:1.42}'),
+    ('.story-now-grid small{display:block;margin-top:4px;color:#6b7e8c;font-size:9px;line-height:1.28}', '.story-now-grid small{display:block;margin-top:4px;color:#6b7e8c;font-size:11.5px;line-height:1.38}'),
+    ('.story-journey-item strong{display:block;color:#29465f;font-size:11px}', '.story-journey-item strong{display:block;color:#29465f;font-size:12.5px}'),
+    ('.story-journey-item small{display:block;margin:1px 0 3px;color:#73818a;font-size:8.5px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}', '.story-journey-item small{display:block;margin:1px 0 3px;color:#73818a;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}'),
+    ('.story-journey-item p{margin:0!important;max-width:none!important;color:#526b7c!important;font-size:9.7px!important;line-height:1.3!important}', '.story-journey-item p{margin:0!important;max-width:none!important;color:#526b7c!important;font-size:12.5px!important;line-height:1.42!important}'),
+]
+for old, new in replacements:
+    s = replace_once(s, old, new, old[:35])
+old_large = 'html[data-text-size="large"] .story-journal-heading>p,html[data-text-size="large"] .story-section-heading p,html[data-text-size="large"] .story-now-chapter>p,html[data-text-size="large"] .story-now-grid p{font-size:12.5px}html[data-text-size="large"] .story-section-tab{font-size:11.5px}html[data-text-size="large"] .story-now-grid small{font-size:10px}'
+new_large = 'html[data-text-size="large"] .story-now-chapter>p,html[data-text-size="large"] .story-now-grid p{font-size:16px}html[data-text-size="large"] .story-journal-heading>p,html[data-text-size="large"] .story-section-heading p{font-size:14px}html[data-text-size="large"] .story-section-tab{font-size:12px}html[data-text-size="large"] .story-now-grid small{font-size:13px}html[data-text-size="large"] .story-journey-item strong{font-size:14px}html[data-text-size="large"] .story-journey-item small{font-size:11.5px}html[data-text-size="large"] .story-journey-item p{font-size:14.5px!important}'
+s = replace_once(s, old_large, new_large, 'journal large type')
+p.write_text(s, encoding='utf-8')
+
+p = Path('style400-cinematics.css')
+s = p.read_text(encoding='utf-8')
+addition = r'''
+
+/* Astra second-review bounded finishing pass: action-readable cinematic proof scenes. */
+.cin-breakfast-journey{position:absolute;inset:0;overflow:hidden;isolation:isolate}
+.cin-breakfast-journey .cin-islands{z-index:1;opacity:.92}
+.breakfast-journey-route{position:absolute;z-index:5;left:23%;top:57%;width:58%;height:5px;border-radius:999px;background:linear-gradient(90deg,rgba(77,164,226,.15),#6fc3ef 20%,#fff0a5 58%,#75c5ed 86%,rgba(77,164,226,.16));box-shadow:0 0 9px rgba(76,172,231,.72);rotate:-8deg;transform-origin:left center}
+.breakfast-basket-traveler{position:absolute;z-index:8;left:28%;top:48%;width:35px;height:31px;filter:drop-shadow(0 5px 4px rgba(45,60,69,.2));animation:cinBreakfastJourney 4.2s ease-in-out infinite}
+.breakfast-basket-traveler .basket-body{position:absolute;left:3px;right:3px;bottom:0;height:20px;border-radius:4px 4px 9px 9px;background:repeating-linear-gradient(90deg,#c68e50 0 4px,#e1b36c 4px 8px);border:2px solid #855d39;box-shadow:inset 0 3px rgba(255,238,193,.32)}
+.breakfast-basket-traveler .basket-handle{position:absolute;left:8px;right:8px;top:0;height:17px;border:3px solid #855d39;border-bottom:0;border-radius:18px 18px 0 0}
+.breakfast-home-destination{position:absolute;z-index:7;right:13%;top:38%;width:58px;height:56px;filter:drop-shadow(0 6px 5px rgba(44,61,72,.19))}
+.breakfast-home-destination .home-body{position:absolute;left:9px;right:9px;bottom:5px;height:31px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#fff0d8,#e5c8a1);border:2px solid #9e7955}
+.breakfast-home-destination .home-roof{position:absolute;left:3px;right:3px;top:5px;height:24px;background:#b9634d;clip-path:polygon(50% 0,100% 72%,89% 100%,10% 100%,0 72%)}
+.breakfast-home-destination .home-door{position:absolute;z-index:2;left:25px;bottom:5px;width:10px;height:17px;border-radius:5px 5px 1px 1px;background:#75533e}
+.breakfast-home-destination .home-lantern{position:absolute;z-index:3;right:3px;bottom:20px;width:7px;height:7px;border-radius:50%;background:#ffe37a;box-shadow:0 0 9px #fff0a0}
+.cin-porch-reconnect{background:linear-gradient(180deg,rgba(188,224,245,.15),rgba(219,238,246,.05))}
+.cin-porch-reconnect .porch-route-origin{position:absolute;left:8%;bottom:15%;width:96px;height:54px;z-index:4;border-radius:50%;background:linear-gradient(180deg,#9dd57a 0 30%,#a67753 32% 68%,#695044 70%);clip-path:polygon(3% 8%,97% 8%,88% 52%,69% 86%,51% 100%,29% 86%,10% 54%);filter:drop-shadow(0 8px 6px rgba(44,61,72,.18))}
+.cin-porch-reconnect .porch-route-origin i{position:absolute;left:43%;top:4px;width:10px;height:22px;border-radius:50% 50% 4px 4px;background:linear-gradient(#d9fbf8,#77bde0 48%,#9875df 49% 75%,#f2d375)}
+.porch-reconnect-line{position:absolute;z-index:5;left:23%;top:61%;width:55%;height:5px;border-radius:999px;background:linear-gradient(90deg,#65b4e3,#fff0a2 52%,#65b4e3);box-shadow:0 0 10px rgba(73,169,229,.75);rotate:-18deg;transform-origin:left center;animation:cinReconnectRoute 1.1s ease-out both}
+.porch-route-pulse{position:absolute;z-index:7;left:67%;top:39%;width:18px;height:18px;border:3px solid #ffe985;border-radius:50%;box-shadow:0 0 11px rgba(255,231,111,.92);animation:cinPorchReceive 2.4s ease-in-out infinite}
+.cin-porch-reconnect .cin-route-drafting{right:9px;bottom:8px}
+.cin-unattended-desk{position:absolute;z-index:8;left:38%;top:14%;width:34%;height:72%;pointer-events:none}
+.cin-unattended-desk .desk-window{position:absolute;right:3px;top:0;width:38px;height:31px;border:4px solid #654b3a;background:linear-gradient(180deg,#add5e8,#e4edf0);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.cin-unattended-desk .desk-window:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;background:#654b3a}.cin-unattended-desk .desk-window:after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;background:#654b3a}
+.cin-unattended-desk .desk-surface{position:absolute;left:0;right:0;top:42%;height:12px;border-radius:3px;background:linear-gradient(180deg,#9a6846,#704932);box-shadow:0 4px 0 #513625}
+.cin-unattended-desk .desk-note{position:absolute;left:13%;top:31%;width:29px;height:20px;background:#f6e6ba;border:1px solid #b28d60;rotate:-5deg;box-shadow:0 2px 3px rgba(55,38,25,.17)}
+.cin-unattended-desk .desk-chair{position:absolute;left:38%;bottom:0;width:38px;height:35px;border:5px solid #604331;border-top-width:11px;border-radius:9px 9px 3px 3px;rotate:8deg;translate:13px 4px;opacity:.86}
+@keyframes cinBreakfastJourney{0%,10%{translate:-8px 8px;rotate:-5deg}55%{translate:88px -4px;rotate:3deg}82%,100%{translate:143px -18px;rotate:0}}
+@keyframes cinReconnectRoute{from{scale:0 1;opacity:.2}to{scale:1 1;opacity:1}}
+@keyframes cinPorchReceive{0%,62%,100%{scale:.72;opacity:.28}72%{scale:1.18;opacity:1}84%{scale:.9;opacity:.68}}
+@media(prefers-reduced-motion:reduce){.breakfast-basket-traveler,.porch-reconnect-line,.porch-route-pulse{animation:none!important}.breakfast-basket-traveler{translate:143px -18px}.porch-reconnect-line{scale:1 1}.porch-route-pulse{scale:1;opacity:.8}}
+'''
+if 'Astra second-review bounded finishing pass' in s:
+    raise SystemExit('cinematic finishing CSS already present')
+p.write_text(s + addition, encoding='utf-8')
+
+p = Path('index.html')
+s = p.read_text(encoding='utf-8')
+s = s.replace('style400-story-theme.css?v=20260914-character-world1', 'style400-story-theme.css?v=20260914-second-review1')
+s = s.replace('style400-cinematics.css?v=20260914-presentation-accessibility1', 'style400-cinematics.css?v=20260914-second-review1')
+s = s.replace('cinematics400.js?v=20260914-presentation-accessibility1', 'cinematics400.js?v=20260914-second-review1')
+p.write_text(s, encoding='utf-8')
