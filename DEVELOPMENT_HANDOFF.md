@@ -8,6 +8,14 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Continuous opening cinematic rebuild
+**Status: IN PROGRESS**
+
+User-approved replacement of the current card-like first-run Opening with one continuous, tap-to-advance animated morning at Little Home. Preserve canon, later cinematics, campaign data, settings, replay access, and control geometry. The new opening must use title-island material textures, connect every route to explicit source/destination anchors, protect dialogue and controls from scenic overlap, support Normal/Large Text and Reduced Motion, and validate stage-only story readability at 320x568, 390x844, and 430x932 before promotion.
+
+Approved screenplay arc: establish normal drift and a working flexible Skyway; follow one breakfast basket to Little Home; show the basket, watering line, and play route missing by the same offset; let all five residents observe and respond; send and answer the old Waykeeper call; gather voluntary local knowledge; dissolve the same physical scene into the real Level 1 route model; begin by helping with breakfast without prematurely declaring the map stale.
+
+
 ### User playtest: controls and opening story balance
 **Status: COMPLETED / ACCEPTED**
 
