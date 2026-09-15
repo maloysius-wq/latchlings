@@ -8,6 +8,13 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Physical-phone opening geometry and puzzle-control restoration
+**Status: IN PROGRESS**
+
+User-provided Android screenshots on 2026-09-15 show that the continuous Opening's characters and route stops are not visually grounded on Little Home: several residents and route endpoints fall onto the rock cone or outside the island, and the Waykeeper call display obscures faces. The same playtest shows the post-Astra D-pad-only restoration is incomplete: the large legacy D-pad is still constrained by Astra's 330px / 64px–148px–64px control grid, which displaces or hides the Hint control.
+
+Work branch: `codex/mobile-island-controls-fix-20260915`. Scope is deliberately limited to (1) enlarging/rebalancing the Opening's main island and grounding its cast, props, and semantically intended route stops at supported phone sizes; (2) preventing the call display from covering residents; (3) restoring the complete lower puzzle-control cluster to the exact pre-Astra baseline from audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`. Story copy, pacing, board presentation, gameplay rules, campaign data, and later cinematics are protected. TDD browser coverage will validate physical-phone geometry, route-to-prop semantics, unobscured cast, and Reset/D-pad/Hint containment before promotion.
+
 ### Continuous opening cinematic rebuild
 **Status: COMPLETED / ACCEPTED**
 
