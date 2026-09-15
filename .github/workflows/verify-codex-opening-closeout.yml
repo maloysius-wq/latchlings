@@ -1,4 +1,4 @@
-name: Verify Codex opening closeout
+name: Record Codex opening verification result
 
 on:
   push:
@@ -11,14 +11,14 @@ permissions:
   contents: write
 
 jobs:
-  verify:
+  reconcile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Confirm handoff verification is in progress
+      - name: Record confirmed committed-main regression in handoff
         shell: bash
         run: |
           set -euo pipefail
@@ -26,24 +26,7 @@ jobs:
           git fetch origin main
           test "$(git rev-parse origin/main)" = "$EXPECTED_MAIN"
           git checkout -B main origin/main
-          grep -Fq '**Status: IN PROGRESS / COMMITTED-MAIN VERIFICATION**' DEVELOPMENT_HANDOFF.md
-
-      - name: Verify exact merged main
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm install --no-audit --no-fund
-          npx playwright install --with-deps chromium
-          npm test | tee /tmp/npm-test.log
-
-      - name: Mark handoff committed-main verification complete
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          git reset --hard origin/main
           python3 - <<'PY'
-          import os
           from pathlib import Path
           p=Path('DEVELOPMENT_HANDOFF.md')
           s=p.read_text()
@@ -51,18 +34,22 @@ jobs:
           start=s.index(heading)
           old='**Status: IN PROGRESS / COMMITTED-MAIN VERIFICATION**'
           pos=s.index(old,start)
-          s=s[:pos]+'**Status: COMPLETED / ACCEPTED ON MAIN**'+s[pos+len(old):]
+          s=s[:pos]+'**Status: PARTIAL / MERGED TO MAIN, REGRESSION CONFIRMED**'+s[pos+len(old):]
           oldnote='Verification follow-up requested after Codex usage exhaustion: PR #2 is already merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh committed-main execution of the shipped browser suites is in progress before final acceptance is recorded.'
-          run=os.environ['GITHUB_RUN_ID']
-          newnote=f'Committed-main verification follow-up completed after Codex usage exhaustion. PR #2 was merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`; fresh GitHub Actions run `{run}` checked out committed `main` and ran the repository\'s exact shipped `npm test` command successfully, covering `phone-visual-regressions.browser.cjs`, `opening-continuous.browser.cjs`, `opening-flow.browser.cjs`, and `cinematics-regression.browser.cjs`. Post-merge repository guard `35019203103` and Pages deployment `35019202230` had already passed on the merge commit.'
+          newnote='Verification follow-up after Codex usage exhaustion found a reproducible committed-main regression. PR #2 is merged to `main` as `28c8309fac33c0995fb03b9a9356b5614e32792c`, and its repository guard (`35019203103`) plus Pages deployment (`35019202230`) passed. However, fresh verification run `35021684052` executed the repository\'s exact shipped `npm test` command and failed twice in `tests/phone-visual-regressions.browser.cjs` at 360×800: `arrived props must not cover residents`, specifically overlapping `opening-rowan` (first attempt reported `opening-rowan:339`; confirmation rerun reported `opening-rowan:235`). Because the first browser suite aborts on this assertion, the remaining three suites did not execute in that fresh committed-main run. Initial run `35021561796` was harness-only and did not reach tests because `npm ci` was invalid without a lockfile; it is not product evidence. Do not treat this slice as fully verified until the 360×800 overlap is fixed and the complete shipped `npm test` command passes on committed `main`.'
           if oldnote not in s:
-              raise SystemExit('in-progress note missing')
+              raise SystemExit('verification note missing')
           s=s.replace(oldnote,newnote,1)
+          old_next='Next action: real-device playtesting. Verify physical-phone touch/safe areas/performance/battery behavior and genuine iOS Safari when hardware is available; perform subjective speaker/headphone listening separately. Revisit S4 material consistency only if the user deliberately chooses another art-direction pass after device testing.'
+          new_next='Next action: diagnose and fix the reproducible 360×800 Opening overlap where an arrived prop covers Rowan, then rerun the complete shipped `npm test` command on committed `main`. Only after that browser regression is green should real-device touch/safe-area/performance testing resume. Genuine iOS Safari, exhaustive assistive-technology testing, subjective speaker/headphone listening, and optional S4 art-direction work remain separate follow-ups.'
+          if old_next not in s:
+              raise SystemExit('next action marker missing')
+          s=s.replace(old_next,new_next,1)
           p.write_text(s)
           PY
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add DEVELOPMENT_HANDOFF.md
-          git commit -m "Record committed-main opening verification"
+          git commit -m "Record opening committed-main regression"
           git push origin HEAD:main
