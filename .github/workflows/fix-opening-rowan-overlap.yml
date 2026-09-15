@@ -45,12 +45,10 @@ jobs:
           git commit -m '[opening-rowan-action] Mark overlap fix in progress'
           git push origin HEAD:fix/opening-rowan-overlap-20260915
 
-  reproduce-regression:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: fix/opening-rowan-overlap-20260915
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -58,16 +56,7 @@ jobs:
         run: npm install
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Add ephemeral overlap diagnostics
-        shell: python
-        run: |
-          from pathlib import Path
-          p = Path('tests/phone-visual-regressions.browser.cjs')
-          text = p.read_text()
-          needle = "  const routes=await openingGeometry(page,10);\n"
-          if needle not in text:
-              raise SystemExit('Could not find route geometry line')
-          extra = "  console.log(`${viewport.width}x${viewport.height} prop overlaps`, JSON.stringify(routes.propOverlaps));\n  console.log(`${viewport.width}x${viewport.height} people`, JSON.stringify(routes.people));\n  console.log(`${viewport.width}x${viewport.height} basket`, JSON.stringify(await page.locator('.opening-basket').evaluate(el=>el.getBoundingClientRect().toJSON())));\n  console.log(`${viewport.width}x${viewport.height} porch`, JSON.stringify(await page.locator('.opening-porch').evaluate(el=>el.getBoundingClientRect().toJSON())));\n"
-          p.write_text(text.replace(needle, needle + extra, 1))
-      - name: Reproduce phone visual regression
+      - name: Run targeted phone regression
         run: node tests/phone-visual-regressions.browser.cjs
+      - name: Run full shipped test suite
+        run: npm test
