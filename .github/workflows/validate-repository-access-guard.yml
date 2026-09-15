@@ -1,4 +1,4 @@
-# Final Astra second-review closeout validation trigger: 2026-09-14
+# Final player-tested controls/opening closeout validation trigger: 2026-09-15
 name: Validate Repository Access Guard
 
 on:
