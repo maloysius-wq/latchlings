@@ -1,0 +1,31 @@
+name: Restore pre-Astra D-pad sizing
+
+on:
+  push:
+    branches:
+      - restore-pre-astra-dpad-sizing
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original responsive D-pad sizing owns the cascade
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq '.dpad{width:min(224px,53vw);height:min(224px,53vw)' style400-game.css
+          grep -Fq '.dpad{width:min(190px,45vw);height:min(190px,45vw)' style400-game.css
+          if grep -Fq '#game .dpad{width:140px!important;height:140px!important}' style400-story-rail-board.css; then
+            echo 'Astra 140px short-screen override is still present'
+            exit 1
+          fi
+          if grep -Fq '#game.screen .controls .dpad{width:133px!important;height:133px!important}' style400-story-theme.css; then
+            echo 'Astra 133px short-screen override is still present'
+            exit 1
+          fi
+          if grep -Fq '#game.screen .dpad-hit.up,#game.screen .dpad-hit.down{left:33%;width:34%}' style400-story-theme.css; then
+            echo 'Astra D-pad hit-zone reshaping is still present'
+            exit 1
+          fi
+          echo 'PRE_ASTRA_DPAD_CASCADE_RESTORED'
