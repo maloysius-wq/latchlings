@@ -8,6 +8,18 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Continuous opening cinematic rebuild
+**Status: CANDIDATE ACCEPTED / PROMOTION PENDING**
+
+User-approved replacement of the current card-like first-run Opening with one continuous, tap-to-advance animated morning at Little Home. Preserve canon, later cinematics, campaign data, settings, replay access, and control geometry. The new opening must use title-island material textures, connect every route to explicit source/destination anchors, protect dialogue and controls from scenic overlap, support Normal/Large Text and Reduced Motion, and validate stage-only story readability at 320x568, 390x844, and 430x932 before promotion.
+
+Approved screenplay arc: establish normal drift and a working flexible Skyway; follow one breakfast basket to Little Home; show the basket, watering line, and play route missing by the same offset; let all five residents observe and respond; send and answer the old Waykeeper call; gather voluntary local knowledge; dissolve the same physical scene into the real Level 1 route model; begin by helping with breakfast without prematurely declaring the map stale.
+
+Candidate implementation: draft PR `#1` on `codex/opening-cinematic-rebuild-20260915` replaces the prior 8-card/10-step first-run compromise with a single persistent Little Home stage and 21 player-paced spoken lines. The production uses the title-island earth/grass/wood textures, normalized SVG routes whose endpoints are bound to named anchors, route-following movers, a separate helper skiff, and an exact miniature generated from `LEVELS[0]`. Dialogue, scenic art, and persistent controls occupy separate grid regions; the short-phone layout preserves full Large Text without reducing its font size. The Story journal replays all 21 lines, Skip still enters the normal Level 1 Story Card, and later cinematics are unchanged.
+
+Candidate acceptance evidence: local TDD began red at 18 rather than the approved 21 lines, then caught and drove correction of a helper/household pile-up, an overflowing fifth board column, and a 320x568 Large Text scroll on Rowan's longest line. Final local browser contracts passed all 21 opening states at 320x568 / 390x844 / 430x932, Normal and Large Text, OS and in-game Reduced Motion, exact route-to-anchor geometry, persistent-scene identity, real Home Play → Opening → Level 1 flow, Skip, journal replay, and all 38 utterances in the later cinematics. Representative settled screenshots for the opening, three matching misses, Waykeeper call, helper arrival, and Level 1 model were manually reviewed. All eight `campaign400-*.js` SHA-256 values remained exact. Exact candidate product/docs/test bytes were committed by `e9ec21b11309fd2d492c056c5503ee900be55663`; GitHub candidate run `35007698033` and repository guard run `35007697956` both passed. Promotion and committed-main revalidation remain before final closeout.
+
+
 ### User playtest: controls and opening story balance
 **Status: COMPLETED / ACCEPTED**
 
@@ -161,3 +173,4 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
+

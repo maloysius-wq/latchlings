@@ -23,87 +23,64 @@ All writing here must remain consistent with `STORY_BIBLE.md` and `story400.js` 
 
 ---
 
-# Cinematic 1: The Skyway
+# Cinematic 1: The Morning the Routes Missed
 
 **Trigger:** Before Level 1, before the ordinary Level 1 Story Card.  
 **Replay unlock:** Always available.  
 **Story job:** Establish the Latchlands, normal drift, Little Home’s five residents and the different evidence each notices, several matching route failures, why Little Home sends a Waykeeper call, why the player answers as the Waykeeper, cooperative helper crews, the universal board language, and the initial Sunpetal investigation. **Do not reveal the stale-map diagnosis as solved fact here; Levels 1–20 earn that conclusion.**
 
-## Beat 1 — The Latchlands Move
+**Presentation rule:** This is one continuous, textured Little Home scene rather than a sequence of unrelated cards. The stage persists for all 21 player-paced lines. Earth, grass, and wood use the same material textures as the title island. Dialogue remains in a protected region below the art, and every drawn route terminates at its named visual destination.
 
-**Visual:** A wide field of small floating islands drifts at different speeds beneath soft clouds. Faint route lights flex between them.
+## Scene 1 — A Moving World
 
-**Narration:** The Latchlands are always moving. Drift is normal, which means yesterday’s path is never quite today’s.
+**Visual:** Begin wide on several naturally drifting islands. Working Skyway lights visibly connect actual island anchors. Little Home is already present in the same world and eases forward without a scene cut.
 
-**Player takeaway:** Movement is not the villain and the Waykeeper is not trying to stop it.
+**Narrator:** “In the Latchlands, the islands are always drifting—slowly, quietly, and exactly as they should.”  
+**Narrator:** “The Skyway moves with them, carrying neighbors, parcels, and all the small things that make a day work.”
 
-## Beat 2 — Meet Little Home
+## Scene 2 — Morning at Little Home
 
-**Visual:** Little Home comes forward. All five residents are visibly paired with face, name, and role: Pippa — Organizer, Bramble — Courier, Rowan — Caretaker, Pip — Explorer, Tansy — Collector.
+**Visual:** Settle on the five residents doing familiar morning jobs. A breakfast basket follows a visible route from the neighboring bakery, then stops beside—rather than on—the porch.
 
-**Narration:** Pippa tracks routines, Bramble knows inter-household routes, Rowan watches the island, Pip finds overlooked clues, and Tansy notices who a broken path leaves waiting.
+**Narrator:** “And on a little island called Little Home, every morning began with its own familiar collection of very important jobs.”  
+**Bramble:** “Breakfast incoming. Perfectly timed, as usual.”  
+**Bramble:** “…That is not our porch.”
 
-**Tansy:** “It was one basket.”  
-**Pip:** “It was an expedition basket.”
+## Scene 3 — The Same Strange Miss
 
-**Player takeaway:** These five recur because their ordinary lives produce different evidence, not because they are chosen heroes.
+**Visual:** Pippa’s watering cart and Pip’s shortcut appear on the same continuous map. Their paths stop at explicit old-route markers offset from the garden and play rock. Rowan compares all three equal-looking misses against Little Home’s measured drift.
 
-## Beat 3 — The Same Miss
+**Pippa:** “My watering line missed the garden too.”  
+**Pip:** “Our shortcut missed the play rock.”  
+**Tansy:** “A shortcut is supposed to reach something, Pip.”  
+**Pip:** “It did yesterday.”  
+**Rowan:** “Little Home drifted exactly as expected. But three different routes missed us by nearly the same distance.”  
+**Narrator:** “One missed errand might have been bad luck. Three matching misses were a question.”
 
-**Visual:** Little Home’s morning route fails in several ways: watering, bread, and another routine route miss similar stops.
+## Scene 4 — The Old Call
 
-**Narration:** Different chores and travelers are failing in suspiciously similar ways.
+**Visual:** Pippa activates a physical Waykeeper call box on Little Home. Its gold signal follows a connected path to the player’s compass. After the player answers, a separate textured helper skiff arrives on its own route so the volunteers do not pile on top of the household.
 
-**Pippa:** “My watering stop moved a whole garden bed.”  
-**Bramble:** “Bread from East Sunpetal missed us by nearly the same amount.”  
-**Rowan:** “Little Home is healthy. It just drifted farther than those routes expected.”
+**Pippa:** “We know our island. We know our routes. But something larger isn’t adding up.”  
+**Pippa:** “Let’s send the old Waykeeper call.”  
+**Narrator:** “Waykeepers once helped the Skyway adapt whenever familiar paths stopped fitting the world around them.”  
+**Narrator:** “Little Home sent the call…”  
+**Narrator:** “…and you answered.”
 
-**Player takeaway:** There is a pattern worth investigating, but its cause is not yet known.
+**Line 13 button:** **Send the Call**  
+**Line 15 button:** **Answer**
 
-## Beat 4 — What the Skyway Does
+## Scene 5 — See the Route
 
-**Visual:** Route lights link homes, gardens, markets, and neighbors while islands continue drifting.
+**Visual:** The shared scene yields to an exact miniature model of Level 1, framed in textured wood. The board introduces paths, participants, and stopping places without pretending the abstract board pieces are the named residents.
 
-**Narration:** The Skyway exists to keep ordinary life connected while the world moves. A good route works with drift rather than freezing it.
+**Bramble:** “We’ll bring what we know. Our neighbors will bring what they know. You help us see how all the pieces fit together.”  
+**Narrator:** “To a Waykeeper, every real route becomes a puzzle of paths, people, and stopping places.”  
+**Rowan:** “Start with Sunpetal’s morning routes. Find out why they’re all missing in the same way.”  
+**Pippa:** “And perhaps begin with breakfast.”  
+**Pip:** “Finally, a properly organized investigation.”
 
-## Beat 5 — A Waykeeper Answers
-
-**Visual:** An old Waykeeper signal/compass motif lights above Little Home and new route lines sketch around present positions.
-
-**Narration:** Little Home sends an old Waykeeper call. **You answer it.** The household brings observations from lived-in routes; the Waykeeper brings specialized route-reading skill and can connect those clues across the network.
-
-**Pippa:** “We’ll show you what changed in the day-to-day routes.”  
-**Rowan:** “You help us find out whether those changes belong to one larger pattern.”
-
-**Player takeaway:** This explicitly answers why the player is here without assigning the Waykeeper a fixed biography.
-
-## Beat 6 — Everyone Knows a Piece
-
-**Visual:** Local helper crews gather around a route board.
-
-**Narration:** Every island knows its own paths and hardware. Volunteers test stops and travel windows; Little Home coordinates reports; the Waykeeper connects the route logic.
-
-**Bramble:** “Everybody knows a piece of the route. We just need to put the pieces together.”
-
-## Beat 7 — How You See a Route
-
-**Visual:** Demonstrate select → direction → continuous snap → deliberate stopper → matching nest.
-
-**Narration:** A board is the Waykeeper’s route model. Edges, rocks, helpers, and later Skyway hardware create stopping points. One move can set up the next.
-
-**Rowan:** “Guide each helper into the nest that matches them. When every helper arrives safely, that route is working.”
-
-## Beat 8 — Start With Sunpetal
-
-**Visual:** Return to Little Home’s failed morning connection.
-
-**Narration:** Restore Sunpetal’s morning routes, compare the failures as reports arrive, and determine whether this is one strange morning or something larger.
-
-**Pippa:** “First we make breakfast possible again.”  
-**Pip:** “Then we investigate breakfast.”  
-**Tansy:** “In that order, please.”
-
-**Final button:** **Begin Level 1**
+**Final button:** **Help Little Home**
 
 ---
 
@@ -330,3 +307,4 @@ The meaning of **Skyway Restored** remains:
 - Waykeeping is again a living community practice;
 - routes change with the people who need them;
 - ordinary life continues.
+

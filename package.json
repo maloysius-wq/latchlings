@@ -4,7 +4,10 @@
   "description": "",
   "main": "campaign400-1.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/opening-continuous.browser.cjs && node tests/opening-flow.browser.cjs && node tests/cinematics-regression.browser.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
   },
   "repository": {
     "type": "git",
@@ -18,3 +21,4 @@
   },
   "homepage": "https://github.com/maloysius-wq/latchlings#readme"
 }
+

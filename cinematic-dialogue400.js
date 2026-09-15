@@ -29,7 +29,7 @@ function dialogueLayerHtml(id,index,beat){const groups=dialogueGroups(beat);if(i
 function openingDockHtml(id,index,groups){
  if(!groups.length)return '';
  const order=['Pippa','Bramble','Rowan','Pip','Tansy'];
- const castKey=id==='opening'&&index===1?`<div class="cin-opening-cast-key" aria-label="Little Home residents">${order.map(name=>{const c=CAST[name];return `<span class="cin-opening-cast-chip">${portrait(name,'opening-cast-portrait')}<span><b>${escapeHtml(name)}</b><small>${escapeHtml(c.role)}</small></span></span>`}).join('')}</div>`:'';
+ const castKey='';
  const rows=groups.map(([name,texts],utterance)=>{const c=CAST[name];return `<div class="cin-opening-dialogue-row" data-speaker="${escapeHtml(name)}" data-utterance="${utterance+1}">${portrait(name,'opening-dialogue-portrait')}<div class="cin-opening-bubble"><div class="cin-opening-speaker"><b>${escapeHtml(name)}</b><small>${escapeHtml(c?.role||'Resident')}</small></div>${speechTextHtml(texts)}</div></div>`}).join('');
  return `<section class="cin-opening-dialogue-dock cin-ordered-dialogue-dock" data-cinematic="${escapeHtml(id)}" data-beat="${index+1}" data-dialogue-count="${groups.length}" aria-label="Character dialogue in script order">${castKey}<div class="cin-opening-dialogue-list">${rows}</div></section>`;
 }
@@ -65,3 +65,4 @@ const oldEnsure=API.show;API.show=function(){const out=oldEnsure.apply(API,argum
 observe();
 window.LatchlingsCinematicDialogue={CAST,postProcess,narratorLines,dialogueLines,dialogueGroups};
 })();
+

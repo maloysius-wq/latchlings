@@ -6,16 +6,39 @@ const CAST=Object.fromEntries((window.LATCHLINGS_STORY?.cast||[]).map(person=>[p
 if(!Object.keys(CAST).length)throw new Error('Canonical Latchlings cast identity is unavailable');
 const CINEMATICS={
  opening:{
-  title:'The Skyway',chapter:'Before Level 1',finalLabel:'Begin Level 1',unlock:1,
+  title:'The Morning the Routes Missed',chapter:'Before Level 1',finalLabel:'Help Little Home',unlock:1,
   beats:[
-   {label:'The Latchlands Move',visual:'breakfast-journey',lines:[['Narrator','Morning routes light up between drifting islands. A breakfast basket starts toward Little Home while the shoreline quietly slides east.']]},
-   {label:'Meet Little Home',visual:'little-home',lines:[['Pippa','Watering line first.'],['Bramble','Bread route second.'],['Rowan','And I will measure how far home moved overnight.'],['Tansy','Please measure before breakfast becomes lunch.']]},
-   {label:'The Same Miss',visual:'morning',lines:[['Pippa','My watering stop missed the garden.'],['Bramble','The bread basket missed by almost the same distance.'],['Rowan','Little Home is healthy. The routes are stopping where home used to be.']]},
-   {label:'What the Skyway Does',visual:'skyway',lines:[['Narrator','A working Skyway carries parcels, visits, and daily chores while the islands keep moving. The route adapts; the world does not hold still.']]},
-   {label:'A Waykeeper Answers',visual:'waykeeper',lines:[['Pippa','We sent the old Waykeeper call. You answered.'],['Rowan','We will bring what each route is doing now. You help us test what fits the whole network.']]},
-   {label:'Everyone Knows a Piece',visual:'helper-crew',lines:[['Bramble','Neighbors know their own paths better than any master map.'],['Narrator','Local route crews step forward with what they know, one working stop at a time.']]},
-   {label:'How You See a Route',visual:'snap-demo',lines:[['Rowan','Choose a helper and a direction. They slide until the route gives them a real stopping point.'],['Narrator','Guide every helper into the matching nest. When everyone arrives, that route works again.']]},
-   {label:'Start With Sunpetal',visual:'morning',lines:[['Pippa','First, make breakfast possible again.'],['Pip','Then we investigate breakfast.'],['Tansy','In that order, please.']]}
+   {label:'A Moving World',visual:'opening-continuous',lines:[
+    ['Narrator','In the Latchlands, the islands are always drifting—slowly, quietly, and exactly as they should.'],
+    ['Narrator','The Skyway moves with them, carrying neighbors, parcels, and all the small things that make a day work.']
+   ]},
+   {label:'Morning at Little Home',visual:'opening-continuous',lines:[
+    ['Narrator','And on a little island called Little Home, every morning began with its own familiar collection of very important jobs.'],
+    ['Bramble','Breakfast incoming. Perfectly timed, as usual.'],
+    ['Bramble','…That is not our porch.']
+   ]},
+   {label:'The Same Strange Miss',visual:'opening-continuous',lines:[
+    ['Pippa','My watering line missed the garden too.'],
+    ['Pip','Our shortcut missed the play rock.'],
+    ['Tansy','A shortcut is supposed to reach something, Pip.'],
+    ['Pip','It did yesterday.'],
+    ['Rowan','Little Home drifted exactly as expected. But three different routes missed us by nearly the same distance.'],
+    ['Narrator','One missed errand might have been bad luck. Three matching misses were a question.']
+   ]},
+   {label:'The Old Call',visual:'opening-continuous',lines:[
+    ['Pippa','We know our island. We know our routes. But something larger isn’t adding up.'],
+    ['Pippa','Let’s send the old Waykeeper call.'],
+    ['Narrator','Waykeepers once helped the Skyway adapt whenever familiar paths stopped fitting the world around them.'],
+    ['Narrator','Little Home sent the call…'],
+    ['Narrator','…and you answered.']
+   ]},
+   {label:'See the Route',visual:'opening-continuous',lines:[
+    ['Bramble','We’ll bring what we know. Our neighbors will bring what they know. You help us see how all the pieces fit together.'],
+    ['Narrator','To a Waykeeper, every real route becomes a puzzle of paths, people, and stopping places.'],
+    ['Rowan','Start with Sunpetal’s morning routes. Find out why they’re all missing in the same way.'],
+    ['Pippa','And perhaps begin with breakfast.'],
+    ['Pip','Finally, a properly organized investigation.']
+   ]}
   ]
  },
  'across-drift':{
@@ -51,7 +74,7 @@ const CINEMATICS={
   ]
  }
 };
-const OPENING_FIRST_RUN_STEPS=[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]];
+const OPENING_FIRST_RUN_STEPS=CINEMATICS.opening.beats.flatMap((beat,beatIndex)=>beat.lines.map((_,lineIndex)=>[beatIndex,lineIndex]));
 let activeId=null,activeIndex=0,activeLine=0,activeFlow=null,activeStep=0,onDone=null,markOnDone=false,lastFocus=null;
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
@@ -122,17 +145,24 @@ function renderTurn(){
  const nextBtn=document.getElementById('cinematicNext');
  const compact=!!activeFlow,lastBeat=compact?activeStep===activeFlow.length-1:activeIndex===c.beats.length-1,lastLine=compact?true:activeLine===b.lines.length-1;
  nextBtn.textContent=lastBeat&&lastLine?c.finalLabel:(lastLine?'Next scene':'Continue');
+ if(activeId==='opening'&&window.LatchlingsOpeningScene){
+  const step=CINEMATICS.opening.beats.slice(0,activeIndex).reduce((n,beat)=>n+beat.lines.length,0)+activeLine+1;
+  window.LatchlingsOpeningScene.sync(document.getElementById('cinematicStage'),step,{character,suitSvg});
+  nextBtn.textContent=window.LatchlingsOpeningScene.buttonLabel(step);
+  o.dataset.openingStep=String(step);
+ }
  const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0;
 }
 function render(){
  const c=CINEMATICS[activeId],b=c&&c.beats[activeIndex];if(!c||!b)return;
- const o=ensureOverlay(),displayIndex=activeFlow?activeStep:activeIndex,displayCount=activeFlow?activeFlow.length:c.beats.length;
+ const o=ensureOverlay(),opening=activeId==='opening',displayIndex=opening?activeIndex:(activeFlow?activeStep:activeIndex),displayCount=opening?c.beats.length:(activeFlow?activeFlow.length:c.beats.length);
  o.dataset.cinematic=activeId;o.dataset.visual=b.visual;o.dataset.beat=String(activeIndex);o.dataset.mode=activeFlow?'first-run':'full';
  document.getElementById('cinematicChapter').textContent=c.chapter;
  document.getElementById('cinematicTitle').textContent=c.title;
  document.getElementById('cinematicBeat').textContent=b.label;
  document.getElementById('cinematicCounter').textContent=`${displayIndex+1} / ${displayCount}`;
- document.getElementById('cinematicStage').innerHTML=visualHtml(b.visual);
+ if(opening&&window.LatchlingsOpeningScene)window.LatchlingsOpeningScene.sync(document.getElementById('cinematicStage'),1,{character,suitSvg});
+ else document.getElementById('cinematicStage').innerHTML=visualHtml(b.visual);
  document.getElementById('cinematicProgress').innerHTML=Array.from({length:displayCount},(_,i)=>`<i class="${i===displayIndex?'active':i<displayIndex?'done':''}"></i>`).join('');
  renderTurn();
  requestAnimationFrame(()=>o.classList.add('beat-ready'));
@@ -145,3 +175,4 @@ function renderLibrary(container,unlocked){if(typeof container==='string')contai
 document.addEventListener('keydown',e=>{if(!activeId)return;if(e.key==='Escape'){e.preventDefault();finish(true);return}if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();next()}});
 window.LatchlingsCinematics={TRIGGERS,CINEMATICS,OPENING_FIRST_RUN_STEPS,show,next,finish,hasSeen,reset,maybeShowBeforeLevel,renderLibrary,castIdentitySource:'LATCHLINGS_STORY.cast',get active(){return activeId},get beat(){return activeIndex},get line(){return activeLine},get mode(){return activeFlow?'first-run':'full'},get step(){return activeFlow?activeStep:null}};
 })();
+
