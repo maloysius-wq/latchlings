@@ -8,6 +8,18 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### User playtest: controls and opening story balance
+**Status: COMPLETED / ACCEPTED**
+
+Player-feedback follow-up on 2026-09-15 intentionally supersedes two Astra-era presentation choices while preserving the accepted underlying systems.
+
+- **Gameplay controls:** the Astra short/tall-phone D-pad shrink overrides were reverted to the original pre-Astra responsive geometry. Main `9015bdb6b2f60e30b98afddc677e990ba8b1bff4` adds only `style400-control-restoration.css` plus its late import. Committed-main Chromium run `34978632258` verified 144px at 320x568, 175.5px at 390x568, 190px at 430x568, and 206.7px at 390x844, including the original short-screen directional hit geometry. Pages run `34978567074` succeeded. This is now the protected control baseline unless new player testing requests another change.
+- **First-run Opening:** the earlier five-advance compact Opening was too terse in live playtesting. The accepted first-run flow now uses ten existing canonical utterances at `[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]`, restoring the moving-world hook, all five Little Home voices, the stale-route diagnosis, what the Skyway does, the Waykeeper call, the movement rule, and Pip's breakfast beat. No canonical dialogue was rewritten. The complete 8-beat / 18-utterance Opening remains available in replay, and the later three cinematics are unchanged.
+
+Opening acceptance evidence: TDD RED run `34980347527` failed on the old five-step selection; accepted candidate product `a710738756472142c906f71d956652ceb1a5f749`; candidate browser run `34981082617` passed 320x568 / 390x844 / 430x932, full 18-utterance Opening replay, all 56 cinematic utterances, Reduced Motion, control containment, and restored D-pad protection. Candidate artifact `10401806417`, SHA-256 `4c8d9bff12ccc50e42adeb15bf25ee205ac9802d3da78a327cb201859f8b51d8`, was manually reviewed and accepted. Exact accepted `cinematics400.js` bytes were promoted to main as `caa55b27ebdb6902e0ff018fee4ca80744828171`; committed-main run `34981606218` independently revalidated exact provenance and the same runtime contract. Live artifact `10402101217`, SHA-256 `67878195e4dd4ac2ae6327c9215fd7822d02dcd7dcfda85d938cb62b6dd426f0`.
+
+The historical Astra second-review section below remains as evidence of the earlier five-step decision, but its first-run pacing choice is superseded by this player-tested ten-step flow. Preserve the full replay, cinematic presentation architecture, later cinematics, Reduced Motion, authored campaign definitions/solutions, and the restored pre-Astra control geometry.
+
 ### Astra second-review finishing pass
 **Status: COMPLETED / BOUNDED FINISHING PASS ACCEPTED**
 

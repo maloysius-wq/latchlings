@@ -1,6 +1,6 @@
 # Astra Audit Acceptance Matrix
 
-Last reconciled: 2026-09-14
+Last reconciled: 2026-09-15
 
 This file is the durable repository-side reconciliation of the original `LATCHLINGS_VISUAL_STORY_AUDIT.md` (audit baseline `a5048dd25804fdd261639e5a22332a0cfd506682`), `LATCHLINGS_IMPLEMENTATION_REVIEW.md` (reviewed head `d6e39c0866505795c2aa6a26777896072e16e7df`), and `LATCHLINGS_SECOND_REVIEW.md` (reviewed head `9dffa07d9f1fcd0c48029e13e8a641596c630fc8`) against current `main`. The second review independently reverified R1-R5 and narrowed follow-up to S1-S3 plus optional S4 art direction.
 
@@ -13,6 +13,16 @@ Status meanings:
 - **NON-BLOCKING**: explicitly optional design experiment, not required for audit closure.
 - **DEFERRED**: a subjective creative/art-direction recommendation deliberately left for a later optional pass; it is not a functional regression.
 - **EXTERNAL**: cannot be honestly certified in the current browser/automation environment and must stay unverified until tested on the required hardware/software.
+
+## Post-audit player-feedback refinements
+
+### 2026-09-15 controls and first-run Opening
+Live player feedback superseded two previously accepted presentation choices without reopening the audit's underlying functional closure.
+
+- The Astra-era compact D-pad shrink is no longer the accepted product behavior. Main `9015bdb6b2f60e30b98afddc677e990ba8b1bff4` restores the original responsive pre-Astra D-pad sizing/hit geometry, browser-verified in committed-main run `34978632258` across 320x568, 390x568, 430x568, and 390x844.
+- The second-review five-advance first-run Opening proved too sparse in actual play. Accepted candidate `a710738756472142c906f71d956652ceb1a5f749` replaces only `OPENING_FIRST_RUN_STEPS` with ten canonical turns: `[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]`. Candidate run `34981082617` and committed-main run `34981606218` verify the richer first-run flow at three phone sizes while retaining the full 18-utterance Opening replay, all 56 canonical cinematic utterances, Reduced Motion, and the restored D-pad. Exact product bytes are live in main `caa55b27ebdb6902e0ff018fee4ca80744828171`.
+
+These are user-directed refinements after the audit. Historical evidence for the earlier compact-control and five-step-opening decisions remains below for provenance, but those two presentation choices are not the current product baseline.
 
 ## Item-by-item reconciliation
 
@@ -36,7 +46,7 @@ Status meanings:
 | V08 selection feedback | COMPLETED | The accepted gameplay hierarchy keeps the high-contrast selected-piece ring with a brief 120ms box-shadow/filter settle, matching destination identity/emphasis, persistent resolved nests, and short arrival acknowledgement without pulsing the whole board. A trajectory preview remains an optional help experiment rather than a closure blocker. |
 | V09 readable nests | COMPLETED | Suit-plus-color identity remains intact; completed nests now retain a resolved state/checkmark and arrivals receive a short `just-arrived` acknowledgement. Candidate and committed-live browser matrices verified persistent resolved state without simplifying identity to color alone. |
 | V10 mechanic-state causality | COMPLETED | Switches and doors expose matching letter identities, doors expose explicit OPEN/CLOSED state and matching aria text, rails/turners retain direction-by-shape with text equivalents, and rejected moves identify/highlight the relevant blocker. Committed-main closure run `34881048866` preserved those cues under achromatopsia, protanopia, deuteranopia, and tritanopia simulation; screenshots were manually reviewed. |
-| U06 control dominance | COMPLETED | Compact controls are accepted. Swipe and Undo are optional design experiments and intentionally NON-BLOCKING because they change interaction/difficulty economics. |
+| U06 control dominance | COMPLETED | The interaction model remains accepted, but live player feedback superseded the Astra-era D-pad shrink: main `9015bdb6b2f60e30b98afddc677e990ba8b1bff4` restores the original pre-Astra responsive D-pad size and directional hit geometry, verified in committed-main run `34978632258`. Swipe and Undo remain optional design experiments and intentionally NON-BLOCKING because they change interaction/difficulty economics. |
 | V11 emotional win causality | COMPLETED | The accepted movement loop coordinates departure trail, stop/capture, destination acknowledgement/resolved nest, concise authored movement result, chapter reward, and later Little Home resident/keepsake use. Final Pass 5 verifies all 40 movement start/result contracts while normal wins remain intentionally fast and larger ordinary-world payoffs stay at movement/chapter milestones. |
 | U07 hints | COMPLETED | Honest reset-before-hint flow is retained; R3 acceptance keeps board highlighting active after returning until interaction/reset rather than expiring while the modal is read. Current-state solver hints remain a NON-BLOCKING future enhancement. |
 | U08 failure tone | COMPLETED | Solver-verification language was replaced with player-facing retry/help language. |
