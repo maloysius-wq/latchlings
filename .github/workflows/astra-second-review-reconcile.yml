@@ -1,0 +1,60 @@
+name: Astra Second Review Documentation Reconciliation
+
+on:
+  push:
+    branches:
+      - astra-second-review-finishing
+    paths:
+      - '.github/workflows/astra-second-review-reconcile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Verify accepted main before documentation update
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED_MAIN=4e18050462d5b58d326a35130b4e9ec6ebe231c9
+          ACCEPTED=bd0633290cbc01ce6dac398ab2ee49b8dcdb4f2c
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN"
+          git fetch origin astra-second-review-finishing:refs/remotes/origin/astra-second-review-finishing
+          for f in cinematics400.js style400-cinematics.css style400-story-theme.css index.html; do
+            test "$(git rev-parse HEAD:$f)" = "$(git rev-parse $ACCEPTED:$f)"
+          done
+          for f in campaign400-{1..8}.js; do
+            test "$(git rev-parse HEAD:$f)" = "$(git rev-parse 9dffa07d9f1fcd0c48029e13e8a641596c630fc8:$f)"
+          done
+          git show origin/astra-second-review-finishing:.github/tmp/astra_second_review_reconcile.py > astra-second-review-reconcile.py
+      - name: Reconcile handoff and acceptance matrix
+        run: python astra-second-review-reconcile.py
+      - name: Validate documentation state
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq '**Status: COMPLETED / BOUNDED FINISHING PASS ACCEPTED**' DEVELOPMENT_HANDOFF.md
+          grep -Fq 'Next action: real-device playtesting.' DEVELOPMENT_HANDOFF.md
+          grep -Fq 'S4 ART-DIRECTION REFINEMENT DEFERRED' DEVELOPMENT_HANDOFF.md
+          grep -Fq '| V04 material consistency | DEFERRED |' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -Fq '### Second implementation review finishing pass' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -Fq '**S2: COMPLETED for first-run pacing.**' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -Fq '**S3: COMPLETED.**' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          grep -Fq '**S4: DEFERRED.**' ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          test "$(git diff --name-only | sort)" = $'ASTRA_AUDIT_ACCEPTANCE_MATRIX.md\nDEVELOPMENT_HANDOFF.md'
+      - name: Commit documentation reconciliation to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f astra-second-review-reconcile.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add DEVELOPMENT_HANDOFF.md ASTRA_AUDIT_ACCEPTANCE_MATRIX.md
+          git commit -m 'Reconcile Astra second-review finishing pass'
+          git push origin HEAD:main
