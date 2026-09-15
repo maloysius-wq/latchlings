@@ -1,9 +1,8 @@
-name: Fix Opening Rowan Overlap
+name: Close Out Opening Rowan Overlap
 
 on:
   push:
     branches:
-      - fix/opening-rowan-overlap-20260915
       - main
   workflow_dispatch:
 
@@ -11,53 +10,49 @@ permissions:
   contents: write
 
 jobs:
-  mark-in-progress:
-    if: ${{ github.ref_name == 'fix/opening-rowan-overlap-20260915' && !contains(github.event.head_commit.message, '[opening-rowan-action]') }}
+  closeout:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: fix/opening-rowan-overlap-20260915
-      - name: Mark handoff in progress
+          ref: main
+      - name: Mark handoff complete and remove temporary workflow
         shell: python
         run: |
           from pathlib import Path
           p = Path('DEVELOPMENT_HANDOFF.md')
           text = p.read_text()
-          old = '**Status: PARTIAL / MERGED TO MAIN, REGRESSION CONFIRMED**'
-          new = '**Status: IN PROGRESS / FIXING COMMITTED-MAIN 360×800 ROWAN OVERLAP**'
+          old = '**Status: IN PROGRESS / FIXING COMMITTED-MAIN 360×800 ROWAN OVERLAP**'
+          new = '**Status: COMPLETED / COMMITTED-MAIN REGRESSION FIXED AND VERIFIED**'
+          evidence = (
+              "\n\nCloseout (2026-09-15): PR #3 was squash-merged to `main` as "
+              "`8ce8556f31c2099e448e522b9e3ca7cd2501b1c9`. The root cause was a stale filled Web Animation: "
+              "after the basket travel step, `place()` updated inline route coordinates without cancelling the still-active "
+              "`fill: 'forwards'` animation, so rapid story advancement could leave the basket frozen mid-route over Rowan at "
+              "360×800. `place()` now cancels active element animations before applying the resolved route point. Candidate GitHub "
+              "Actions run `35026680458` passed the targeted phone visual regression and the complete shipped `npm test`; latest "
+              "branch-head run `35026926425` also passed both gates. Most importantly, committed-main GitHub Actions run "
+              "`35027136387` passed `tests/phone-visual-regressions.browser.cjs` and the full four-suite `npm test` on exact merge "
+              "SHA `8ce8556f31c2099e448e522b9e3ca7cd2501b1c9`. Repository access guard run `35027136530` also passed. "
+              "The temporary repair workflow was removed during closeout; only handoff/workflow housekeeping changed after the "
+              "verified product merge.\n"
+          )
           if new in text:
-              print('Handoff already marked in progress.')
+              if 'Closeout (2026-09-15): PR #3' not in text:
+                  text = text.replace(new, new + evidence, 1)
           elif old in text:
-              p.write_text(text.replace(old, new, 1))
+              text = text.replace(old, new + evidence, 1)
           else:
-              raise SystemExit('Expected current-work status marker not found')
-      - name: Commit handoff status
+              raise SystemExit('Expected in-progress status marker not found')
+          p.write_text(text)
+          Path('.github/workflows/fix-opening-rowan-overlap.yml').unlink()
+      - name: Commit closeout
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- DEVELOPMENT_HANDOFF.md; then
-            echo 'No handoff change needed.'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add DEVELOPMENT_HANDOFF.md
-          git commit -m '[opening-rowan-action] Mark overlap fix in progress'
-          git push origin HEAD:fix/opening-rowan-overlap-20260915
-
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm install
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run targeted phone regression
-        run: node tests/phone-visual-regressions.browser.cjs
-      - name: Run full shipped test suite
-        run: npm test
+          git add -u .github/workflows/fix-opening-rowan-overlap.yml
+          git commit -m '[opening-rowan-action] Complete verified overlap repair'
+          git push origin HEAD:main
