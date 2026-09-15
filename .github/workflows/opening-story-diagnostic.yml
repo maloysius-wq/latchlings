@@ -1,0 +1,46 @@
+name: Opening story diagnostic
+
+on:
+  push:
+    branches:
+      - opening-story-balance
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Print first compact turn text
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8000 >/tmp/latchlings-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:320,height:568}});
+            await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
+            console.log('steps',JSON.stringify(await page.evaluate(()=>window.LatchlingsCinematics.OPENING_FIRST_RUN_STEPS)));
+            console.log('start',await page.evaluate(()=>window.LatchlingsCinematics.show('opening',{compact:true,markSeen:false})));
+            await page.waitForTimeout(100);
+            const actual=await page.evaluate(()=>{
+              const p=document.querySelector('#cinematicLines p');
+              return {speaker:p?.querySelector('strong')?.textContent,text:p?.querySelector('span')?.textContent,beat:window.LatchlingsCinematics.beat,line:window.LatchlingsCinematics.line,step:window.LatchlingsCinematics.step,counter:document.querySelector('#cinematicCounter')?.textContent};
+            });
+            const expected=await page.evaluate(()=>window.LatchlingsCinematics.CINEMATICS.opening.beats[0].lines[0]);
+            console.log('actual',JSON.stringify(actual));
+            console.log('expected',JSON.stringify(expected));
+            console.log('speakerCodes',JSON.stringify([...actual.speaker].map(c=>c.codePointAt(0))));
+            console.log('textCodes',JSON.stringify([...actual.text].map(c=>c.codePointAt(0))));
+            console.log('expectedTextCodes',JSON.stringify([...expected[1]].map(c=>c.codePointAt(0))));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
