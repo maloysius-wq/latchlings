@@ -1,0 +1,66 @@
+name: Opening story balance
+
+on:
+  push:
+    branches:
+      - opening-story-balance
+
+permissions:
+  contents: write
+
+jobs:
+  opening-balance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record handoff in progress
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('DEVELOPMENT_HANDOFF.md')
+          text = p.read_text()
+          marker = '## Current work\n\n'
+          heading = '### Opening story balance pass\n'
+          if heading not in text:
+              section = '''### Opening story balance pass
+**Status: IN PROGRESS**
+
+User playtest feedback on 2026-09-15: the five-step first-run Opening created by the Astra second-review pacing pass feels under-explained and does not give the characters/world enough room to hook a new player.
+
+Approved bounded design: restore a richer first-run Opening using canonical dialogue only, targeting ten meaningful advances while preserving the complete canonical 8-beat / 18-utterance Opening in Journal replay. The first-run sequence must establish the moving-islands hook, introduce all five principal Little Home voices, explain that Little Home is healthy while stale routes miss where it moved, state what the Skyway does, establish the Waykeeper call, teach the basic movement input, and land on Pip's breakfast beat before play. Preserve later cinematics, accepted visual staging, Reduced Motion, restored pre-Astra controls, accessibility behavior, and authored campaign definitions/solutions.
+
+Target first-run canonical coordinates: `[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]`.
+
+Validation contract: TDD RED before product edits; exact ten-step first-run order at 320x568 / 390x844 / 430x932; full 18-utterance Opening replay unchanged; all 56 canonical cinematic utterances remain replayable; cinematic controls remain visible and >=44px; no viewport overflow; Reduced Motion stays resolved/non-animated; exact authored campaign files remain unchanged; candidate-first validation before promotion; committed-main revalidation; temporary workflow cleanup; final Pages and repository guard.
+
+'''
+              if marker not in text:
+                  raise SystemExit('Current work marker missing')
+              p.write_text(text.replace(marker, marker + section, 1))
+          PY
+          if ! git diff --quiet -- DEVELOPMENT_HANDOFF.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add DEVELOPMENT_HANDOFF.md
+            git commit -m "Mark opening story balance in progress"
+            git push origin HEAD:opening-story-balance
+          fi
+      - name: TDD RED - require approved ten-step first-run opening
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import ast, re
+          src = Path('cinematics400.js').read_text()
+          m = re.search(r'const OPENING_FIRST_RUN_STEPS=(\[[^;]+\]);', src)
+          if not m:
+              raise SystemExit('OPENING_FIRST_RUN_STEPS not found')
+          actual = ast.literal_eval(m.group(1))
+          expected = [[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]
+          assert actual == expected, f'Expected approved ten-step opening, found {actual}'
+          PY
