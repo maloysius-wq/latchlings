@@ -22,29 +22,7 @@ jobs:
           grep -Fq '### Opening story balance pass' DEVELOPMENT_HANDOFF.md
           grep -Fq '**Status: IN PROGRESS**' DEVELOPMENT_HANDOFF.md
           grep -Fq '[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]' DEVELOPMENT_HANDOFF.md
-      - name: Implement approved ten-step first-run opening
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('cinematics400.js')
-          text = p.read_text()
-          old = 'const OPENING_FIRST_RUN_STEPS=[[0,0],[2,2],[4,0],[6,0],[7,0]];'
-          new = 'const OPENING_FIRST_RUN_STEPS=[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]];'
-          if old in text:
-              p.write_text(text.replace(old, new, 1))
-          elif new not in text:
-              raise SystemExit('Opening compact-flow source did not match expected accepted baseline')
-          PY
-          if ! git diff --quiet -- cinematics400.js; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add cinematics400.js
-            git commit -m "Restore richer first-run opening story"
-            git push origin HEAD:opening-story-balance
-          fi
-      - name: Verify static story and protected-source contract
+      - name: Verify approved ten-step first-run opening
         shell: bash
         run: |
           set -euo pipefail
@@ -58,15 +36,19 @@ jobs:
           actual = ast.literal_eval(m.group(1))
           expected = [[0,0],[1,0],[1,1],[1,2],[1,3],[2,2],[3,0],[4,0],[6,0],[7,1]]
           assert actual == expected, (actual, expected)
-          assert "['Pippa','Watering line first.']" in src
-          assert "['Bramble','Bread route second.']" in src
-          assert "['Rowan','And I will measure how far home moved overnight.']" in src
-          assert "['Tansy','Please measure before breakfast becomes lunch.']" in src
-          assert "['Rowan','Little Home is healthy. The routes are stopping where home used to be.']" in src
-          assert "['Narrator','A working Skyway carries parcels, visits, and daily chores while the islands keep moving. The route adapts; the world does not hold still.']" in src
-          assert "['Pippa','We sent the old Waykeeper call. You answered.']" in src
-          assert "['Rowan','Choose a helper and a direction. They slide until the route gives them a real stopping point.']" in src
-          assert "['Pip','Then we investigate breakfast.']" in src
+          required = [
+              "['Pippa','Watering line first.']",
+              "['Bramble','Bread route second.']",
+              "['Rowan','And I will measure how far home moved overnight.']",
+              "['Tansy','Please measure before breakfast becomes lunch.']",
+              "['Rowan','Little Home is healthy. The routes are stopping where home used to be.']",
+              "['Narrator','A working Skyway carries parcels, visits, and daily chores while the islands keep moving. The route adapts; the world does not hold still.']",
+              "['Pippa','We sent the old Waykeeper call. You answered.']",
+              "['Rowan','Choose a helper and a direction. They slide until the route gives them a real stopping point.']",
+              "['Pip','Then we investigate breakfast.']",
+          ]
+          for line in required:
+              assert line in src, line
           print('STATIC_OPENING_BALANCE_OK')
           PY
           test -z "$(git diff --name-only 9015bdb6b2f60e30b98afddc677e990ba8b1bff4 -- 'campaign400-*.js')"
@@ -92,65 +74,87 @@ jobs:
           const sizes = [[320,568],[390,844],[430,932]];
           const shotSteps = new Set([0,1,4,5,6,7,8,9]);
           const sleep = ms => new Promise(r => setTimeout(r, ms));
+          async function presentedTurn(page) {
+            return page.evaluate(() => {
+              const api = window.LatchlingsCinematics;
+              const [speaker, canonicalText] = api.CINEMATICS[api.active].beats[api.beat].lines[api.line];
+              const overlay = document.querySelector('#cinematicOverlay');
+              const lines = document.querySelector('#cinematicLines');
+              let renderedSpeaker = null, renderedText = null, surface = null;
+              if (speaker === 'Narrator') {
+                renderedSpeaker = 'Narrator';
+                renderedText = lines?.querySelector('.narrator-only span')?.textContent?.trim() || null;
+                surface = 'narration';
+              } else {
+                const dock = document.querySelector('.cinematic-copy > .cin-opening-dialogue-dock');
+                const row = dock?.querySelector(`[data-speaker="${CSS.escape(speaker)}"]`);
+                renderedSpeaker = row?.dataset?.speaker || null;
+                renderedText = row?.querySelector('.cin-opening-bubble > span')?.textContent?.trim() || null;
+                surface = 'dialogue-dock';
+              }
+              const btn = document.querySelector('#cinematicNext');
+              const r = btn.getBoundingClientRect();
+              return {
+                mode: api.mode, step: api.step, beat: api.beat, line: api.line,
+                speaker, canonicalText, renderedSpeaker, renderedText, surface,
+                narratorCount: overlay?.dataset?.narratorCount,
+                dialogueCount: overlay?.dataset?.dialogueCount,
+                counter: document.querySelector('#cinematicCounter')?.textContent?.trim(),
+                button: {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right},
+                scrollW: overlay.scrollWidth, clientW: overlay.clientWidth,
+                scrollH: overlay.scrollHeight, clientH: overlay.clientHeight,
+                visible: getComputedStyle(btn).visibility !== 'hidden' && getComputedStyle(btn).display !== 'none'
+              };
+            });
+          }
+          function assertPresentation(state,label) {
+            if (state.renderedSpeaker !== state.speaker || state.renderedText !== state.canonicalText) {
+              throw new Error(`${label}: presentation mismatch: ${JSON.stringify(state)}`);
+            }
+            if (state.speaker === 'Narrator') {
+              if (state.surface !== 'narration' || state.narratorCount !== '1' || state.dialogueCount !== '0') throw new Error(`${label}: narrator surface mismatch: ${JSON.stringify(state)}`);
+            } else {
+              if (state.surface !== 'dialogue-dock' || state.dialogueCount !== '1' || state.narratorCount !== '0') throw new Error(`${label}: dialogue surface mismatch: ${JSON.stringify(state)}`);
+            }
+          }
           async function collectCompact(page, label) {
             const started = await page.evaluate(() => window.LatchlingsCinematics.show('opening',{compact:true,markSeen:false}));
             if (!started) throw new Error(`${label}: compact opening did not start`);
             const turns = [];
             for (let i=0;i<compactCoords.length;i++) {
               await page.waitForSelector('#cinematicOverlay.show');
-              await sleep(70);
-              const state = await page.evaluate(() => {
-                const api = window.LatchlingsCinematics;
-                const p = document.querySelector('#cinematicLines p');
-                const btn = document.querySelector('#cinematicNext');
-                const r = btn.getBoundingClientRect();
-                const overlay = document.querySelector('#cinematicOverlay');
-                return {
-                  mode: api.mode, step: api.step, beat: api.beat, line: api.line,
-                  speaker: p?.querySelector('strong')?.textContent?.trim(),
-                  text: p?.querySelector('span')?.textContent?.trim(),
-                  counter: document.querySelector('#cinematicCounter')?.textContent?.trim(),
-                  button: {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right},
-                  scrollW: overlay.scrollWidth, clientW: overlay.clientWidth,
-                  scrollH: overlay.scrollHeight, clientH: overlay.clientHeight,
-                  visible: getComputedStyle(btn).visibility !== 'hidden' && getComputedStyle(btn).display !== 'none'
-                };
-              });
+              await sleep(90);
+              const state = await presentedTurn(page);
               const [eb,el] = compactCoords[i];
               if (state.mode !== 'first-run' || state.step !== i || state.beat !== eb || state.line !== el) throw new Error(`${label}: wrong compact coordinate at ${i}: ${JSON.stringify(state)}`);
               if (state.counter !== `${i+1} / 10`) throw new Error(`${label}: wrong counter ${state.counter}`);
+              assertPresentation(state,`${label} compact step ${i+1}`);
               if (!state.visible || state.button.h < 44 || state.button.w < 44 || state.button.bottom > page.viewportSize().height + 1 || state.button.right > page.viewportSize().width + 1 || state.button.x < -1 || state.button.y < -1) throw new Error(`${label}: cinematic action control not safely visible: ${JSON.stringify(state.button)}`);
               if (state.scrollW > state.clientW + 1 || state.scrollH > state.clientH + 1) throw new Error(`${label}: cinematic overlay overflow ${state.scrollW}x${state.scrollH} vs ${state.clientW}x${state.clientH}`);
               turns.push(state);
               if (label === '390x844' && shotSteps.has(i)) await page.screenshot({path:`opening-story-evidence/opening-${String(i+1).padStart(2,'0')}.png`,fullPage:true});
               await page.click('#cinematicNext');
-              await sleep(80);
+              await sleep(90);
             }
             if (await page.evaluate(() => !!window.LatchlingsCinematics.active)) throw new Error(`${label}: compact opening did not finish after ten advances`);
-            const expected = await page.evaluate(coords => coords.map(([b,l]) => window.LatchlingsCinematics.CINEMATICS.opening.beats[b].lines[l]), compactCoords);
-            turns.forEach((t,i) => {
-              if (t.speaker !== expected[i][0] || t.text !== expected[i][1]) throw new Error(`${label}: compact canonical text mismatch at ${i}`);
-            });
             return turns;
           }
           async function collectFull(page, id) {
-            const expected = await page.evaluate(id => window.LatchlingsCinematics.CINEMATICS[id].beats.flatMap(b => b.lines), id);
+            const expectedCount = await page.evaluate(id => window.LatchlingsCinematics.CINEMATICS[id].beats.reduce((n,b)=>n+b.lines.length,0), id);
             const started = await page.evaluate(id => window.LatchlingsCinematics.show(id,{markSeen:false}), id);
             if (!started) throw new Error(`${id}: full replay did not start`);
-            const seen = [];
-            for (let i=0;i<expected.length;i++) {
-              await sleep(45);
-              const pair = await page.evaluate(() => {
-                const p = document.querySelector('#cinematicLines p');
-                return [p?.querySelector('strong')?.textContent?.trim(),p?.querySelector('span')?.textContent?.trim(),window.LatchlingsCinematics.mode];
-              });
-              if (pair[2] !== 'full' || pair[0] !== expected[i][0] || pair[1] !== expected[i][1]) throw new Error(`${id}: full replay mismatch at ${i}: ${JSON.stringify(pair)} expected ${JSON.stringify(expected[i])}`);
-              seen.push(pair.slice(0,2));
+            let seen = 0;
+            for (let i=0;i<expectedCount;i++) {
+              await sleep(70);
+              const state = await presentedTurn(page);
+              if (state.mode !== 'full') throw new Error(`${id}: replay unexpectedly compact at turn ${i+1}`);
+              assertPresentation(state,`${id} replay turn ${i+1}`);
+              seen++;
               await page.click('#cinematicNext');
-              await sleep(55);
+              await sleep(70);
             }
             if (await page.evaluate(() => !!window.LatchlingsCinematics.active)) throw new Error(`${id}: replay did not finish`);
-            return seen.length;
+            return seen;
           }
           (async () => {
             const browser = await chromium.launch({headless:true});
