@@ -8,6 +8,15 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Physical-phone opening geometry and puzzle-control restoration
+**Status: COMPLETED / ACCEPTED CANDIDATE**
+
+User-provided Android screenshots on 2026-09-15 exposed two root causes: the Opening positioned residents against the whole stage while Little Home occupied only a narrow portion of it, and independently floating islands drifted away from fixed SVG routes; the earlier control restoration enlarged only the D-pad while leaving Astra's compact 330px / 64px–148px–64px grid in force, which displaced or hid Hint.
+
+Candidate branch `codex/mobile-island-controls-fix-20260915` enlarges and rebalances the textured Little Home plateau, grounds all five residents and the porch/garden/play-rock props, centers Pip on the SVG motion path, distributes moving props away from the cast, fixes route endpoints relative to their named destinations, places the call display clear of every face, and gives the helper route an unobstructed grassy-edge landing. Independent island bobbing was removed because it made otherwise correct SVG endpoints visibly detach. Story copy/pacing, gameplay rules, board presentation, campaign data, later cinematics, and landscape layout are unchanged.
+
+The complete portrait Reset / D-pad / Hint cluster now restores the exact pre-Astra baseline geometry from `a5048dd25804fdd261639e5a22332a0cfd506682`: full available width, 78px side columns, original 80px/66px side-action heights, 22px radii, 13px labels, responsive 224px/53vw and short-screen 190px/45vw D-pad sizing, and original direction hit regions. New `tests/phone-visual-regressions.browser.cjs` validates 360×800, 390×844, and 430×932 resident/prop plateau containment, route-to-destination proximity, route-marker connection, post-animation Pip footing, prop/call/helper non-overlap, and complete control geometry. Fresh local `npm test` passed all four shipped browser suites; rendered 390×844 frames for steps 1, 10, 12, 14, and 17 plus Level 1 controls were manually reviewed. PR #2 repository guard run `35019072437` passed on candidate `be0fcd02fa1a268b873037bca366c8ea919dba28` before this documentation-only closeout.
+
 ### Continuous opening cinematic rebuild
 **Status: COMPLETED / ACCEPTED**
 
