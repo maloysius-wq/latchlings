@@ -9,7 +9,9 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Opening world coherence and static cinematic controls
-**Status: IN PROGRESS / USER-APPROVED REBUILD**
+**Status: COMPLETED / MERGED AND COMMITTED-MAIN VERIFIED**
+
+Closeout (2026-09-16): PR #4, `Rebuild Opening around canonical Little Home`, was squash-merged to `main` as `8ac932e073b2fb72fd014fbbe3f885781af3ce41`. Candidate GitHub Actions run `35131002359` passed the full shipped six-suite `npm test`, including canonical-world coherence, the dedicated route-model header regression at Normal/Large Text, physical-phone geometry, continuous Opening behavior, first-run/replay/skip safety, and all 38 later-cinematic utterances. The exact merged-main commit was independently revalidated by browser run `35131483783`, which passed the same complete suite; repository access guard run `35131483828` passed; and GitHub Pages deployment run `35131482355` succeeded. Manual review of fresh candidate screenshots confirmed the three semantic misses, Rowan comparison, relocated Waykeeper call, final route-model header separation, and 360x800 Large Text presentation. The temporary Opening validation workflow is removed by this closeout commit; reusable regression tests remain in `tests/`.
 
 Started 2026-09-16 from exact `main` `18f7605503ca81a1a94a0310b828a699c06d3e90` on branch `agent/opening-world-static-controls-20260916`. User-provided Android screenshots showed that the Opening still reads as several unrelated coordinate systems rather than one coherent place: a tiny neighboring island beside an oversized Little Home, Skyway lines that overshoot their islands, a breakfast delivery described as a miss while visibly reaching the porch, and a cinematic Little Home that does not match the production title-screen Little Home. The lower cinematic copy area also changes height between narrator and resident turns, moving progress/actions vertically.
 
