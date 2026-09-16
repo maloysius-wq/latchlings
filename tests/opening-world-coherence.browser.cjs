@@ -80,6 +80,41 @@ async function missState(page,name){
  },name);
 }
 
+async function visibleCue(page,step){
+ return page.evaluate(step=>{
+  const visible=selector=>{const el=document.querySelector(selector);if(!el)return false;const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&parseFloat(s.opacity)>.05&&r.width>0&&r.height>0};
+  const visibleCount=selector=>[...document.querySelectorAll(selector)].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&parseFloat(s.opacity)>.05&&r.width>0&&r.height>0}).length;
+  const running=selector=>{const el=document.querySelector(selector);return !!el&&el.getAnimations().some(a=>a.playState==='running')};
+  const root=document.querySelector('.cin-opening-continuous'),frame=document.querySelector('.opening-home-reference'),doc=frame?.contentDocument;
+  const focused=name=>doc?.querySelector(`#c2 [data-resident="${name}"]`)?.dataset.openingFocus==='true';
+  const camera=root?.dataset.camera;
+  switch(step){
+   case 1:return {ok:camera==='wide'&&visible('.opening-neighbor-island')&&visible('.route-working'),detail:'wide drifting neighborhood + working route'};
+   case 2:return {ok:camera==='wide'&&visible('.opening-route-cargo')&&running('.opening-route-cargo'),detail:'cargo visibly travels the working Skyway'};
+   case 3:return {ok:camera==='home'&&visible('.opening-home-reference'),detail:'camera settles on canonical Little Home'};
+   case 4:return {ok:visible('.route-basket')&&running('[data-opening-mover="basket"]'),detail:'breakfast basket visibly travels'};
+   case 5:return {ok:visible('.opening-target-marker[data-target="porch"]')&&visible('.opening-miss-marker[data-miss="basket"]'),detail:'porch target and breakfast miss are both visible'};
+   case 6:return {ok:visible('.route-water')&&visible('.opening-miss-splash')&&running('[data-opening-mover="water"]'),detail:'watering route visibly travels and splashes at the miss'};
+   case 7:return {ok:visible('.route-play')&&visible('.opening-target-marker[data-target="play-rock"]')&&running('[data-opening-mover="play"]'),detail:'shortcut visibly travels toward a miss beside the play rock'};
+   case 8:return {ok:focused('Tansy')&&visible('.opening-target-marker[data-target="play-rock"]'),detail:'Tansy is visibly focused while the intended target pulses'};
+   case 9:return {ok:focused('Pip')&&visible('.route-yesterday'),detail:'Pip is focused and yesterday route is visible'};
+   case 10:return {ok:focused('Rowan')&&visibleCount('.opening-offset-vector')===3,detail:'Rowan reveals all three offset vectors'};
+   case 11:return {ok:visibleCount('.opening-miss-marker')===3,detail:'all three matching misses pulse together'};
+   case 12:return {ok:focused('Pippa')&&camera==='network'&&visible('.opening-network-question'),detail:'Pippa widens the view to the network question'};
+   case 13:return {ok:focused('Pippa')&&visible('.opening-call-box'),detail:'Waykeeper call device visibly appears'};
+   case 14:return {ok:visible('.route-adaptive'),detail:'adaptive route visibly bends across the drift'};
+   case 15:return {ok:visible('.route-call')&&visible('.signal-out')&&running('.signal-out'),detail:'call signal visibly travels outward'};
+   case 16:return {ok:visible('.route-answer')&&visible('.opening-player-compass')&&visible('.signal-in')&&running('.signal-in'),detail:'answer signal visibly returns to Little Home'};
+   case 17:return {ok:focused('Bramble')&&visibleCount('.opening-knowledge-token')===5,detail:'five residents contribute visible knowledge tokens'};
+   case 18:return {ok:camera==='puzzle'&&visible('.opening-board-model'),detail:'same world dissolves into the Level 1 route model'};
+   case 19:return {ok:focused('Rowan')&&visible('.opening-board-focus-label'),detail:'Sunpetal morning route is visibly called out'};
+   case 20:return {ok:focused('Pippa')&&visible('.opening-board-breakfast'),detail:'breakfast start is visibly highlighted'};
+   case 21:return {ok:focused('Pip')&&visible('.opening-board-ready'),detail:'route-ready state visibly settles'};
+   default:return {ok:false,detail:'unknown step'};
+  }
+ },step);
+}
+
 (async()=>{
  await listen();
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
@@ -124,12 +159,16 @@ async function missState(page,name){
    await advanceTo(page,step);
    const action=await page.locator('.cin-opening-continuous').getAttribute('data-story-action');
    assert.equal(action,EXPECTED_ACTIONS[step-1],`${config.width}x${config.height}: turn ${step} must expose its semantic visual action`);
+   const cue=await visibleCue(page,step);
+   assert(cue.ok,`${config.width}x${config.height}/${config.textSize}: turn ${step} must have an obvious visible event: ${cue.detail}`);
    const g=await lowerGeometry(page);
    for(const key of ['footer','progress','next']){
     for(const edge of ['top','bottom','height'])assert(close(g[key][edge],baseline[key][edge],1),`${config.width}x${config.height}/${config.textSize}: ${key}.${edge} moved on turn ${step}: ${g[key][edge]} vs ${baseline[key][edge]}`);
    }
    assert(close(g.copy.top,baseline.copy.top,1)&&close(g.copy.bottom,baseline.copy.bottom,1)&&close(g.copy.height,baseline.copy.height,1),`${config.width}x${config.height}/${config.textSize}: copy region moved on turn ${step}`);
    assert(g.next.left>=0&&g.next.right<=config.width&&g.next.bottom<=config.height,`${config.width}x${config.height}: Continue must stay onscreen`);
+   if(step===6)await page.waitForTimeout(1000);
+   if(step===7)await page.waitForTimeout(900);
    if(step===5||step===6||step===7){
     const name=step===5?'basket':step===6?'water':'play',s=await missState(page,name);
     assert(s.mover&&s.miss&&s.target,`${config.width}x${config.height}: ${name} mover, miss marker and intended target must all exist`);
@@ -166,5 +205,5 @@ async function missState(page,name){
  await browser.close();
  server.close();
  assert.deepEqual(pageErrors,[]);
- console.log('PASS canonical Opening world, semantic misses, 21 visual actions, and static lower controls');
+ console.log('PASS canonical Opening world, semantic misses, 21 verified visual actions, and static lower controls');
 })().catch(error=>{console.error(error);server.close();process.exit(1)});
