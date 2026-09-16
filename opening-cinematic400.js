@@ -9,7 +9,7 @@ const ACTIONS=[
  'waykeeper-answer-arrives','neighbors-share-local-knowledge','route-becomes-puzzle',
  'sunpetal-route-focus','breakfast-start-focus','investigation-ready'
 ];
-const MISS_OFFSET={x:-28,y:-12};
+const MISS_OFFSET={x:-34,y:-12};
 const RESIDENT_FOCUS={8:'Tansy',9:'Pip',10:'Rowan',12:'Pippa',13:'Pippa',17:'Bramble',19:'Rowan',20:'Pippa',21:'Pip'};
 
 function boardHtml(suitSvg){
