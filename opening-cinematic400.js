@@ -23,7 +23,7 @@ function boardHtml(suitSvg){
  return `<div class="opening-board-model" aria-hidden="true"><span class="opening-board-label">WAYKEEPER ROUTE MODEL</span><span class="opening-board-focus-label">SUNPETAL MORNING ROUTE</span><div class="opening-board-grid" style="--opening-grid:${level.size}">${cells}</div><span class="opening-board-breakfast">BREAKFAST START</span><span class="opening-board-ready">ROUTE READY</span></div>`;
 }
 
-function create({_character,suitSvg}){
+function create({suitSvg}){
  return `<div class="cin-opening-continuous" data-step="1" data-story-action="${ACTIONS[0]}" data-camera="wide">
   <div class="opening-world-camera">
    <span class="opening-cloud cloud-a"></span><span class="opening-cloud cloud-b"></span>
@@ -112,6 +112,7 @@ function setLine(root,selector,a,b){const el=root.querySelector(selector);if(el&
 function curve(a,b,lift=0){if(!a||!b)return'';const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2+lift;return `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`}
 function setPath(root,id,a,b,lift=0){const p=root.querySelector(id);if(p&&a&&b)p.setAttribute('d',curve(a,b,lift))}
 function setPoint(el,p){if(!el||!p)return;el.getAnimations().forEach(a=>a.cancel());el.style.left=p.x+'px';el.style.top=p.y+'px'}
+function pathPoint(root,selector,t){const path=root.querySelector(selector);if(!path||!path.getTotalLength())return null;return path.getPointAtLength(path.getTotalLength()*t)}
 function moverPoint(root,name){const map={basket:'basket',water:'water',play:'play'},el=root.querySelector(`.opening-miss-marker[data-miss="${map[name]}"]`);if(!el)return null;return {x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}}
 function sourcePoint(root,name){if(name==='basket')return elementCenter(root.querySelector('.neighbor-bakery-island'));if(name==='water')return localLandmark(root,'Pippa');if(name==='play')return localLandmark(root,'Pip');return null}
 function effectiveReduced(){return matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced'}
@@ -144,11 +145,13 @@ function syncGeometry(root){
  root.dataset.geometryReady='true';
  const callBox=root.querySelector('.opening-call-box'),answer=root.querySelector('.opening-player-compass');setPoint(callBox,call);setPoint(answer,{x:call.x+30,y:call.y-22});
  const signalOut=root.querySelector('.signal-out'),signalIn=root.querySelector('.signal-in');setPoint(signalOut,player);setPoint(signalIn,call);
+ const splash=root.querySelector('.opening-miss-splash');setPoint(splash,misses.water);
+ const cargo=root.querySelector('.opening-route-cargo'),cargoStart=pathPoint(root,'#opening-route-working',0);if(cargoStart&&Number(root.dataset.step||1)!==2)setPoint(cargo,cargoStart);
  for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy']){const token=root.querySelector(`[data-knowledge="${name}"]`),p=localLandmark(root,name);if(token&&p)setPoint(token,{x:p.x,y:p.y-24})}
  const step=Number(root.dataset.step||1);
  for(const name of ['basket','water','play']){
   const el=root.querySelector(`[data-opening-mover="${name}"]`),src=sourcePoint(root,name),miss=moverPoint(root,name);
-  if(name==='basket'&&step===4)continue;
+  if((name==='basket'&&step===4)||(name==='water'&&step===6)||(name==='play'&&step===7))continue;
   if(step>={basket:5,water:6,play:7}[name])setPoint(el,miss);else setPoint(el,src);
  }
  return true;
@@ -160,11 +163,12 @@ function applyStep(root,step,previous,fromReady=false){
  focusResident(root,RESIDENT_FOCUS[step]||'');
  if(!syncGeometry(root))return;
  const basket=root.querySelector('[data-opening-mover="basket"]'),water=root.querySelector('[data-opening-mover="water"]'),play=root.querySelector('[data-opening-mover="play"]');
+ if(step===2&&((previous!==2)||fromReady))travel(root,'.opening-route-cargo','#opening-route-working',1300);
  if(step===4&&((previous!==4)||fromReady))travel(root,'[data-opening-mover="basket"]','#opening-route-basket',1250);else if(step>=5)setPoint(basket,moverPoint(root,'basket'));else setPoint(basket,sourcePoint(root,'basket'));
- if(step>=6)setPoint(water,moverPoint(root,'water'));else setPoint(water,sourcePoint(root,'water'));
- if(step>=7)setPoint(play,moverPoint(root,'play'));else setPoint(play,sourcePoint(root,'play'));
- if(step===15&&previous!==15&&!effectiveReduced())travel(root,'.signal-out','#opening-route-call',1050);
- if(step===16&&previous!==16&&!effectiveReduced())travel(root,'.signal-in','#opening-route-answer',850);
+ if(step===6&&((previous!==6)||fromReady))travel(root,'[data-opening-mover="water"]','#opening-route-water',1000);else if(step>=6)setPoint(water,moverPoint(root,'water'));else setPoint(water,sourcePoint(root,'water'));
+ if(step===7&&((previous!==7)||fromReady))travel(root,'[data-opening-mover="play"]','#opening-route-play',900);else if(step>=7)setPoint(play,moverPoint(root,'play'));else setPoint(play,sourcePoint(root,'play'));
+ if(step===15&&((previous!==15)||fromReady))travel(root,'.signal-out','#opening-route-call',1050);
+ if(step===16&&((previous!==16)||fromReady))travel(root,'.signal-in','#opening-route-answer',850);
 }
 function bindResize(root){if(root.dataset.resizeBound==='true')return;root.dataset.resizeBound='true';const ro=new ResizeObserver(()=>{syncGeometry(root);applyStep(root,Number(root.dataset.step||1),Number(root.dataset.step||1))});ro.observe(root);const frame=root.querySelector('.opening-home-reference');if(frame)ro.observe(frame)}
 function sync(stage,step,helpers){
