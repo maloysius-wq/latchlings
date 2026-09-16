@@ -8,6 +8,17 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Opening world coherence and static cinematic controls
+**Status: IN PROGRESS / USER-APPROVED REBUILD**
+
+Started 2026-09-16 from exact `main` `18f7605503ca81a1a94a0310b828a699c06d3e90` on branch `agent/opening-world-static-controls-20260916`. User-provided Android screenshots showed that the Opening still reads as several unrelated coordinate systems rather than one coherent place: a tiny neighboring island beside an oversized Little Home, Skyway lines that overshoot their islands, a breakfast delivery described as a miss while visibly reaching the porch, and a cinematic Little Home that does not match the production title-screen Little Home. The lower cinematic copy area also changes height between narrator and resident turns, moving progress/actions vertically.
+
+Approved direction: reuse the production `title-island-concepts/?c=2&embed=1&cinematic=1` Little Home as the canonical home scene rather than redrawing it; establish neighboring islands in a pulled-back opening camera and move the camera toward Little Home instead of changing island scale relationships; bind route endpoints/miss markers to named semantic landmarks so the basket, watering line, and play shortcut visibly and verifiably miss their intended destinations; give every one of the 21 Opening spoken moments an explicit visual action/state; remove the changing route-tip treatment; and reserve a fixed lower copy/progress/action layout so controls never move between turns. Preserve canonical dialogue/story, later cinematics, gameplay rules, campaign definitions/solutions, title-screen Little Home behavior, Story replay, Large Text, Reduced Motion, and the accepted pre-Astra gameplay control geometry.
+
+Implementation contract: follow TDD. Add/strengthen browser regressions before product edits and prove they fail for the current behavior; then make the smallest architecture changes needed. New checks must cover canonical Little Home reuse, proportional/grounded neighboring-island presentation, semantically correct porch/garden/play misses, deterministic per-turn visual state for all 21 Opening utterances, fixed footer/progress/button geometry across all turns, Normal/Large Text containment, Reduced Motion, and the existing 360x800 / 390x844 / 430x932 physical-phone geometry protections. Run targeted browser tests plus the complete shipped `npm test` on committed branch state. Review representative settled screenshots before promotion. Do not merge or mark complete until the committed candidate has evidence for the entire acceptance contract.
+
+Implementation plan: `docs/superpowers/plans/2026-09-16-opening-world-coherence.md`.
+
 ### Physical-phone opening geometry and puzzle-control restoration
 **Status: COMPLETED / COMMITTED-MAIN REGRESSION FIXED AND VERIFIED**
 
@@ -187,4 +198,3 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
-
