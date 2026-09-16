@@ -1,0 +1,41 @@
+name: Validate Opening World
+
+on:
+  push:
+    branches:
+      - agent/opening-world-static-controls-20260916
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run shipped browser suite
+        run: npm test
+
+      - name: Upload opening visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opening-world-${{ github.sha }}
+          path: test-artifacts/opening-world
+          if-no-files-found: ignore

@@ -6,29 +6,29 @@ const {chromium}=require('playwright');
 
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
-const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1');const file=path.join(root,decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root)){res.writeHead(403).end();return}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(data)})});
+const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1');const requested=decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname);const file=path.join(root,requested.endsWith('/')?requested+'index.html':requested);if(!file.startsWith(root)){res.writeHead(403).end();return}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(data)})});
 const listen=()=>new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 
 async function openingGeometry(page,step){
  while(await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0))<step){await page.locator('#cinematicNext').click();await page.waitForTimeout(55)}
- await page.waitForTimeout(90);
+ await page.waitForTimeout(100);
  return page.evaluate(()=>{
   const rect=selector=>document.querySelector(selector)?.getBoundingClientRect().toJSON();
-  const top=rect('.home-top');
-  const insidePlateau=box=>{const x=box.left+box.width/2,y=box.bottom-2,rx=top.width/2-box.width*.22,ry=top.height/2-2;return ((x-(top.left+top.width/2))/rx)**2+((y-(top.top+top.height/2))/ry)**2<=1};
-  const people=[...document.querySelectorAll('.opening-person')].map(el=>({name:[...el.classList].find(c=>c.startsWith('opening-')&&c!=='opening-person'),box:el.getBoundingClientRect().toJSON()}));
   const overlap=(a,b)=>Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
-  const call=rect('.opening-call-box');
-  const fixedProps=['.opening-porch','.opening-garden','.opening-play-rock'].map(selector=>({selector,inside:insidePlateau(rect(selector))}));
-  const propOverlaps=[...document.querySelectorAll('.opening-basket,.opening-water-cart,.opening-call-box')].filter(el=>parseFloat(getComputedStyle(el).opacity)>.05).flatMap(el=>{const box=el.getBoundingClientRect().toJSON();return people.map(p=>({prop:el.className,name:p.name,area:overlap(p.box,box)}))});
+  const frame=document.querySelector('.opening-home-reference'),frameRect=frame.getBoundingClientRect(),doc=frame.contentDocument,scaleX=frameRect.width/frame.clientWidth,scaleY=frameRect.height/frame.clientHeight;
+  const toParent=r=>({left:frameRect.left+r.left*scaleX,top:frameRect.top+r.top*scaleY,right:frameRect.left+r.right*scaleX,bottom:frameRect.top+r.bottom*scaleY,width:r.width*scaleX,height:r.height*scaleY});
+  const residents=[...doc.querySelectorAll('#c2 [data-resident]')].map(el=>({name:el.dataset.resident,box:toParent(el.getBoundingClientRect())}));
+  const visibleProps=[...document.querySelectorAll('[data-opening-mover],.opening-call-box,.opening-player-compass')].filter(el=>parseFloat(getComputedStyle(el).opacity)>.05&&el.getBoundingClientRect().width>0).map(el=>({name:el.getAttribute('data-opening-mover')||el.className,box:el.getBoundingClientRect().toJSON()}));
+  const propOverlaps=visibleProps.flatMap(prop=>residents.map(person=>({prop:prop.name,name:person.name,area:overlap(prop.box,person.box)})));
   const routes={};
-  for(const [name,near] of Object.entries({basket:'.opening-porch',water:'.opening-garden',play:'.opening-play-rock'})){
-   const route=document.querySelector(`#opening-route-${name}`),anchor=rect(`#opening-anchor-${name}`),destination=rect(near),length=route.getTotalLength(),p=route.getPointAtLength(length),screen=new DOMPoint(p.x,p.y).matrixTransform(route.getScreenCTM());
-   routes[name]={anchor,endpointDistance:Math.hypot(screen.x-(anchor.left+anchor.width/2),screen.y-(anchor.top+anchor.height/2)),destinationDistance:Math.hypot((anchor.left+anchor.width/2)-(destination.left+destination.width/2),(anchor.top+anchor.height/2)-(destination.top+destination.height/2)),inside:insidePlateau(anchor)};
+  for(const [name,targetName] of Object.entries({basket:'porch',water:'garden',play:'play-rock'})){
+   const route=document.querySelector(`#opening-route-${name}`),miss=document.querySelector(`.opening-miss-marker[data-miss="${name}"]`).getBoundingClientRect(),target=document.querySelector(`.opening-target-marker[data-target="${targetName}"]`).getBoundingClientRect(),mover=document.querySelector(`[data-opening-mover="${name}"]`).getBoundingClientRect();
+   const len=route.getTotalLength(),p=route.getPointAtLength(len),screen=new DOMPoint(p.x,p.y).matrixTransform(route.getScreenCTM());
+   const center=b=>({x:b.left+b.width/2,y:b.top+b.height/2}),dist=(a,b)=>Math.hypot(center(a).x-center(b).x,center(a).y-center(b).y),missCenter=center(miss);
+   routes[name]={endpointDistance:Math.hypot(screen.x-missCenter.x,screen.y-missCenter.y),destinationDistance:dist(miss,target),moverToMiss:dist(mover,miss)};
   }
-  const callPath=document.querySelector('#opening-route-call'),callStart=callPath.getPointAtLength(0),callStartScreen=new DOMPoint(callStart.x,callStart.y).matrixTransform(callPath.getScreenCTM());
-  const crew=rect('#opening-anchor-crew');
-  return {people:people.map(p=>({...p,inside:insidePlateau(p.box)})),fixedProps,propOverlaps,call,callOverlaps:people.map(p=>({name:p.name,area:overlap(p.box,call)})),callStartDistance:Math.hypot(callStartScreen.x-(call.left+call.width/2),callStartScreen.y-(call.top+call.height/2)),routes,crewInside:insidePlateau(crew),crewOverlaps:people.map(p=>({name:p.name,area:overlap(p.box,crew)}))};
+  const stage=document.querySelector('#cinematicStage').getBoundingClientRect();
+  return {frame:frameRect.toJSON(),stage:stage.toJSON(),residents,propOverlaps,routes,action:document.querySelector('.cin-opening-continuous').dataset.storyAction};
  });
 }
 
@@ -41,24 +41,22 @@ async function openingGeometry(page,step){
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
   await page.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false}));
   const early=await openingGeometry(page,1);
-  assert(early.people.every(p=>p.inside),`${viewport.width}x${viewport.height}: every resident must stand on Little Home (${early.people.filter(p=>!p.inside).map(p=>p.name)})`);
-  assert(early.fixedProps.every(p=>p.inside),`${viewport.width}x${viewport.height}: permanent props must sit on the grassy plateau (${early.fixedProps.filter(p=>!p.inside).map(p=>p.selector)})`);
+  assert(early.frame.left>=early.stage.left-1&&early.frame.right<=early.stage.right+1&&early.frame.top>=early.stage.top-1&&early.frame.bottom<=early.stage.bottom+1,`${viewport.width}x${viewport.height}: canonical Little Home must stay inside the cinematic stage`);
+  assert.equal(early.residents.length,5,`${viewport.width}x${viewport.height}: all five production residents must come from canonical Little Home`);
+
   const routes=await openingGeometry(page,10);
-  assert(routes.people.every(p=>p.inside),`${viewport.width}x${viewport.height}: residents must remain grounded after Pip's route animation (${routes.people.filter(p=>!p.inside).map(p=>p.name)})`);
-  assert(routes.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: arrived props must not cover residents (${routes.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.name}:${x.area.toFixed(0)}`)})`);
+  assert.equal(routes.action,'rowan-measures-three-offsets',`${viewport.width}x${viewport.height}: Rowan line must have the offset-comparison visual`);
+  assert(routes.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: story props must not cover canonical residents (${routes.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.prop}->${x.name}:${x.area.toFixed(0)}`)})`);
   for(const [name,data] of Object.entries(routes.routes)){
-   assert(data.inside,`${viewport.width}x${viewport.height}: ${name} old stop must remain on the grassy plateau`);
-   assert(data.endpointDistance<3,`${name} route must terminate at its visible old-stop marker`);
-   assert(data.destinationDistance>=8&&data.destinationDistance<=70,`${viewport.width}x${viewport.height}: ${name} miss must be visibly near its intended destination, got ${data.destinationDistance.toFixed(1)}px`);
+   assert(data.endpointDistance<3,`${viewport.width}x${viewport.height}: ${name} route must terminate at its semantic miss marker`);
+   assert(data.destinationDistance>=14&&data.destinationDistance<=52,`${viewport.width}x${viewport.height}: ${name} miss must remain visibly near but separate from destination, got ${data.destinationDistance.toFixed(1)}px`);
+   assert(data.moverToMiss<4,`${viewport.width}x${viewport.height}: ${name} mover must settle exactly at the miss point, got ${data.moverToMiss.toFixed(1)}px`);
   }
-  const call=await openingGeometry(page,12);
-  assert(call.people.every(p=>p.inside),`${viewport.width}x${viewport.height}: residents must remain grounded during the Waykeeper call (${call.people.filter(p=>!p.inside).map(p=>p.name)})`);
-  assert(call.callOverlaps.every(x=>x.area<8),`${viewport.width}x${viewport.height}: call display must not cover a resident (${call.callOverlaps.map(x=>`${x.name}:${x.area.toFixed(0)}`).join(', ')})`);
-  assert(call.callStartDistance<18,`${viewport.width}x${viewport.height}: call route must begin at the call display, got ${call.callStartDistance.toFixed(1)}px`);
-  const crew=await openingGeometry(page,17);
-  assert(crew.people.every(p=>p.inside),`${viewport.width}x${viewport.height}: residents must remain grounded when the helpers arrive (${crew.people.filter(p=>!p.inside).map(p=>p.name)})`);
-  assert(crew.crewInside,`${viewport.width}x${viewport.height}: helper route must land on Little Home's grassy edge`);
-  assert(crew.crewOverlaps.every(x=>x.area<8),`${viewport.width}x${viewport.height}: helper route landing must remain visually clear of residents (${crew.crewOverlaps.filter(x=>x.area>=8).map(x=>x.name)})`);
+  const call=await openingGeometry(page,13);
+  assert.equal(call.action,'waykeeper-call-ready',`${viewport.width}x${viewport.height}: call line must visibly stage the Waykeeper device`);
+  assert(call.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: call display must remain clear of canonical residents (${call.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.prop}->${x.name}:${x.area.toFixed(0)}`)})`);
+  const knowledge=await openingGeometry(page,17);
+  assert.equal(knowledge.action,'neighbors-share-local-knowledge',`${viewport.width}x${viewport.height}: Bramble's local-knowledge line must visibly gather knowledge`);
 
   await page.evaluate(()=>{LatchlingsCinematics.finish(true);startLevel(1)});await page.waitForTimeout(80);
   const controls=await page.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect().toJSON(),style=s=>getComputedStyle(document.querySelector(s));return {game:r('#game'),controls:r('#game .controls'),reset:r('#resetLevelBtn'),dpad:r('#game .dpad'),hint:r('#hintBtn'),columns:style('#game .controls').gridTemplateColumns,controlWidth:style('#game .controls').width,resetHeight:style('#resetLevelBtn').minHeight,resetRadius:style('#resetLevelBtn').borderRadius,resetFont:style('#resetLevelBtn').fontSize}});
@@ -73,6 +71,6 @@ async function openingGeometry(page,step){
   for(const [name,box] of Object.entries({reset:controls.reset,dpad:controls.dpad,hint:controls.hint}))assert(box.left>=controls.game.left-1&&box.right<=controls.game.right+1,`${viewport.width}x${viewport.height}: ${name} must remain visible inside the game`);
   await context.close();
  }
- await browser.close();server.close();assert.deepEqual(failures,[]);console.log('PASS physical-phone opening geometry and pre-Astra control cluster');
+ await browser.close();server.close();assert.deepEqual(failures,[]);console.log('PASS physical-phone canonical Opening geometry and pre-Astra control cluster');
 })().catch(error=>{console.error(error);server.close();process.exit(1)});
 
