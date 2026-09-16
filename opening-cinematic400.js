@@ -84,7 +84,7 @@ function installCanonicalHome(root){
     if(el)return rectJson(el.getBoundingClientRect());
     if(name==='garden')return unionRects([...doc.querySelectorAll('#c2 .flower.f1,#c2 .flower.f2,#c2 .flower.f3')].map(x=>x.getBoundingClientRect()));
     const top=doc.querySelector('#c2 .island-top')?.getBoundingClientRect();
-    if(top&&name==='call'){const x=top.left+top.width*.56,y=top.top+top.height*.42;return {x:x-5,y:y-5,left:x-5,top:y-5,right:x+5,bottom:y+5,width:10,height:10}}
+    if(top&&name==='call'){const x=top.left+top.width*.80,y=top.top+top.height*.74;return {x:x-5,y:y-5,left:x-5,top:y-5,right:x+5,bottom:y+5,width:10,height:10}}
     if(top&&name==='home-center'){const x=top.left+top.width*.5,y=top.top+top.height*.5;return {x:x-2,y:y-2,left:x-2,top:y-2,right:x+2,bottom:y+2,width:4,height:4}}
     return null;
    };
