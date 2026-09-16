@@ -46,7 +46,7 @@ async function openingGeometry(page,step){
 
   const routes=await openingGeometry(page,10);
   assert.equal(routes.action,'rowan-measures-three-offsets',`${viewport.width}x${viewport.height}: Rowan line must have the offset-comparison visual`);
-  assert(routes.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: story props must not cover canonical residents (${routes.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.name}:${x.area.toFixed(0)}`)})`);
+  assert(routes.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: story props must not cover canonical residents (${routes.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.prop}->${x.name}:${x.area.toFixed(0)}`)})`);
   for(const [name,data] of Object.entries(routes.routes)){
    assert(data.endpointDistance<3,`${viewport.width}x${viewport.height}: ${name} route must terminate at its semantic miss marker`);
    assert(data.destinationDistance>=14&&data.destinationDistance<=52,`${viewport.width}x${viewport.height}: ${name} miss must remain visibly near but separate from destination, got ${data.destinationDistance.toFixed(1)}px`);
@@ -54,7 +54,7 @@ async function openingGeometry(page,step){
   }
   const call=await openingGeometry(page,13);
   assert.equal(call.action,'waykeeper-call-ready',`${viewport.width}x${viewport.height}: call line must visibly stage the Waykeeper device`);
-  assert(call.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: call display must remain clear of canonical residents (${call.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.name}:${x.area.toFixed(0)}`)})`);
+  assert(call.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: call display must remain clear of canonical residents (${call.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.prop}->${x.name}:${x.area.toFixed(0)}`)})`);
   const knowledge=await openingGeometry(page,17);
   assert.equal(knowledge.action,'neighbors-share-local-knowledge',`${viewport.width}x${viewport.height}: Bramble's local-knowledge line must visibly gather knowledge`);
 
