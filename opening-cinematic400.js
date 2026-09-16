@@ -9,7 +9,7 @@ const ACTIONS=[
  'waykeeper-answer-arrives','neighbors-share-local-knowledge','route-becomes-puzzle',
  'sunpetal-route-focus','breakfast-start-focus','investigation-ready'
 ];
-const MISS_OFFSET={x:28,y:10};
+const MISS_OFFSET={x:-28,y:-12};
 const RESIDENT_FOCUS={8:'Tansy',9:'Pip',10:'Rowan',12:'Pippa',13:'Pippa',17:'Bramble',19:'Rowan',20:'Pippa',21:'Pip'};
 
 function boardHtml(suitSvg){
@@ -20,7 +20,7 @@ function boardHtml(suitSvg){
   const key=r+':'+c,p=pieces.get(key),n=nests.get(key);
   cells+=`<span class="opening-board-cell ${rocks.has(key)?'is-rock':''}" data-row="${r}" data-col="${c}">${n?`<i class="opening-board-nest">${suitSvg(n.suit)}</i>`:''}${p?`<i class="opening-board-piece" style="--piece:${p.color}">${suitSvg(p.suit)}</i>`:''}</span>`;
  }
- return `<div class="opening-board-model" aria-hidden="true"><span class="opening-board-label">WAYKEEPER ROUTE MODEL</span><span class="opening-board-focus-label">SUNPETAL MORNING ROUTE</span><div class="opening-board-grid" style="--opening-grid:${level.size}">${cells}</div><span class="opening-board-breakfast">BREAKFAST START</span><span class="opening-board-ready">ROUTE READY</span></div>`;
+ return `<div class="opening-board-model" aria-hidden="true"><span class="opening-board-label" style="left:10px;right:auto;text-align:left">WAYKEEPER ROUTE MODEL</span><span class="opening-board-focus-label">SUNPETAL MORNING ROUTE</span><div class="opening-board-grid" style="--opening-grid:${level.size}">${cells}</div><span class="opening-board-breakfast">BREAKFAST START</span><span class="opening-board-ready">ROUTE READY</span></div>`;
 }
 
 function create({suitSvg}){
