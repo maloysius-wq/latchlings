@@ -20,17 +20,50 @@ const EXPECTED_ACTIONS=[
  'waykeeper-answer-arrives','neighbors-share-local-knowledge','route-becomes-puzzle',
  'sunpetal-route-focus','breakfast-start-focus','investigation-ready'
 ];
+const CUE_DETAILS={1:'wide drifting neighborhood + working route',2:'cargo visibly travels the working Skyway',3:'camera settles on canonical Little Home',4:'breakfast basket visibly travels',5:'porch target and breakfast miss are both visible',6:'watering route visibly travels and splashes at the miss',7:'shortcut visibly travels toward a miss beside the play rock',8:'Tansy is visibly focused while the intended target pulses',9:'Pip is focused and yesterday route is visible',10:'Rowan reveals all three offset vectors',11:'all three matching misses pulse together',12:'Pippa widens the view to the network question',13:'Waykeeper call device visibly appears',14:'adaptive route visibly bends across the drift',15:'call signal visibly travels outward',16:'answer signal visibly returns to Little Home',17:'five residents contribute visible knowledge tokens',18:'same world dissolves into the Level 1 route model',19:'Sunpetal morning route is visibly called out',20:'breakfast start is visibly highlighted',21:'route-ready state visibly settles'};
 const SCREENSHOT_STEPS=new Set([1,3,5,6,7,10,13,16,18,21]);
 const close=(a,b,tolerance=1)=>Math.abs(a-b)<=tolerance;
 const center=box=>({x:box.left+box.width/2,y:box.top+box.height/2});
 const distance=(a,b)=>Math.hypot(center(a).x-center(b).x,center(a).y-center(b).y);
 
+async function waitForOpeningGeometry(page){
+ await page.waitForFunction(()=>{
+  const root=document.querySelector('.cin-opening-continuous');
+  return root?.dataset.geometryReady==='true'&&
+   ['basket','water','play'].every(name=>document.querySelector(`#opening-route-${name}`)?.getTotalLength()>0);
+ });
+}
+
+async function waitForScenePaint(page){
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+}
+
 async function advanceTo(page,step){
+ await waitForOpeningGeometry(page);
  while(await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0))<step){
+  const before=await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0));
   await page.locator('#cinematicNext').click();
-  await page.waitForTimeout(90);
+  await page.waitForFunction(before=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0)>before,before);
+  await waitForOpeningGeometry(page);
  }
- await page.waitForTimeout(90);
+ await page.waitForFunction(step=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0)===step,step);
+ await waitForScenePaint(page);
+}
+
+async function verifyTravelProgress(page,name){
+ await page.waitForFunction(name=>{
+  const mover=document.querySelector(`[data-opening-mover="${name}"]`),route=document.querySelector(`#opening-route-${name}`);
+  if(!mover||!route||!route.getTotalLength())return false;
+  return matchMedia('(prefers-reduced-motion: reduce)').matches||mover.getAnimations().some(animation=>animation.playState==='running'&&Number(animation.currentTime)>=120);
+ },name);
+ const travel=await page.locator(`[data-opening-mover="${name}"]`).evaluate(el=>new Promise(resolve=>{
+  const route=document.querySelector(`#opening-route-${el.dataset.openingMover}`),p=route.getPointAtLength(route.getTotalLength()),inverse=route.getScreenCTM().inverse();
+  const sample=()=>{const b=el.getBoundingClientRect(),screenPoint=new DOMPoint(b.left+b.width/2,b.top+b.height/2);return screenPoint.matrixTransform(inverse)};
+  const dist=point=>Math.hypot(point.x-p.x,point.y-p.y);
+  requestAnimationFrame(()=>{const first=sample();requestAnimationFrame(()=>{const second=sample();resolve({firstDistance:dist(first),secondDistance:dist(second),reduced:matchMedia('(prefers-reduced-motion: reduce)').matches})})});
+ }));
+ if(travel.reduced)assert(travel.secondDistance<=2,`${name}: Reduced Motion must place the mover at its route endpoint`);
+ else assert(travel.secondDistance<travel.firstDistance,`${name}: mover must visibly progress toward its route endpoint across animation frames (${travel.firstDistance.toFixed(1)}px -> ${travel.secondDistance.toFixed(1)}px)`);
 }
 
 async function lowerGeometry(page){
@@ -80,39 +113,37 @@ async function missState(page,name){
  },name);
 }
 
-async function visibleCue(page,step){
- return page.evaluate(step=>{
-  const visible=selector=>{const el=document.querySelector(selector);if(!el)return false;const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&parseFloat(s.opacity)>.05&&r.width>0&&r.height>0};
-  const visibleCount=selector=>[...document.querySelectorAll(selector)].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&parseFloat(s.opacity)>.05&&r.width>0&&r.height>0}).length;
-  const running=selector=>{const el=document.querySelector(selector);return !!el&&el.getAnimations().some(a=>a.playState==='running')};
-  const root=document.querySelector('.cin-opening-continuous'),frame=document.querySelector('.opening-home-reference'),doc=frame?.contentDocument;
-  const focused=name=>doc?.querySelector(`#c2 [data-resident="${name}"]`)?.dataset.openingFocus==='true';
-  const camera=root?.dataset.camera;
-  switch(step){
-   case 1:return {ok:camera==='wide'&&visible('.opening-neighbor-island')&&visible('.route-working'),detail:'wide drifting neighborhood + working route'};
-   case 2:return {ok:camera==='wide'&&visible('.opening-route-cargo')&&running('.opening-route-cargo'),detail:'cargo visibly travels the working Skyway'};
-   case 3:return {ok:camera==='home'&&visible('.opening-home-reference'),detail:'camera settles on canonical Little Home'};
-   case 4:return {ok:visible('.route-basket')&&running('[data-opening-mover="basket"]'),detail:'breakfast basket visibly travels'};
-   case 5:return {ok:visible('.opening-target-marker[data-target="porch"]')&&visible('.opening-miss-marker[data-miss="basket"]'),detail:'porch target and breakfast miss are both visible'};
-   case 6:return {ok:visible('.route-water')&&visible('.opening-miss-splash')&&running('[data-opening-mover="water"]'),detail:'watering route visibly travels and splashes at the miss'};
-   case 7:return {ok:visible('.route-play')&&visible('.opening-target-marker[data-target="play-rock"]')&&running('[data-opening-mover="play"]'),detail:'shortcut visibly travels toward a miss beside the play rock'};
-   case 8:return {ok:focused('Tansy')&&visible('.opening-target-marker[data-target="play-rock"]'),detail:'Tansy is visibly focused while the intended target pulses'};
-   case 9:return {ok:focused('Pip')&&visible('.route-yesterday'),detail:'Pip is focused and yesterday route is visible'};
-   case 10:return {ok:focused('Rowan')&&visibleCount('.opening-offset-vector')===3,detail:'Rowan reveals all three offset vectors'};
-   case 11:return {ok:visibleCount('.opening-miss-marker')===3,detail:'all three matching misses pulse together'};
-   case 12:return {ok:focused('Pippa')&&camera==='network'&&visible('.opening-network-question'),detail:'Pippa widens the view to the network question'};
-   case 13:return {ok:focused('Pippa')&&visible('.opening-call-box'),detail:'Waykeeper call device visibly appears'};
-   case 14:return {ok:visible('.route-adaptive'),detail:'adaptive route visibly bends across the drift'};
-   case 15:return {ok:visible('.route-call')&&visible('.signal-out')&&running('.signal-out'),detail:'call signal visibly travels outward'};
-   case 16:return {ok:visible('.route-answer')&&visible('.opening-player-compass')&&visible('.signal-in')&&running('.signal-in'),detail:'answer signal visibly returns to Little Home'};
-   case 17:return {ok:focused('Bramble')&&visibleCount('.opening-knowledge-token')===5,detail:'five residents contribute visible knowledge tokens'};
-   case 18:return {ok:camera==='puzzle'&&visible('.opening-board-model'),detail:'same world dissolves into the Level 1 route model'};
-   case 19:return {ok:focused('Rowan')&&visible('.opening-board-focus-label'),detail:'Sunpetal morning route is visibly called out'};
-   case 20:return {ok:focused('Pippa')&&visible('.opening-board-breakfast'),detail:'breakfast start is visibly highlighted'};
-   case 21:return {ok:focused('Pip')&&visible('.opening-board-ready'),detail:'route-ready state visibly settles'};
-   default:return {ok:false,detail:'unknown step'};
+function cueStatus(step){
+ const visible=selector=>{const el=document.querySelector(selector);if(!el)return false;const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&parseFloat(s.opacity)>.05&&r.width>0&&r.height>0};
+ const visibleCount=selector=>[...document.querySelectorAll(selector)].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&parseFloat(s.opacity)>.05&&r.width>0&&r.height>0}).length;
+ const running=selector=>{const el=document.querySelector(selector);return !!el&&el.getAnimations().some(a=>a.playState==='running')};
+ const root=document.querySelector('.cin-opening-continuous'),frame=document.querySelector('.opening-home-reference'),doc=frame?.contentDocument;
+ const focused=name=>doc?.querySelector(`#c2 [data-resident="${name}"]`)?.dataset.openingFocus==='true';
+ const camera=root?.dataset.camera;
+ switch(step){
+   case 1:return camera==='wide'&&visible('.opening-neighbor-island')&&visible('.route-working');
+   case 2:return camera==='wide'&&visible('.opening-route-cargo')&&running('.opening-route-cargo');
+   case 3:return camera==='home'&&visible('.opening-home-reference');
+   case 4:return visible('.route-basket')&&running('[data-opening-mover="basket"]');
+   case 5:return visible('.opening-target-marker[data-target="porch"]')&&visible('.opening-miss-marker[data-miss="basket"]');
+   case 6:return visible('.route-water')&&visible('.opening-miss-splash')&&running('[data-opening-mover="water"]');
+   case 7:return visible('.route-play')&&visible('.opening-target-marker[data-target="play-rock"]')&&running('[data-opening-mover="play"]');
+   case 8:return focused('Tansy')&&visible('.opening-target-marker[data-target="play-rock"]');
+   case 9:return focused('Pip')&&visible('.route-yesterday');
+   case 10:return focused('Rowan')&&visibleCount('.opening-offset-vector')===3;
+   case 11:return visibleCount('.opening-miss-marker')===3;
+   case 12:return focused('Pippa')&&camera==='network'&&visible('.opening-network-question');
+   case 13:return focused('Pippa')&&visible('.opening-call-box');
+   case 14:return visible('.route-adaptive');
+   case 15:return visible('.route-call')&&visible('.signal-out')&&running('.signal-out');
+   case 16:return visible('.route-answer')&&visible('.opening-player-compass')&&visible('.signal-in')&&running('.signal-in');
+   case 17:return focused('Bramble')&&visibleCount('.opening-knowledge-token')===5;
+   case 18:return camera==='puzzle'&&visible('.opening-board-model');
+   case 19:return focused('Rowan')&&visible('.opening-board-focus-label');
+   case 20:return focused('Pippa')&&visible('.opening-board-breakfast');
+   case 21:return focused('Pip')&&visible('.opening-board-ready');
+   default:return false;
   }
- },step);
 }
 
 (async()=>{
@@ -131,7 +162,7 @@ async function visibleCue(page,step){
   page.on('pageerror',e=>pageErrors.push(`${config.width}x${config.height}/${config.textSize}: ${e.message}`));
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
   await page.evaluate(textSize=>{LatchlingsPrefs.set('textSize',textSize);LatchlingsCinematics.show('opening',{markSeen:false})},config.textSize);
-  await page.waitForTimeout(160);
+  await waitForOpeningGeometry(page);
 
   const rootExists=await page.locator('.cin-opening-continuous').count();
   assert.equal(rootExists,1,`${config.width}x${config.height}: Opening must keep one persistent scene root`);
@@ -159,8 +190,12 @@ async function visibleCue(page,step){
    await advanceTo(page,step);
    const action=await page.locator('.cin-opening-continuous').getAttribute('data-story-action');
    assert.equal(action,EXPECTED_ACTIONS[step-1],`${config.width}x${config.height}: turn ${step} must expose its semantic visual action`);
-   const cue=await visibleCue(page,step);
-   assert(cue.ok,`${config.width}x${config.height}/${config.textSize}: turn ${step} must have an obvious visible event: ${cue.detail}`);
+   if(step===4)await verifyTravelProgress(page,'basket');
+   if(step===6)await verifyTravelProgress(page,'water');
+   if(step===7)await verifyTravelProgress(page,'play');
+   await page.waitForFunction(cueStatus,step);
+   const cue=await page.evaluate(cueStatus,step);
+   assert(cue,`${config.width}x${config.height}/${config.textSize}: turn ${step} must have an obvious visible event: ${CUE_DETAILS[step]||'unknown step'}`);
    const g=await lowerGeometry(page);
    for(const key of ['footer','progress','next']){
     for(const edge of ['top','bottom','height'])assert(close(g[key][edge],baseline[key][edge],1),`${config.width}x${config.height}/${config.textSize}: ${key}.${edge} moved on turn ${step}: ${g[key][edge]} vs ${baseline[key][edge]}`);
@@ -197,6 +232,9 @@ async function visibleCue(page,step){
  await rp.evaluate(()=>LatchlingsCinematics.show('opening',{markSeen:false}));
  for(let step=1;step<=21;step++){
   await advanceTo(rp,step);
+  if(step===4)await verifyTravelProgress(rp,'basket');
+  if(step===6)await verifyTravelProgress(rp,'water');
+  if(step===7)await verifyTravelProgress(rp,'play');
   assert.equal(await rp.locator('.cin-opening-continuous').getAttribute('data-story-action'),EXPECTED_ACTIONS[step-1],`Reduced Motion turn ${step} must keep the same semantic state`);
   assert.equal(await rp.locator('#cinematicStage').evaluate(e=>e.getAnimations({subtree:true}).filter(a=>a.playState==='running').length),0,`Reduced Motion turn ${step} must have no running stage animations`);
  }

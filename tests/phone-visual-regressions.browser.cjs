@@ -9,10 +9,29 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.jpg'
 const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1');const requested=decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname);const file=path.join(root,requested.endsWith('/')?requested+'index.html':requested);if(!file.startsWith(root)){res.writeHead(403).end();return}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(data)})});
 const listen=()=>new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 
+async function waitForOpeningGeometry(page){
+ await page.waitForFunction(()=>{
+  const root=document.querySelector('.cin-opening-continuous');
+  return root?.dataset.geometryReady==='true'&&
+   ['basket','water','play'].every(name=>document.querySelector(`#opening-route-${name}`)?.getTotalLength()>0);
+ });
+}
+
+async function waitForScenePaint(page){
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+}
+
 async function openingGeometry(page,step){
- while(await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0))<step){await page.locator('#cinematicNext').click();await page.waitForTimeout(55)}
- await page.waitForTimeout(100);
- return page.evaluate(()=>{
+ await waitForOpeningGeometry(page);
+ while(await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0))<step){
+  const before=await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0));
+  await page.locator('#cinematicNext').click();
+  await page.waitForFunction(before=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0)>before,before);
+  await waitForOpeningGeometry(page);
+ }
+ await page.waitForFunction(step=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0)===step,step);
+ await waitForScenePaint(page);
+  return page.evaluate(()=>{
   const rect=selector=>document.querySelector(selector)?.getBoundingClientRect().toJSON();
   const overlap=(a,b)=>Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
   const frame=document.querySelector('.opening-home-reference'),frameRect=frame.getBoundingClientRect(),doc=frame.contentDocument,scaleX=frameRect.width/frame.clientWidth,scaleY=frameRect.height/frame.clientHeight;
