@@ -8,6 +8,30 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Approved full-game polish implementation (2026-09-24)
+**Status: IN PROGRESS — implementation not yet started**
+
+Approved scope: execute the complete game-polish design and implementation guide on branch `codex/audit-polish-20260924`, starting from `881630b159dd0471870826f2a4181506f97078b0`. Follow the approved design at `docs/superpowers/specs/2026-09-24-game-polish-design.md` and the ordered entry point at `docs/superpowers/plans/2026-09-24-game-polish-execution-guide.md`: reliability/gameplay, phone presentation, then story staging. No product behavior change has been made in this start checkpoint.
+
+Protected behavior: no Undo, no narrator voice, no campaign level/solution edits, no move/star-rule changes, no Daily/campaign progress mixing, manual tap/keyboard advancement for every cinematic line, canonical Little Home identity, and the accepted pre-Astra Reset/D-pad/Hint control geometry. Keep the existing static HTML/CSS/JavaScript architecture and provide a factual final handoff before considering merge/deploy.
+
+Baseline evidence: full `npm test` exits 1 in `tests/opening-world-coherence.browser.cjs:163` at 360x800 Normal, reporting that Opening turn 4 does not show the breakfast basket visibly traveling. Running that suite alone reproduces the same assertion. Running `tests/phone-visual-regressions.browser.cjs` alone exits 1 at `openingGeometry` because `getPointAtLength` is called on an empty SVG path. The full command aborts at the first suite, so the second failure was confirmed separately. Full logs are in the local ignored `.superpowers/sdd/2026-09-24-reliability-gameplay/` workspace.
+
+Starting protected-source SHA-256 values:
+
+| File | SHA-256 |
+|---|---|
+| `campaign400-1.js` | `8F3F99F27B3CEA194CD41F8C45F1802BC080B5D423B9F03AD0D465A57433A003` |
+| `campaign400-2.js` | `5C2EFE317C5AA57C4A67C30DFC3DCCCCF1941144623D75F9884D8028706F3E96` |
+| `campaign400-3.js` | `F42CBCB06FFDFDBEC5B91C6E7DBB7925CF73125B3C8EDD23F4814B37E56027B9` |
+| `campaign400-4.js` | `9CB48060E6F46E8755F9035FCF16239C46624B918E40E4A10750571CD02AE9E9` |
+| `campaign400-5.js` | `A4FB2C11D338CAFC90266A49F751E91471B7E97E88F61879D7FD0D1F5F7545D5` |
+| `campaign400-6.js` | `EEEBA272F0543CE044F027A0B2A79791198B223BEBDF75A382F68F06F486B363` |
+| `campaign400-7.js` | `54B0655F5854C5D4842526119099A6C91D6B31E0B84A4B245601BB96769A0` |
+| `campaign400-8.js` | `7F0E5DEA01B184E59CB7C44632376D6EA3C1916368CE3EB89B850714741CA987` |
+
+Next: fix the two baseline browser-suite failures as Reliability Tasks 1-2 require, then complete the Reliability, Phone Presentation, and Story Staging plans in order. At every stage, keep actual test output, screenshot review, commit SHA, campaign hashes, CI state, and external-only checks distinct. Mark this work COMPLETED only after the guide's final acceptance conditions are verified on the committed branch; otherwise document the exact remaining failure and PARTIAL status.
+
 ### Opening world coherence and static cinematic controls
 **Status: COMPLETED / MERGED AND COMMITTED-MAIN VERIFIED**
 
