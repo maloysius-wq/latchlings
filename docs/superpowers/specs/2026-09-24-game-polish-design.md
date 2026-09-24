@@ -1,7 +1,7 @@
 # Latchlings game polish design
 
 Date: 2026-09-24
-Status: proposed for player review
+Status: approved for implementation
 Base: `main` at `47103e9fb1b3d75b3eac71bdfa40e70e632b51f7`
 
 ## Purpose and accepted direction
