@@ -19,13 +19,51 @@ const server=http.createServer((req,res)=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true});
+  const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true,timezoneId:'UTC'});
   await context.addInitScript(()=>{
    localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:12,stars:{'1':2,'2':1}}));
    localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1}));
+   localStorage.removeItem('latchlings_daily400_progress_v1');
+   const NativeDate=Date,fixedNow=Date.UTC(2026,8,24,12);
+   class FixedDate extends NativeDate{constructor(...args){super(...(args.length?args:[fixedNow]))}static now(){return fixedNow}}
+   window.Date=FixedDate;
   });
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+
+  const daily=await page.evaluate(()=>{
+   const date=new Date(),fresh=dailyRouteInfo(date,{unlocked:11,stars:{}}),justUnlockedAnchors=dailyRouteInfo(date,{unlocked:101,stars:{'100':1}}),advancedProgress={unlocked:351,stars:{'350':1}},advanced=dailyRouteInfo(date,advancedProgress);
+   const repeated=dailyRouteInfo(new Date(date),advancedProgress);
+   const sampledLaterRoutes=Array.from({length:400},(_,offset)=>dailyRouteInfo(new Date(date.getTime()+offset*86400000),advancedProgress).level);
+   progress={unlocked:advancedProgress.unlocked,stars:{...advancedProgress.stars}};
+   const campaignBefore=JSON.stringify({unlocked:progress.unlocked,stars:progress.stars}),storedBefore=localStorage.getItem('latchlings_campaign400_progress_v1');
+   startDailyPuzzle();
+   const title=document.getElementById('levelTitle').innerText,dailyLabel=document.querySelector('#mechanicNote .mechanic-chip-label').textContent;
+   rulesModal();const rulesTier=document.getElementById('dailyRulesTier')?.innerText||'';closeModal();
+   const lev=LEVELS[currentLevel-1];
+   for(let index=0;index<lev.solution.length;index++){const [pi,dir]=lev.solution[index],move=simulate(pi,dir);if(!move)throw new Error(`Daily Level ${lev.id} authored move failed`);positions[pi]=move.capture?null:[move.r,move.c];doorMask=move.mask;if(index===0)renderGame(true)}
+   movesUsed=lev.solution.length;
+   winLevel();
+   const dailyHistory=JSON.parse(localStorage.getItem('latchlings_daily400_progress_v1')||'{}');
+   return {fresh,justUnlockedAnchors,advanced,repeated,sampledLaterRoutes,dailyLevel:dailySession.level,dailyTier:dailySession.tier,campaignBefore,campaignAfter:JSON.stringify({unlocked:progress.unlocked,stars:progress.stars}),storedBefore,storedAfter:localStorage.getItem('latchlings_campaign400_progress_v1'),dailyRecord:dailyHistory[dailySession.key],title,dailyLabel,rulesTier,renderedTitle:document.getElementById('levelTitle').innerText,renderedLabel:document.querySelector('#mechanicNote .mechanic-chip-label').textContent};
+  });
+  assert(daily.fresh.level>=1&&daily.fresh.level<=10,'fresh Daily selection must stay in the curated opening pool');
+  assert.equal(daily.fresh.tier,'Edges','fresh Daily must identify the first-mechanics tier');
+  assert(daily.justUnlockedAnchors.level<=100,'unlocking Level 101 without completing it must not expose its anchor mechanic');
+  assert.equal(daily.justUnlockedAnchors.tier,'Helpers','Daily tier must follow the highest completed level rather than unlocked level');
+  assert(daily.advanced.level<=350,'advanced Daily selection must never exceed its highest completed level');
+  assert.equal(daily.advanced.tier,'Switches','completing Level 350 must identify the learned Switchworks tier');
+  assert(daily.sampledLaterRoutes.some(level=>level>=301&&level<=350),'advanced Daily pool must include learned Switchworks routes');
+  assert.deepStrictEqual(daily.repeated,daily.advanced,'same date and mechanic tier must return the same Daily route');
+  assert.equal(daily.dailyLevel,daily.advanced.level,'starting Daily must consume the deterministic selected route');
+  assert.equal(daily.dailyTier,daily.advanced.tier,'starting Daily must preserve its mechanic tier');
+  assert(daily.title.toLowerCase().includes('switches'),`Daily header must show the learned mechanic tier; got ${JSON.stringify(daily.title)}`);
+  assert(daily.dailyLabel.includes('Switches'),'Daily route tip must identify the mechanic tier');
+  assert(daily.rulesTier.includes('Switches'),'Daily rules entry must identify the mechanic tier');
+  assert(daily.renderedTitle.toLowerCase().includes('switches')&&daily.renderedLabel.includes('Switches'),`Daily tier label must persist after rerendering a puzzle move; got ${JSON.stringify([daily.renderedTitle,daily.renderedLabel])}`);
+  assert.equal(daily.campaignAfter,daily.campaignBefore,'clearing Daily must not change campaign stars or unlocks');
+  assert.equal(daily.storedAfter,daily.storedBefore,'clearing Daily must not write campaign progress');
+  assert.equal(daily.dailyRecord.level,daily.dailyLevel,'Daily clear must save to its separate daily history');
 
   const roundTrip=await page.evaluate(()=>{
    const backup=LatchlingsProgressBackup.create({unlocked:12,stars:{'1':3,'2':1,'12':2}},['opening','old-maps']);
@@ -142,7 +180,7 @@ const server=http.createServer((req,res)=>{
   assert(await page.locator('#saveStatusBanner').isHidden(),'unsaved banner must be dismissible');
 
   await context.close();
-  console.log('PASS progress backup round trip, validation, transactional import, reset copy, and unsaved-win handling');
+  console.log('PASS progress backup, Daily learned-mechanic tiers and isolation, reset copy, and unsaved-win handling');
  }finally{
   await browser.close();
   await new Promise(resolve=>server.close(resolve));

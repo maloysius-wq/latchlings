@@ -4,6 +4,10 @@ const backupBaseBind=bind;
 bind=function(){backupBaseBind();wireSaveStatus()};
 const backupBaseResetProgress=resetProgress;
 resetProgress=function(){backupBaseResetProgress();const copy=document.querySelector('#modal > p');if(copy)copy.textContent='This returns your journey to Level 1, clears earned stars, and makes story scenes available again.'};
+const dailyBaseRenderGame=renderGame;
+renderGame=function(full=false){dailyBaseRenderGame(full);if(playMode==='daily'&&dailySession){const title=document.getElementById('levelTitle'),label=document.querySelector('#mechanicNote .mechanic-chip-label');if(title)title.innerHTML=`Daily Route<small class="daily-tier-label">${dailySession.tier}</small>`;if(label)label.textContent=`Daily · ${dailySession.tier}`}};
+const dailyBaseRulesModal=rulesModal;
+rulesModal=function(){dailyBaseRulesModal();if(playMode==='daily'&&dailySession){const actions=document.querySelector('#modal .modal-actions');actions?.insertAdjacentHTML('beforebegin',`<p class="daily-rules-tier" id="dailyRulesTier"><strong>Today’s Daily tier: ${dailySession.tier}.</strong> Daily routes use mechanics from tiers you have already reached.</p>`)}};
 const CINEMATIC_SEEN_STORAGE_KEY='latchlings_cinematics_seen_v1';
 function exportProgressBackup(){
  try{

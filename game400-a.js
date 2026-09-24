@@ -21,6 +21,7 @@ const PROGRESS_KEY='latchlings_campaign400_progress_v1';
 let progress=loadProgress();
 const UI_PREFS_KEY='latchlings_ui_prefs_v1';
 const DAILY_PROGRESS_KEY='latchlings_daily400_progress_v1';
+const DAILY_TIER_LABELS=['Edges','Helpers','Anchors','Suit Gates','Color Gates','Rails & Turns','Switches','Master Circuit'];
 let playMode='campaign',dailySession=null;
 const VISUAL_CHAPTER_MODES={1:'sunpetal',2:'lanternwood',3:'lodestone',4:'masquerade'};
 const VISUAL_LEVEL_OVERRIDES={366:'aurora-dense'};
@@ -34,7 +35,15 @@ function applyUiPrefs(){document.documentElement.dataset.motion=uiPrefs.motion;d
 function setUiPref(key,value){if(key==='motion')uiPrefs.motion=value==='reduced'?'reduced':'system';if(key==='textSize')uiPrefs.textSize=value==='large'?'large':'normal';try{localStorage.setItem(UI_PREFS_KEY,JSON.stringify(uiPrefs))}catch(_){}applyUiPrefs();updateHome(true)}
 applyUiPrefs();
 window.LatchlingsPrefs={get:()=>({...uiPrefs}),set:setUiPref,reducedMotion:effectiveReducedMotion};
-function dailyRouteInfo(){const now=new Date(),key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,seed=now.getFullYear()*372+now.getMonth()*31+now.getDate();return {key,level:(seed*37%400)+1}}
+function dailyRouteInfo(date=new Date(),campaignProgress=progress){
+ const requestedDate=date instanceof Date?date:new Date(date),now=Number.isNaN(requestedDate.getTime())?new Date():requestedDate;
+ const year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate(),key=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+ const stars=campaignProgress?.stars||{},completed=Object.keys(stars).map(Number).filter(level=>Number.isInteger(level)&&level>=1&&level<=400&&Number(stars[level])>=1),highestCompleted=Math.max(0,...completed);
+ const tierIndex=highestCompleted?Math.min(7,Math.ceil(highestCompleted/50)-1):0,tier=DAILY_TIER_LABELS[tierIndex];
+ const curatedStarterPool=LEVELS.filter(level=>level.id>=1&&level.id<=10),completedCap=Math.max(10,highestCompleted),pool=highestCompleted<=10?curatedStarterPool:LEVELS.filter(level=>level.id<=completedCap);
+ const epochDay=Math.floor(Date.UTC(year,month-1,day)/86400000),hash=epochDay*37+(tierIndex+1)*101,offset=((hash%pool.length)+pool.length)%pool.length;
+ return {key,level:pool[offset].id,tier};
+}
 function startDailyPuzzle(){dailySession=dailyRouteInfo();startLevel(dailySession.level,'daily')}
 function saveDailyCompletion(stars){if(!dailySession)return;try{const all=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');all[dailySession.key]={level:dailySession.level,stars,moves:movesUsed,completed:true};localStorage.setItem(DAILY_PROGRESS_KEY,JSON.stringify(all))}catch(_){}}
 function leaveDailyForHome(){playMode='campaign';dailySession=null;document.body.dataset.playMode='campaign';screen('home')}
