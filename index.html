@@ -126,6 +126,11 @@
   </section>
 </div>
 <div class="overlay" id="overlay"><div class="modal card" id="modal"></div></div>
+<aside class="save-status-banner" id="saveStatusBanner" role="status" aria-live="polite" hidden>
+  <div class="save-status-copy"><strong>Progress could not be saved</strong><span id="saveStatusMessage">Your progress is safe for this session. Export a copy before closing.</span></div>
+  <button type="button" class="save-status-export" id="saveStatusExport">Export progress</button>
+  <button type="button" class="save-status-dismiss" id="saveStatusDismiss" aria-label="Dismiss save warning">×</button>
+</aside>
 <div class="debug" id="debug"></div>
 <script src="campaign400-1.js"></script>
 <script src="campaign400-2.js"></script>
@@ -138,6 +143,7 @@
 <script src="story400.js?v=20260914-presentation-accessibility1"></script>
 <script src="story-grounding400.js?v=20260914-character-world1"></script>
 <script src="cinematics400.js?v=20260914-second-review1"></script>
+<script src="progress-backup400.js"></script>
 <script src="opening-cinematic400.js?v=20260915-continuous-opening1"></script>
 <script src="cinematic-dialogue400.js?v=20260914-astra-pass4-candidate1"></script>
 <script src="game400-a.js?v=20260914-character-world1"></script>

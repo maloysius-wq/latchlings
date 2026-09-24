@@ -1,3 +1,63 @@
+const backupBaseSettingsModal=settingsModal;
+settingsModal=function(){backupBaseSettingsModal();attachProgressBackupSettings()};
+const backupBaseBind=bind;
+bind=function(){backupBaseBind();wireSaveStatus()};
+const backupBaseResetProgress=resetProgress;
+resetProgress=function(){backupBaseResetProgress();const copy=document.querySelector('#modal > p');if(copy)copy.textContent='This returns your journey to Level 1, clears earned stars, and makes story scenes available again.'};
+const CINEMATIC_SEEN_STORAGE_KEY='latchlings_cinematics_seen_v1';
+function exportProgressBackup(){
+ try{
+  const seen=Object.keys(window.LatchlingsCinematics?.CINEMATICS||{}).filter(id=>window.LatchlingsCinematics.hasSeen(id));
+  const backup=window.LatchlingsProgressBackup.create(progress,seen),json=JSON.stringify(backup,null,2),blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+  const date=new Date(),day=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+  link.href=url;link.download=`latchlings-progress-${day}.json`;link.hidden=true;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);return true;
+ }catch(_){showSaveStatus('This session could not be exported. Keep the game open and try again.');return false}
+}
+function wireSaveStatus(){
+ document.getElementById('saveStatusExport')?.addEventListener('click',exportProgressBackup);
+ document.getElementById('saveStatusDismiss')?.addEventListener('click',hideSaveStatus);
+}
+function showProgressImportError(){
+ modal(`<h2>Could not read backup</h2><p id="progressImportError" role="alert">This file is not a supported Latchlings progress backup. Your saved progress has not changed.</p><div class="modal-actions"><button class="primary-small" id="progressImportErrorClose">Back to Settings</button></div>`);
+ document.getElementById('progressImportErrorClose').onclick=settingsModal;
+}
+function restoreStorageValue(key,value){if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value)}
+function applyProgressBackup(backup){
+ const nextProgress={unlocked:backup.progress.unlocked,stars:{...backup.progress.stars}},nextSeen=Object.fromEntries(backup.seen.map(id=>[id,1]));
+ let oldCampaign,oldSeen;
+ try{oldCampaign=localStorage.getItem(PROGRESS_KEY);oldSeen=localStorage.getItem(CINEMATIC_SEEN_STORAGE_KEY)}
+ catch(_){showSaveStatus('This device would not allow a backup import. Your current progress is still active; export it before closing.');return false}
+ try{
+  localStorage.setItem(PROGRESS_KEY,JSON.stringify(nextProgress));
+  localStorage.setItem(CINEMATIC_SEEN_STORAGE_KEY,JSON.stringify(nextSeen));
+ }catch(_){
+  const restoreFailures=[];
+  for(const [key,value] of [[PROGRESS_KEY,oldCampaign],[CINEMATIC_SEEN_STORAGE_KEY,oldSeen]])try{restoreStorageValue(key,value)}catch(error){restoreFailures.push(error)}
+  showSaveStatus(restoreFailures.length?'Import could not be saved completely. Local storage may be inconsistent. Your current in-memory session is still available; export it before closing.':'Import could not be saved. Your current progress remains active; export it before closing.');
+  return false;
+ }
+ progress=nextProgress;updateHome(true);hideSaveStatus();
+ if(document.body.dataset.screen==='levels')renderChapter();
+ return true;
+}
+function confirmProgressBackupFile(file){
+ file.text().then(text=>{
+  let backup;
+  try{backup=window.LatchlingsProgressBackup.parse(text)}catch(_){showProgressImportError();return}
+  const starCount=Object.keys(backup.progress.stars).length,starLabel=`${starCount} ${starCount===1?'star':'stars'}`;
+  modal(`<h2>Import progress?</h2><p id="progressImportSummary">This backup restores Level ${backup.progress.unlocked} and ${starLabel}. It also restores ${backup.seen.length} story ${backup.seen.length===1?'scene':'scenes'} seen.</p><p>Your current campaign progress and story-scene history will be replaced after you confirm.</p><div class="modal-actions"><button class="primary-small" id="confirmProgressImport">Import progress</button><button class="secondary-small" id="cancelProgressImport">Cancel</button></div>`);
+  document.getElementById('confirmProgressImport').onclick=()=>{if(applyProgressBackup(backup))closeModal()};
+  document.getElementById('cancelProgressImport').onclick=settingsModal;
+ }).catch(()=>showProgressImportError());
+}
+function attachProgressBackupSettings(){
+ const actions=document.querySelector('.settings-actions');if(!actions)return;
+ actions.insertAdjacentHTML('afterbegin','<button class="secondary-small" id="exportProgressBtn">Export progress</button><button class="secondary-small" id="importProgressBtn">Import progress</button><input id="progressImportInput" type="file" accept=".json,application/json" hidden>');
+ document.getElementById('exportProgressBtn').onclick=exportProgressBackup;
+ const input=document.getElementById('progressImportInput');
+ document.getElementById('importProgressBtn').onclick=()=>input.click();
+ input.onchange=()=>{const file=input.files?.[0];input.value='';if(file)confirmProgressBackupFile(file)};
+}
 function placePiece(el,r,c,n,animate=false){el.style.left=`${c*100/n}%`;el.style.top=`${r*100/n}%`}
 function immediateBlocker(pi,d){
  const lev=LEVELS[currentLevel-1],pos=positions[pi];if(!lev||!pos)return null;const piece=lev.pieces[pi],[dr,dc]=DIRV[d],r=pos[0]+dr,c=pos[1]+dc;if(r<0||c<0||r>=lev.size||c>=lev.size)return {type:'edge',r,c};

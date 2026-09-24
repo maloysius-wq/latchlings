@@ -42,7 +42,9 @@ let atlasRewardState=null,atlasRewardTimers=[];
 const ATLAS_REWARD_TIME_SCALE=1.7;
 function atlasRewardMs(ms){return Math.round(ms*ATLAS_REWARD_TIME_SCALE)}
 function loadProgress(){try{const x=JSON.parse(localStorage.getItem(PROGRESS_KEY)||'{}');return {unlocked:Math.max(1,Math.min(400,x.unlocked||1)),stars:x.stars||{}}}catch(e){return {unlocked:1,stars:{}}}}
-function saveProgress(){localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress));updateHome()}
+function showSaveStatus(message){const banner=document.getElementById('saveStatusBanner'),copy=document.getElementById('saveStatusMessage');if(copy)copy.textContent=message;if(banner)banner.hidden=false}
+function hideSaveStatus(){const banner=document.getElementById('saveStatusBanner');if(banner)banner.hidden=true}
+function saveProgress(){let saved=false;try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress));saved=true}catch(_){showSaveStatus('Progress is safe for this session, but this device could not save it. Export a copy before closing.')}updateHome();if(saved)hideSaveStatus();return saved}
 function showError(e){const d=document.getElementById('debug');d.style.display='block';d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}
 window.addEventListener('error',e=>showError(e.error||e.message));window.addEventListener('unhandledrejection',e=>showError(e.reason));
 let activeScreenTransition=null;
