@@ -57,12 +57,115 @@ function saveProgress(){let saved=false;try{localStorage.setItem(PROGRESS_KEY,JS
 function showError(e){const d=document.getElementById('debug');d.style.display='block';d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}
 window.addEventListener('error',e=>showError(e.error||e.message));window.addEventListener('unhandledrejection',e=>showError(e.reason));
 let activeScreenTransition=null;
+let endingHomecomingController=null;
+function endingHomecomingFailure(stage,parcel){
+ if(!stage)return;
+ stage.dataset.parcelState='fallback';
+ stage.classList.remove('parcel-arrived');
+ const route=stage.querySelector('.ending-parcel-route'),target=stage.querySelector('.ending-parcel-target'),networkField=stage.querySelector('.ending-network-field'),homeNode=stage.querySelector('[data-home-node="true"]'),fallbackLabel=stage.querySelector('.ending-fallback-home-label');
+ networkField?.getAnimations().forEach(animation=>animation.pause());
+ if(route){route.removeAttribute('d');route.style.strokeDashoffset='1'}
+ if(parcel)parcel.dataset.arrived='false';
+ const bounds=stage.getBoundingClientRect(),nodeRect=homeNode?.getBoundingClientRect();
+ if(nodeRect&&nodeRect.width>0&&nodeRect.height>0&&bounds.width>0&&bounds.height>0){
+  const x=nodeRect.left+nodeRect.width/2-bounds.left-stage.clientLeft,y=nodeRect.top+nodeRect.height/2-bounds.top-stage.clientTop;
+  if(parcel){parcel.style.left=`${x}px`;parcel.style.top=`${y}px`}
+  if(target){target.style.left=`${x}px`;target.style.top=`${y}px`}
+  if(fallbackLabel){fallbackLabel.style.left=`${x}px`;fallbackLabel.style.top=`${nodeRect.bottom-bounds.top-stage.clientTop+5}px`}
+ }else{
+  if(parcel){parcel.style.left='53%';parcel.style.top='66%'}
+  if(target){target.style.left='53%';target.style.top='66%'}
+  if(fallbackLabel){fallbackLabel.style.left='53%';fallbackLabel.style.top='71%'}
+ }
+ const sceneLabel=stage.getAttribute('aria-label');
+ if(sceneLabel)stage.setAttribute('aria-label','Living Skyway routes connect several communities. The final parcel waits at the labeled Little Home landing node while its porch is unavailable.');
+}
+function initializeEndingHomecoming(){
+ const stage=document.querySelector('.ending-homecoming'),frame=stage?.querySelector('.ending-home-frame');
+ if(!stage||!frame)return;
+ if(endingHomecomingController?.stage===stage){endingHomecomingController.refresh();return}
+ const svg=stage.querySelector('.ending-parcel-route-svg'),path=svg?.querySelector('.ending-parcel-route'),target=stage.querySelector('.ending-parcel-target'),parcel=stage.querySelector('.ending-parcel'),networkHome=stage.querySelector('[data-home-node="true"]');
+ if(!svg||!path||!target||!parcel||!networkHome){endingHomecomingFailure(stage,parcel);return}
+ parcel.dataset.arrived='false';stage.dataset.parcelState='waiting';
+ let disposed=false,started=false,startScheduled=false,progress=0,raf=0,geometryDirty=true,resizeObserver=null;
+ const reduced=effectiveReducedMotion();
+ const stageRect=()=>stage.getBoundingClientRect();
+ const positionAt=t=>{
+  if(!path.getTotalLength())return false;
+  const local=path.getPointAtLength(path.getTotalLength()*Math.max(0,Math.min(1,t))),matrix=path.getScreenCTM();
+  if(!matrix)return false;
+  const screenPoint=new DOMPoint(local.x,local.y).matrixTransform(matrix),bounds=stageRect(),x=screenPoint.x-bounds.left-stage.clientLeft,y=screenPoint.y-bounds.top-stage.clientTop;
+  if(!Number.isFinite(x)||!Number.isFinite(y))return false;
+  parcel.style.left=`${x}px`;parcel.style.top=`${y}px`;path.style.strokeDashoffset=String(1-Math.max(0,Math.min(1,t)));return true;
+ };
+ const refresh=()=>{
+  if(disposed||!stage.isConnected)return false;
+  let doc,win;
+  try{doc=frame.contentDocument;win=frame.contentWindow}catch(_){endingHomecomingFailure(stage,parcel);return false}
+  if(!doc||!win||doc.readyState!=='complete'){stage.dataset.parcelState='waiting';return false}
+  const porch=doc.querySelector('#c2 .cottage .door');
+  if(!porch){endingHomecomingFailure(stage,parcel);return false}
+  const doorRect=porch.getBoundingClientRect(),frameRect=frame.getBoundingClientRect(),bounds=stageRect();
+  if(doorRect.width<=0||doorRect.height<=0||frameRect.width<=0||frameRect.height<=0||stage.clientWidth<=0||stage.clientHeight<=0){stage.dataset.parcelState='waiting';return false}
+  const scaleX=frameRect.width/Math.max(1,win.innerWidth),scaleY=frameRect.height/Math.max(1,win.innerHeight);
+  const porchX=frameRect.left+(doorRect.left+doorRect.width/2)*scaleX,porchY=frameRect.top+(doorRect.top+doorRect.height/2)*scaleY;
+  target.style.left=`${porchX-bounds.left-stage.clientLeft}px`;target.style.top=`${porchY-bounds.top-stage.clientTop}px`;
+  svg.setAttribute('viewBox',`0 0 ${stage.clientWidth} ${stage.clientHeight}`);
+  if(!window.LatchlingsSceneGeometry?.syncPath?.(svg,path,networkHome,target)){stage.dataset.parcelState='waiting';return false}
+  geometryDirty=false;
+  if(!started){positionAt(0);stage.dataset.parcelState='ready'}
+  else if(parcel.dataset.arrived==='true')positionAt(1);
+  return true;
+ };
+ const markGeometryDirty=()=>{geometryDirty=true;if(!refresh())return;if(!started){if(reduced)complete();else scheduleStart()}};
+ const complete=()=>{
+  if(disposed)return;
+  progress=1;positionAt(1);parcel.dataset.arrived='true';stage.dataset.parcelState='arrived';stage.classList.add('parcel-arrived');
+  const sceneLabel='Living Skyway routes connect several communities before drawing toward Little Home, where a parcel reaches the measured porch while the islands keep drifting.';
+  stage.setAttribute('aria-label',sceneLabel);
+ };
+ const animate=()=>{
+  if(disposed||started)return;
+  started=true;stage.dataset.parcelState='travelling';parcel.dataset.arrived='false';
+  const began=performance.now(),duration=1900;
+  const frameStep=now=>{
+   if(disposed)return;
+   if(geometryDirty&&!refresh()){endingHomecomingFailure(stage,parcel);return}
+   progress=Math.min(1,Math.max(0,(now-began)/duration));
+   const eased=progress*progress*(3-2*progress);
+   if(!positionAt(eased)){endingHomecomingFailure(stage,parcel);return}
+   if(progress>=1){complete();return}
+   raf=requestAnimationFrame(frameStep);
+  };
+  raf=requestAnimationFrame(frameStep);
+ };
+ function scheduleStart(){
+  if(startScheduled||started||reduced||disposed)return;
+  startScheduled=true;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   if(disposed)return;
+   const entrance=['.ending-network-field','.ending-home-focus'].flatMap(selector=>[...(stage.querySelector(selector)?.getAnimations()||[])]).filter(animation=>animation.playState==='running');
+   Promise.allSettled(entrance.map(animation=>animation.finished)).then(()=>{startScheduled=false;if(!refresh())return;animate()});
+  }));
+ }
+ const controller={stage,refresh(){geometryDirty=true;const ready=refresh();if(ready&&reduced)complete();else if(ready)scheduleStart();return ready},dispose(){disposed=true;if(raf)cancelAnimationFrame(raf);resizeObserver?.disconnect();window.removeEventListener('resize',markGeometryDirty);window.visualViewport?.removeEventListener('resize',markGeometryDirty);frame.removeEventListener('load',markGeometryDirty)}};
+ endingHomecomingController=controller;
+ frame.addEventListener('load',markGeometryDirty);
+ frame.addEventListener('error',()=>endingHomecomingFailure(stage,parcel));
+ window.addEventListener('resize',markGeometryDirty,{passive:true});
+ window.visualViewport?.addEventListener('resize',markGeometryDirty,{passive:true});
+ if(typeof ResizeObserver==='function'){resizeObserver=new ResizeObserver(markGeometryDirty);resizeObserver.observe(stage);resizeObserver.observe(frame)}
+ if(controller.refresh()){
+  if(reduced)complete();
+  else scheduleStart();
+ }
+}
 function screen(id){
  const next=document.getElementById(id);if(!next)return;
  if(activeScreenTransition&&typeof activeScreenTransition.skipTransition==='function')activeScreenTransition.skipTransition();
  const current=document.querySelector('.screen.active');
- if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);return}
- const swap=()=>{document.body.dataset.screen=id;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));next.classList.add('active');if(id==='home')setTimeout(()=>updateHome(true),0)};
+ if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);if(id==='complete')initializeEndingHomecoming();return}
+ const swap=()=>{document.body.dataset.screen=id;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));next.classList.add('active');if(id==='home')setTimeout(()=>updateHome(true),0);if(id==='complete')initializeEndingHomecoming()};
  const reduced=effectiveReducedMotion(),canAnimate=!!current&&!reduced&&typeof current.animate==='function';
  if(!canAnimate){swap();return}
  const atlasDive=current.id==='levels'&&id==='game',atlasPullback=current.id==='game'&&id==='levels';

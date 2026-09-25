@@ -82,10 +82,83 @@ async function verifyReducedAndReplay(browser,level,expected){
  await replayContext.close();
 }
 
+async function endingGeometry(page){
+ return page.evaluate(()=>{
+  const stage=document.querySelector('.ending-homecoming'),svg=stage?.querySelector('.ending-parcel-route-svg'),path=svg?.querySelector('.ending-parcel-route'),from=stage?.querySelector('[data-home-node="true"]'),target=stage?.querySelector('.ending-parcel-target'),parcel=stage?.querySelector('.ending-parcel'),frame=stage?.querySelector('.ending-home-frame'),door=frame?.contentDocument?.querySelector('#c2 .cottage .door');
+  const center=element=>{const r=element?.getBoundingClientRect();return r?{x:r.left+r.width/2,y:r.top+r.height/2}:null};
+  const point=t=>{if(!path||!path.getTotalLength())return null;const p=path.getPointAtLength(path.getTotalLength()*t),m=path.getScreenCTM(),q=new DOMPoint(p.x,p.y).matrixTransform(m);return{x:q.x,y:q.y}};
+  const frameRect=frame?.getBoundingClientRect(),doorRect=door?.getBoundingClientRect(),win=frame?.contentWindow;
+  const porch=frameRect&&doorRect&&win?{x:frameRect.left+(doorRect.left+doorRect.width/2)*frameRect.width/Math.max(1,win.innerWidth),y:frameRect.top+(doorRect.top+doorRect.height/2)*frameRect.height/Math.max(1,win.innerHeight)}:null;
+  const homeNode=stage?.querySelector('[data-home-node="true"]'),fallbackLabel=stage?.querySelector('.ending-fallback-home-label');
+  return {state:stage?.dataset.parcelState,pathLength:path?.getTotalLength()||0,start:point(0),end:point(1),source:center(from),target:center(target),porch,parcel:center(parcel),homeNode:center(homeNode),fallbackLabel:{text:fallbackLabel?.textContent.trim()||'',display:fallbackLabel?getComputedStyle(fallbackLabel).display:'none',box:fallbackLabel?.getBoundingClientRect().toJSON()||null},parcelVisible:!!parcel&&getComputedStyle(parcel).display!=='none'&&getComputedStyle(parcel).visibility!=='hidden'&&Number(getComputedStyle(parcel).opacity)>.1,actions:[...document.querySelectorAll('#completeHome,#completeLevels')].every(button=>{const r=button.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(button).pointerEvents!=='none'})};
+ });
+}
+
+async function verifyEndingArrival(browser){
+ const reducedContext=await browser.newContext({viewport:{width:320,height:568},reducedMotion:'reduce'}),reducedPage=await reducedContext.newPage();
+ await reducedPage.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ await reducedPage.evaluate(()=>{LatchlingsPrefs.set('motion','reduced');screen('complete')});
+ const reducedReady=await reducedPage.waitForFunction(()=>document.querySelector('.ending-homecoming')?.dataset.parcelState==='arrived',undefined,{timeout:8000}).then(()=>true).catch(()=>false);
+ if(!reducedReady){const state=await reducedPage.evaluate(()=>{const stage=document.querySelector('.ending-homecoming'),frame=stage?.querySelector('.ending-home-frame');return{screen:document.body.dataset.screen,motion:document.documentElement.dataset.motion,parcelState:stage?.dataset.parcelState,frame:{ready:frame?.contentDocument?.readyState,width:frame?.clientWidth,height:frame?.clientHeight,src:frame?.src,hasDoor:!!frame?.contentDocument?.querySelector('#c2 .cottage .door')},path:stage?.querySelector('.ending-parcel-route')?.getAttribute('d'),errors:document.querySelector('#debug')?.textContent}});throw new Error(`Reduced Motion ending did not settle: ${JSON.stringify(state)}`)}
+ let geometry=await endingGeometry(reducedPage);
+ assert(geometry.pathLength>0&&geometry.start&&geometry.end&&geometry.porch,`Reduced Motion ending must measure the canonical porch route (${JSON.stringify(geometry)})`);
+ assert(Math.hypot(geometry.end.x-geometry.porch.x,geometry.end.y-geometry.porch.y)<=3,`Reduced Motion parcel route must land on the iframe porch (${JSON.stringify(geometry)})`);
+ assert(Math.hypot(geometry.parcel.x-geometry.porch.x,geometry.parcel.y-geometry.porch.y)<=4,`Reduced Motion must settle the parcel at the actual porch (${JSON.stringify(geometry)})`);
+ assert(geometry.actions,`Reduced Motion route must leave both ending actions available`);
+ await reducedPage.screenshot({path:path.join(evidence,'ending-320-reduced.png')});
+ await reducedContext.close();
+
+ const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();
+ await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ await page.evaluate(()=>{LatchlingsPrefs.set('motion','system');screen('complete')});
+ await page.waitForFunction(()=>['ready','travelling','arrived'].includes(document.querySelector('.ending-homecoming')?.dataset.parcelState),undefined,{timeout:8000});
+ await page.evaluate(()=>{for(const selector of ['.ending-network-field','.ending-home-focus'])for(const animation of document.querySelector(selector)?.getAnimations()||[])animation.finish()});
+ await page.waitForFunction(()=>document.querySelector('.ending-homecoming')?.dataset.parcelState==='travelling',undefined,{timeout:3000});
+ const before=await endingGeometry(page);
+ assert(before.pathLength>0&&before.start&&before.end&&before.parcelVisible,`Normal ending must show the measured route and parcel while traveling (${JSON.stringify(before)})`);
+ assert(Math.hypot(before.start.x-before.source.x,before.start.y-before.source.y)<=3,`Parcel path must begin at the final Little Home network handoff (${JSON.stringify(before)})`);
+ assert(Math.hypot(before.end.x-before.porch.x,before.end.y-before.porch.y)<=3,`Parcel path must end at the measured canonical porch (${JSON.stringify(before)})`);
+ await new Promise(resolve=>setTimeout(resolve,420));
+ const moving=await endingGeometry(page);
+ assert(Math.hypot(moving.parcel.x-before.parcel.x,moving.parcel.y-before.parcel.y)>=5,`Parcel must visibly travel along its measured path (${JSON.stringify({before:before.parcel,after:moving.parcel})})`);
+ const routeProgress=Number(await page.locator('.ending-parcel-route').evaluate(path=>path.style.strokeDashoffset));
+ assert(routeProgress>0&&routeProgress<1,`The measured route must visibly reveal behind the traveling parcel (${routeProgress})`);
+ await page.screenshot({path:path.join(evidence,'ending-390-in-flight.png')});
+ await page.waitForFunction(()=>document.querySelector('.ending-homecoming')?.dataset.parcelState==='arrived',undefined,{timeout:4000});
+ let landed=await endingGeometry(page);
+ assert(Math.hypot(landed.parcel.x-landed.porch.x,landed.parcel.y-landed.porch.y)<=4,`Animated parcel must actually settle at the porch (${JSON.stringify(landed)})`);
+ await page.setViewportSize({width:320,height:568});
+ await page.waitForFunction(()=>{
+  const stage=document.querySelector('.ending-homecoming'),path=stage?.querySelector('.ending-parcel-route'),frame=stage?.querySelector('.ending-home-frame'),door=frame?.contentDocument?.querySelector('#c2 .cottage .door'),target=stage?.querySelector('.ending-parcel-target');
+  if(stage?.dataset.parcelState!=='arrived'||!path?.getTotalLength()||!door||!target)return false;
+  const frameRect=frame.getBoundingClientRect(),doorRect=door.getBoundingClientRect(),win=frame.contentWindow,porch={x:frameRect.left+(doorRect.left+doorRect.width/2)*frameRect.width/Math.max(1,win.innerWidth),y:frameRect.top+(doorRect.top+doorRect.height/2)*frameRect.height/Math.max(1,win.innerHeight)},targetRect=target.getBoundingClientRect(),point=path.getPointAtLength(path.getTotalLength()),matrix=path.getScreenCTM(),end=new DOMPoint(point.x,point.y).matrixTransform(matrix);
+  return Math.hypot(targetRect.left+targetRect.width/2-porch.x,targetRect.top+targetRect.height/2-porch.y)<=3&&Math.hypot(end.x-porch.x,end.y-porch.y)<=3;
+ });
+ landed=await endingGeometry(page);
+ assert(Math.hypot(landed.end.x-landed.porch.x,landed.end.y-landed.porch.y)<=3,`The responsive resize must remeasure the canonical porch endpoint (${JSON.stringify(landed)})`);
+ assert(Math.hypot(landed.parcel.x-landed.porch.x,landed.parcel.y-landed.porch.y)<=4,`The settled parcel must remain on the porch after resize (${JSON.stringify(landed)})`);
+ await page.screenshot({path:path.join(evidence,'ending-320-normal-resized.png')});
+ await context.close();
+
+ const fallbackContext=await browser.newContext({viewport:{width:320,height:568}}),fallbackPage=await fallbackContext.newPage();
+ await fallbackPage.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ await fallbackPage.locator('.ending-home-frame').evaluate(frame=>{frame.src='about:blank'});
+ await fallbackPage.waitForFunction(()=>{const doc=document.querySelector('.ending-home-frame')?.contentDocument;return doc?.readyState==='complete'&&!doc.querySelector('#c2 .cottage .door')});
+ await fallbackPage.evaluate(()=>screen('complete'));
+ await fallbackPage.waitForFunction(()=>document.querySelector('.ending-homecoming')?.dataset.parcelState==='fallback',undefined,{timeout:5000});
+ const fallback=await endingGeometry(fallbackPage);
+ assert(fallback.parcelVisible&&fallback.parcel&&fallback.homeNode&&Math.hypot(fallback.parcel.x-fallback.homeNode.x,fallback.parcel.y-fallback.homeNode.y)<=3,`The unavailable-home fallback must visibly settle on the Little Home network node (${JSON.stringify(fallback)})`);
+ assert(/little home/i.test(fallback.fallbackLabel.text)&&fallback.fallbackLabel.display!=='none'&&fallback.fallbackLabel.box?.width>0&&fallback.fallbackLabel.box?.height>0,`Short-phone fallback must visibly label the safe landing node Little Home (${JSON.stringify(fallback.fallbackLabel)})`);
+ assert(await fallbackPage.locator('#completeHome').isVisible()&&await fallbackPage.locator('#completeLevels').isVisible(),'Missing iframe landmarks must not block either ending action');
+ assert.equal(await fallbackPage.locator('.ending-parcel').getAttribute('data-arrived'),'false','A missing porch must never be reported as a successful landing');
+ await fallbackContext.close();
+}
+
 async function main(){
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({headless:true});
  try{
+  await verifyEndingArrival(browser);
   for(const [level,expected] of Object.entries(milestones)){
    const numeric=Number(level);
    await verifyEarnedVignette(browser,numeric,expected);
