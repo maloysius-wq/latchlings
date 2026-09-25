@@ -329,11 +329,18 @@ async function runMapStory(browser,config){
  const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
  await advanceToDatedMaps(page);
- if(!config.reduced)await page.waitForTimeout(900);
+ if(!config.reduced)await page.waitForFunction(()=>{
+  const sheets=[...document.querySelectorAll('#cinematicStage .cin-maps.spread .cin-map-sheet')];
+  return sheets.length===3&&sheets.every(sheet=>{const animations=sheet.getAnimations();return animations.length>0&&animations.every(animation=>animation.playState==='finished')});
+ },undefined,{timeout:5000});
  const motion=config.reduced?'reduced':'normal',name=`${config.width}x${config.height}/${motion}/dated-maps`,spread=await mapSnapshot(page);
  verifyMapGeometry(spread,name);
  assert(spread.cards.every(card=>card.box.width>0&&card.box.height>0),`${name}: all three paper maps must remain visible`);
- for(let i=0;i<spread.cards.length-1;i++)assert(!overlap(spread.cards[i].box,spread.cards[i+1].box),`${name}: the three maps must remain distinguishable (${JSON.stringify(spread.cards.map(card=>({year:card.year,box:card.box})))})`);
+ for(let i=0;i<spread.cards.length-1;i++){
+  const gap=spread.cards[i+1].box.left-spread.cards[i].box.right;
+  assert(!overlap(spread.cards[i].box,spread.cards[i+1].box),`${name}: the three maps must remain distinguishable (${JSON.stringify(spread.cards.map(card=>({year:card.year,box:card.box})))})`);
+  assert(gap>=3.5,`${name}: completed map cards must keep the designed 4px paper gap (${gap.toFixed(2)}px)`);
+ }
  if(config.width<=390)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-spread`);
  await page.locator('#cinematicNext').click();await page.waitForFunction(()=>LatchlingsCinematics?.beat===1&&LatchlingsCinematics?.line===1);
  await page.locator('#cinematicNext').click();await page.waitForFunction(()=>LatchlingsCinematics?.beat===2&&LatchlingsCinematics?.line===0);

@@ -101,10 +101,16 @@ const server=http.createServer((req,res)=>{
   const exportedJson=fs.readFileSync(await download.path(),'utf8'),exported=JSON.parse(exportedJson);
   assert.deepStrictEqual(exported,source,'Settings export must create the documented JSON backup');
 
+  await page.evaluate(()=>{
+   window.__nativeFileText=File.prototype.text;
+   Object.defineProperty(File.prototype,'text',{configurable:true,writable:true,value:function(){return new Promise((resolve,reject)=>setTimeout(()=>window.__nativeFileText.call(this).then(resolve,reject),250))}});
+  });
   await page.locator('#progressImportInput').setInputFiles({name:'progress.json',mimeType:'application/json',buffer:Buffer.from(exportedJson)});
+  await page.locator('#progressImportSummary').waitFor({state:'visible'});
   assert(await page.locator('#progressImportSummary').isVisible(),'valid import must request confirmation');
   assert(/Level 12/.test(await page.locator('#progressImportSummary').innerText()),'confirmation must summarize the unlocked level');
   assert(/3 stars/.test(await page.locator('#progressImportSummary').innerText()),'confirmation must summarize earned stars');
+  await page.evaluate(()=>{Object.defineProperty(File.prototype,'text',{configurable:true,writable:true,value:window.__nativeFileText});delete window.__nativeFileText});
   const beforeConfirm=await page.evaluate(()=>[localStorage.getItem('latchlings_campaign400_progress_v1'),localStorage.getItem('latchlings_cinematics_seen_v1')]);
   assert.deepStrictEqual(beforeConfirm,[JSON.stringify({unlocked:12,stars:{'1':2,'2':1}}),JSON.stringify({opening:1,'old-maps':1})],'valid import must not write until confirmed');
   await page.locator('#confirmProgressImport').click();

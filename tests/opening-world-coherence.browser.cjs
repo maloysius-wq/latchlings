@@ -42,6 +42,26 @@ async function advanceTo(page,step){
  await waitForOpeningGeometry(page);
  while(await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0))<step){
   const before=await page.evaluate(()=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0));
+  const travelName={4:'basket',6:'water',7:'play'}[before+1];
+  if(travelName)await page.evaluate(name=>{
+   if(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced')return;
+   const mover=document.querySelector(`[data-opening-mover="${name}"]`),route=document.querySelector(`#opening-route-${name}`),length=route?.getTotalLength();
+   if(!mover||!route||!length)return;
+   const endpoint=route.getPointAtLength(length),trace={name,samples:[],started:false,complete:false,startedAt:performance.now()};
+   window.__openingTravelTrace=trace;
+   const sample=()=>{
+    if(window.__openingTravelTrace!==trace)return;
+    const animation=mover.getAnimations().find(item=>item.playState==='running');
+    if(animation){
+     const box=mover.getBoundingClientRect(),inverse=route.getScreenCTM().inverse(),position=new DOMPoint(box.left+box.width/2,box.top+box.height/2).matrixTransform(inverse);
+     trace.samples.push({time:Number(animation.currentTime),distance:Math.hypot(position.x-endpoint.x,position.y-endpoint.y)});trace.started=true;
+     if(trace.samples.length<256)requestAnimationFrame(sample);
+    }else if(trace.started)trace.complete=true;
+    else if(performance.now()-trace.startedAt<3000)requestAnimationFrame(sample);
+    else trace.timedOut=true;
+   };
+   requestAnimationFrame(sample);
+  },travelName);
   await page.locator('#cinematicNext').click();
   await page.waitForFunction(before=>Number(document.querySelector('.cin-opening-continuous')?.dataset.step||0)>before,before);
   await waitForOpeningGeometry(page);
@@ -51,19 +71,20 @@ async function advanceTo(page,step){
 }
 
 async function verifyTravelProgress(page,name){
- await page.waitForFunction(name=>{
-  const mover=document.querySelector(`[data-opening-mover="${name}"]`),route=document.querySelector(`#opening-route-${name}`);
-  if(!mover||!route||!route.getTotalLength())return false;
-  return matchMedia('(prefers-reduced-motion: reduce)').matches||mover.getAnimations().some(animation=>animation.playState==='running'&&Number(animation.currentTime)>=120);
- },name);
- const travel=await page.locator(`[data-opening-mover="${name}"]`).evaluate(el=>new Promise(resolve=>{
-  const route=document.querySelector(`#opening-route-${el.dataset.openingMover}`),p=route.getPointAtLength(route.getTotalLength()),inverse=route.getScreenCTM().inverse();
-  const sample=()=>{const b=el.getBoundingClientRect(),screenPoint=new DOMPoint(b.left+b.width/2,b.top+b.height/2);return screenPoint.matrixTransform(inverse)};
-  const dist=point=>Math.hypot(point.x-p.x,point.y-p.y);
-  requestAnimationFrame(()=>{const first=sample();requestAnimationFrame(()=>{const second=sample();resolve({firstDistance:dist(first),secondDistance:dist(second),reduced:matchMedia('(prefers-reduced-motion: reduce)').matches})})});
- }));
- if(travel.reduced)assert(travel.secondDistance<=2,`${name}: Reduced Motion must place the mover at its route endpoint`);
- else assert(travel.secondDistance<travel.firstDistance,`${name}: mover must visibly progress toward its route endpoint across animation frames (${travel.firstDistance.toFixed(1)}px -> ${travel.secondDistance.toFixed(1)}px)`);
+ const reduced=await page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced');
+ if(!reduced){
+  await page.waitForFunction(name=>{const trace=window.__openingTravelTrace;return trace?.name===name&&(trace.timedOut||trace.samples.some(sample=>sample.time>=120))},name);
+  const trace=await page.evaluate(()=>window.__openingTravelTrace);
+  assert(trace&&trace.name===name&&!trace.timedOut,`${name}: motion trace must start on the requested route`);
+  const first=trace.samples[0],progress=trace.samples.find(sample=>sample.time>=120&&sample.distance<first.distance-1);
+  assert(progress,`${name}: mover must visibly progress toward its route endpoint across animation frames (${trace.samples.slice(0,4).map(sample=>`${sample.time.toFixed(0)}ms/${sample.distance.toFixed(1)}px`).join(', ')})`);
+  return;
+ }
+ const travel=await page.locator(`[data-opening-mover="${name}"]`).evaluate(el=>{
+  const route=document.querySelector(`#opening-route-${el.dataset.openingMover}`),endpoint=route.getPointAtLength(route.getTotalLength()),inverse=route.getScreenCTM().inverse(),box=el.getBoundingClientRect(),position=new DOMPoint(box.left+box.width/2,box.top+box.height/2).matrixTransform(inverse);
+  return {distance:Math.hypot(position.x-endpoint.x,position.y-endpoint.y)};
+ });
+ assert(travel.distance<=2,`${name}: Reduced Motion must place the mover at its route endpoint (${travel.distance.toFixed(1)}px)`);
 }
 
 async function lowerGeometry(page){
