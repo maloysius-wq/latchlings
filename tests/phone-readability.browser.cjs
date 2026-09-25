@@ -61,6 +61,36 @@ async function measure(page){
   };
  });
 }
+async function prepareAtlas(page,chapter){
+ return page.evaluate(chapterNumber=>{
+  progress={unlocked:3,stars:{1:3,2:2}};currentLevel=3;chapterView=chapterNumber;rangeView=0;
+  screen('levels');renderChapter();
+  const map=document.querySelector('#levelGrid'),detail=document.querySelector('#atlasNodeDetail'),mapRect=map.getBoundingClientRect();
+  const box=element=>{const rect=element.getBoundingClientRect();return {left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom,width:rect.width,height:rect.height}};
+  const meta=STORY.levelMeta(chapterNumber===1?3:201);
+  return {
+   chapter:chapterNumber,detailExists:!!detail,detailText:detail?.innerText||'',detailFont:detail?parseFloat(getComputedStyle(detail).fontSize):0,
+   detailLive:detail?.getAttribute('aria-live')||'',detailBox:detail?box(detail):null,
+   location:meta.location,lockedTitle:STORY.levelMeta(chapterNumber===1?4:201).title,
+   map:box(map),mapNodes:[...map.querySelectorAll('.atlas-node')].map(node=>({level:Number(node.dataset.level),state:node.dataset.state,disabled:node.disabled,box:box(node)})),
+   objectiveFont:parseFloat(getComputedStyle(document.querySelector('.atlas-chapter-objective')||document.querySelector('.atlas-chapter-blurb')).fontSize),
+   rangeDetailFont:parseFloat(getComputedStyle(document.querySelector('.atlas-range-current b')).fontSize),
+   horizontalOverflow:document.documentElement.scrollWidth>innerWidth,currentLevel
+  };
+ },chapter);
+}
+function assertAtlasSnapshot(state,config,label){
+ assert(state.detailExists,`${label}: Atlas must show the selected/current destination detail`);
+ assert(state.detailFont>=14,`${label}: destination detail must be at least 14px, got ${state.detailFont}px`);
+ assert.equal(state.detailLive,'polite',`${label}: destination detail must announce changes politely`);
+ if(!state.detailText.includes('Locked'))assert(state.detailText.includes(state.location),`${label}: unlocked destination should use its known story location`);
+ assert(state.map.height>=config.height*.35,`${label}: map must remain a dominant part of the phone layout`);
+ assert(state.mapNodes.every(node=>node.box.left>=state.map.left-1&&node.box.right<=state.map.right+1&&node.box.top>=state.map.top-1&&node.box.bottom<=state.map.bottom+1),`${label}: every route node must remain inside the map bounds`);
+ if(state.detailBox){const covered=state.mapNodes.filter(node=>!(node.box.right<=state.detailBox.left||node.box.left>=state.detailBox.right||node.box.bottom<=state.detailBox.top||node.box.top>=state.detailBox.bottom));assert.equal(covered.length,0,`${label}: destination panel must not cover route nodes (${JSON.stringify({detail:state.detailBox,covered:covered.map(node=>({level:node.level,box:node.box}))})})`)}
+ assert(state.objectiveFont>=11,`${label}: chapter context should not remain microcopy (${state.objectiveFont}px)`);
+ assert(state.rangeDetailFont>=11,`${label}: route-stretch detail should remain readable (${state.rangeDetailFont}px)`);
+ assert(!state.horizontalOverflow,`${label}: Atlas must not overflow horizontally`);
+}
 function assertReadable(layout,config,label){
  assert(!layout.missingBody,`${label}: essential story body text must be rendered`);
  const min=config.textSize==='large'?17:15;
@@ -113,6 +143,36 @@ function assertStable(reference,current,label){
      }
     }
     await page.evaluate(()=>LatchlingsCinematics.finish(true));
+   }
+   if([320,390].includes(config.width)){
+    const chapterOne=await prepareAtlas(page,1);
+    const chapterOneCapture=path.join(os.tmpdir(),`latchlings-atlas-ch1-${config.width}x${config.height}-${config.textSize}.png`);
+    await page.screenshot({path:chapterOneCapture});captures.push(chapterOneCapture);
+    assertAtlasSnapshot(chapterOne,config,'Chapter 1 Atlas');
+    const interaction=await page.evaluate(()=>{
+     const map=document.querySelector('#levelGrid'),detail=document.querySelector('#atlasNodeDetail'),initialMapHeight=map.getBoundingClientRect().height,beforeLevel=currentLevel;
+     const restored=map.querySelector('.atlas-node[data-level="2"]'),current=map.querySelector('.atlas-node[data-level="3"]'),locked=map.querySelector('.atlas-node[data-level="4"]');
+     restored.focus();const restoredText=detail.innerText;
+     current.focus();const currentText=detail.innerText;current.blur();const blurText=detail.innerText;
+     locked.dispatchEvent(new MouseEvent('mouseover',{bubbles:true}));const lockedText=detail.innerText;
+     locked.click();
+     return {restoredText,currentText,blurText,lockedText,lockedDisabled:locked.disabled,levelBefore:beforeLevel,levelAfter:currentLevel,mapHeight:map.getBoundingClientRect().height,initialMapHeight,lockedTitle:STORY.levelMeta(4).title,bodyText:document.body.innerText};
+    });
+    assert(interaction.restoredText.includes('Restored')&&interaction.restoredText.includes('Level 2'),'focusing a restored node must show its name and restored state');
+    assert(interaction.currentText.includes('Current')&&interaction.currentText.includes('Level 3'),'focusing the current node must show its name and current state');
+    assert(interaction.blurText.includes('Level 3')&&interaction.blurText.includes('Current'),'leaving node focus must restore the current destination detail');
+    assert(interaction.lockedDisabled,'locked level controls must remain disabled');
+    assert(interaction.lockedText.includes('Level 4')&&interaction.lockedText.includes('Locked'),'hovering a locked node must state only its locked level');
+    assert(!interaction.lockedText.includes(interaction.lockedTitle)&&!interaction.bodyText.includes(interaction.lockedTitle),'locked nodes must not leak their future story result into the DOM text');
+    assert.equal(interaction.levelAfter,interaction.levelBefore,'focusing or inspecting nodes must not start a level');
+    assert(Math.abs(interaction.mapHeight-interaction.initialMapHeight)<=1,'focus/hover detail changes must not resize the map');
+
+    const chapterFive=await prepareAtlas(page,5);
+    const chapterFiveCapture=path.join(os.tmpdir(),`latchlings-atlas-ch5-${config.width}x${config.height}-${config.textSize}.png`);
+    await page.screenshot({path:chapterFiveCapture});captures.push(chapterFiveCapture);
+    assertAtlasSnapshot(chapterFive,config,'Chapter 5 locked Atlas');
+    assert(chapterFive.detailText.includes('Level 201')&&chapterFive.detailText.includes('Locked'),'a locked chapter must show a spoiler-safe level/state detail');
+    assert(!chapterFive.detailText.includes(chapterFive.lockedTitle),'locked destination detail must not reveal its future result');
    }
    await context.close();
   }
