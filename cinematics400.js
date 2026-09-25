@@ -48,7 +48,7 @@ const CINEMATICS={
    {label:'A Familiar Porch',visual:'porch',lines:[['Tansy','I can still see their porch.'],['Pip','That sounded less reassuring than you meant it to.'],['Tansy','The old route no longer reaches it. I would like the new one to.']]},
    {label:'Not One Bad Route',visual:'network-miss',lines:[['Rowan','Watch the endpoints. The islands keep drifting while the old lines stay put.'],['Narrator','This is not one bad route. The network is falling behind the world it serves.']]},
    {label:'Yesterday’s Map',visual:'map-mismatch',lines:[['Pippa','Line up this old marker and another island falls out of place.'],['Rowan','Then yesterday’s map cannot be the answer.']]},
-   {label:'New Coordinates',visual:'porch-reconnect',lines:[['Bramble','Good. I was getting tired of chasing yesterday.'],['Narrator','A newly drawn route reaches the familiar porch. It never existed on the old map, and it works now.']]}
+   {label:'New Coordinates',visual:'porch-reconnect',lines:[['Bramble','Good. I was getting tired of chasing yesterday.'],['Narrator','The familiar porch is our destination. A fresh route needs to reach it where it is now, not where yesterday’s map left it.']]}
   ]
  },
  'old-maps':{
@@ -76,6 +76,39 @@ const CINEMATICS={
 };
 const OPENING_FIRST_RUN_STEPS=CINEMATICS.opening.beats.flatMap((beat,beatIndex)=>beat.lines.map((_,lineIndex)=>[beatIndex,lineIndex]));
 let activeId=null,activeIndex=0,activeLine=0,activeFlow=null,activeStep=0,onDone=null,markOnDone=false,lastFocus=null;
+let porchGeometryObserver=null,porchGeometryScene=null,porchGeometryResize=null,porchGeometryFrame=0;
+function disconnectPorchGeometry(){if(porchGeometryObserver){porchGeometryObserver.disconnect();porchGeometryObserver=null}if(porchGeometryResize){window.removeEventListener('resize',porchGeometryResize);porchGeometryResize=null}if(porchGeometryFrame){cancelAnimationFrame(porchGeometryFrame);porchGeometryFrame=0}porchGeometryScene=null}
+function syncPorchGeometry(scene){
+ const island=scene.querySelector('.porch-far-island'),svg=scene.querySelector('.porch-reconnect-svg'),path=svg?.querySelector('.porch-reconnect-route'),origin=scene.querySelector('[data-route-origin]'),landing=scene.querySelector('[data-route-landing]'),pulse=scene.querySelector('[data-route-pulse]');
+ if(!island||!svg||!path||!origin||!landing||!pulse)return false;
+ const sceneRect=scene.getBoundingClientRect(),islandRect=island.getBoundingClientRect();
+ if(sceneRect.width<=0||sceneRect.height<=0||islandRect.width<=0||islandRect.height<=0)return false;
+ const parentScaleX=island.offsetWidth?islandRect.width/island.offsetWidth:1,parentScaleY=island.offsetHeight?islandRect.height/island.offsetHeight:1;
+ if(parentScaleX<=0||parentScaleY<=0)return false;
+ svg.style.left=`${(sceneRect.left-islandRect.left)/parentScaleX}px`;svg.style.top=`${(sceneRect.top-islandRect.top)/parentScaleY}px`;
+ svg.style.width=`${scene.clientWidth/parentScaleX}px`;svg.style.height=`${scene.clientHeight/parentScaleY}px`;
+ const ready=!!window.LatchlingsSceneGeometry?.syncPath(svg,path,origin,landing);scene.dataset.geometryAttempted='true';
+ if(ready){
+  try{
+   const length=path.getTotalLength(),end=path.getPointAtLength(length),matrix=path.getScreenCTM(),landingRect=landing.getBoundingClientRect(),sx=landing.clientWidth/landingRect.width,sy=landing.clientHeight/landingRect.height;
+   if(!length||!matrix||!landingRect.width||!landingRect.height)throw new Error('Porch landing point is unavailable');
+   const screen=new DOMPoint(end.x,end.y).matrixTransform(matrix);
+   if(!Number.isFinite(screen.x)||!Number.isFinite(screen.y))throw new Error('Porch landing point is invalid');
+   pulse.style.left=`${(screen.x-landingRect.left)*sx-pulse.offsetWidth/2}px`;pulse.style.top=`${(screen.y-landingRect.top)*sy-pulse.offsetHeight/2}px`;pulse.style.translate='none';
+   scene.dataset.routeConnected='true';
+  }catch(_){scene.removeAttribute('data-route-connected');scene.dataset.geometryReady='false';path.removeAttribute('d');pulse.style.left='50%';pulse.style.top='50%';pulse.style.translate='-50% -50%';return false}
+ }else{scene.removeAttribute('data-route-connected');pulse.style.left='50%';pulse.style.top='50%';pulse.style.translate='-50% -50%'}
+ scene.dataset.geometryReady=ready?'true':'false';
+ return ready;
+}
+function bindPorchGeometry(scene){
+ disconnectPorchGeometry();porchGeometryScene=scene;
+ scene.dataset.geometryReady='false';
+ const sync=()=>{if(porchGeometryFrame)cancelAnimationFrame(porchGeometryFrame);porchGeometryFrame=requestAnimationFrame(()=>{porchGeometryFrame=0;if(porchGeometryScene===scene&&scene.isConnected)syncPorchGeometry(scene)})};
+ sync();
+ if(typeof ResizeObserver==='function'){porchGeometryObserver=new ResizeObserver(sync);[scene,scene.querySelector('.porch-far-island'),scene.querySelector('[data-route-origin]'),scene.querySelector('[data-route-landing]')].filter(Boolean).forEach(element=>porchGeometryObserver.observe(element))}
+ porchGeometryResize=sync;window.addEventListener('resize',porchGeometryResize,{passive:true});
+}
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function suitSvg(s){
  if(s==='heart')return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 86C39 74 13 58 13 34c0-14 10-23 23-23 8 0 14 4 18 10 4-6 10-10 18-10 13 0 23 9 23 23 0 24-26 40-45 52Z"/></svg>';
@@ -93,10 +126,10 @@ function routeDemoHtml(){return `<div class="cin-demo-board"><div class="cin-dem
 function mapSheets(mode){return `<div class="cin-maps ${mode}"><div class="cin-map-sheet m1"><b>YEAR 12</b><i class="line a"></i><i class="line b"></i><i class="node n1"></i><i class="node n2"></i></div><div class="cin-map-sheet m2"><b>YEAR 31</b><i class="line a"></i><i class="line b"></i><i class="node n1"></i><i class="node n2"></i></div><div class="cin-map-sheet m3"><b>YEAR 58</b><i class="line a"></i><i class="line b"></i><i class="node n1"></i><i class="node n2"></i></div></div>`}
 function networkNode(n,label,type){return `<div class="node n${n} type-${type}"><i class="node-side"></i><i class="node-rim"></i><i class="node-top"></i><i class="node-landmark"></i><span>${label}</span></div>`}
 function networkHtml(mode=''){const nodes=[['MEADOWS','meadow'],['LANTERN','lantern'],['LODESTONE','lodestone'],['KEEP','keep'],['PRISM','prism'],['COPPERLINE','copper'],['STORMSWITCH','storm'],['CROWN','crown']];return `<div class="cin-network ${mode}">${nodes.map((x,i)=>networkNode(i+1,x[0],x[1])).join('')}<span class="wire w1"></span><span class="wire w2"></span><span class="wire w3"></span><span class="wire w4"></span><span class="wire w5"></span><span class="wire w6"></span><span class="wire w7"></span></div>`}
-function familiarPorchIslandHtml(){return `<div class="porch-far-island"><i class="porch-island-side"></i><i class="porch-island-top"></i><i class="porch-tree"></i><i class="porch-house"></i><i class="porch-deck"></i><i class="porch-friend-lantern l1"></i><i class="porch-friend-lantern l2"></i></div>`}
+function familiarPorchIslandHtml(withRoute=false){return `<div class="porch-far-island"><i class="porch-island-side"></i><i class="porch-island-top"></i>${withRoute?'<svg class="porch-reconnect-svg" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true"><path class="porch-reconnect-route" pathLength="1" d=""></path></svg>':''}<i class="porch-tree"></i><i class="porch-house"></i><i class="porch-deck">${withRoute?'<span class="porch-route-landing" data-route-landing><span class="porch-route-pulse" data-route-pulse></span></span>':''}</i><i class="porch-friend-lantern l1"></i><i class="porch-friend-lantern l2"></i></div>`}
 function lookoutHtml(){return `<div class="cin-lookout-scene cin-porch-production"><i class="porch-cloud c1"></i><i class="porch-cloud c2"></i>${familiarPorchIslandHtml()}<div class="porch-near-island"><i class="porch-crystal k1"></i><i class="porch-crystal k2"></i></div><div class="cin-telescope production-telescope"><i class="tube"></i><i class="lens"></i><span class="cin-telescope-mount"><b></b><b></b><b></b></span></div>${character('Tansy','lookout-tansy')}${character('Pip','lookout-pip')}<i class="cin-sightline"></i><i class="porch-depth-haze"></i></div>`}
 function breakfastJourneyHtml(){return `<div class="cin-breakfast-journey" data-story-action="breakfast-basket-travel">${islandsHtml('wide basket-journey')}<i class="breakfast-journey-route"></i><span class="breakfast-basket-traveler"><i class="basket-handle"></i><i class="basket-body"></i></span><span class="breakfast-home-destination"><i class="home-roof"></i><i class="home-body"></i><i class="home-door"></i><i class="home-lantern"></i></span></div>`}
-function porchReconnectHtml(){return `<div class="cin-lookout-scene cin-porch-production cin-porch-reconnect" data-story-action="route-reaches-familiar-porch"><i class="porch-cloud c1"></i><i class="porch-cloud c2"></i>${familiarPorchIslandHtml()}<div class="porch-route-origin"><i></i></div><i class="porch-reconnect-line"></i><span class="porch-route-pulse"></span>${routeDraftingHtml('NEW COORDINATES')}</div>`}
+function porchReconnectHtml(){return `<div class="cin-lookout-scene cin-porch-production cin-porch-reconnect" data-story-action="route-reaches-familiar-porch"><i class="porch-cloud c1"></i><i class="porch-cloud c2"></i>${familiarPorchIslandHtml(true)}<div class="porch-route-origin" data-route-origin aria-label="New route origin"><i></i></div>${routeDraftingHtml('NEW COORDINATES')}</div>`}
 function keepsakeHtml(){return `<div class="cin-community-work"><div class="work-station meadows">${character('Pippa','work-pippa')}<i class="work-prop route-marker"></i><b>CHECK ROUTE</b></div><div class="work-station lodestone">${character('Rowan','work-rowan')}<i class="work-prop anchor-ring"></i><b>ADJUST ANCHOR</b></div><div class="work-station copperline">${character('Bramble','work-bramble')}<i class="work-prop map-roll"></i><b>REDRAW LINE</b></div><span class="work-signal s1"></span><span class="work-signal s2"></span></div>`}
 function automationHtml(){return `<div class="cin-automation"><div class="hand-map">${mapSheets('tiny')}</div><div class="machine"><i class="gear g1"></i><i class="gear g2"></i><span class="fixed-line"></span></div><div class="cin-unattended-desk" data-story-action="unattended-desk"><i class="desk-window"></i><i class="desk-surface"></i><i class="desk-note"></i><i class="desk-chair"></i></div></div>`}
 function routeDraftingHtml(label='LIVE ROUTE'){return `<div class="cin-route-drafting"><i></i><b>${label}</b></div>`}
@@ -161,15 +194,16 @@ function render(){
  document.getElementById('cinematicTitle').textContent=c.title;
  document.getElementById('cinematicBeat').textContent=b.label;
  document.getElementById('cinematicCounter').textContent=`${displayIndex+1} / ${displayCount}`;
+ disconnectPorchGeometry();
  if(opening&&window.LatchlingsOpeningScene)window.LatchlingsOpeningScene.sync(document.getElementById('cinematicStage'),1,{character,suitSvg});
- else document.getElementById('cinematicStage').innerHTML=visualHtml(b.visual);
+ else{const stage=document.getElementById('cinematicStage');stage.innerHTML=visualHtml(b.visual);if(b.visual==='porch-reconnect')bindPorchGeometry(stage.querySelector('.cin-porch-reconnect'))}
  document.getElementById('cinematicProgress').innerHTML=Array.from({length:displayCount},(_,i)=>`<i class="${i===displayIndex?'active':i<displayIndex?'done':''}"></i>`).join('');
  renderTurn();
  requestAnimationFrame(()=>o.classList.add('beat-ready'));
 }
 function show(id,opts={}){const c=CINEMATICS[id];if(!c)return false;if(activeId)return false;const o=ensureOverlay();lastFocus=document.activeElement;activeId=id;activeFlow=id==='opening'&&opts.compact?OPENING_FIRST_RUN_STEPS:null;activeStep=0;if(activeFlow){activeIndex=activeFlow[0][0];activeLine=activeFlow[0][1]}else{activeIndex=0;activeLine=0}onDone=typeof opts.onComplete==='function'?opts.onComplete:null;markOnDone=opts.markSeen!==false;o.classList.remove('beat-ready');o.classList.add('show');o.setAttribute('aria-hidden','false');document.body.classList.add('cinematic-open');render();setTimeout(()=>{const b=document.getElementById('cinematicNext');if(b)try{b.focus({preventScroll:true})}catch(_){b.focus()}const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0},50);return true}
 function next(){if(!activeId)return;const c=CINEMATICS[activeId],b=c.beats[activeIndex],o=ensureOverlay();if(activeFlow){if(activeStep>=activeFlow.length-1){finish(false);return}o.classList.remove('beat-ready');activeStep++;activeIndex=activeFlow[activeStep][0];activeLine=activeFlow[activeStep][1];setTimeout(render,35);return}if(activeLine<b.lines.length-1){activeLine++;renderTurn();return}if(activeIndex>=c.beats.length-1){finish(false);return}o.classList.remove('beat-ready');activeIndex++;activeLine=0;setTimeout(render,35)}
-function finish(skipped){if(!activeId)return;const id=activeId,cb=onDone,shouldMark=markOnDone,o=ensureOverlay();if(shouldMark)markSeen(id);activeId=null;activeIndex=0;activeLine=0;activeFlow=null;activeStep=0;onDone=null;markOnDone=false;o.classList.remove('show','beat-ready');o.removeAttribute('data-cinematic');o.removeAttribute('data-visual');o.removeAttribute('data-mode');o.setAttribute('aria-hidden','true');document.body.classList.remove('cinematic-open');if(lastFocus&&typeof lastFocus.focus==='function')try{lastFocus.focus()}catch(_){}lastFocus=null;if(cb)setTimeout(()=>cb({id,skipped:!!skipped}),40)}
+function finish(skipped){if(!activeId)return;disconnectPorchGeometry();const id=activeId,cb=onDone,shouldMark=markOnDone,o=ensureOverlay();if(shouldMark)markSeen(id);activeId=null;activeIndex=0;activeLine=0;activeFlow=null;activeStep=0;onDone=null;markOnDone=false;o.classList.remove('show','beat-ready');o.removeAttribute('data-cinematic');o.removeAttribute('data-visual');o.removeAttribute('data-mode');o.setAttribute('aria-hidden','true');document.body.classList.remove('cinematic-open');if(lastFocus&&typeof lastFocus.focus==='function')try{lastFocus.focus()}catch(_){}lastFocus=null;if(cb)setTimeout(()=>cb({id,skipped:!!skipped}),40)}
 function maybeShowBeforeLevel(level,unlocked,onComplete){const id=TRIGGERS[Number(level)];if(!id||hasSeen(id))return false;const c=CINEMATICS[id];if(Number(level)>1&&Number(unlocked||1)<c.unlock)return false;return show(id,{onComplete,markSeen:true,compact:id==='opening'})}
 function renderLibrary(container,unlocked){if(typeof container==='string')container=document.getElementById(container);if(!container)return;const u=Math.max(1,Number(unlocked)||1),order=['opening','across-drift','old-maps','homeward'];container.innerHTML=order.map(id=>{const c=CINEMATICS[id],locked=u<c.unlock,seen=hasSeen(id);return `<button class="cinematic-library-card ${locked?'locked':''}" type="button" data-cinematic-id="${id}" ${locked?'disabled':''}><span class="cinematic-library-status">${locked?`Unlocks after Level ${c.unlock-1}`:seen?'Replay cinematic':'Watch cinematic'}</span><strong>${escapeHtml(c.title)}</strong><small>${escapeHtml(c.chapter)}</small></button>`}).join('');container.querySelectorAll('.cinematic-library-card:not(.locked)').forEach(b=>b.onclick=()=>show(b.dataset.cinematicId,{markSeen:false}))}
 document.addEventListener('keydown',e=>{if(!activeId)return;if(e.key==='Escape'){e.preventDefault();finish(true);return}if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();next()}});

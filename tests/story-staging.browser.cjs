@@ -141,8 +141,95 @@ async function runOpening(browser,config){
  await context.close();
 }
 
+async function advanceToPorchReconnect(page,geometryUnavailable=false){
+ await page.evaluate(unavailable=>{if(unavailable)window.LatchlingsSceneGeometry=null;LatchlingsCinematics.show('across-drift',{markSeen:false})},geometryUnavailable);
+ const expected=[[1,0],[1,1],[1,2],[2,0],[2,1],[3,0],[3,1],[4,0]];
+ for(const [beat,line] of expected){
+  assert(await page.locator('#cinematicNext').isVisible(),'Across Continue must stay reachable before each spoken line');
+  await page.locator('#cinematicNext').click();
+  await page.waitForFunction(({beat,line})=>LatchlingsCinematics?.beat===beat&&LatchlingsCinematics?.line===line,{beat,line});
+  if(beat===1&&line===0){
+   await page.waitForFunction(()=>document.querySelector('#cinematicOverlay')?.dataset.visual==='porch');
+   assert.equal(await page.locator('#cinematicStage .porch-reconnect-svg').count(),0,'the earlier Familiar Porch beat must not inherit the later route overlay');
+   assert.equal(await page.locator('#cinematicStage [data-route-landing]').count(),0,'the earlier Familiar Porch beat must not imply a route has landed');
+  }
+ }
+ await page.waitForFunction(()=>document.querySelector('#cinematicOverlay')?.dataset.visual==='porch-reconnect');
+}
+
+async function porchGeometry(page){
+ return page.evaluate(()=>{
+  const scene=document.querySelector('#cinematicStage .cin-porch-reconnect'),svg=scene?.querySelector('.porch-reconnect-svg'),path=svg?.querySelector('.porch-reconnect-route'),origin=scene?.querySelector('[data-route-origin]'),landing=scene?.querySelector('[data-route-landing]'),pulse=scene?.querySelector('.porch-route-pulse');
+  const box=element=>element?.getBoundingClientRect().toJSON()||null,center=rect=>rect?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}:null;
+  const point=t=>{if(!path||!path.getTotalLength())return null;const length=path.getTotalLength(),local=path.getPointAtLength(length*t),screen=new DOMPoint(local.x,local.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}};
+  return {visual:document.querySelector('#cinematicOverlay')?.dataset.visual,routeLength:path?.getTotalLength()||0,origin:center(box(origin)),landing:center(box(landing)),pathStart:point(0),pathEnd:point(1),pulse:center(box(pulse)),originBox:box(origin),landingBox:box(landing),farIsland:box(scene?.querySelector('.porch-far-island')),house:box(scene?.querySelector('.porch-house')),deck:box(scene?.querySelector('.porch-deck')),lanterns:[...scene?.querySelectorAll('.porch-friend-lantern')||[]].map(box),stage:box(document.querySelector('#cinematicStage'))};
+ });
+}
+
+async function verifyPorchGeometry(page,name){
+ const geometry=await porchGeometry(page);
+ assert(geometry.routeLength>0,`${name}: Across porch route must be a measured, nonzero SVG path (${JSON.stringify(geometry)})`);
+ assert(geometry.origin&&geometry.landing&&geometry.pulse,`${name}: route origin, deck landing, and arrival pulse must all exist`);
+ assert(distance(geometry.pathStart,geometry.origin)<=3,`${name}: route must begin at the visible origin anchor (${JSON.stringify(geometry)})`);
+ assert(distance(geometry.pathEnd,geometry.landing)<=3,`${name}: route must end at the twin-lantern deck landing (${JSON.stringify(geometry)})`);
+ assert(distance(geometry.pulse,geometry.landing)<=3,`${name}: arrival pulse must share the deck landing point (${JSON.stringify(geometry)})`);
+ assert(geometry.landingBox.left>=geometry.deck.left&&geometry.landingBox.right<=geometry.deck.right&&geometry.landingBox.top>=geometry.deck.top&&geometry.landingBox.bottom<=geometry.deck.bottom,`${name}: the named landing anchor must sit on the porch deck`);
+ assert(geometry.farIsland&&geometry.house&&geometry.lanterns.length===2,`${name}: recognizable porch island, house, deck, and both lanterns must remain present`);
+ assert(geometry.farIsland.left>=geometry.stage.left&&geometry.farIsland.right<=geometry.stage.right&&geometry.farIsland.top>=geometry.stage.top&&geometry.farIsland.bottom<=geometry.stage.bottom,`${name}: the complete porch island must stay inside the cinematic stage`);
+ assert(await page.locator('#cinematicNext').isVisible()&&await page.locator('#cinematicSkip').isVisible(),`${name}: route geometry must not block Continue or Skip`);
+ return geometry;
+}
+
+async function runAcrossPorch(browser,config){
+ const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ await advanceToPorchReconnect(page,config.geometryUnavailable);
+ const motion=config.reduced?'reduced':'normal',name=`${config.width}x${config.height}/${motion}`;
+ if(config.geometryUnavailable){
+  await page.waitForFunction(()=>document.querySelector('#cinematicStage .cin-porch-reconnect')?.dataset.geometryAttempted==='true');
+  const fallback=await porchGeometry(page);
+  assert.equal(fallback.routeLength,0,`${name}: a missing geometry helper must not show a false completed route`);
+  assert(fallback.origin&&fallback.farIsland,`${name}: fallback must keep the named origin and familiar porch visible`);
+  assert(fallback.landing&&fallback.pulse&&distance(fallback.landing,fallback.pulse)<=3,`${name}: fallback pulse must settle on the named deck landing`);
+  assert.equal(await page.locator('#cinematicStage .cin-porch-reconnect').getAttribute('data-route-connected'),null,`${name}: fallback must not claim the route connected`);
+  await page.locator('#cinematicNext').click();
+  await page.waitForFunction(()=>LatchlingsCinematics?.beat===4&&LatchlingsCinematics?.line===1);
+  const fallbackCopy=await page.locator('#cinematicLines .narrator-only span').textContent();
+  assert(fallbackCopy.includes('A fresh route needs to reach it'),`${name}: fallback narration must not claim the connection completed (${fallbackCopy})`);
+  assert(await page.locator('#cinematicNext').isVisible()&&await page.locator('#cinematicSkip').isVisible(),`${name}: Continue and Skip must stay available without geometry`);
+  assert.deepEqual(errors,[],`${name}: geometry fallback must have no browser errors`);
+  await context.close();return;
+ }
+ await page.waitForFunction(()=>document.querySelector('#cinematicStage .cin-porch-reconnect')?.dataset.routeConnected==='true',undefined,{timeout:6000});
+ await verifyPorchGeometry(page,name);
+ if(config.width<=390){
+  await page.waitForTimeout(220);
+  await page.screenshot({path:path.join(evidence,`across-${config.width}x${config.height}-${motion}-dialogue-visible.png`)});
+  await page.locator('.cinematic-copy').evaluate(element=>{element.dataset.previousVisibility=element.style.visibility;element.style.visibility='hidden'});
+  await page.screenshot({path:path.join(evidence,`across-${config.width}x${config.height}-${motion}-dialogue-hidden.png`)});
+  await page.locator('.cinematic-copy').evaluate(element=>{element.style.visibility=element.dataset.previousVisibility||'';delete element.dataset.previousVisibility});
+ }
+ const resized={width:config.width===320?390:config.width===390?430:320,height:config.width===320?844:config.width===390?932:568};
+ await page.setViewportSize(resized);
+ await page.waitForFunction(()=>{
+  const scene=document.querySelector('#cinematicStage .cin-porch-reconnect'),svg=scene?.querySelector('.porch-reconnect-svg'),path=svg?.querySelector('.porch-reconnect-route'),origin=scene?.querySelector('[data-route-origin]'),landing=scene?.querySelector('[data-route-landing]'),pulse=scene?.querySelector('.porch-route-pulse');
+  if(!path||!origin||!landing||!pulse||!path.getTotalLength())return false;
+  const center=element=>{const r=element.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}},point=t=>{const p=path.getPointAtLength(path.getTotalLength()*t),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}},distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const from=center(origin),to=center(landing),pulsePoint=center(pulse);return distance(point(0),from)<=3&&distance(point(1),to)<=3&&distance(pulsePoint,to)<=3;
+ },undefined,{timeout:6000});
+ await verifyPorchGeometry(page,`${name} resized to ${resized.width}x${resized.height}`);
+ assert.deepEqual(errors,[],`${name}: Across the Drift must have no browser errors`);
+ await context.close();
+}
+
 (async()=>{
  await listen();const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
+ for(const config of [
+  {width:320,height:568,reduced:false},{width:390,height:844,reduced:false},{width:430,height:932,reduced:false},
+  {width:320,height:568,reduced:true},{width:390,height:844,reduced:true},{width:430,height:932,reduced:true}
+ ])await runAcrossPorch(browser,config);
+ await runAcrossPorch(browser,{width:320,height:568,reduced:true,geometryUnavailable:true});
  for(const config of [
   {width:320,height:568,reduced:false,textSize:'normal'},
   {width:390,height:844,reduced:false,textSize:'normal'},
@@ -163,6 +250,7 @@ async function runOpening(browser,config){
  assert(rail.routeTip.includes('Use edges and rocks for stops.'),'Level 1 route handoff must preserve the existing route instruction.');
  assert(!overlap(rail.tip,rail.board)&&!overlap(rail.handoff,rail.board)&&!overlap(rail.tip,rail.controls)&&!overlap(rail.handoff,rail.controls),`Level 1 handoff must not cover puzzle cells or controls: ${JSON.stringify(rail)}`);
  assert.equal(rail.overflow,false,'Level 1 semantic handoff must not cause horizontal overflow');
- await gameContext.close();await browser.close();server.close();
- console.log(`PASS Opening errands, real-landmark labels, map handoff, Level 1 route-model explanation; captures ${evidence}`);
+ await gameContext.close();
+ await browser.close();server.close();
+ console.log(`PASS Opening errands, Across porch geometry, map handoff, Level 1 route-model explanation; captures ${evidence}`);
 })().catch(error=>{console.error(error);server.close();process.exit(1)});
