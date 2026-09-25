@@ -239,6 +239,7 @@ html[data-motion="reduced"] #cinematicOverlay[data-visual="porch"] *{animation:n
 
 /* Earned chapter postcards resolve in one brief, skippable beat; the modal actions stay live. */
 .chapter-reward-card[data-vignette-settled="false"] .chapter-reward-basket{animation:rewardBasketHome 1.08s cubic-bezier(.2,.72,.22,1) both}
+.chapter-reward-card[data-vignette-settled="true"] .chapter-reward-basket{left:81%;bottom:31%;rotate:0deg}
 .chapter-reward-card[data-vignette-settled="false"] .chapter-reward-route{animation:rewardRouteWake 1.08s ease-out both}
 .chapter-two-reward[data-vignette-settled="false"] .lanternwood-reward-lantern.l1{animation:rewardLanternRelight 1.05s ease-out both}
 .chapter-two-reward[data-vignette-settled="false"] .lanternwood-reward-lantern.l2{animation:rewardLanternRelight 1.05s .12s ease-out both}

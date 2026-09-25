@@ -87,7 +87,7 @@ function initializeEndingHomecoming(){
  const svg=stage.querySelector('.ending-parcel-route-svg'),path=svg?.querySelector('.ending-parcel-route'),target=stage.querySelector('.ending-parcel-target'),parcel=stage.querySelector('.ending-parcel'),networkHome=stage.querySelector('[data-home-node="true"]');
  if(!svg||!path||!target||!parcel||!networkHome){endingHomecomingFailure(stage,parcel);return}
  parcel.dataset.arrived='false';stage.dataset.parcelState='waiting';
- let disposed=false,started=false,startScheduled=false,progress=0,raf=0,geometryDirty=true,resizeObserver=null;
+ let disposed=false,started=false,startScheduled=false,progress=0,raf=0,readinessTimeout=0,geometryDirty=true,resizeObserver=null;
  const reduced=effectiveReducedMotion();
  const stageRect=()=>stage.getBoundingClientRect();
  const positionAt=t=>{
@@ -100,24 +100,29 @@ function initializeEndingHomecoming(){
  };
  const refresh=()=>{
   if(disposed||!stage.isConnected)return false;
+  const keepWaiting=()=>{if(stage.dataset.parcelState!=='fallback')stage.dataset.parcelState='waiting';return false};
   let doc,win;
   try{doc=frame.contentDocument;win=frame.contentWindow}catch(_){endingHomecomingFailure(stage,parcel);return false}
-  if(!doc||!win||doc.readyState!=='complete'){stage.dataset.parcelState='waiting';return false}
+  if(!doc||!win||doc.readyState!=='complete')return keepWaiting();
   const porch=doc.querySelector('#c2 .cottage .door');
   if(!porch){endingHomecomingFailure(stage,parcel);return false}
   const doorRect=porch.getBoundingClientRect(),frameRect=frame.getBoundingClientRect(),bounds=stageRect();
-  if(doorRect.width<=0||doorRect.height<=0||frameRect.width<=0||frameRect.height<=0||stage.clientWidth<=0||stage.clientHeight<=0){stage.dataset.parcelState='waiting';return false}
+  if(doorRect.width<=0||doorRect.height<=0||frameRect.width<=0||frameRect.height<=0||stage.clientWidth<=0||stage.clientHeight<=0)return keepWaiting();
   const scaleX=frameRect.width/Math.max(1,win.innerWidth),scaleY=frameRect.height/Math.max(1,win.innerHeight);
   const porchX=frameRect.left+(doorRect.left+doorRect.width/2)*scaleX,porchY=frameRect.top+(doorRect.top+doorRect.height/2)*scaleY;
   target.style.left=`${porchX-bounds.left-stage.clientLeft}px`;target.style.top=`${porchY-bounds.top-stage.clientTop}px`;
   svg.setAttribute('viewBox',`0 0 ${stage.clientWidth} ${stage.clientHeight}`);
-  if(!window.LatchlingsSceneGeometry?.syncPath?.(svg,path,networkHome,target)){stage.dataset.parcelState='waiting';return false}
+  if(!window.LatchlingsSceneGeometry?.syncPath?.(svg,path,networkHome,target))return keepWaiting();
+  if(readinessTimeout){clearTimeout(readinessTimeout);readinessTimeout=0}
   geometryDirty=false;
-  if(!started){positionAt(0);stage.dataset.parcelState='ready'}
+  if(!started||stage.dataset.parcelState==='fallback'){
+   if(started){started=false;startScheduled=false;progress=0;parcel.dataset.arrived='false';stage.classList.remove('parcel-arrived')}
+   positionAt(0);stage.dataset.parcelState='ready'
+  }
   else if(parcel.dataset.arrived==='true')positionAt(1);
   return true;
  };
- const markGeometryDirty=()=>{geometryDirty=true;if(!refresh())return;if(!started){if(reduced)complete();else scheduleStart()}};
+ const markGeometryDirty=()=>{geometryDirty=true;if(!refresh()){if(stage.dataset.parcelState==='fallback')endingHomecomingFailure(stage,parcel);return}if(!started){if(reduced)complete();else scheduleStart()}};
  const complete=()=>{
   if(disposed)return;
   progress=1;positionAt(1);parcel.dataset.arrived='true';stage.dataset.parcelState='arrived';stage.classList.add('parcel-arrived');
@@ -148,10 +153,11 @@ function initializeEndingHomecoming(){
    Promise.allSettled(entrance.map(animation=>animation.finished)).then(()=>{startScheduled=false;if(!refresh())return;animate()});
   }));
  }
- const controller={stage,refresh(){geometryDirty=true;const ready=refresh();if(ready&&reduced)complete();else if(ready)scheduleStart();return ready},dispose(){disposed=true;if(raf)cancelAnimationFrame(raf);resizeObserver?.disconnect();window.removeEventListener('resize',markGeometryDirty);window.visualViewport?.removeEventListener('resize',markGeometryDirty);frame.removeEventListener('load',markGeometryDirty)}};
+ const controller={stage,refresh(){geometryDirty=true;const ready=refresh();if(ready&&reduced)complete();else if(ready)scheduleStart();return ready},dispose(){disposed=true;if(raf)cancelAnimationFrame(raf);if(readinessTimeout){clearTimeout(readinessTimeout);readinessTimeout=0}resizeObserver?.disconnect();window.removeEventListener('resize',markGeometryDirty);window.visualViewport?.removeEventListener('resize',markGeometryDirty);frame.removeEventListener('load',markGeometryDirty)}};
  endingHomecomingController=controller;
  frame.addEventListener('load',markGeometryDirty);
  frame.addEventListener('error',()=>endingHomecomingFailure(stage,parcel));
+ readinessTimeout=window.setTimeout(()=>{readinessTimeout=0;if(disposed||started||!stage.isConnected||stage.dataset.parcelState!=='waiting')return;endingHomecomingFailure(stage,parcel)},4000);
  window.addEventListener('resize',markGeometryDirty,{passive:true});
  window.visualViewport?.addEventListener('resize',markGeometryDirty,{passive:true});
  if(typeof ResizeObserver==='function'){resizeObserver=new ResizeObserver(markGeometryDirty);resizeObserver.observe(stage);resizeObserver.observe(frame)}

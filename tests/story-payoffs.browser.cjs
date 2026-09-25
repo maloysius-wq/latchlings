@@ -64,12 +64,21 @@ async function verifyContinue(browser,level,expected){
  await context.close();
 }
 
+async function assertMailboxPose(page,label){
+ const pose=await page.evaluate(()=>{
+  const postcard=document.querySelector('[data-reward-level="50"] .chapter-reward-postcard'),basket=postcard?.querySelector('.chapter-reward-basket')?.getBoundingClientRect(),mailbox=postcard?.querySelector('.chapter-reward-mailbox')?.getBoundingClientRect();
+  return basket&&mailbox?{basket:{x:basket.left+basket.width/2,y:basket.top+basket.height/2},mailbox:{x:mailbox.left+mailbox.width/2,y:mailbox.top+mailbox.height/2}}:null;
+ });
+ assert(pose&&Math.hypot(pose.basket.x-pose.mailbox.x,pose.basket.y-pose.mailbox.y)<=10,`${label}: settled Level 50 basket must visibly remain at the mailbox (${JSON.stringify(pose)})`);
+}
+
 async function verifyReducedAndReplay(browser,level,expected){
  const context=await browser.newContext({viewport:{width:320,height:568},reducedMotion:'reduce'}),page=await context.newPage();
  await openReward(page,level,{reduced:true});
  const card=page.locator(expected.selector);
  assert.equal(await card.getAttribute('data-vignette-settled'),'true',`Level ${level}: Reduced Motion must show the completed keepsake immediately`);
  assert(await page.locator(expected.home).isVisible()&&await page.locator(expected.continue).isVisible(),`Level ${level}: Reduced Motion must preserve both actions`);
+ if(level===50)await assertMailboxPose(page,'Reduced Motion');
  await page.screenshot({path:path.join(evidence,`level-${level}-320-reduced.png`)});
  await context.close();
 
@@ -79,6 +88,7 @@ async function verifyReducedAndReplay(browser,level,expected){
  assert.equal(await replayCard.getAttribute('data-reward-level'),String(level),`Level ${level}: replay must show only its already-earned chapter keepsake`);
  assert.equal(await replayPage.locator('[data-reward-future]').count(),0,`Level ${level}: replay must not reveal a future chapter prop`);
  await replayPage.waitForFunction(selector=>document.querySelector(selector)?.dataset.vignetteSettled==='true',expected.selector,{timeout:1800});
+ if(level===50)await assertMailboxPose(replayPage,'Normal-motion completion');
  await replayContext.close();
 }
 
@@ -152,6 +162,27 @@ async function verifyEndingArrival(browser){
  assert(await fallbackPage.locator('#completeHome').isVisible()&&await fallbackPage.locator('#completeLevels').isVisible(),'Missing iframe landmarks must not block either ending action');
  assert.equal(await fallbackPage.locator('.ending-parcel').getAttribute('data-arrived'),'false','A missing porch must never be reported as a successful landing');
  await fallbackContext.close();
+
+ const stalledContext=await browser.newContext({viewport:{width:320,height:568},reducedMotion:'reduce'}),stalledPage=await stalledContext.newPage();
+ await stalledPage.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ const stalledReadyState=await stalledPage.locator('.ending-home-frame').evaluate(frame=>{const doc=frame.contentDocument;doc.open();doc.write('<!doctype html><title>Little Home is still arriving</title><body>Waiting for the island view.</body>');return doc.readyState});
+ assert.equal(stalledReadyState,'loading','The readiness fallback test must hold the canonical ending iframe open');
+ await stalledPage.evaluate(()=>{LatchlingsPrefs.set('motion','reduced');screen('complete')});
+ await stalledPage.waitForFunction(()=>document.querySelector('.ending-homecoming')?.dataset.parcelState==='fallback',undefined,{timeout:6500});
+ const stalled=await endingGeometry(stalledPage);
+ assert(stalled.parcelVisible&&stalled.parcel&&stalled.homeNode&&Math.hypot(stalled.parcel.x-stalled.homeNode.x,stalled.parcel.y-stalled.homeNode.y)<=3,`A stalled ending iframe must reach the visible Little Home fallback (${JSON.stringify(stalled)})`);
+ assert(/little home/i.test(stalled.fallbackLabel.text)&&stalled.actions,`A stalled ending iframe must label the fallback and leave both ending actions available (${JSON.stringify(stalled)})`);
+ assert.equal(await stalledPage.locator('.ending-parcel').getAttribute('data-arrived'),'false','A stalled porch must never be reported as a successful landing');
+ await stalledPage.setViewportSize({width:390,height:800});
+ await stalledPage.waitForFunction(()=>{
+  const stage=document.querySelector('.ending-homecoming'),parcel=stage?.querySelector('.ending-parcel')?.getBoundingClientRect(),node=stage?.querySelector('[data-home-node="true"]')?.getBoundingClientRect();
+  return stage?.dataset.parcelState==='fallback'&&parcel&&node&&Math.hypot(parcel.left+parcel.width/2-node.left-node.width/2,parcel.top+parcel.height/2-node.top-node.height/2)<=3;
+ },undefined,{timeout:1500});
+ await stalledPage.locator('.ending-home-frame').evaluate(frame=>{frame.src=frame.src});
+ await stalledPage.waitForFunction(()=>document.querySelector('.ending-homecoming')?.dataset.parcelState==='arrived',undefined,{timeout:8000});
+ const recovered=await endingGeometry(stalledPage);
+ assert(recovered.porch&&Math.hypot(recovered.parcel.x-recovered.porch.x,recovered.parcel.y-recovered.porch.y)<=4,`A recovered iframe must replace the fallback with the measured porch landing (${JSON.stringify(recovered)})`);
+ await stalledContext.close();
 }
 
 async function main(){
