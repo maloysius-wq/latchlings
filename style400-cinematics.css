@@ -436,6 +436,7 @@ html[data-motion="reduced"] .cinematic-copy *{animation:none!important;transitio
 .cin-homeward-wrap .cin-network.mini [data-network-node="lodestone"] span,
 .cin-homeward-wrap .cin-network.mini [data-network-node="crown"] span{font-size:12px!important}
 .cin-homeward-wrap .cin-network.mini [data-network-node="meadows"] span{left:calc(50% - 28px)!important;top:51px!important;font-size:11px!important;padding:2px!important}
+@media(max-width:350px){.cin-homeward-wrap .cin-network.mini [data-network-node="meadows"] span{left:calc(50% - 24px)!important;top:25px!important}}
 .cin-homeward-wrap .cin-network.mini [data-network-node="lantern"] span{left:calc(50% - 87px)!important}
 .cin-homeward-wrap .cin-network.mini [data-network-node="lodestone"] span{left:calc(50% - 48px)!important;top:-48px!important;font-size:11px!important;padding:2px!important}
 .cin-homeward-wrap .cin-network.mini [data-network-node="prism"] span{left:calc(50% - 46px)!important;top:-28px!important;width:50px;max-width:50px;box-sizing:border-box;white-space:normal!important;text-align:center;font-size:10px!important;line-height:1.05!important;padding:2px 3px}

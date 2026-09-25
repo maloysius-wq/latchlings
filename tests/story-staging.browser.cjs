@@ -309,7 +309,7 @@ async function runHomewardNetwork(browser,config){
    assert(snapshot.nodes.every(node=>node.fontSize>=8.5),`${name}: supporting regional names must remain at least 8.5px rather than collapsing to miniature text (${JSON.stringify(snapshot.nodes.map(({id,fontSize})=>({id,fontSize})))})`);
    const labels=snapshot.nodes.map(node=>({id:node.id,box:node.labelBox}));
    for(let i=0;i<labels.length;i++){
-    const current=labels[i];assert(current.box.left>=snapshot.stageBox.left&&current.box.right<=snapshot.stageBox.right&&current.box.top>=snapshot.stageBox.top&&current.box.bottom<=snapshot.stageBox.bottom,`${name}: ${current.id} label must stay inside the scene bounds (${JSON.stringify(current)})`);
+    const current=labels[i];assert(current.box.left>=snapshot.stageBox.left&&current.box.right<=snapshot.stageBox.right&&current.box.top>=snapshot.stageBox.top&&current.box.bottom<=snapshot.stageBox.bottom,`${name}: ${current.id} label must stay inside the scene bounds (${JSON.stringify({label:current.box,stage:snapshot.stageBox})})`);
     for(const landmark of snapshot.nodes)assert(!overlap(current.box,landmark.landmarkBox),`${name}: ${current.id} name must not cover the ${landmark.id} landmark (${JSON.stringify({label:current.box,landmark:landmark.landmarkBox})})`);
     for(const landmark of snapshot.homeLandmarks)assert(!overlap(current.box,landmark),`${name}: ${current.id} name must not cover Little Home's ${landmark.kind} landmark (${JSON.stringify({label:current.box,landmark})})`);
     assert(!snapshot.faces.some(face=>overlap(current.box,face)),`${name}: ${current.id} name must not cover a resident (${JSON.stringify({label:current.box,faces:snapshot.faces.filter(face=>overlap(current.box,face))})})`);
