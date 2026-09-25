@@ -10,11 +10,11 @@ Execute tasks in numbered order, including Reliability Task 0. Do not combine co
 
 ## Starting checklist
 
-- [ ] Read `AGENTS.md`, `.github/REPOSITORY_ACCESS_PREFLIGHT.md`, and `DEVELOPMENT_HANDOFF.md` through the GitHub connector first, per repository policy. Then inspect the local working tree and approved spec.
-- [ ] Work on the feature branch `codex/audit-polish-20260924`. Confirm the exact checkout and do not overwrite unrelated user changes. Do not merge or deploy without the player asking.
-- [ ] Run baseline `npm test` and record exact failures, not a paraphrase. Record SHA-256 for all eight `campaign400-*.js` files.
-- [ ] Commit an IN PROGRESS handoff before touching product code, as Reliability Task 0 directs.
-- [ ] Use `superpowers:executing-plans` for native inline execution unless the player explicitly requests subagent-driven work. Use `superpowers:test-driven-development` and `superpowers:systematic-debugging` when those skills trigger; do not let test repairs weaken the geometric assertions.
+- [x] Read `AGENTS.md`, `.github/REPOSITORY_ACCESS_PREFLIGHT.md`, and `DEVELOPMENT_HANDOFF.md` through the GitHub connector first, per repository policy. Then inspect the local working tree and approved spec.
+- [x] Work on the feature branch `codex/audit-polish-20260924`. Confirm the exact checkout and do not overwrite unrelated user changes. Do not merge or deploy without the player asking.
+- [x] Run baseline `npm test` and record exact failures, not a paraphrase. Record SHA-256 for all eight `campaign400-*.js` files.
+- [x] Commit an IN PROGRESS handoff before touching product code, as Reliability Task 0 directs.
+- [x] Use `superpowers:executing-plans` for native inline execution unless the player explicitly requests subagent-driven work. Use `superpowers:test-driven-development` and `superpowers:systematic-debugging` when those skills trigger; do not let test repairs weaken the geometric assertions.
 
 ## Task rhythm
 

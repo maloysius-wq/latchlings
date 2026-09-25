@@ -9,7 +9,7 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 ## Current work
 
 ### Approved full-game polish implementation (2026-09-24)
-**Status: IN PROGRESS — Reliability/gameplay and Phone Presentation stages complete; Story Staging remains.**
+**Status: LOCAL IMPLEMENTATION VERIFIED — final branch push and GitHub CI pending.**
 
 Approved scope: execute the complete game-polish design and implementation guide on branch `codex/audit-polish-20260924`, starting from `881630b159dd0471870826f2a4181506f97078b0`. Follow the approved design at `docs/superpowers/specs/2026-09-24-game-polish-design.md` and the ordered entry point at `docs/superpowers/plans/2026-09-24-game-polish-execution-guide.md`: reliability/gameplay, phone presentation, then story staging. The completed work and remaining checks are recorded below.
 
@@ -251,3 +251,29 @@ Final R1-R5 exact head before broader Astra closure: `7e2643d2e78b1a5c25b6b53642
 - `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` is the living repository-side item-by-item reconciliation of those source documents against current implementation evidence.
 - Prior detailed development history is preserved in the dated `DEVELOPMENT_HANDOFF_ARCHIVE_*` files.
 - `LEVEL_SELECT_ART_DIRECTION.md` and `STORY_BIBLE.md` remain durable art/story references.
+
+## Story Staging / Game Polish final verification (2026-09-25)
+
+**Local acceptance: PASS.** This closes the remaining work from the approved execution guide on `codex/audit-polish-20260924`, continuing from the requested source commit `ee01e75`. Product verification below is on committed code `7f68b0391eb17b7289e2925be153cb23a451cd1e`; final push and branch CI are pending this handoff update. No merge or deployment is authorized or performed.
+
+Completed scope and final safeguards:
+- The 320×568 Large Text board/Route Tip gap is preserved by a reliable layout margin and a short-phone copy cap. The board/rail overlap assertions remain enabled and require at least 2 CSS px of clearance at the previously failing viewport; no assertion was weakened.
+- Story Staging Tasks 1–4 are complete: Opening source/destination labels and map handoff, measured Across-to-porch route, distinct connected dated maps, and labeled Homeward report → anchor → window → redraw network. Small-phone labels were enlarged/positioned and checked against residents, landmarks, paths, and dialogue.
+- Task 5 rewards at Levels 50/100/150/200 remain earned-only, brief, immediately skippable, and settled immediately with Reduced Motion. The Level 50 basket now remains visibly at its mailbox after the vignette, including replay and Reduced Motion.
+- Task 6 removes the fixed Level 400 CSS trajectory. The parcel path is measured from the final Little Home node to the actual porch in the canonical iframe; readiness, resize, late load, missing landmark fallback, fallback repositioning, recovery, and no-false-arrival behavior are covered. Completion actions stay usable.
+- Preserve all 400 level definitions, solutions, moves/stars, tap-per-line dialogue, no narrator voice, no Undo, and the accepted pre-Astra puzzle controls. The eight campaign hashes below match the recorded Task 0 values exactly.
+
+Commits in this continuation: `030dbd1` earned reward vignettes; `4171868` small-phone labels; `515973d` measured final parcel; `07c9958` phone story/board clearance; `7f68b03` review fixes for the settled mailbox pose and bounded/resilient iframe fallback.
+
+Final local verification on `7f68b03`:
+- `npm test` — **PASS (exit 0)**, full shipped suite. This includes canonical Opening geometry, protected controls, all 38 later-film utterances, phone readability, 400 campaign routes, progression/Daily isolation, hints, full story-staging geometry/labels, and reward/ending behavior.
+- `node tests/story-staging.browser.cjs` — **PASS**; latest full capture directory: `C:\Users\Max\AppData\Local\Temp\latchlings-story-staging-t6RugZ`.
+- `node tests/story-payoffs.browser.cjs` — **PASS**; latest captures: `C:\Users\Max\AppData\Local\Temp\latchlings-story-payoffs-rZdguu`. Checks include earned rewards, immediate actions, Reduced Motion/replay, measured in-flight and resized porch landing, stalled-frame fallback, rotated fallback staying on its measured node, and recovery to the canonical porch.
+- `node tests/phone-stage-certification.browser.cjs` — **PASS**, 180 settled captures across 320×568, 360×800, 390×844, 430×932, and 844×390; Normal/Large Text with OS and in-game Reduced Motion. Capture filename pattern: `%TEMP%/latchlings-phone-stage-*.png`. Overflow, stage/action visibility, gameplay controls, Settings touch target, Ending actions, and focus restoration all passed.
+- Story-library UI check in Chromium — **PASS**: opened all four entries through Story → Cinematics, manually advanced each film by exactly its authored line count, verified focus returned to each replay card, then used Skip and verified focus return; no browser errors.
+- `git diff --check` — **PASS**. `git diff --quiet ee01e75 -- campaign400-1.js ... campaign400-8.js` — **PASS (no authored campaign changes)**. Fresh SHA-256 values match the Task 0 baseline table above; `campaign400-7.js` uses the verified corrected baseline value already documented above.
+- Manually reviewed representative 320px Reduced Motion reward and ending captures, the 390px in-flight Level 400 landing, and the 320×568 Large Text Level 1 capture. They show the reward at its mailbox, parcel route into the Little Home porch, readable protected D-pad, and a clear board/Route Tip gap.
+
+Still external-only and **UNVERIFIED**: physical iOS Safari and Android touch/safe-area/performance/battery behavior; exhaustive assistive-technology/screen-reader coverage; and real-speaker/headphone audio mixing/listening. No narrator voice was added. These do not block the browser implementation but remain real-device follow-ups.
+
+Final branch push and GitHub Actions (game validation and repository-access guard) must be verified before changing this handoff to COMPLETE. Do not merge or deploy without the player's separate instruction.
