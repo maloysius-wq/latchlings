@@ -1,7 +1,7 @@
 /* game */
 .game-top{min-height:67px}.game-title{font-family:Georgia,serif;font-size:27px;font-weight:800;text-align:center;flex:1}.moves-box{text-align:center;min-width:64px}.moves-box span{display:block;font-size:11px;font-weight:800}.moves-box strong{font-family:Georgia,serif;font-size:28px;line-height:1}
 .mechanic-note{align-self:center;max-width:440px;padding:9px 14px;margin:-2px 0 9px;border-radius:16px;background:rgba(255,250,239,.82);border:1px solid rgba(214,191,158,.72);font-size:12px;font-weight:750;color:#46627c;text-align:center;box-shadow:0 4px 12px rgba(53,79,103,.10)}
-.mechanic-context{position:relative;align-self:center;flex:0 0 auto;width:min(94vw,470px);max-width:470px;margin:-2px auto 5px}
+.mechanic-context{position:relative;align-self:center;flex:0 0 auto;width:min(94vw,470px);max-width:470px;margin:0 auto 5px}
 #game .mechanic-context>.mechanic-note.mechanic-chip{width:100%;max-width:none;margin:0;box-sizing:border-box}
 .mechanic-inspector[hidden]{display:none!important}
 .mechanic-context.is-inspecting>.mechanic-note{visibility:hidden}

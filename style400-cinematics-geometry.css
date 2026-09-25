@@ -130,6 +130,20 @@
   .cin-cast-intro .intro-bubble{width:58px!important;font-size:7.1px!important;line-height:1.1!important}
   .cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-board{inset:5px 12px auto!important;height:106px!important;grid-template-rows:7px 36px 7px 36px!important;gap:2px!important;padding:4px 10px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-label{font-size:6.5px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track{height:36px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .cin-demo-track .cin-character{width:24px!important;height:24px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-mover{top:4px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-rock{width:26px!important;height:24px!important;top:4px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-blocker{top:3px!important}.cinematic-overlay[data-cinematic="opening"][data-beat="6"] .demo-nest{width:27px!important;height:27px!important;top:2px!important}
 }
+
+/* Landscape: put the scene and complete spoken line beside each other so short viewports never crop dialogue above Continue. */
+@media(orientation:landscape) and (max-height:520px){
+ .cinematic-overlay{padding:8px}
+ .cinematic-shell{width:min(1100px,100%);height:calc(100svh - 16px);max-height:calc(100svh - 16px);grid-template-columns:minmax(0,1.12fr) minmax(350px,.88fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"head head" "scene copy" "footer footer";border-radius:22px}
+ .cinematic-head{grid-area:head;min-height:48px;padding:5px 12px}
+ .cinematic-stage{grid-area:scene;min-height:0;height:auto}
+ .cinematic-copy{grid-area:copy;min-height:0;padding:10px 14px;overflow-x:hidden;overflow-y:auto}
+ .cinematic-footer{grid-area:footer;padding:5px 14px calc(7px + env(safe-area-inset-bottom))}
+ .cinematic-footer .cinematic-progress{margin:0 0 5px}
+ .cinematic-footer .cinematic-next{min-height:46px}
+ .cinematic-overlay[data-cinematic="opening"] .cinematic-shell{grid-template-rows:auto minmax(0,1fr) auto!important}
+ .cinematic-overlay[data-cinematic="opening"] .cinematic-copy{padding:9px 14px;}
+}
 @media(max-width:340px){
   .speaker-count-4 .cin-speech-bubble{width:70px!important;max-width:70px!important;min-width:0!important;font-size:7.7px!important;line-height:1.12!important;padding:4px 5px!important}
   .speaker-count-4.speaker-1{left:14%!important}.speaker-count-4.speaker-4{left:86%!important}

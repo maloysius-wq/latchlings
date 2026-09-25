@@ -202,6 +202,21 @@ button:not(.latchling){min-height:var(--touch-target)}
 html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after{scroll-behavior:auto!important}
 @media(max-height:600px) and (orientation:portrait){.screen{padding-top:max(7px,env(safe-area-inset-top));padding-bottom:max(7px,env(safe-area-inset-bottom))}}
 
+@media(orientation:landscape) and (max-height:520px){
+  #complete.screen.active{max-width:980px;padding-top:max(6px,env(safe-area-inset-top));padding-bottom:max(6px,env(safe-area-inset-bottom))}
+  #complete .home-main{min-height:0;padding:0;justify-content:flex-start}
+  #complete .ending-hero-pass4{flex:1;min-height:0;max-width:none;display:grid;grid-template-columns:minmax(235px,.8fr) minmax(0,1.2fr);grid-template-areas:"brand scene" "kicker scene" "title scene" "intro scene" "note scene" "actions scene";align-content:center;align-items:center;justify-items:stretch;gap:3px 14px;padding:8px 14px}
+  #complete .ending-hero-pass4>.logo{grid-area:brand}
+  #complete .ending-kicker{grid-area:kicker;margin:0}
+  #complete .ending-hero-pass4>h1{grid-area:title;font-size:clamp(23px,7vh,34px);line-height:1;letter-spacing:-.7px;margin:0}
+  #complete .ending-hero-pass4>p:not(.ending-note){grid-area:intro;max-width:none;margin:0;font-size:clamp(12px,3.6vh,15px);line-height:1.2}
+  #complete .ending-homecoming{grid-area:scene;width:100%;max-width:none;height:100%;min-height:0;margin:0;align-self:stretch}
+  #complete .ending-note{grid-area:note;margin:0!important;font-size:12px!important;line-height:1.2}
+  #complete .ending-actions{grid-area:actions;align-self:end;gap:5px;width:100%}
+  #complete .ending-actions .primary-btn{width:min(100%,300px);min-height:48px;font-size:clamp(15px,4.5vh,20px)}
+  #complete .ending-actions .secondary-btn{width:min(100%,270px);min-height:44px;padding:4px 10px}
+}
+
 .home-memory-list{display:grid;gap:8px;margin:14px 0}.home-memory-choice{width:100%;min-height:52px;text-align:left;display:grid;gap:2px;align-content:center}.home-memory-choice strong{font-size:14px;color:var(--navy)}.home-memory-choice span{font-size:11px;color:var(--muted);font-weight:750}
 
 .save-status-banner[hidden]{display:none!important}
