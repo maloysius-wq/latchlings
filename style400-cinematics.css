@@ -41,7 +41,33 @@ body.cinematic-open{overflow:hidden}
 .cin-islands.misaligned .cin-route{opacity:.18}.cin-ghost-map{position:absolute;inset:0}.cin-ghost-map span{position:absolute;height:3px;width:55%;background:repeating-linear-gradient(90deg,rgba(211,90,90,.6) 0 8px,transparent 8px 14px);transform-origin:left}.cin-ghost-map span:nth-child(1){left:8%;top:28%;rotate:4deg}.cin-ghost-map span:nth-child(2){left:39%;top:45%;rotate:15deg}.cin-ghost-map span:nth-child(3){left:16%;top:66%;rotate:-8deg}.cin-overlay-map{position:absolute;inset:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.cin-overlay-map>div{position:relative;overflow:hidden;border-radius:18px;background:rgba(255,249,235,.52);border:1px solid rgba(78,111,136,.25)}.cin-overlay-map b{position:absolute;z-index:5;left:10px;top:8px;font-size:9px;color:#5e7383;letter-spacing:.1em}.cin-overlay-map .cin-islands{inset:18px 0 0}.cin-overlay-map .old .cin-islands{filter:grayscale(.2);translate:-7px 3px}.cin-overlay-map .now .cin-islands{translate:8px -5px}.cin-overlay-map .cin-island{scale:.45!important}.cin-overlay-map .cin-route{scale:.7;opacity:.48}.cin-islands.new .cin-route,.cin-islands.brand-new .cin-route{animation:cinDrawRoute 3.2s ease-in-out infinite;transform-origin:left}.cin-new-route-pen{position:absolute;width:18px;height:65px;left:50%;top:41%;background:linear-gradient(#f2d9a9,#865b3f);clip-path:polygon(35% 0,65% 0,75% 77%,50% 100%,25% 77%);rotate:45deg;animation:cinPen 3.2s ease-in-out infinite}
 
 /* Copperline map revelation */
-.cin-drawer{position:absolute;left:8%;right:8%;bottom:7%;height:77%;border-radius:14px;background:linear-gradient(#9a6c48,#6f4a35);box-shadow:0 14px 18px rgba(39,47,52,.22);overflow:hidden}.cin-drawer>i{position:absolute;left:5%;right:5%;top:7%;height:24px;border-radius:5px;background:#c69b6f;box-shadow:0 7px 0 #79543d}.map-bramble{right:7%;bottom:7%;z-index:9;scale:1.3}.cin-maps{position:absolute;inset:0}.cin-map-sheet{position:absolute;width:145px;height:93px;border-radius:7px;background:#f4e5c7;border:1px solid #b99b71;box-shadow:0 7px 14px rgba(41,52,61,.14);overflow:hidden}.cin-map-sheet b{position:absolute;left:7px;top:5px;font-size:7px;color:#806d52;letter-spacing:.08em}.cin-map-sheet .line{position:absolute;height:2px;background:#5d87a1;transform-origin:left}.cin-map-sheet .line.a{left:20%;top:46%;width:65%;rotate:-13deg}.cin-map-sheet .line.b{left:28%;top:68%;width:50%;rotate:17deg}.cin-map-sheet .node{position:absolute;width:12px;height:7px;border-radius:50%;background:#70a865}.cin-map-sheet .node.n1{left:18%;top:41%}.cin-map-sheet .node.n2{right:15%;bottom:24%}.cin-maps.stacked .m1{left:11%;top:31%;rotate:-8deg}.cin-maps.stacked .m2{left:24%;top:24%;rotate:3deg}.cin-maps.stacked .m3{left:37%;top:17%;rotate:10deg}.cin-maps.spread{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:9px}.cin-maps.spread .cin-map-sheet{position:relative;left:auto;top:auto;width:29%;height:72%;rotate:0;animation:cinMapSpread 600ms ease-out both}.cin-maps.spread .m2{animation-delay:90ms}.cin-maps.spread .m3{animation-delay:180ms}.cin-maps.sequence .cin-map-sheet{left:50%;top:50%;translate:-50% -50%;width:170px;height:112px;animation:cinMapSequence 6s ease-in-out infinite}.cin-maps.sequence .m1{animation-delay:0s}.cin-maps.sequence .m2{animation-delay:-2s}.cin-maps.sequence .m3{animation-delay:-4s}.cin-maps.sequence .m2 .line.a{rotate:7deg}.cin-maps.sequence .m3 .line.a{rotate:20deg}.cin-maps.tiny .cin-map-sheet{scale:.55}.cin-maps.tiny .m1{left:-8%;top:10%}.cin-maps.tiny .m2{left:9%;top:24%}.cin-maps.tiny .m3{left:26%;top:38%}
+.cin-drawer{position:absolute;left:8%;right:8%;bottom:7%;height:77%;border-radius:14px;background:linear-gradient(#9a6c48,#6f4a35);box-shadow:0 14px 18px rgba(39,47,52,.22);overflow:hidden}
+.cin-drawer>i{position:absolute;left:5%;right:5%;top:7%;height:24px;border-radius:5px;background:#c69b6f;box-shadow:0 7px 0 #79543d}
+.map-bramble{right:7%;bottom:7%;z-index:9;scale:1.3}
+.cin-maps{position:absolute;inset:0}
+.cin-map-sheet{position:absolute;width:145px;height:93px;border-radius:7px;background:#f4e5c7;border:1px solid #b99b71;box-shadow:0 7px 14px rgba(41,52,61,.14);overflow:hidden}
+.cin-map-sheet .map-year-label{position:absolute;z-index:2;left:7px;top:5px;margin:0;font-size:7px;color:#806d52;letter-spacing:.08em}
+.cin-map-art{position:absolute;left:6px;right:6px;top:22px;bottom:7px;width:calc(100% - 12px);height:calc(100% - 29px);overflow:visible}
+.map-route{fill:none;stroke:#5d87a1;stroke-width:2;stroke-linecap:round;stroke-dasharray:3 2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 1px 1px rgba(53,89,110,.25))}
+.map-anchor{fill:#f9edcf;stroke:#557b8f;stroke-width:2;vector-effect:non-scaling-stroke}
+.map-anchor.home{fill:#a5cd86;stroke:#5d8959}.map-anchor.keep{fill:#c2a7d7;stroke:#795d91}.map-anchor.crown{fill:#f2d578;stroke:#a3813f}
+.map-icon{fill:#fff5d7;stroke:#5d614f;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.map-icon.keep{fill:#806079;stroke:#554452}.map-icon.crown{fill:#d8a93e;stroke:#775d33}.map-icon-detail{fill:none;stroke:#6f583c;stroke-width:1.2;vector-effect:non-scaling-stroke}
+.map-landmark-name{font:900 8px/1 system-ui,sans-serif;letter-spacing:.025em;fill:#455d6d;paint-order:stroke;stroke:#f6e8c8;stroke-width:2px;stroke-linejoin:round}
+.map-landmark-key{position:absolute;z-index:2;left:5px;right:5px;bottom:5px;display:flex;justify-content:space-around;gap:2px;color:#6a6d5c;font:900 5px/1 system-ui,sans-serif;letter-spacing:.03em}
+.map-landmark-key .home{color:#588056}.map-landmark-key .keep{color:#765b85}.map-landmark-key .crown{color:#99783a}
+.cin-maps.stacked .m1{left:11%;top:31%;rotate:-8deg}.cin-maps.stacked .m2{left:24%;top:24%;rotate:3deg}.cin-maps.stacked .m3{left:37%;top:17%;rotate:10deg}
+.cin-maps.spread{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:4px}
+.cin-maps.spread .cin-map-sheet{position:relative;left:auto;top:auto;width:31.5%;height:64%;aspect-ratio:auto;rotate:0;animation:cinMapSpread 600ms ease-out both}
+.cin-maps.spread .cin-map-art{left:4px;right:4px;top:22px;bottom:19px;width:calc(100% - 8px);height:calc(100% - 41px)}
+.cin-maps.spread .map-year-label{left:5px;top:4px;font-size:12px;letter-spacing:.04em}
+.cin-maps.spread .map-landmark-name{font-size:8px}
+.cin-maps.spread .map-landmark-key{bottom:4px;font-size:4.4px}
+.cin-maps.spread .m2{animation-delay:90ms}.cin-maps.spread .m3{animation-delay:180ms}
+.cin-maps.sequence .cin-map-sheet{left:50%;top:50%;translate:-50% -50%;width:min(190px,62%);height:min(142px,64%);animation:cinMapYearFocus 4.8s linear infinite}
+.cin-maps.sequence .m1{animation-delay:0s}.cin-maps.sequence .m2{animation-delay:-3.2s}.cin-maps.sequence .m3{animation-delay:-1.6s}
+.cin-maps.sequence .map-landmark-key{font-size:6px}
+.cin-maps.tiny .cin-map-sheet{scale:.55}.cin-maps.tiny .m1{left:-8%;top:10%}.cin-maps.tiny .m2{left:9%;top:24%}.cin-maps.tiny .m3{left:26%;top:38%}.cin-maps.tiny .map-landmark-key{display:none}
 .cin-automation{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}.cin-automation>div{position:relative}.cin-automation .hand-map{overflow:hidden}.cin-automation .machine{background:linear-gradient(145deg,rgba(47,74,91,.13),rgba(39,60,76,.3));border-left:1px solid rgba(43,70,90,.22)}.cin-automation .gear{position:absolute;font-style:normal;font-size:60px;color:#6d8290;animation:cinSpin 4s linear infinite}.cin-automation .g1{left:17%;top:22%}.cin-automation .g2{right:12%;bottom:18%;font-size:44px;animation-direction:reverse}.cin-automation .fixed-line{position:absolute;left:10%;right:10%;top:52%;height:4px;background:#dfa95e;box-shadow:0 0 8px rgba(223,169,94,.5)}.cin-islands.frozen{animation:cinDriftAway 5s ease-in-out infinite}.cin-islands.frozen .cin-route{display:none}.cin-frozen-lines{position:absolute;inset:0;z-index:8}.cin-frozen-lines i{position:absolute;height:4px;background:#dfa95e;box-shadow:0 0 8px rgba(223,169,94,.55)}.cin-frozen-lines i:nth-child(1){width:55%;left:8%;top:31%;rotate:-6deg}.cin-frozen-lines i:nth-child(2){width:43%;right:8%;top:48%;rotate:13deg}.cin-frozen-lines i:nth-child(3){width:50%;left:24%;bottom:25%;rotate:-4deg}
 
 /* Regional network */
@@ -74,7 +100,6 @@ body.cinematic-open{overflow:hidden}
 @keyframes cinDrawRoute{0%,10%{scale:0 1;opacity:0}58%,88%{scale:1 1;opacity:1}100%{opacity:.4}}
 @keyframes cinPen{0%,10%{translate:-90px -28px}58%,88%{translate:70px 24px}100%{translate:-90px -28px}}
 @keyframes cinMapSpread{from{opacity:0;translate:0 20px;rotate:-7deg}to{opacity:1;translate:0 0;rotate:0}}
-@keyframes cinMapSequence{0%,24%{opacity:1;scale:1;z-index:3}30%,62%{opacity:.12;scale:.92;z-index:1}68%,94%{opacity:.12;scale:.92;z-index:1}100%{opacity:1;scale:1;z-index:3}}
 @keyframes cinSpin{to{rotate:360deg}}
 @keyframes cinDriftAway{0%,100%{translate:-5px 0}50%{translate:15px -4px}}
 @keyframes cinSignal{0%,100%{opacity:.28;filter:brightness(.8)}45%{opacity:1;filter:brightness(1.35)}}
@@ -134,7 +159,6 @@ html[data-text-size="large"] .cinematic-copy h3{font-size:17px;line-height:1.3}
 /* Old Maps: the physical evidence moves and the stale system visibly stops responding. */
 .cinematic-overlay[data-visual="map-drawer"] .cin-drawer{animation:cinPass4DrawerOpen .65s cubic-bezier(.2,.85,.2,1) both}
 .cinematic-overlay[data-visual="dated-maps"] .cin-map-sheet b{font-size:12px;letter-spacing:.06em}
-.cinematic-overlay[data-visual="map-sequence"] .cin-map-sheet{animation:cinPass4MapSequence 4.8s ease-in-out infinite}
 .cinematic-overlay[data-visual="automation"] .machine .gear{animation-duration:5.6s}
 .cinematic-overlay[data-visual="frozen-network"] .cin-island{animation-duration:4.7s}
 .cinematic-overlay[data-visual="frozen-network"] .cin-frozen-lines{filter:grayscale(.35);opacity:.76}
@@ -162,7 +186,6 @@ html[data-text-size="large"] .cinematic-copy h3{font-size:17px;line-height:1.3}
 @keyframes cinPass4EndpointB{0%,100%{translate:0 0}50%{translate:18px -8px}}
 @keyframes cinPass4MapAlign{0%,100%{translate:-8px 0}50%{translate:8px 0}}
 @keyframes cinPass4DrawerOpen{from{translate:0 -18px;opacity:.4}to{translate:0 0;opacity:1}}
-@keyframes cinPass4MapSequence{0%,100%{translate:0 0;rotate:-1deg}33%{translate:7px -3px;rotate:1deg}66%{translate:-5px 3px;rotate:-2deg}}
 @keyframes cinPass4Signal{0%,100%{opacity:.2;filter:saturate(.7)}50%{opacity:1;filter:saturate(1.3)}}
 @keyframes cinPass4LandmarkAnswer{0%,70%,100%{filter:brightness(1);scale:1}82%{filter:brightness(1.35);scale:1.08}}
 
@@ -506,3 +529,16 @@ html[data-motion="reduced"] .cinematic-copy *{animation:none!important;transitio
 @media(max-width:350px){
   .cin-porch-reconnect .porch-far-island{right:1%!important;top:16%!important;scale:.88!important;transform-origin:100% 0}
 }
+
+/* One dated map takes focus at a time; reduced motion compares all three together. */
+@keyframes cinMapYearFocus{
+  0%,29%{opacity:1;scale:1;z-index:3;filter:none}
+  32%,97%{opacity:.12;scale:.94;z-index:1;filter:saturate(.52)}
+  100%{opacity:1;scale:1;z-index:3;filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:5px}
+ .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence .cin-map-sheet{position:relative;left:auto;top:auto;translate:none;width:31.5%;height:64%;aspect-ratio:auto;opacity:1!important;scale:1!important;animation:none!important;filter:none!important}
+}
+html[data-motion="reduced"] .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:5px}
+html[data-motion="reduced"] .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence .cin-map-sheet{position:relative;left:auto;top:auto;translate:none;width:31.5%;height:64%;aspect-ratio:auto;opacity:1!important;scale:1!important;animation:none!important;filter:none!important}

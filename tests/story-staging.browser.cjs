@@ -180,6 +180,89 @@ async function verifyPorchGeometry(page,name){
  return geometry;
 }
 
+async function advanceToDatedMaps(page){
+ await page.evaluate(()=>LatchlingsCinematics.show('old-maps',{markSeen:false}));
+ for(const [beat,line] of [[0,1],[0,2],[1,0]]){
+  assert(await page.locator('#cinematicNext').isVisible(),'Old Maps Continue must remain available before each spoken line');
+  await page.locator('#cinematicNext').click();
+  await page.waitForFunction(({beat,line})=>LatchlingsCinematics?.beat===beat&&LatchlingsCinematics?.line===line,{beat,line});
+ }
+ const mapReady=await page.waitForFunction(()=>document.querySelector('#cinematicOverlay')?.dataset.visual==='dated-maps',undefined,{timeout:4000}).then(()=>true).catch(()=>false);
+ if(!mapReady){const state=await page.evaluate(()=>({active:LatchlingsCinematics.active,beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line,visual:document.querySelector('#cinematicOverlay')?.dataset.visual,title:document.querySelector('#cinematicBeat')?.textContent,button:document.querySelector('#cinematicNext')?.textContent,errors:window.__testErrors||[]}));throw new Error(`Old Maps failed to render dated-maps beat: ${JSON.stringify(state)}`)}
+}
+
+async function mapSnapshot(page){
+ return page.evaluate(()=>{
+  const mode=document.querySelector('#cinematicStage .cin-maps'),model=window.LatchlingsCinematics?.MAP_YEARS;
+  const center=element=>{const r=element?.getBoundingClientRect();return r&&r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null};
+  const point=(path,t)=>{if(!path||!path.getTotalLength())return null;const p=path.getPointAtLength(path.getTotalLength()*t),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}};
+  return {mode:mode?.className,modelFrozen:Array.isArray(model)&&Object.isFrozen(model)&&model.every(year=>Object.isFrozen(year)&&Object.isFrozen(year.landmarks)&&Object.isFrozen(year.edges)),cards:[...mode?.querySelectorAll('.cin-map-sheet')||[]].map(sheet=>{
+   const svg=sheet.querySelector('.cin-map-art'),svgBox=svg?.getBoundingClientRect(),landmarks=[...svg?.querySelectorAll('[data-landmark]')||[]].map(anchor=>({name:anchor.dataset.landmark,point:center(anchor),x:Number(anchor.getAttribute('cx')),y:Number(anchor.getAttribute('cy')),box:anchor.getBoundingClientRect().toJSON()}));
+   const routes=[...svg?.querySelectorAll('.map-route[data-from][data-to]')||[]].map(path=>({from:path.dataset.from,to:path.dataset.to,start:point(path,0),end:point(path,1),fromPoint:center(svg.querySelector(`[data-landmark="${path.dataset.from}"]`)),toPoint:center(svg.querySelector(`[data-landmark="${path.dataset.to}"]`)),length:path.getTotalLength()}));
+   return {year:Number(sheet.dataset.year),title:sheet.querySelector('.map-year-label')?.textContent.trim(),box:sheet.getBoundingClientRect().toJSON(),svgBox:svgBox?.toJSON(),viewBox:svg?.getAttribute('viewBox'),landmarks:landmarks.map(({box,...entry})=>entry),routes,opacity:Number(getComputedStyle(sheet).opacity)};
+  }),model};
+ });
+}
+
+function verifyMapGeometry(snapshot,name){
+ assert(snapshot.modelFrozen,`${name}: MAP_YEARS and its nested landmark/edge data must be immutable`);
+ assert.deepEqual(snapshot.cards.map(card=>card.year),[12,31,58],`${name}: dated map sheets must remain ordered Year 12, 31, 58`);
+ assert.deepEqual(snapshot.cards.map(card=>card.title),['YEAR 12','YEAR 31','YEAR 58'],`${name}: all three dated headings must remain visible in order`);
+ for(const card of snapshot.cards){
+  assert.deepEqual(card.landmarks.map(node=>node.name).sort(),['crown','home','keep'],`${name}: Year ${card.year} must contain the same three named landmarks`);
+  assert.equal(card.routes.length,2,`${name}: Year ${card.year} must show its two connected routes`);
+  for(const route of card.routes){
+   assert(route.length>0&&route.fromPoint&&route.toPoint,`${name}: Year ${card.year} ${route.from}→${route.to} route must have valid endpoints`);
+   assert(distance(route.start,route.fromPoint)<=2,`${name}: Year ${card.year} ${route.from} route start must touch its node (${JSON.stringify(route)})`);
+   assert(distance(route.end,route.toPoint)<=2,`${name}: Year ${card.year} ${route.to} route end must touch its node (${JSON.stringify(route)})`);
+  }
+ }
+ const landmarks=Object.fromEntries(snapshot.cards.map(card=>[card.year,Object.fromEntries(card.landmarks.map(node=>[node.name,{x:node.x/(snapshot.cards[0].viewBox?Number(snapshot.cards[0].viewBox.split(' ')[2]):1),y:node.y/(snapshot.cards[0].viewBox?Number(snapshot.cards[0].viewBox.split(' ')[3]):1)}]))]));
+ for(const [from,to] of [[12,31],[31,58]]){
+  const moved=Object.keys(landmarks[from]).filter(name=>Math.abs(landmarks[from][name].x-landmarks[to][name].x)>=.1||Math.abs(landmarks[from][name].y-landmarks[to][name].y)>=.1);
+  assert(moved.length>=2,`${name}: at least two named landmarks must move >=10% between Years ${from} and ${to}`);
+ }
+}
+
+async function captureMapDialogueStates(page,base){
+ await waitPaint(page);await page.screenshot({path:path.join(evidence,`${base}-copy-visible.png`)});
+ await page.evaluate(()=>{for(const element of document.querySelectorAll('.cinematic-copy,.cin-dialogue-layer')){element.dataset.previousVisibility=element.style.visibility;element.style.visibility='hidden'}});
+ await page.screenshot({path:path.join(evidence,`${base}-copy-hidden.png`)});
+ await page.evaluate(()=>{for(const element of document.querySelectorAll('.cinematic-copy,.cin-dialogue-layer')){element.style.visibility=element.dataset.previousVisibility||'';delete element.dataset.previousVisibility}});
+}
+
+async function runMapStory(browser,config){
+ const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
+ page.on('pageerror',error=>errors.push(error.message));await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ await advanceToDatedMaps(page);
+ if(!config.reduced)await page.waitForTimeout(900);
+ const motion=config.reduced?'reduced':'normal',name=`${config.width}x${config.height}/${motion}/dated-maps`,spread=await mapSnapshot(page);
+ verifyMapGeometry(spread,name);
+ assert(spread.cards.every(card=>card.box.width>0&&card.box.height>0),`${name}: all three paper maps must remain visible`);
+ for(let i=0;i<spread.cards.length-1;i++)assert(!overlap(spread.cards[i].box,spread.cards[i+1].box),`${name}: the three maps must remain distinguishable (${JSON.stringify(spread.cards.map(card=>({year:card.year,box:card.box})))})`);
+ if(config.width<=390)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-spread`);
+ await page.locator('#cinematicNext').click();await page.waitForFunction(()=>LatchlingsCinematics?.beat===1&&LatchlingsCinematics?.line===1);
+ await page.locator('#cinematicNext').click();await page.waitForFunction(()=>LatchlingsCinematics?.beat===2&&LatchlingsCinematics?.line===0);
+ await page.waitForFunction(()=>document.querySelector('#cinematicOverlay')?.dataset.visual==='map-sequence');
+ const sequence=await mapSnapshot(page);verifyMapGeometry(sequence,`${name}/sequence`);
+ if(config.reduced){
+  assert(sequence.cards.every(card=>card.opacity>=.92&&card.box.width>0&&card.box.height>0),`${name}: Reduced Motion must show all three dated maps together`);
+  for(let i=0;i<sequence.cards.length-1;i++)assert(!overlap(sequence.cards[i].box,sequence.cards[i+1].box),`${name}: Reduced Motion maps must form a distinct comparison`);
+  const first=sequence.cards.map(card=>({year:card.year,opacity:card.opacity,box:card.box}));await page.waitForTimeout(240);const second=await mapSnapshot(page);
+  assert.deepEqual(second.cards.map(card=>({year:card.year,opacity:card.opacity,box:card.box})),first,`${name}: Reduced Motion map comparison must settle without animation`);
+ }else if(config.checkSequence){
+  const observed=await page.evaluate(async()=>{
+   const cards=[...document.querySelectorAll('#cinematicStage .cin-maps.sequence .cin-map-sheet')],seen=[];let simultaneous=0;const start=performance.now();
+   while(performance.now()-start<5200){const active=cards.filter(card=>Number(getComputedStyle(card).opacity)>.82).map(card=>Number(card.dataset.year));simultaneous=Math.max(simultaneous,active.length);if(active.length===1&&seen.at(-1)!==active[0])seen.push(active[0]);await new Promise(resolve=>setTimeout(resolve,60))}
+   return {seen,simultaneous,beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line};
+  });
+  assert(observed.simultaneous===1&&[12,31,58].every((year,index)=>observed.seen.indexOf(year)!==-1&&(index===0||observed.seen.indexOf(year)>observed.seen.indexOf([12,31,58][index-1]))),`${name}: normal sequence must hold one sheet at a time in chronological order (${JSON.stringify(observed)})`);
+  assert.equal(observed.beat,2,`${name}: automatic map sequence must not advance the cinematic beat`);assert.equal(observed.line,0,`${name}: automatic map sequence must not advance the spoken line`);
+ }
+ if(config.width<=390)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-sequence`);
+ assert.deepEqual(errors,[],`${name}: dated maps must have no browser errors`);await context.close();
+}
+
 async function runAcrossPorch(browser,config){
  const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
@@ -225,6 +308,10 @@ async function runAcrossPorch(browser,config){
 
 (async()=>{
  await listen();const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
+ await runMapStory(browser,{width:320,height:568,reduced:false,checkSequence:true});
+ for(const config of [
+  {width:390,height:844,reduced:false},{width:320,height:568,reduced:true},{width:390,height:844,reduced:true}
+ ])await runMapStory(browser,config);
  for(const config of [
   {width:320,height:568,reduced:false},{width:390,height:844,reduced:false},{width:430,height:932,reduced:false},
   {width:320,height:568,reduced:true},{width:390,height:844,reduced:true},{width:430,height:932,reduced:true}
