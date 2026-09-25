@@ -15,7 +15,7 @@ const COLORS={coral:'#ef5f66',blue:'#4c8ff4',mint:'#66bd72',gold:'#f6b737',laven
 const LIGHT={coral:'#ff9297',blue:'#79aff9',mint:'#94dc98',gold:'#ffd06a',lavender:'#c3a0f1'};
 const DARK={coral:'#c33d49',blue:'#2e69c8',mint:'#469852',gold:'#d18c16',lavender:'#724fbd'};
 const DIRV={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]}; const CW={U:'R',R:'D',D:'L',L:'U'},CCW={U:'L',L:'D',D:'R',R:'U'};
-let currentLevel=1,chapterView=1,rangeView=0,selected=0,movesUsed=0,doorMask=0,positions=[],animating=false,hintStep=0;
+let currentLevel=1,chapterView=1,rangeView=0,selected=0,movesUsed=0,doorMask=0,positions=[],animating=false,hintStep=0,inspectedMechanic=null;
 let lastNestArrival=null,blockerFeedbackTimer=null;
 const PROGRESS_KEY='latchlings_campaign400_progress_v1';
 let progress=loadProgress();
@@ -222,7 +222,7 @@ function renderChapter(){
 }
 function startLevel(L,mode='campaign'){
  playMode=mode==='daily'?'daily':'campaign';document.body.dataset.playMode=playMode;
- currentLevel=Math.max(1,Math.min(400,L));const lev=LEVELS[currentLevel-1];if(!lev){showError('Missing level '+currentLevel);return}
+ currentLevel=Math.max(1,Math.min(400,L));const lev=LEVELS[currentLevel-1];if(!lev){showError('Missing level '+currentLevel);return}clearMechanicInspector();
  if(playMode==='daily'&&!dailySession)dailySession={...dailyRouteInfo(),level:currentLevel};
  chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);applyTheme(chapterView);positions=lev.pieces.map(p=>p.pos.slice());doorMask=0;movesUsed=0;selected=0;hintStep=0;animating=false;lastNestArrival=null;
  if(playMode==='daily'&&window.LatchlingsStoryTheme?.close)window.LatchlingsStoryTheme.close(false);
@@ -237,12 +237,43 @@ function renderGame(full=false){
  const storyBtn=document.getElementById('storyCardBtn');if(storyBtn){storyBtn.hidden=!campaign;storyBtn.setAttribute('aria-hidden',campaign?'false':'true')}
  const note=document.getElementById('mechanicNote');note.className='mechanic-note mechanic-chip';note.dataset.feedback='tip';note.setAttribute('role','status');note.setAttribute('aria-live','polite');note.innerHTML=`<span class="mechanic-chip-label">Route tip</span><span class="mechanic-chip-copy">${chapterNote(currentLevel)}</span><span class="mastery-guide" id="masteryGuide" aria-label="Star criteria">3★ ≤ ${lev.optimal} · 2★ ≤ ${lev.optimal+1} · 1★ finish</span>`;
  const props=document.getElementById('levelProps');if(campaign&&window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.decorateLevel(currentLevel,storyMeta);else if(props){props.innerHTML='';props.hidden=true;props.setAttribute('aria-hidden','true')}
- board.style.setProperty('--n',lev.size);board.dataset.boardRange=String(boardRange);board.dataset.boardStyle=`ch${chapter}-r${boardRange}`;if(full){board.querySelectorAll('.cell').forEach(x=>x.remove());for(let r=0;r<lev.size;r++)for(let c=0;c<lev.size;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.dataset.tileVariant=String((r*3+c*5+currentLevel+boardRange)%4);board.insertBefore(cell,document.getElementById('pieceLayer'));decorateCell(cell,lev,r,c)}}renderPieces(lev);if(lastNestArrival!==null){const arrivedPi=lastNestArrival;setTimeout(()=>{const n=document.querySelector(`#board .nest[data-pi="${arrivedPi}"]`);if(n)n.classList.remove('just-arrived');if(lastNestArrival===arrivedPi)lastNestArrival=null},effectiveReducedMotion()?0:850)}
+ board.style.setProperty('--n',lev.size);board.dataset.boardRange=String(boardRange);board.dataset.boardStyle=`ch${chapter}-r${boardRange}`;if(full){board.querySelectorAll('.cell').forEach(x=>x.remove());for(let r=0;r<lev.size;r++)for(let c=0;c<lev.size;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.dataset.tileVariant=String((r*3+c*5+currentLevel+boardRange)%4);board.insertBefore(cell,document.getElementById('pieceLayer'));decorateCell(cell,lev,r,c)}}updateMechanicCells(lev,board);renderPieces(lev);if(lastNestArrival!==null){const arrivedPi=lastNestArrival;setTimeout(()=>{const n=document.querySelector(`#board .nest[data-pi="${arrivedPi}"]`);if(n)n.classList.remove('just-arrived');if(lastNestArrival===arrivedPi)lastNestArrival=null},effectiveReducedMotion()?0:850)}
 }
 const ROUTE_TIPS=['Use edges and rocks for stops.','Park helpers as stopping walls.','Anchors make exact stops.','Suit gates read black suit marks.','Color gates read body color.','Rails limit entry; turners bend.','Switches toggle doors.','Plan several board states ahead.'];
 function chapterNote(L){const k=(L-1)%50+1,ch=Math.ceil(L/50),tip=ROUTE_TIPS[ch-1];if(k>=46)return 'Expert route: plan blockers.';return tip}
 function findAt(arr,r,c){return (arr||[]).find(x=>x[0]===r&&x[1]===c)}
 function mechanicLinkLabel(id){const n=Number(id)||0;return String.fromCharCode(65+(n%26))}
+function clearMechanicInspector(){inspectedMechanic=null;showMechanicInspector('')}
+function showMechanicInspector(text){const region=document.getElementById('mechanicInspector');if(!region)return;const copy=String(text||'').trim(),context=document.getElementById('mechanicContext'),note=document.getElementById('mechanicNote');region.textContent=copy;region.hidden=!copy;if(context)context.classList.toggle('is-inspecting',Boolean(copy));if(note)note.toggleAttribute('aria-hidden',Boolean(copy))}
+function mechanicDirectionName(direction){return ({U:'up',R:'right',D:'down',L:'left'})[direction]||String(direction||'').toLowerCase()}
+function mechanicTitleCase(value){const name=String(value||'');return name?name[0].toUpperCase()+name.slice(1):name}
+function describeMechanic(lev,r,c,mask=doorMask){
+ if(!lev)return null;
+ if(findAt(lev.anchors,r,c))return 'Anchor · Stops any Latchling that lands here.';
+ const suitGate=findAt(lev.suitGates,r,c);if(suitGate)return `Suit gate · Requires the ${suitGate[2]} suit mark to pass.`;
+ const colorGate=findAt(lev.colorGates,r,c);if(colorGate)return `Color gate · Only ${mechanicTitleCase(colorGate[2])} Latchlings can pass.`;
+ const rail=findAt(lev.rails,r,c);if(rail)return `Rail · Entry ${mechanicDirectionName(rail[2])} only.`;
+ const turner=findAt(lev.turners,r,c);if(turner)return `Turner · Bends a continuous snap ${turner[2]==='CW'?'clockwise':'counter-clockwise'}.`;
+ const sw=findAt(lev.switches,r,c);if(sw){const label=mechanicLinkLabel(sw[2]),door=(lev.doors||[]).find(item=>item[2]===sw[2]);return `Switch ${label} · Toggles Door ${label}${door?` (currently ${mask&(1<<sw[2])?'OPEN':'CLOSED'})`:''}.`}
+ const door=findAt(lev.doors,r,c);if(door){const label=mechanicLinkLabel(door[2]);return `Door ${label} · ${mask&(1<<door[2])?'OPEN':'CLOSED'}. Switch ${label} toggles it.`}
+ return null;
+}
+function updateMechanicCells(lev,board=document.getElementById('board')){
+ if(!board||!lev)return;
+ board.querySelectorAll('.cell').forEach(cell=>{const r=Number(cell.dataset.r),c=Number(cell.dataset.c),description=describeMechanic(lev,r,c,doorMask);if(description){cell.classList.add('mechanic-bearing');cell.tabIndex=0;cell.setAttribute('aria-label',`Row ${r+1}, column ${c+1}. ${description}`)}else{cell.classList.remove('mechanic-bearing');cell.removeAttribute('tabindex');cell.removeAttribute('aria-label')}});
+ if(board.dataset.mechanicInspectorBound!=='1'){
+  const findCell=target=>target instanceof Element?target.closest('.cell'):null;
+  const inspectCell=(cell,source)=>{if(!cell||!board.contains(cell))return false;const r=Number(cell.dataset.r),c=Number(cell.dataset.c),description=describeMechanic(LEVELS[currentLevel-1],r,c,doorMask);if(!description)return false;inspectedMechanic={r,c,source};showMechanicInspector(description);return true};
+  board.addEventListener('pointerover',event=>{const cell=findCell(event.target);if(cell&&!event.relatedTarget?.closest?.('.cell')?.isSameNode?.(cell))inspectCell(cell,'pointer')});
+  board.addEventListener('pointerdown',event=>{if(event.button!==undefined&&event.button>0)return;inspectCell(findCell(event.target),'pointer')});
+  board.addEventListener('pointerout',event=>{const cell=findCell(event.target),next=findCell(event.relatedTarget);if(cell&&cell!==next&&inspectedMechanic?.source==='pointer'&&inspectedMechanic.r===Number(cell.dataset.r)&&inspectedMechanic.c===Number(cell.dataset.c)&&document.activeElement!==cell)clearMechanicInspector()});
+  board.addEventListener('focus',event=>inspectCell(findCell(event.target),'focus'),true);
+  board.addEventListener('blur',event=>{const cell=findCell(event.target),next=findCell(event.relatedTarget);if(cell&&cell!==next&&inspectedMechanic?.source==='focus'&&inspectedMechanic.r===Number(cell.dataset.r)&&inspectedMechanic.c===Number(cell.dataset.c))clearMechanicInspector()},true);
+  board.addEventListener('pointerleave',()=>{if(inspectedMechanic?.source==='pointer')clearMechanicInspector()});
+  board.dataset.mechanicInspectorBound='1';
+ }
+ if(inspectedMechanic){const description=describeMechanic(lev,inspectedMechanic.r,inspectedMechanic.c,doorMask);if(description)showMechanicInspector(description);else clearMechanicInspector()}
+}
 function decorateCell(cell,lev,r,c){
  const rock=findAt(lev.rocks,r,c);if(rock){cell.innerHTML='<div class="rock" role="img" aria-label="Rock stopper"></div>';return}
  const nestI=lev.nests.findIndex(n=>n[0]===r&&n[1]===c);if(nestI>=0){const p=lev.pieces[nestI],resolved=!positions[nestI],arrived=resolved&&lastNestArrival===nestI;cell.dataset.nestState=resolved?'resolved':'open';cell.innerHTML=`<div class="nest ${resolved?'resolved':''} ${arrived?'just-arrived':''}" data-pi="${nestI}" role="img" aria-label="${p.color} ${p.suit} nest, ${resolved?'resolved':'waiting'}" style="--piece-color:${COLORS[p.color]}">${suitSvg(p.suit)}${resolved?'<span class="nest-resolution" aria-hidden="true">✓</span>':''}</div>`;return}
