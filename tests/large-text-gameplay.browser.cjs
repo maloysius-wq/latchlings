@@ -41,6 +41,7 @@ const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b
    });
    assert(!overlaps(layout.rail,layout.board),`320x568 Large Text Level ${level}: Story rail must not obscure the board (${JSON.stringify(layout)})`);
    assert(!overlaps(layout.board,layout.note),`320x568 Large Text Level ${level}: Route Tip must not cover any board row (${JSON.stringify(layout)})`);
+   assert(layout.note.top-layout.board.bottom>=2,`320x568 Large Text Level ${level}: board must leave a visible 2px gap before the Route Tip (${JSON.stringify(layout)})`);
    assert(!overlaps(layout.note,layout.controls),`320x568 Large Text Level ${level}: Route Tip must not cover gameplay controls (${JSON.stringify(layout)})`);
    assert(layout.board.left>=layout.boardWrap.left&&layout.board.right<=layout.boardWrap.right&&layout.board.top>=layout.boardWrap.top&&layout.board.bottom<=layout.boardWrap.bottom,`320x568 Large Text Level ${level}: complete board must stay inside its own layout region (${JSON.stringify(layout)})`);
    assert(layout.board.left>=0&&layout.board.right<=320&&layout.board.top>=0&&layout.board.bottom<=568,`320x568 Large Text Level ${level}: complete board must fit inside the screen (${JSON.stringify(layout)})`);

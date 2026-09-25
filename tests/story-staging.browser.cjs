@@ -411,6 +411,7 @@ async function runAcrossPorch(browser,config){
  assert(/route model/i.test(rail.copy)&&/not an island map/i.test(rail.copy),`Level 1 must say the grid is a route model, not island geography: ${rail.copy}`);
  assert(rail.routeTip.includes('Use edges and rocks for stops.'),'Level 1 route handoff must preserve the existing route instruction.');
  assert(!overlap(rail.tip,rail.board)&&!overlap(rail.handoff,rail.board)&&!overlap(rail.tip,rail.controls)&&!overlap(rail.handoff,rail.controls),`Level 1 handoff must not cover puzzle cells or controls: ${JSON.stringify(rail)}`);
+ assert(rail.tip.top-(rail.board.top+rail.board.height)>=2,`Level 1 board must leave a visible 2px gap before the Route Tip: ${JSON.stringify(rail)}`);
  assert.equal(rail.overflow,false,'Level 1 semantic handoff must not cause horizontal overflow');
  await gameContext.close();
  await browser.close();server.close();

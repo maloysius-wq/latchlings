@@ -157,7 +157,9 @@ html[data-text-size="large"] #game .board{width:min(90vw,460px)}
 
 /* Keep Large Text gameplay regions separated on the shortest, narrowest phones. */
 @media(max-height:600px) and (max-width:350px) and (orientation:portrait){
+ #game .board-wrap{margin-bottom:4px}
  #game .board{width:min(100%,480px,37svh)}
+ html[data-text-size="large"] #game .board{width:min(100%,480px,37svh)}
  html[data-text-size="large"] #game #masteryGuide{display:none}
  html[data-text-size="large"] #game #storyRailSlot .story-level-rail .story-rail-main p{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important}
 }
