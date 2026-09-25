@@ -20,7 +20,7 @@
   let inverse;try{inverse=matrix.inverse()}catch(_){return false}
   const from=svgPoint(svg,fromElement,inverse),to=svgPoint(svg,toElement,inverse);
   if(!from||!to)return false;
-  const dx=to.x-from.x,dy=to.y-from.y,bend=Math.min(34,Math.max(14,Math.abs(dx)*.13));
+  const dx=to.x-from.x,dy=to.y-from.y,customBend=Number(path.dataset?.bend),bend=Number.isFinite(customBend)&&customBend!==0?customBend:Math.min(34,Math.max(14,Math.abs(dx)*.13));
   const c1x=from.x+dx*.34,c1y=from.y+dy*.12+bend;
   const c2x=from.x+dx*.72,c2y=to.y+bend;
   const n=value=>Number(value.toFixed(2));

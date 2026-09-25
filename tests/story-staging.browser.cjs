@@ -231,6 +231,73 @@ async function captureMapDialogueStates(page,base){
  await page.evaluate(()=>{for(const element of document.querySelectorAll('.cinematic-copy,.cin-dialogue-layer')){element.style.visibility=element.dataset.previousVisibility||'';delete element.dataset.previousVisibility}});
 }
 
+async function showHomewardVisual(page,beat){
+ if(await page.evaluate(()=>LatchlingsCinematics?.active!=='homeward')){
+  await page.evaluate(()=>LatchlingsCinematics.show('homeward',{markSeen:false}));
+  await page.waitForFunction(()=>LatchlingsCinematics?.active==='homeward'&&LatchlingsCinematics?.beat===0&&LatchlingsCinematics?.line===0);
+ }
+ while(await page.evaluate(beat=>LatchlingsCinematics.beat<beat,beat)){
+  const previous=await page.evaluate(()=>({beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line}));
+  await page.locator('#cinematicNext').click();await page.waitForFunction(previous=>LatchlingsCinematics.beat!==previous.beat||LatchlingsCinematics.line!==previous.line,previous);
+ }
+ await page.waitForFunction(beat=>LatchlingsCinematics?.beat===beat&&document.querySelector('#cinematicOverlay')?.dataset.visual===({0:'signals',2:'living-network',3:'many-routes',4:'aurora-crown',5:'homeward-network'}[beat]),beat);
+}
+
+async function networkSnapshot(page){
+ return page.evaluate(()=>{
+  const network=document.querySelector('#cinematicStage .cin-network'),center=element=>{const r=element?.getBoundingClientRect();return r&&r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null};
+  const endpoint=(path,t)=>{if(!path||!path.getTotalLength())return null;const p=path.getPointAtLength(path.getTotalLength()*t),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}};
+  return {mode:network?.className,phase:network?.dataset.networkPhase,legacyGeometry:network?.querySelectorAll('.wire,.cin-route-options i').length||0,nodes:[...network?.querySelectorAll('[data-network-node]')||[]].map(node=>({id:node.dataset.networkNode,label:node.querySelector('span')?.textContent.trim()||'',anchor:center(node.querySelector('[data-network-anchor]')),labelBox:node.querySelector('span')?.getBoundingClientRect().toJSON(),labelDisplay:node.querySelector('span')?getComputedStyle(node.querySelector('span')).display:'none',fontSize:node.querySelector('span')?Number.parseFloat(getComputedStyle(node.querySelector('span')).fontSize):0})),routes:[...network?.querySelectorAll('.cin-network-routes path[data-from][data-to]')||[]].map(path=>({from:path.dataset.from,to:path.dataset.to,role:path.dataset.edgeRole||'',choice:path.dataset.routeChoice||'',d:path.getAttribute('d'),length:path.getTotalLength(),start:endpoint(path,0),mid:endpoint(path,.5),end:endpoint(path,1),fromAnchor:center(network.querySelector(`[data-network-anchor="${path.dataset.from}"]`)),toAnchor:center(network.querySelector(`[data-network-anchor="${path.dataset.to}"]`)),opacity:Number(getComputedStyle(path).opacity),display:getComputedStyle(path).display})),causes:[...network?.querySelectorAll('[data-causality-step]')||[]].map(item=>({step:item.dataset.causalityStep,from:item.dataset.from,to:item.dataset.to,text:item.textContent.trim(),display:getComputedStyle(item).display,box:item.getBoundingClientRect().toJSON()})),visual:document.querySelector('#cinematicOverlay')?.dataset.visual,beat:window.LatchlingsCinematics?.beat,line:window.LatchlingsCinematics?.line};
+ });
+}
+
+async function verifyNetworkGeometry(page,name){
+ await page.waitForFunction(()=>{const paths=[...document.querySelectorAll('#cinematicStage .cin-network-routes path[data-from][data-to]')],center=element=>{const r=element?.getBoundingClientRect();return r&&r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null},endpoint=(path,t)=>{if(!path?.getTotalLength())return null;const p=path.getPointAtLength(path.getTotalLength()*t),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}};return paths.length>0&&paths.every(path=>{const a=center(document.querySelector(`[data-network-anchor="${path.dataset.from}"]`)),b=center(document.querySelector(`[data-network-anchor="${path.dataset.to}"]`)),start=endpoint(path,0),end=endpoint(path,1);return path.getTotalLength()>0&&a&&b&&start&&end&&Math.hypot(a.x-start.x,a.y-start.y)<=3&&Math.hypot(b.x-end.x,b.y-end.y)<=3})},undefined,{timeout:4000});
+ const snapshot=await networkSnapshot(page);
+ assert(snapshot.nodes.length>=4,`${name}: the network must retain named regional anchor nodes`);assert(snapshot.routes.length>0,`${name}: named routes must use measured SVG edges`);
+ assert.equal(snapshot.legacyGeometry,0,`${name}: floating percentage wires and unanchored route-option strokes must be removed`);
+ for(const route of snapshot.routes){
+  assert(route.display!=='none'&&route.length>0&&route.start&&route.end&&route.fromAnchor&&route.toAnchor,`${name}: ${route.from}→${route.to} must render between named anchors (${JSON.stringify(route)})`);
+  assert(distance(route.start,route.fromAnchor)<=3,`${name}: ${route.from} route endpoint must touch its anchor (${JSON.stringify(route)})`);assert(distance(route.end,route.toAnchor)<=3,`${name}: ${route.to} route endpoint must touch its anchor (${JSON.stringify(route)})`);
+ }
+ return snapshot;
+}
+
+async function runHomewardNetwork(browser,config){
+ const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
+ page.on('pageerror',error=>errors.push(error.message));await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ if(config.textSize==='large')await page.evaluate(()=>document.documentElement.dataset.textSize='large');if(config.inGameReduced)await page.evaluate(()=>document.documentElement.dataset.motion='reduced');
+ let currentWidth=config.width,currentHeight=config.height;
+ for(const beat of [0,2,3,4,5]){
+  if(currentWidth!==config.width){await page.setViewportSize({width:config.width,height:config.height});currentWidth=config.width;currentHeight=config.height}
+  await showHomewardVisual(page,beat);
+  const visual=({0:'signals',2:'living-network',3:'many-routes',4:'aurora-crown',5:'homeward-network'})[beat],name=`${currentWidth}x${currentHeight}/${config.textSize||'normal'}/${config.reduced||config.inGameReduced?'reduced':'normal'}/${visual}`;
+  let snapshot=await verifyNetworkGeometry(page,name);
+  assert(snapshot.nodes.every(node=>node.label&&node.labelDisplay!=='none'&&node.labelBox?.width>0&&node.labelBox?.height>0&&node.fontSize>=6.2),`${name}: every route endpoint must have a readable, visible region label`);if(visual==='signals')assert.equal(snapshot.nodes.length,8,`${name}: the signal overview must show every restored region`);
+  if(visual==='living-network'){
+   const expected=[['report','stormswitch','meadows'],['anchor','meadows','lodestone'],['window','lodestone','lantern'],['redraw','meadows','lantern'],['complete','meadows','lantern']];
+   if(config.reduced||config.inGameReduced){
+    snapshot=await page.evaluate(()=>({phase:document.querySelector('#cinematicStage .cin-network')?.dataset.networkPhase,causes:[...document.querySelectorAll('#cinematicStage [data-causality-step]')].map(item=>({step:item.dataset.causalityStep,display:getComputedStyle(item).display,box:item.getBoundingClientRect().toJSON()})),beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line}));
+    assert.equal(snapshot.phase,'complete',`${name}: Reduced Motion must settle the full causal sequence immediately`);assert(snapshot.causes.length===4&&snapshot.causes.every(item=>item.display!=='none'&&item.box.width>0&&item.box.height>0),`${name}: Reduced Motion must show all four causality results`);assert.equal(snapshot.beat,2,`${name}: Reduced Motion must not advance the spoken beat`);assert.equal(snapshot.line,0,`${name}: Reduced Motion must not advance the spoken line`);
+   }else for(const [phase,from,to] of expected){
+    await page.waitForFunction(phase=>document.querySelector('#cinematicStage .cin-network')?.dataset.networkPhase===phase,phase,{timeout:2500});
+    await page.waitForFunction(phase=>{const route=document.querySelector(`#cinematicStage .cin-network-routes [data-edge-role="${phase==='complete'?'redraw':phase}"]`);return !!route&&Number(getComputedStyle(route).opacity)>.2},phase,{timeout:800});
+    const state=await page.evaluate(phase=>{const network=document.querySelector('#cinematicStage .cin-network'),step=phase==='complete'?'redraw':phase,cause=network?.querySelector(`[data-causality-step="${step}"]`),route=network?.querySelector(`.cin-network-routes [data-edge-role="${step}"]`);return{beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line,cause:cause?{from:cause.dataset.from,to:cause.dataset.to,text:cause.textContent,display:getComputedStyle(cause).display,box:cause.getBoundingClientRect().toJSON()}:null,route:route?{display:getComputedStyle(route).display,opacity:Number(getComputedStyle(route).opacity),length:route.getTotalLength()}:null}},phase);
+    assert(state.cause&&state.cause.display!=='none'&&state.cause.box.width>0&&state.cause.box.height>0,`${name}: ${phase} must visibly identify its causal step (${JSON.stringify(state)})`);assert.equal(state.cause.from,from,`${name}: ${phase} source must remain named`);assert.equal(state.cause.to,to,`${name}: ${phase} destination must remain named`);
+     assert(state.route&&state.route.display!=='none'&&state.route.opacity>.2&&state.route.length>0,`${name}: ${phase} must highlight its corresponding connected edge (${JSON.stringify(state)})`);assert.equal(state.beat,2,`${name}: network phases must not advance the spoken beat`);assert.equal(state.line,0,`${name}: network phases must not advance the spoken line`);
+    }
+    await page.waitForTimeout(160);const settled=await page.evaluate(()=>({phase:document.querySelector('#cinematicStage .cin-network')?.dataset.networkPhase,visible:[...document.querySelectorAll('#cinematicStage [data-causality-step]')].filter(item=>getComputedStyle(item).display!=='none').length,beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line}));
+    assert.equal(settled.phase,'complete',`${name}: the completed sequence must remain settled while the line is held`);assert.equal(settled.visible,4,`${name}: the final map must retain all four causal results`);assert.equal(settled.beat,2);assert.equal(settled.line,0);
+   assert(snapshot.causes.length===4,`${name}: all four causal stations must be authored in the scene`);
+  }
+  if(visual==='many-routes'){assert.equal(snapshot.routes.length,2,`${name}: the map must show exactly two complete alternative routes`);assert(snapshot.routes.every(route=>route.choice&&route.from===snapshot.routes[0].from&&route.to===snapshot.routes[0].to),`${name}: complete route choices must share named endpoints`);assert.notEqual(snapshot.routes[0].d,snapshot.routes[1].d,`${name}: alternative routes must follow different paths`);assert(distance(snapshot.routes[0].mid,snapshot.routes[1].mid)>=12,`${name}: alternative paths must be visibly separated along their travel window`)}
+  if(visual==='homeward-network')assert(snapshot.nodes.some(node=>node.id==='meadows')&&snapshot.nodes.some(node=>node.id==='crown'),`${name}: Homeward must preserve named regional connections behind Little Home`);
+  if(visual==='living-network'||visual==='many-routes'||visual==='aurora-crown'||visual==='homeward-network')await captureMapDialogueStates(page,`homeward-${currentWidth}x${currentHeight}-${config.textSize||'normal'}-${config.reduced||config.inGameReduced?'reduced':'normal'}-${visual}`);
+  const resizedWidth=config.width===390?430:390,resizedHeight=resizedWidth===390?844:932;await page.setViewportSize({width:resizedWidth,height:resizedHeight});snapshot=await verifyNetworkGeometry(page,`${name} resized ${resizedWidth}x${resizedHeight}`);currentWidth=resizedWidth;currentHeight=resizedHeight;
+ }
+ assert.deepEqual(errors,[],`${config.width}x${config.height}: Homeward network visuals must have no browser errors`);await context.close();
+}
+
 async function runMapStory(browser,config){
  const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
@@ -312,6 +379,14 @@ async function runAcrossPorch(browser,config){
  for(const config of [
   {width:390,height:844,reduced:false},{width:320,height:568,reduced:true},{width:390,height:844,reduced:true}
  ])await runMapStory(browser,config);
+ for(const config of [
+  {width:320,height:568,reduced:false,textSize:'normal'},
+  {width:390,height:844,reduced:false,textSize:'normal'},
+  {width:430,height:932,reduced:false,textSize:'large'},
+  {width:320,height:568,reduced:true,textSize:'normal'},
+  {width:390,height:844,reduced:false,textSize:'normal',inGameReduced:true},
+  {width:430,height:932,reduced:true,textSize:'large'}
+ ])await runHomewardNetwork(browser,config);
  for(const config of [
   {width:320,height:568,reduced:false},{width:390,height:844,reduced:false},{width:430,height:932,reduced:false},
   {width:320,height:568,reduced:true},{width:390,height:844,reduced:true},{width:430,height:932,reduced:true}

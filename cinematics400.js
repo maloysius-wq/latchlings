@@ -83,6 +83,35 @@ const OPENING_FIRST_RUN_STEPS=CINEMATICS.opening.beats.flatMap((beat,beatIndex)=
 let activeId=null,activeIndex=0,activeLine=0,activeFlow=null,activeStep=0,onDone=null,markOnDone=false,lastFocus=null;
 let porchGeometryObserver=null,porchGeometryScene=null,porchGeometryResize=null,porchGeometryFrame=0;
 function disconnectPorchGeometry(){if(porchGeometryObserver){porchGeometryObserver.disconnect();porchGeometryObserver=null}if(porchGeometryResize){window.removeEventListener('resize',porchGeometryResize);porchGeometryResize=null}if(porchGeometryFrame){cancelAnimationFrame(porchGeometryFrame);porchGeometryFrame=0}porchGeometryScene=null}
+let networkGeometryObserver=null,networkGeometryScene=null,networkGeometryResize=null,networkGeometryFrame=0,networkPhaseTimer=0;
+function reducedMotionRequested(){return document.documentElement.dataset.motion==='reduced'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true}
+function disconnectNetworkScene(){if(networkGeometryObserver){networkGeometryObserver.disconnect();networkGeometryObserver=null}if(networkGeometryResize){window.removeEventListener('resize',networkGeometryResize);networkGeometryResize=null}if(networkGeometryFrame){cancelAnimationFrame(networkGeometryFrame);networkGeometryFrame=0}if(networkPhaseTimer){clearTimeout(networkPhaseTimer);networkPhaseTimer=0}networkGeometryScene=null}
+function syncNetworkGeometry(scene){
+ const svg=scene?.querySelector('.cin-network-routes');if(!svg||!window.LatchlingsSceneGeometry?.syncPath)return false;
+ let ready=true;
+ for(const path of svg.querySelectorAll('path[data-from][data-to]')){
+  const from=scene.querySelector(`[data-network-anchor="${path.dataset.from}"]`),to=scene.querySelector(`[data-network-anchor="${path.dataset.to}"]`);
+  if(!window.LatchlingsSceneGeometry.syncPath(svg,path,from,to)){path.removeAttribute('d');ready=false}
+ }
+ scene.dataset.geometryReady=ready?'true':'false';return ready;
+}
+function bindNetworkScene(scene,visual){
+ disconnectNetworkScene();if(!scene)return;
+ networkGeometryScene=scene;
+ const sync=()=>{if(networkGeometryScene===scene&&scene.isConnected)syncNetworkGeometry(scene)};
+ sync();networkGeometryResize=sync;window.addEventListener('resize',networkGeometryResize,{passive:true});
+ if(typeof ResizeObserver==='function'){networkGeometryObserver=new ResizeObserver(sync);networkGeometryObserver.observe(scene);scene.querySelectorAll('[data-network-anchor]').forEach(anchor=>networkGeometryObserver.observe(anchor))}
+ if(!reducedMotionRequested()){
+  const tick=()=>{if(networkGeometryScene!==scene||!scene.isConnected){disconnectNetworkScene();return}syncNetworkGeometry(scene);networkGeometryFrame=requestAnimationFrame(tick)};
+  networkGeometryFrame=requestAnimationFrame(tick);
+ }
+ if(visual==='living-network'){
+  if(reducedMotionRequested()){scene.dataset.networkPhase='complete';return}
+  const phases=['anchor','window','redraw','complete'];let phaseIndex=0;scene.dataset.networkPhase='report';
+  const advance=()=>{if(networkGeometryScene!==scene||!scene.isConnected)return;scene.dataset.networkPhase=phases[phaseIndex++];if(phaseIndex<phases.length)networkPhaseTimer=setTimeout(advance,1200);else networkPhaseTimer=0};
+  networkPhaseTimer=setTimeout(advance,1200);
+ }
+}
 function syncPorchGeometry(scene){
  const island=scene.querySelector('.porch-far-island'),svg=scene.querySelector('.porch-reconnect-svg'),path=svg?.querySelector('.porch-reconnect-route'),origin=scene.querySelector('[data-route-origin]'),landing=scene.querySelector('[data-route-landing]'),pulse=scene.querySelector('[data-route-pulse]');
  if(!island||!svg||!path||!origin||!landing||!pulse)return false;
@@ -143,8 +172,34 @@ function mapSheets(mode){
  }).join('');
  return `<div class="cin-maps ${mode}" data-map-mode="${mode}">${sheets}</div>`;
 }
-function networkNode(n,label,type){return `<div class="node n${n} type-${type}"><i class="node-side"></i><i class="node-rim"></i><i class="node-top"></i><i class="node-landmark"></i><span>${label}</span></div>`}
-function networkHtml(mode=''){const nodes=[['MEADOWS','meadow'],['LANTERN','lantern'],['LODESTONE','lodestone'],['KEEP','keep'],['PRISM','prism'],['COPPERLINE','copper'],['STORMSWITCH','storm'],['CROWN','crown']];return `<div class="cin-network ${mode}">${nodes.map((x,i)=>networkNode(i+1,x[0],x[1])).join('')}<span class="wire w1"></span><span class="wire w2"></span><span class="wire w3"></span><span class="wire w4"></span><span class="wire w5"></span><span class="wire w6"></span><span class="wire w7"></span></div>`}
+const NETWORK_NODES=Object.freeze([
+ {id:'meadows',label:'MEADOWS',type:'meadow',className:'n1'},
+ {id:'lantern',label:'LANTERNWOOD',type:'lantern',className:'n2'},
+ {id:'lodestone',label:'LODESTONE',type:'lodestone',className:'n3'},
+ {id:'keep',label:'WAYKEEPER KEEP',type:'keep',className:'n4'},
+ {id:'prism',label:'PRISM GARDENS',type:'prism',className:'n5'},
+ {id:'copperline',label:'COPPERLINE',type:'copper',className:'n6'},
+ {id:'stormswitch',label:'STORMSWITCH',type:'storm',className:'n7'},
+ {id:'crown',label:'AURORA CROWN',type:'crown',className:'n8'}
+].map(node=>Object.freeze(node)));
+const NETWORK_EDGES=Object.freeze([
+ {from:'stormswitch',to:'meadows',role:'report'},
+ {from:'meadows',to:'lodestone',role:'anchor'},
+ {from:'lodestone',to:'lantern',role:'window'},
+ {from:'meadows',to:'lantern',role:'redraw'},
+ {from:'lantern',to:'keep'},
+ {from:'lodestone',to:'prism'},
+ {from:'prism',to:'copperline'},
+ {from:'copperline',to:'crown'}
+].map(edge=>Object.freeze(edge)));
+function networkNode(node){return `<div class="node ${node.className} type-${node.type}" data-network-node="${node.id}"><i class="node-side"></i><i class="node-rim"></i><i class="node-top"></i><i class="node-landmark"></i><span>${node.label}</span><i class="node-route-anchor" data-network-anchor="${node.id}" aria-hidden="true"></i></div>`}
+function networkEdge(edge,index){const role=edge.role?` role-${edge.role}`:'';return `<path class="network-route${role}" pathLength="1" data-from="${edge.from}" data-to="${edge.to}" ${edge.role?`data-edge-role="${edge.role}"`:''} ${edge.choice?`data-route-choice="${edge.choice}" data-bend="${edge.bend}"`:''} d=""/>`}
+function networkCausality(){return `<div class="network-causality" aria-label="How the living route responds"><span data-causality-step="report" data-from="stormswitch" data-to="meadows"><b>1</b><strong>STORMSWITCH → MEADOWS</strong><small>DRIFT REPORT</small></span><span data-causality-step="anchor" data-from="meadows" data-to="lodestone"><b>2</b><strong>LODESTONE</strong><small>ANCHOR ADJUSTED</small></span><span data-causality-step="window" data-from="lodestone" data-to="lantern"><b>3</b><strong>LANTERNWOOD</strong><small>TRAVEL WINDOW</small></span><span data-causality-step="redraw" data-from="meadows" data-to="lantern"><b>4</b><strong>MEADOWS → LANTERNWOOD</strong><small>ROUTE REDRAWN</small></span></div>`}
+function networkHtml(mode=''){
+ const edges=mode==='many'?[{from:'stormswitch',to:'crown',choice:'high-tide',bend:86},{from:'stormswitch',to:'crown',choice:'low-tide',bend:-86}]:NETWORK_EDGES;
+ const phase=mode==='living'?' data-network-phase="report"':'';
+ return `<div class="cin-network ${mode}"${phase}>${NETWORK_NODES.map(networkNode).join('')}<svg class="cin-network-routes" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true">${edges.map(networkEdge).join('')}</svg>${mode==='living'?networkCausality():''}</div>`;
+}
 function familiarPorchIslandHtml(withRoute=false){return `<div class="porch-far-island"><i class="porch-island-side"></i><i class="porch-island-top"></i>${withRoute?'<svg class="porch-reconnect-svg" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true"><path class="porch-reconnect-route" pathLength="1" d=""></path></svg>':''}<i class="porch-tree"></i><i class="porch-house"></i><i class="porch-deck">${withRoute?'<span class="porch-route-landing" data-route-landing><span class="porch-route-pulse" data-route-pulse></span></span>':''}</i><i class="porch-friend-lantern l1"></i><i class="porch-friend-lantern l2"></i></div>`}
 function lookoutHtml(){return `<div class="cin-lookout-scene cin-porch-production"><i class="porch-cloud c1"></i><i class="porch-cloud c2"></i>${familiarPorchIslandHtml()}<div class="porch-near-island"><i class="porch-crystal k1"></i><i class="porch-crystal k2"></i></div><div class="cin-telescope production-telescope"><i class="tube"></i><i class="lens"></i><span class="cin-telescope-mount"><b></b><b></b><b></b></span></div>${character('Tansy','lookout-tansy')}${character('Pip','lookout-pip')}<i class="cin-sightline"></i><i class="porch-depth-haze"></i></div>`}
 function breakfastJourneyHtml(){return `<div class="cin-breakfast-journey" data-story-action="breakfast-basket-travel">${islandsHtml('wide basket-journey')}<i class="breakfast-journey-route"></i><span class="breakfast-basket-traveler"><i class="basket-handle"></i><i class="basket-body"></i></span><span class="breakfast-home-destination"><i class="home-roof"></i><i class="home-body"></i><i class="home-door"></i><i class="home-lantern"></i></span></div>`}
@@ -177,7 +232,7 @@ function visualHtml(type){
  if(type==='signals')return networkHtml('signals');
  if(type==='keepsakes')return keepsakeHtml();
  if(type==='living-network')return networkHtml('living');
- if(type==='many-routes')return `${islandsHtml('many')}<div class="cin-route-options"><i></i><i></i><i></i></div>`;
+ if(type==='many-routes')return networkHtml('many');
  if(type==='aurora-crown')return `${networkHtml('crown')}<div class="cin-aurora"><i></i><i></i><i></i></div>`;
  if(type==='homeward-network')return `<div class="cin-homeward-wrap">${networkHtml('mini')}${homeHtml('homeward')}</div>`;
  return islandsHtml();
@@ -213,16 +268,16 @@ function render(){
  document.getElementById('cinematicTitle').textContent=c.title;
  document.getElementById('cinematicBeat').textContent=b.label;
  document.getElementById('cinematicCounter').textContent=`${displayIndex+1} / ${displayCount}`;
- disconnectPorchGeometry();
+ disconnectPorchGeometry();disconnectNetworkScene();
  if(opening&&window.LatchlingsOpeningScene)window.LatchlingsOpeningScene.sync(document.getElementById('cinematicStage'),1,{character,suitSvg});
- else{const stage=document.getElementById('cinematicStage');stage.innerHTML=visualHtml(b.visual);if(b.visual==='porch-reconnect')bindPorchGeometry(stage.querySelector('.cin-porch-reconnect'))}
+ else{const stage=document.getElementById('cinematicStage');stage.innerHTML=visualHtml(b.visual);if(b.visual==='porch-reconnect')bindPorchGeometry(stage.querySelector('.cin-porch-reconnect'));if(stage.querySelector('.cin-network'))bindNetworkScene(stage.querySelector('.cin-network'),b.visual)}
  document.getElementById('cinematicProgress').innerHTML=Array.from({length:displayCount},(_,i)=>`<i class="${i===displayIndex?'active':i<displayIndex?'done':''}"></i>`).join('');
  renderTurn();
  requestAnimationFrame(()=>o.classList.add('beat-ready'));
 }
 function show(id,opts={}){const c=CINEMATICS[id];if(!c)return false;if(activeId)return false;const o=ensureOverlay();lastFocus=document.activeElement;activeId=id;activeFlow=id==='opening'&&opts.compact?OPENING_FIRST_RUN_STEPS:null;activeStep=0;if(activeFlow){activeIndex=activeFlow[0][0];activeLine=activeFlow[0][1]}else{activeIndex=0;activeLine=0}onDone=typeof opts.onComplete==='function'?opts.onComplete:null;markOnDone=opts.markSeen!==false;o.classList.remove('beat-ready');o.classList.add('show');o.setAttribute('aria-hidden','false');document.body.classList.add('cinematic-open');render();setTimeout(()=>{const b=document.getElementById('cinematicNext');if(b)try{b.focus({preventScroll:true})}catch(_){b.focus()}const copy=document.querySelector('.cinematic-copy');if(copy)copy.scrollTop=0},50);return true}
 function next(){if(!activeId)return;const c=CINEMATICS[activeId],b=c.beats[activeIndex],o=ensureOverlay();if(activeFlow){if(activeStep>=activeFlow.length-1){finish(false);return}o.classList.remove('beat-ready');activeStep++;activeIndex=activeFlow[activeStep][0];activeLine=activeFlow[activeStep][1];setTimeout(render,35);return}if(activeLine<b.lines.length-1){activeLine++;renderTurn();return}if(activeIndex>=c.beats.length-1){finish(false);return}o.classList.remove('beat-ready');activeIndex++;activeLine=0;setTimeout(render,35)}
-function finish(skipped){if(!activeId)return;disconnectPorchGeometry();const id=activeId,cb=onDone,shouldMark=markOnDone,o=ensureOverlay();if(shouldMark)markSeen(id);activeId=null;activeIndex=0;activeLine=0;activeFlow=null;activeStep=0;onDone=null;markOnDone=false;o.classList.remove('show','beat-ready');o.removeAttribute('data-cinematic');o.removeAttribute('data-visual');o.removeAttribute('data-mode');o.setAttribute('aria-hidden','true');document.body.classList.remove('cinematic-open');if(lastFocus&&typeof lastFocus.focus==='function')try{lastFocus.focus()}catch(_){}lastFocus=null;if(cb)setTimeout(()=>cb({id,skipped:!!skipped}),40)}
+function finish(skipped){if(!activeId)return;disconnectPorchGeometry();disconnectNetworkScene();const id=activeId,cb=onDone,shouldMark=markOnDone,o=ensureOverlay();if(shouldMark)markSeen(id);activeId=null;activeIndex=0;activeLine=0;activeFlow=null;activeStep=0;onDone=null;markOnDone=false;o.classList.remove('show','beat-ready');o.removeAttribute('data-cinematic');o.removeAttribute('data-visual');o.removeAttribute('data-mode');o.setAttribute('aria-hidden','true');document.body.classList.remove('cinematic-open');if(lastFocus&&typeof lastFocus.focus==='function')try{lastFocus.focus()}catch(_){}lastFocus=null;if(cb)setTimeout(()=>cb({id,skipped:!!skipped}),40)}
 function maybeShowBeforeLevel(level,unlocked,onComplete){const id=TRIGGERS[Number(level)];if(!id||hasSeen(id))return false;const c=CINEMATICS[id];if(Number(level)>1&&Number(unlocked||1)<c.unlock)return false;return show(id,{onComplete,markSeen:true,compact:id==='opening'})}
 function renderLibrary(container,unlocked){if(typeof container==='string')container=document.getElementById(container);if(!container)return;const u=Math.max(1,Number(unlocked)||1),order=['opening','across-drift','old-maps','homeward'];container.innerHTML=order.map(id=>{const c=CINEMATICS[id],locked=u<c.unlock,seen=hasSeen(id);return `<button class="cinematic-library-card ${locked?'locked':''}" type="button" data-cinematic-id="${id}" ${locked?'disabled':''}><span class="cinematic-library-status">${locked?`Unlocks after Level ${c.unlock-1}`:seen?'Replay cinematic':'Watch cinematic'}</span><strong>${escapeHtml(c.title)}</strong><small>${escapeHtml(c.chapter)}</small></button>`}).join('');container.querySelectorAll('.cinematic-library-card:not(.locked)').forEach(b=>b.onclick=()=>show(b.dataset.cinematicId,{markSeen:false}))}
 document.addEventListener('keydown',e=>{if(!activeId)return;if(e.key==='Escape'){e.preventDefault();finish(true);return}if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();next()}});
