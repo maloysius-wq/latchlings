@@ -236,3 +236,22 @@ html[data-motion="reduced"] #cinematicOverlay[data-visual="porch"] *{animation:n
 .masquerade-reward-route{position:absolute;z-index:3;left:18%;bottom:25%;width:62%;height:4px;border-radius:999px;background:linear-gradient(90deg,rgba(233,194,107,.08),#dfb75f 22% 88%,rgba(223,183,95,.08));transform:rotate(-4deg);box-shadow:0 0 7px rgba(221,178,83,.28)}
 .masquerade-reward-bunting{position:absolute;z-index:8;left:12%;right:10%;top:19%;height:22px;border-top:2px solid rgba(228,197,132,.72)}
 .masquerade-reward-bunting:after{content:"";position:absolute;left:5px;top:-1px;width:10px;height:12px;background:#dd8290;clip-path:polygon(0 0,100% 0,50% 100%);box-shadow:28px 2px 0 #e7bc62,56px 4px 0 #8f73a6,84px 5px 0 #d98792,112px 4px 0 #e7bc62,140px 2px 0 #8f73a6}
+
+/* Earned chapter postcards resolve in one brief, skippable beat; the modal actions stay live. */
+.chapter-reward-card[data-vignette-settled="false"] .chapter-reward-basket{animation:rewardBasketHome 1.08s cubic-bezier(.2,.72,.22,1) both}
+.chapter-reward-card[data-vignette-settled="false"] .chapter-reward-route{animation:rewardRouteWake 1.08s ease-out both}
+.chapter-two-reward[data-vignette-settled="false"] .lanternwood-reward-lantern.l1{animation:rewardLanternRelight 1.05s ease-out both}
+.chapter-two-reward[data-vignette-settled="false"] .lanternwood-reward-lantern.l2{animation:rewardLanternRelight 1.05s .12s ease-out both}
+.chapter-two-reward[data-vignette-settled="false"] .lanternwood-reward-route{animation:rewardRouteWake 1.12s .06s ease-out both}
+.chapter-three-reward[data-vignette-settled="false"] .lodestone-reward-anchor{animation:rewardAnchorAlign 1.12s cubic-bezier(.2,.72,.22,1) both}
+.chapter-three-reward[data-vignette-settled="false"] .lodestone-reward-line{animation:rewardRouteWake 1.12s ease-out both}
+.chapter-four-reward[data-vignette-settled="false"] .masquerade-reward-route{animation:rewardMarketOpen 1.08s ease-out both}
+.chapter-four-reward[data-vignette-settled="false"] .masquerade-reward-bunting{animation:rewardBuntingUnfurl 1.12s cubic-bezier(.2,.72,.22,1) both}
+@keyframes rewardBasketHome{0%{left:35%;bottom:36%;rotate:-12deg}72%{left:83%;bottom:31%;rotate:4deg}86%{left:79%;bottom:32%;rotate:-3deg}100%{left:81%;bottom:31%;rotate:0deg}}
+@keyframes rewardRouteWake{0%{filter:brightness(.65);opacity:.48}58%{filter:brightness(1.35);opacity:1}100%{filter:brightness(1);opacity:1}}
+@keyframes rewardLanternRelight{0%{filter:brightness(.5);scale:.78;box-shadow:0 0 0 rgba(255,190,78,0)}62%{filter:brightness(1.5);scale:1.18;box-shadow:0 0 14px rgba(255,210,105,.95),0 0 25px rgba(255,190,78,.7)}100%{filter:brightness(1);scale:1}}
+@keyframes rewardAnchorAlign{0%{translate:-12px 2px;rotate:-12deg;filter:drop-shadow(0 0 1px rgba(91,211,225,.15))}72%{translate:2px 0;rotate:3deg;filter:drop-shadow(0 0 12px rgba(91,211,225,.8))}100%{translate:0 0;rotate:0deg;filter:drop-shadow(0 0 7px rgba(91,211,225,.5))}}
+@keyframes rewardMarketOpen{0%{clip-path:inset(0 100% 0 0);filter:brightness(.65)}68%{clip-path:inset(0 0 0 0);filter:brightness(1.35)}100%{clip-path:inset(0);filter:brightness(1)}}
+@keyframes rewardBuntingUnfurl{0%{scale:.84 .35;rotate:-5deg;opacity:.38}62%{scale:1.02 1.12;rotate:1deg;opacity:1}100%{scale:1;rotate:0deg;opacity:1}}
+@media(prefers-reduced-motion:reduce){.chapter-reward-card[data-vignette-settled="false"] .chapter-reward-postcard *{animation:none!important}}
+html[data-motion="reduced"] .chapter-reward-card[data-vignette-settled="false"] .chapter-reward-postcard *{animation:none!important}
