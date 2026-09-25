@@ -82,6 +82,7 @@ function installCanonicalHome(root){
     if(['Pippa','Bramble','Rowan','Pip','Tansy'].includes(name))el=doc.querySelector(`#c2 [data-resident="${name}"]`);
     else if(name==='porch')el=doc.querySelector('#c2 .cottage .door');
     else if(name==='cottage')el=doc.querySelector('#c2 .cottage');
+    else if(name==='home-tree')el=doc.querySelector('#c2 .little-home-tree');
     else if(name==='play-rock')el=doc.querySelector('#c2 .rock.r1');
     if(el)return rectJson(el.getBoundingClientRect());
     if(name==='garden')return unionRects([...doc.querySelectorAll('#c2 .flower.f1,#c2 .flower.f2,#c2 .flower.f3')].map(x=>x.getBoundingClientRect()));
@@ -143,10 +144,9 @@ function syncErrandLabels(root,step){
  if(!name||!source||!target){if(source)source.hidden=true;if(target)target.hidden=true;return}
  const cue=ERRAND_LABELS[name],from=cue.sourcePoint==='bakery'?localElementCenter(root,'.neighbor-bakery'):localLandmark(root,cue.sourcePoint==='pippa'?'Pippa':'Pip'),to=localLandmark(root,cue.targetPoint==='rock'?'play-rock':cue.targetPoint),cottage=name==='basket'?localLandmark(root,'cottage'):null,camera=root.querySelector('.opening-world-camera');
  source.textContent=cue.source;target.textContent=cue.target;source.dataset.phase=target.dataset.phase=step===8?'echo':'active';
- const residents=['Pippa','Bramble','Rowan','Pip','Tansy'].map(n=>pointBounds(localLandmark(root,n))).filter(Boolean);
- const fromAvoid=[...residents,pointBounds(from)],toAvoid=[...residents,pointBounds(to)];
+ const residents=['Pippa','Bramble','Rowan','Pip','Tansy'].map(n=>pointBounds(localLandmark(root,n))).filter(Boolean),landmarks=['cottage','home-tree'].map(n=>pointBounds(localLandmark(root,n))).filter(Boolean);
+ const fromAvoid=[...residents,...landmarks,pointBounds(from)],toAvoid=[...residents,...landmarks,pointBounds(to)];
  const a=placeErrandLabel(source,from,camera,fromAvoid,[],'above');
- if(cottage)toAvoid.push(pointBounds(cottage));
  placeErrandLabel(target,to,camera,toAvoid,a?[a]:[],'below');
 }
 function effectiveReduced(){return matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced'}

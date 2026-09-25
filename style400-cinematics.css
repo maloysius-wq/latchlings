@@ -427,6 +427,27 @@ html[data-motion="reduced"] .cinematic-copy *{animation:none!important;transitio
 .cin-homeward-wrap .cin-home-reference-wrap{inset:2px 30px 0}
 .cin-homeward-wrap .cin-network{opacity:.88!important}
 
+/* Homeward is the story's named destination map: counter the mini-map shrink so its place names survive phone scale. */
+.cin-homeward-wrap .cin-network .node span{font-size:9.5px!important;line-height:1.12!important;padding:3px 5px;max-width:104px}
+.cin-homeward-wrap .cin-network.mini .node{scale:.88!important}
+.cin-homeward-wrap .cin-network.mini .node span{font-size:9.5px!important;line-height:1.1!important;max-width:110px;padding:3px 5px}
+.cin-homeward-wrap .cin-network.mini [data-network-node="meadows"] span,
+.cin-homeward-wrap .cin-network.mini [data-network-node="lantern"] span,
+.cin-homeward-wrap .cin-network.mini [data-network-node="lodestone"] span,
+.cin-homeward-wrap .cin-network.mini [data-network-node="crown"] span{font-size:12px!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="meadows"] span{left:calc(50% - 28px)!important;top:51px!important;font-size:11px!important;padding:2px!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="lantern"] span{left:calc(50% - 87px)!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="lodestone"] span{left:calc(50% - 48px)!important;top:-48px!important;font-size:11px!important;padding:2px!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="prism"] span{left:calc(50% - 46px)!important;top:-28px!important;width:50px;max-width:50px;box-sizing:border-box;white-space:normal!important;text-align:center;font-size:10px!important;line-height:1.05!important;padding:2px 3px}
+.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"]{left:auto!important;right:6%!important;top:38%!important;bottom:auto!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"] .node-landmark{left:25%!important;top:4px!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="keep"] span{top:-26px!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"] span{left:calc(50% + 41.5px)!important;top:-30px!important;width:38px;max-width:38px;box-sizing:border-box;white-space:normal!important;overflow-wrap:anywhere;text-align:center;font-size:8.5px!important;line-height:1.05!important;padding:1px}
+@media(min-width:360px){.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"] span{left:calc(50% + 37px)!important;width:56px;max-width:56px;font-size:9.5px!important;padding:2px}}
+.cin-homeward-wrap .cin-network.mini [data-network-node="stormswitch"]{left:auto!important;right:10%!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="stormswitch"] span{left:calc(50% + 28px)!important;top:60px!important;font-size:11px!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="crown"] span{left:calc(50% + 32px)!important;top:-24px!important;width:50px;max-width:50px;box-sizing:border-box;white-space:normal!important;text-align:center;font-size:11px!important;letter-spacing:-.04em;line-height:1.05!important;padding:3px 4px}
+
 /* Prism Gardens gets tiny flower/crystal color on the grass, not only one crystal spire. */
 .cin-islands.prism .cin-island-top:before{content:"";position:absolute;z-index:4;left:13%;right:13%;top:24%;bottom:15%;border-radius:50%;background:radial-gradient(circle at 15% 55%,#ef9dad 0 3%,transparent 4%),radial-gradient(circle at 35% 30%,#f1d169 0 3%,transparent 4%),radial-gradient(circle at 61% 62%,#77b5e9 0 3%,transparent 4%),radial-gradient(circle at 81% 36%,#a37ae3 0 3%,transparent 4%);opacity:.9}
 .cin-islands.prism .cin-island-prop{filter:drop-shadow(0 2px 2px rgba(56,78,101,.16)) drop-shadow(0 0 4px rgba(139,192,225,.22))}

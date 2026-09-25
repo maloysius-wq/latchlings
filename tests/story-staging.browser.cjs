@@ -55,7 +55,8 @@ async function sceneMeasurements(page,name){
   const projectedHome=name=>{
    const doc=frame?.contentDocument,win=frame?.contentWindow;
    if(!doc||!win)return null;
-   const group=name==='garden'?[...doc.querySelectorAll('#c2 .flower.f1,#c2 .flower.f2,#c2 .flower.f3')]:[doc.querySelector(name==='porch'?'#c2 .cottage .door':name==='cottage'?'#c2 .cottage':name==='play-rock'?'#c2 .rock.r1':`#c2 [data-resident="${name}"]`)].filter(Boolean);
+   const selector={porch:'#c2 .cottage .door',cottage:'#c2 .cottage','home-tree':'#c2 .little-home-tree','play-rock':'#c2 .rock.r1'}[name];
+   const group=name==='garden'?[...doc.querySelectorAll('#c2 .flower.f1,#c2 .flower.f2,#c2 .flower.f3')]:[doc.querySelector(selector||`#c2 [data-resident="${name}"]`)].filter(Boolean);
    if(!group.length)return null;
    const rects=group.map(el=>el.getBoundingClientRect()),frameRect=frame.getBoundingClientRect(),sx=frameRect.width/Math.max(1,win.innerWidth),sy=frameRect.height/Math.max(1,win.innerHeight);
    const left=Math.min(...rects.map(r=>r.left)),top=Math.min(...rects.map(r=>r.top)),right=Math.max(...rects.map(r=>r.right)),bottom=Math.max(...rects.map(r=>r.bottom));
@@ -63,18 +64,19 @@ async function sceneMeasurements(page,name){
   };
   const localPoint=t=>{const p=route.getPointAtLength(route.getTotalLength()*t),m=route.getScreenCTM(),q=new DOMPoint(p.x,p.y).matrixTransform(m);return{x:q.x,y:q.y}};
   const source=name==='basket'?actualCenter(root.querySelector('.neighbor-bakery')):projectedHome(name==='water'?'Pippa':'Pip');
-  const target=projectedHome(name==='basket'?'porch':name==='water'?'garden':'play-rock'),targetStructure=name==='basket'?projectedHome('cottage'):null;
+  const target=projectedHome(name==='basket'?'porch':name==='water'?'garden':'play-rock'),targetStructure=projectedHome('cottage'),homeTree=projectedHome('home-tree');
   const marker=document.querySelector(`.opening-miss-marker[data-miss="${name}"]`),targetMarker=document.querySelector(`.opening-target-marker[data-target="${name==='basket'?'porch':name==='water'?'garden':'play-rock'}"]`);
   const markerCenter=actualCenter(marker),targetMarkerCenter=actualCenter(targetMarker),residents=Object.fromEntries(['Pippa','Bramble','Rowan','Pip','Tansy'].map(resident=>[resident,projectedHome(resident)]));
   const sourceLabel=root.querySelector('[data-errand-source]'),targetLabel=root.querySelector('[data-errand-target]');
   const visible=el=>{if(!el)return false;const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)>.1&&r.width>0&&r.height>0};
   const labelRect=el=>el?.getBoundingClientRect().toJSON()||null;
+  const routePoints=Array.from({length:25},(_,i)=>{const p=route.getPointAtLength(route.getTotalLength()*i/24),m=route.getScreenCTM(),q=new DOMPoint(p.x,p.y).matrixTransform(m);return{x:q.x,y:q.y}});
   const mover=root.querySelector(`[data-opening-mover="${name}"]`),mr=actualCenter(mover);
   const moveAnimations=mover?.getAnimations()||[];
   return {
-   source,target,targetStructure,residents,camera:labelRect(root.querySelector('.opening-world-camera')),pathStart:localPoint(0),pathEnd:localPoint(1),marker:markerCenter,targetMarker:targetMarkerCenter,mover:mr,
-   sourceLabel:{text:sourceLabel?.textContent.trim()||'',visible:visible(sourceLabel),box:labelRect(sourceLabel)},
-   targetLabel:{text:targetLabel?.textContent.trim()||'',visible:visible(targetLabel),box:labelRect(targetLabel)},
+   source,target,targetStructure,homeTree,residents,camera:labelRect(root.querySelector('.opening-world-camera')),pathStart:localPoint(0),pathEnd:localPoint(1),marker:markerCenter,targetMarker:targetMarkerCenter,mover:mr,
+   sourceLabel:{text:sourceLabel?.textContent.trim()||'',visible:visible(sourceLabel),box:labelRect(sourceLabel),fontSize:Number.parseFloat(getComputedStyle(sourceLabel).fontSize),categorySize:Number.parseFloat(getComputedStyle(sourceLabel,':before').fontSize)},
+   targetLabel:{text:targetLabel?.textContent.trim()||'',visible:visible(targetLabel),box:labelRect(targetLabel),fontSize:Number.parseFloat(getComputedStyle(targetLabel).fontSize),categorySize:Number.parseFloat(getComputedStyle(targetLabel,':before').fontSize)},routePoints,
    routeOpacity:Number(getComputedStyle(route).opacity),previousRouteOpacity:['basket','water','play'].filter(other=>other!==name).map(other=>Number(getComputedStyle(document.querySelector(`#opening-route-${other}`)).opacity)),
    animationCount:moveAnimations.length,
    activeStep:Number(root.dataset.step),targetDistance:dist(markerCenter,targetMarkerCenter)
@@ -93,15 +95,19 @@ async function verifyErrand(page,name,reduced,textSize,shots){
  assert(distance(m.pathEnd,m.marker)<=3,`${name}: route must end at its miss marker (${distance(m.pathEnd,m.marker).toFixed(1)}px)`);
  assert(m.targetDistance>=12&&m.targetDistance<=52,`${name}: miss must remain visibly near its intended target (${m.targetDistance.toFixed(1)}px)`);
  assert(m.sourceLabel.visible&&m.targetLabel.visible,`${name}: source and intended-destination labels must be visible on turn ${m.activeStep}: ${JSON.stringify({source:m.sourceLabel,target:m.targetLabel})}`);
+ assert(m.sourceLabel.fontSize>=12&&m.targetLabel.fontSize>=12,`${name}: place names must use readable 12px text on phones (${JSON.stringify({source:m.sourceLabel,target:m.targetLabel})})`);
+ assert(m.sourceLabel.categorySize>=8&&m.targetLabel.categorySize>=8,`${name}: FROM/TO markers must remain legible at 8px or larger (${JSON.stringify({source:m.sourceLabel,target:m.targetLabel})})`);
  assert(m.sourceLabel.text.toLowerCase().includes(expected.source.toLowerCase()),`${name}: source label should identify ${expected.source}`);
  assert(m.targetLabel.text.toLowerCase().includes(expected.target.toLowerCase()),`${name}: target label should identify ${expected.target}`);
  const endpointCollisions=[['source',m.sourceLabel.box,m.source],['target',m.targetLabel.box,m.target]].filter(([,label,landmark])=>overlap(label,landmark));
  assert.equal(endpointCollisions.length,0,`${name}: labels must not cover their source/destination landmarks (${JSON.stringify(endpointCollisions)})`);
- if(m.targetStructure)assert(!overlap(m.targetLabel.box,m.targetStructure),`${name}: destination label must not cover the cottage structure (${JSON.stringify({label:m.targetLabel.box,cottage:m.targetStructure})})`);
+ assert([m.sourceLabel.box,m.targetLabel.box].every(label=>!overlap(label,m.targetStructure)&&!overlap(label,m.homeTree)),`${name}: errand labels must not cover Little Home's cottage or tree (${JSON.stringify({source:m.sourceLabel.box,target:m.targetLabel.box,cottage:m.targetStructure,tree:m.homeTree})})`);
  const residentCollisions=Object.entries(m.residents).filter(([,resident])=>!resident||overlap(m.sourceLabel.box,resident)||overlap(m.targetLabel.box,resident));
  assert.equal(residentCollisions.length,0,`${name}: errand labels must not cover Latchling faces (${JSON.stringify({source:m.sourceLabel.box,target:m.targetLabel.box,residents:residentCollisions})})`);
  assert([m.sourceLabel.box,m.targetLabel.box].every(label=>label.left>=m.camera.left&&label.right<=m.camera.right&&label.top>=m.camera.top&&label.bottom<=m.camera.bottom),`${name}: errand labels must stay inside the animated scene`);
  assert(!overlap(m.sourceLabel.box,m.targetLabel.box),`${name}: source and destination labels must not collide (${JSON.stringify({source:m.sourceLabel.box,target:m.targetLabel.box})})`);
+ const routeLabelCollisions=m.routePoints.filter(point=>[m.sourceLabel.box,m.targetLabel.box].some(label=>point.x>=label.left-3&&point.x<=label.right+3&&point.y>=label.top-3&&point.y<=label.bottom+3));
+ assert.equal(routeLabelCollisions.length,0,`${name}: active route must not pass under either place label (${JSON.stringify(routeLabelCollisions)})`);
  if(name!=='basket')assert(m.routeOpacity>Math.max(...m.previousRouteOpacity)+.2,`${name}: active route must be more prominent than earlier errands (${m.routeOpacity} vs ${m.previousRouteOpacity})`);
  const mover=page.locator(`[data-opening-mover="${name}"]`);
  if(reduced){const settled=await page.evaluate(name=>{const el=document.querySelector(`[data-opening-mover="${name}"]`).getBoundingClientRect(),marker=document.querySelector(`.opening-miss-marker[data-miss="${name}"]`).getBoundingClientRect();return{mover:{x:el.left+el.width/2,y:el.top+el.height/2},marker:{x:marker.left+marker.width/2,y:marker.top+marker.height/2}}},name);assert(distance(settled.mover,settled.marker)<=3,`${name}: Reduced Motion mover must settle at the miss marker (${JSON.stringify(settled)})`)}
@@ -247,7 +253,10 @@ async function networkSnapshot(page){
  return page.evaluate(()=>{
   const network=document.querySelector('#cinematicStage .cin-network'),center=element=>{const r=element?.getBoundingClientRect();return r&&r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null};
   const endpoint=(path,t)=>{if(!path||!path.getTotalLength())return null;const p=path.getPointAtLength(path.getTotalLength()*t),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}};
-  return {mode:network?.className,phase:network?.dataset.networkPhase,legacyGeometry:network?.querySelectorAll('.wire,.cin-route-options i').length||0,nodes:[...network?.querySelectorAll('[data-network-node]')||[]].map(node=>({id:node.dataset.networkNode,label:node.querySelector('span')?.textContent.trim()||'',anchor:center(node.querySelector('[data-network-anchor]')),labelBox:node.querySelector('span')?.getBoundingClientRect().toJSON(),labelDisplay:node.querySelector('span')?getComputedStyle(node.querySelector('span')).display:'none',fontSize:node.querySelector('span')?Number.parseFloat(getComputedStyle(node.querySelector('span')).fontSize):0})),routes:[...network?.querySelectorAll('.cin-network-routes path[data-from][data-to]')||[]].map(path=>({from:path.dataset.from,to:path.dataset.to,role:path.dataset.edgeRole||'',choice:path.dataset.routeChoice||'',d:path.getAttribute('d'),length:path.getTotalLength(),start:endpoint(path,0),mid:endpoint(path,.5),end:endpoint(path,1),fromAnchor:center(network.querySelector(`[data-network-anchor="${path.dataset.from}"]`)),toAnchor:center(network.querySelector(`[data-network-anchor="${path.dataset.to}"]`)),opacity:Number(getComputedStyle(path).opacity),display:getComputedStyle(path).display})),causes:[...network?.querySelectorAll('[data-causality-step]')||[]].map(item=>({step:item.dataset.causalityStep,from:item.dataset.from,to:item.dataset.to,text:item.textContent.trim(),display:getComputedStyle(item).display,box:item.getBoundingClientRect().toJSON()})),visual:document.querySelector('#cinematicOverlay')?.dataset.visual,beat:window.LatchlingsCinematics?.beat,line:window.LatchlingsCinematics?.line};
+  const homeFrame=document.querySelector('.cin-home-reference'),homeDoc=homeFrame?.contentDocument,homeWin=homeFrame?.contentWindow,homeRect=homeFrame?.getBoundingClientRect(),sx=homeFrame&&homeWin?homeRect.width/Math.max(1,homeWin.innerWidth):0,sy=homeFrame&&homeWin?homeRect.height/Math.max(1,homeWin.innerHeight):0;
+  const faces=[...(homeDoc?.querySelectorAll('#c2 .latchling')||[])].map(face=>{const r=face.getBoundingClientRect();return{left:homeRect.left+r.left*sx,top:homeRect.top+r.top*sy,right:homeRect.left+r.right*sx,bottom:homeRect.top+r.bottom*sy}});
+  const homeLandmarks=[...(homeDoc?.querySelectorAll('#c2 .cottage > *,#c2 .rock.r1,#c2 .flower.f1,#c2 .flower.f2,#c2 .flower.f3')||[])].map(element=>{const r=element.getBoundingClientRect();return{kind:element.closest('.cottage')?'cottage':element.matches('.rock')?'rock':'flowers',left:homeRect.left+r.left*sx,top:homeRect.top+r.top*sy,right:homeRect.left+r.right*sx,bottom:homeRect.top+r.bottom*sy}});
+  return {mode:network?.className,phase:network?.dataset.networkPhase,legacyGeometry:network?.querySelectorAll('.wire,.cin-route-options i').length||0,nodes:[...network?.querySelectorAll('[data-network-node]')||[]].map(node=>({id:node.dataset.networkNode,label:node.querySelector('span')?.textContent.trim()||'',anchor:center(node.querySelector('[data-network-anchor]')),nodeBox:node.getBoundingClientRect().toJSON(),landmarkBox:node.querySelector('.node-landmark')?.getBoundingClientRect().toJSON(),labelBox:node.querySelector('span')?.getBoundingClientRect().toJSON(),labelDisplay:node.querySelector('span')?getComputedStyle(node.querySelector('span')).display:'none',fontSize:node.querySelector('span')?Number.parseFloat(getComputedStyle(node.querySelector('span')).fontSize):0})),routes:[...network?.querySelectorAll('.cin-network-routes path[data-from][data-to]')||[]].map(path=>({from:path.dataset.from,to:path.dataset.to,role:path.dataset.edgeRole||'',choice:path.dataset.routeChoice||'',d:path.getAttribute('d'),length:path.getTotalLength(),start:endpoint(path,0),mid:endpoint(path,.5),end:endpoint(path,1),points:Array.from({length:13},(_,i)=>endpoint(path,i/12)),fromAnchor:center(network.querySelector(`[data-network-anchor="${path.dataset.from}"]`)),toAnchor:center(network.querySelector(`[data-network-anchor="${path.dataset.to}"]`)),opacity:Number(getComputedStyle(path).opacity),display:getComputedStyle(path).display})),causes:[...network?.querySelectorAll('[data-causality-step]')||[]].map(item=>({step:item.dataset.causalityStep,from:item.dataset.from,to:item.dataset.to,text:item.textContent.trim(),display:getComputedStyle(item).display,box:item.getBoundingClientRect().toJSON()})),faces,homeLandmarks,copyBox:document.querySelector('.cinematic-copy')?.getBoundingClientRect().toJSON(),stageBox:document.querySelector('#cinematicStage')?.getBoundingClientRect().toJSON(),visual:document.querySelector('#cinematicOverlay')?.dataset.visual,beat:window.LatchlingsCinematics?.beat,line:window.LatchlingsCinematics?.line};
  });
 }
 
@@ -272,6 +281,7 @@ async function runHomewardNetwork(browser,config){
   if(currentWidth!==config.width){await page.setViewportSize({width:config.width,height:config.height});currentWidth=config.width;currentHeight=config.height}
   await showHomewardVisual(page,beat);
   const visual=({0:'signals',2:'living-network',3:'many-routes',4:'aurora-crown',5:'homeward-network'})[beat],name=`${currentWidth}x${currentHeight}/${config.textSize||'normal'}/${config.reduced||config.inGameReduced?'reduced':'normal'}/${visual}`;
+  if(visual==='homeward-network')await page.waitForFunction(()=>{const frame=document.querySelector('.cin-home-reference'),doc=frame?.contentDocument;return doc?.readyState==='complete'&&doc.querySelectorAll('#c2 .latchling').length>=4},undefined,{timeout:5000});
   let snapshot=await verifyNetworkGeometry(page,name);
   assert(snapshot.nodes.every(node=>node.label&&node.labelDisplay!=='none'&&node.labelBox?.width>0&&node.labelBox?.height>0&&node.fontSize>=6.2),`${name}: every route endpoint must have a readable, visible region label`);if(visual==='signals')assert.equal(snapshot.nodes.length,8,`${name}: the signal overview must show every restored region`);
   if(visual==='living-network'){
@@ -291,7 +301,24 @@ async function runHomewardNetwork(browser,config){
    assert(snapshot.causes.length===4,`${name}: all four causal stations must be authored in the scene`);
   }
   if(visual==='many-routes'){assert.equal(snapshot.routes.length,2,`${name}: the map must show exactly two complete alternative routes`);assert(snapshot.routes.every(route=>route.choice&&route.from===snapshot.routes[0].from&&route.to===snapshot.routes[0].to),`${name}: complete route choices must share named endpoints`);assert.notEqual(snapshot.routes[0].d,snapshot.routes[1].d,`${name}: alternative routes must follow different paths`);assert(distance(snapshot.routes[0].mid,snapshot.routes[1].mid)>=12,`${name}: alternative paths must be visibly separated along their travel window`)}
-  if(visual==='homeward-network')assert(snapshot.nodes.some(node=>node.id==='meadows')&&snapshot.nodes.some(node=>node.id==='crown'),`${name}: Homeward must preserve named regional connections behind Little Home`);
+  if(visual==='homeward-network'){
+   await page.screenshot({path:path.join(evidence,`homeward-layout-${config.width}x${config.height}.png`)});
+   assert(snapshot.nodes.some(node=>node.id==='meadows')&&snapshot.nodes.some(node=>node.id==='crown'),`${name}: Homeward must preserve named regional connections behind Little Home`);
+   const importantNames=['meadows','lantern','lodestone','stormswitch','crown'];
+   assert(snapshot.nodes.filter(node=>importantNames.includes(node.id)).every(node=>node.fontSize>=11),`${name}: the report, anchor, receiving-region, and Crown names must be readable at 11px or larger (${JSON.stringify(snapshot.nodes.map(({id,fontSize})=>({id,fontSize})))})`);
+   assert(snapshot.nodes.every(node=>node.fontSize>=8.5),`${name}: supporting regional names must remain at least 8.5px rather than collapsing to miniature text (${JSON.stringify(snapshot.nodes.map(({id,fontSize})=>({id,fontSize})))})`);
+   const labels=snapshot.nodes.map(node=>({id:node.id,box:node.labelBox}));
+   for(let i=0;i<labels.length;i++){
+    const current=labels[i];assert(current.box.left>=snapshot.stageBox.left&&current.box.right<=snapshot.stageBox.right&&current.box.top>=snapshot.stageBox.top&&current.box.bottom<=snapshot.stageBox.bottom,`${name}: ${current.id} label must stay inside the scene bounds (${JSON.stringify(current)})`);
+    for(const landmark of snapshot.nodes)assert(!overlap(current.box,landmark.landmarkBox),`${name}: ${current.id} name must not cover the ${landmark.id} landmark (${JSON.stringify({label:current.box,landmark:landmark.landmarkBox})})`);
+    for(const landmark of snapshot.homeLandmarks)assert(!overlap(current.box,landmark),`${name}: ${current.id} name must not cover Little Home's ${landmark.kind} landmark (${JSON.stringify({label:current.box,landmark})})`);
+    assert(!snapshot.faces.some(face=>overlap(current.box,face)),`${name}: ${current.id} name must not cover a resident (${JSON.stringify({label:current.box,faces:snapshot.faces.filter(face=>overlap(current.box,face))})})`);
+    assert(!overlap(current.box,snapshot.copyBox),`${name}: ${current.id} name must not overlap spoken dialogue (${JSON.stringify({label:current.box,dialogue:snapshot.copyBox})})`);
+   for(let j=i+1;j<labels.length;j++)assert(!overlap(current.box,labels[j].box),`${name}: regional labels must not collide (${JSON.stringify([current,labels[j]])})`);
+    const crossed=snapshot.routes.flatMap(route=>route.points.filter(point=>point&&point.x>=current.box.left-2&&point.x<=current.box.right+2&&point.y>=current.box.top-2&&point.y<=current.box.bottom+2).map(point=>({from:route.from,to:route.to,point})));
+    assert.equal(crossed.length,0,`${name}: route strokes must not pass through ${current.id}'s name (${JSON.stringify({label:current.box,crossed,stage:snapshot.stageBox})})`);
+   }
+  }
   if(visual==='living-network'||visual==='many-routes'||visual==='aurora-crown'||visual==='homeward-network')await captureMapDialogueStates(page,`homeward-${currentWidth}x${currentHeight}-${config.textSize||'normal'}-${config.reduced||config.inGameReduced?'reduced':'normal'}-${visual}`);
   const resizedWidth=config.width===390?430:390,resizedHeight=resizedWidth===390?844:932;await page.setViewportSize({width:resizedWidth,height:resizedHeight});snapshot=await verifyNetworkGeometry(page,`${name} resized ${resizedWidth}x${resizedHeight}`);currentWidth=resizedWidth;currentHeight=resizedHeight;
  }
@@ -375,18 +402,33 @@ async function runAcrossPorch(browser,config){
 
 (async()=>{
  await listen();const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
- await runMapStory(browser,{width:320,height:568,reduced:false,checkSequence:true});
- for(const config of [
-  {width:390,height:844,reduced:false},{width:320,height:568,reduced:true},{width:390,height:844,reduced:true}
- ])await runMapStory(browser,config);
- for(const config of [
+ if(process.env.STORY_STAGING_OPENING_ONLY==='true'){
+  const all=[{width:320,height:568,reduced:false,textSize:'normal'},{width:390,height:844,reduced:false,textSize:'normal'},{width:320,height:568,reduced:true,textSize:'normal'},{width:390,height:844,reduced:true,textSize:'normal'},{width:320,height:568,reduced:true,textSize:'large'}],requestedWidth=Number(process.env.STORY_STAGING_OPENING_WIDTH||0),configs=requestedWidth?all.filter(config=>config.width===requestedWidth):all;
+  assert(configs.length,`No Opening browser case matches STORY_STAGING_OPENING_WIDTH=${requestedWidth}`);
+  for(const config of configs)await runOpening(browser,config);
+  await browser.close();server.close();console.log(`PASS focused Opening errand-label checks; captures ${evidence}`);return;
+ }
+ const homewardConfigurations=[
   {width:320,height:568,reduced:false,textSize:'normal'},
   {width:390,height:844,reduced:false,textSize:'normal'},
   {width:430,height:932,reduced:false,textSize:'large'},
   {width:320,height:568,reduced:true,textSize:'normal'},
   {width:390,height:844,reduced:false,textSize:'normal',inGameReduced:true},
   {width:430,height:932,reduced:true,textSize:'large'}
- ])await runHomewardNetwork(browser,config);
+ ];
+ if(process.env.STORY_STAGING_HOMEWARD_ONLY==='true'){
+  const requestedWidth=Number(process.env.STORY_STAGING_HOMEWARD_WIDTH||0),configs=requestedWidth?homewardConfigurations.filter(config=>config.width===requestedWidth):homewardConfigurations;
+  assert(configs.length,`No Homeward browser case matches STORY_STAGING_HOMEWARD_WIDTH=${requestedWidth}`);
+  for(const config of configs)await runHomewardNetwork(browser,config);
+  await browser.close();server.close();
+  console.log(`PASS focused Homeward label and route checks; captures ${evidence}`);
+  return;
+ }
+ await runMapStory(browser,{width:320,height:568,reduced:false,checkSequence:true});
+ for(const config of [
+  {width:390,height:844,reduced:false},{width:320,height:568,reduced:true},{width:390,height:844,reduced:true}
+ ])await runMapStory(browser,config);
+ for(const config of homewardConfigurations)await runHomewardNetwork(browser,config);
  for(const config of [
   {width:320,height:568,reduced:false},{width:390,height:844,reduced:false},{width:430,height:932,reduced:false},
   {width:320,height:568,reduced:true},{width:390,height:844,reduced:true},{width:430,height:932,reduced:true}
