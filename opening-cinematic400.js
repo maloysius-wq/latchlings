@@ -20,7 +20,7 @@ function boardHtml(suitSvg){
   const key=r+':'+c,p=pieces.get(key),n=nests.get(key);
   cells+=`<span class="opening-board-cell ${rocks.has(key)?'is-rock':''}" data-row="${r}" data-col="${c}">${n?`<i class="opening-board-nest">${suitSvg(n.suit)}</i>`:''}${p?`<i class="opening-board-piece" style="--piece:${p.color}">${suitSvg(p.suit)}</i>`:''}</span>`;
  }
- return `<div class="opening-board-model" aria-hidden="true"><span class="opening-board-label" style="left:10px;right:auto;text-align:left">WAYKEEPER ROUTE MODEL</span><span class="opening-board-focus-label">SUNPETAL MORNING ROUTE</span><div class="opening-board-grid" style="--opening-grid:${level.size}">${cells}</div><span class="opening-board-breakfast">BREAKFAST START</span><span class="opening-board-ready">ROUTE READY</span></div>`;
+ return `<div class="opening-board-model" aria-hidden="true"><span class="opening-board-label" style="left:10px;right:auto;text-align:left">WAYKEEPER ROUTE MODEL</span><span class="opening-board-focus-label">SUNPETAL MORNING ROUTE</span><div class="opening-board-handoff"><span class="opening-board-handoff-point" data-route-handoff="origin"><small>ORIGIN</small><b>Bakery Perch</b></span><span class="opening-board-handoff-point" data-route-handoff="destination"><small>DESTINATION</small><b>Little Home Porch</b></span></div><div class="opening-board-grid" style="--opening-grid:${level.size}">${cells}</div><span class="opening-board-breakfast">BREAKFAST START</span><span class="opening-board-ready">ROUTE READY</span></div>`;
 }
 
 function create({suitSvg}){
@@ -43,6 +43,7 @@ function create({suitSvg}){
     <circle class="opening-miss-marker" data-miss="basket" r="8"/><circle class="opening-miss-marker" data-miss="water" r="8"/><circle class="opening-miss-marker" data-miss="play" r="8"/>
     <line class="opening-offset-vector" data-offset="basket"/><line class="opening-offset-vector" data-offset="water"/><line class="opening-offset-vector" data-offset="play"/>
    </svg>
+   <div class="opening-errand-labels" aria-hidden="true"><span class="opening-errand-label is-source" data-errand-source></span><span class="opening-errand-label is-target" data-errand-target></span></div>
    <div class="opening-story-props" aria-hidden="true">
     <span class="opening-route-cargo">✉</span>
     <span class="opening-basket opening-wood" data-opening-mover="basket"><i></i></span>
@@ -80,6 +81,7 @@ function installCanonicalHome(root){
     let el=null;
     if(['Pippa','Bramble','Rowan','Pip','Tansy'].includes(name))el=doc.querySelector(`#c2 [data-resident="${name}"]`);
     else if(name==='porch')el=doc.querySelector('#c2 .cottage .door');
+    else if(name==='cottage')el=doc.querySelector('#c2 .cottage');
     else if(name==='play-rock')el=doc.querySelector('#c2 .rock.r1');
     if(el)return rectJson(el.getBoundingClientRect());
     if(name==='garden')return unionRects([...doc.querySelectorAll('#c2 .flower.f1,#c2 .flower.f2,#c2 .flower.f3')].map(x=>x.getBoundingClientRect()));
@@ -106,7 +108,8 @@ function localLandmark(root,name){
  const win=frame.contentWindow,sx=frame.clientWidth/Math.max(1,win.innerWidth),sy=frame.clientHeight/Math.max(1,win.innerHeight);
  return {x:frame.offsetLeft+(r.x+r.width/2)*sx,y:frame.offsetTop+(r.y+r.height/2)*sy,width:r.width*sx,height:r.height*sy};
 }
-function elementCenter(el){return el?{x:el.offsetLeft+el.offsetWidth/2,y:el.offsetTop+el.offsetHeight/2}:null}
+function elementCenter(el){return el?{x:el.offsetLeft+el.offsetWidth/2,y:el.offsetTop+el.offsetHeight/2,width:el.offsetWidth,height:el.offsetHeight}:null}
+function localElementCenter(root,selector){const el=root.querySelector(selector),camera=root.querySelector('.opening-world-camera');if(!el||!camera)return null;const r=el.getBoundingClientRect(),c=camera.getBoundingClientRect(),sx=camera.clientWidth/Math.max(1,c.width),sy=camera.clientHeight/Math.max(1,c.height);return{x:(r.left+r.width/2-c.left)*sx,y:(r.top+r.height/2-c.top)*sy,width:r.width*sx,height:r.height*sy}}
 function setCircle(root,selector,p){const el=root.querySelector(selector);if(el&&p){el.setAttribute('cx',p.x.toFixed(2));el.setAttribute('cy',p.y.toFixed(2))}}
 function setLine(root,selector,a,b){const el=root.querySelector(selector);if(el&&a&&b){el.setAttribute('x1',a.x.toFixed(2));el.setAttribute('y1',a.y.toFixed(2));el.setAttribute('x2',b.x.toFixed(2));el.setAttribute('y2',b.y.toFixed(2))}}
 function curve(a,b,lift=0){if(!a||!b)return'';const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2+lift;return `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`}
@@ -114,7 +117,38 @@ function setPath(root,id,a,b,lift=0){const p=root.querySelector(id);if(p&&a&&b)p
 function setPoint(el,p){if(!el||!p)return;el.getAnimations().forEach(a=>a.cancel());el.style.left=p.x+'px';el.style.top=p.y+'px'}
 function pathPoint(root,selector,t){const path=root.querySelector(selector);if(!path||!path.getTotalLength())return null;return path.getPointAtLength(path.getTotalLength()*t)}
 function moverPoint(root,name){const map={basket:'basket',water:'water',play:'play'},el=root.querySelector(`.opening-miss-marker[data-miss="${map[name]}"]`);if(!el)return null;return {x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}}
-function sourcePoint(root,name){if(name==='basket')return elementCenter(root.querySelector('.neighbor-bakery-island'));if(name==='water')return localLandmark(root,'Pippa');if(name==='play')return localLandmark(root,'Pip');return null}
+function sourcePoint(root,name){if(name==='basket')return localElementCenter(root,'.neighbor-bakery');if(name==='water')return localLandmark(root,'Pippa');if(name==='play')return localLandmark(root,'Pip');return null}
+const ERRAND_LABELS={
+ basket:{source:'Bakery Perch',target:'Little Home Porch',sourcePoint:'bakery',targetPoint:'porch'},
+ water:{source:"Pippa's Watering Can",target:'Little Home Garden',sourcePoint:'pippa',targetPoint:'garden'},
+ play:{source:"Pip's Shortcut",target:'Garden Play Rock',sourcePoint:'pip',targetPoint:'rock'}
+};
+function labelBounds(point,width,height){return {left:point.x-width/2,top:point.y-height/2,right:point.x+width/2,bottom:point.y+height/2}}
+function pointBounds(point){return point?labelBounds(point,point.width||10,point.height||10):null}
+function boxesOverlap(a,b,gap=0){return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap}
+function placeErrandLabel(label,point,camera,avoid,occupied,preferred){
+ if(!label||!point)return null;
+ label.hidden=false;
+ const width=label.offsetWidth||104,height=label.offsetHeight||22,cameraRect={left:0,top:0,right:camera.clientWidth,bottom:camera.clientHeight},pad=5,stepX=Math.max(8,width*.22),stepY=Math.max(8,height*.35),candidates=[];
+ for(let y=cameraRect.top+pad+height/2;y<=cameraRect.bottom-pad-height/2;y+=stepY)for(let x=cameraRect.left+pad+width/2;x<=cameraRect.right-pad-width/2;x+=stepX){
+  const box=labelBounds({x,y},width,height);if(![...avoid,...occupied].some(other=>boxesOverlap(box,other,6))){const dx=x-point.x,dy=y-point.y,wrongSide=(preferred==='above'&&dy>0)||(preferred==='below'&&dy<0);candidates.push({x,y,box,score:Math.hypot(dx,dy)+(wrongSide?12:0)})}
+ }
+ candidates.sort((a,b)=>a.score-b.score);const best=candidates[0];
+ if(best){label.style.left=best.x+'px';label.style.top=best.y+'px';return best.box}
+ label.hidden=true;return null;
+}
+function syncErrandLabels(root,step){
+ const name=step<=5&&step>=4?'basket':step===6?'water':step===7||step===8?'play':null;
+ const source=root.querySelector('[data-errand-source]'),target=root.querySelector('[data-errand-target]');
+ if(!name||!source||!target){if(source)source.hidden=true;if(target)target.hidden=true;return}
+ const cue=ERRAND_LABELS[name],from=cue.sourcePoint==='bakery'?localElementCenter(root,'.neighbor-bakery'):localLandmark(root,cue.sourcePoint==='pippa'?'Pippa':'Pip'),to=localLandmark(root,cue.targetPoint==='rock'?'play-rock':cue.targetPoint),cottage=name==='basket'?localLandmark(root,'cottage'):null,camera=root.querySelector('.opening-world-camera');
+ source.textContent=cue.source;target.textContent=cue.target;source.dataset.phase=target.dataset.phase=step===8?'echo':'active';
+ const residents=['Pippa','Bramble','Rowan','Pip','Tansy'].map(n=>pointBounds(localLandmark(root,n))).filter(Boolean);
+ const fromAvoid=[...residents,pointBounds(from)],toAvoid=[...residents,pointBounds(to)];
+ const a=placeErrandLabel(source,from,camera,fromAvoid,[],'above');
+ if(cottage)toAvoid.push(pointBounds(cottage));
+ placeErrandLabel(target,to,camera,toAvoid,a?[a]:[],'below');
+}
 function effectiveReduced(){return matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced'}
 function travel(root,selector,pathSelector,duration){
  const el=root.querySelector(selector),path=root.querySelector(pathSelector);if(!el||!path||!path.getTotalLength())return;
@@ -133,7 +167,7 @@ function syncGeometry(root){
  setCircle(root,'.opening-target-marker[data-target="porch"]',porch);setCircle(root,'.opening-target-marker[data-target="garden"]',garden);setCircle(root,'.opening-target-marker[data-target="play-rock"]',rock);
  setCircle(root,'.opening-miss-marker[data-miss="basket"]',misses.basket);setCircle(root,'.opening-miss-marker[data-miss="water"]',misses.water);setCircle(root,'.opening-miss-marker[data-miss="play"]',misses.play);
  setLine(root,'.opening-offset-vector[data-offset="basket"]',porch,misses.basket);setLine(root,'.opening-offset-vector[data-offset="water"]',garden,misses.water);setLine(root,'.opening-offset-vector[data-offset="play"]',rock,misses.play);
- const bakery=elementCenter(root.querySelector('.neighbor-bakery-island')),tree=elementCenter(root.querySelector('.neighbor-tree-island')),player={x:w*.12,y:h*.17};
+ const bakery=localElementCenter(root,'.neighbor-bakery'),tree=elementCenter(root.querySelector('.neighbor-tree-island')),player={x:w*.12,y:h*.17};
  setPath(root,'#opening-route-working',tree,home,Math.min(22,h*.06));
  setPath(root,'#opening-route-basket',bakery,misses.basket,-Math.min(28,h*.08));
  setPath(root,'#opening-route-water',pippa,misses.water,Math.min(12,h*.035));
@@ -149,6 +183,7 @@ function syncGeometry(root){
  const cargo=root.querySelector('.opening-route-cargo'),cargoStart=pathPoint(root,'#opening-route-working',0);if(cargoStart&&Number(root.dataset.step||1)!==2)setPoint(cargo,cargoStart);
  for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy']){const token=root.querySelector(`[data-knowledge="${name}"]`),p=localLandmark(root,name);if(token&&p)setPoint(token,{x:p.x,y:p.y-24})}
  const step=Number(root.dataset.step||1);
+ syncErrandLabels(root,step);
  for(const name of ['basket','water','play']){
   const el=root.querySelector(`[data-opening-mover="${name}"]`),src=sourcePoint(root,name),miss=moverPoint(root,name);
   if((name==='basket'&&step===4)||(name==='water'&&step===6)||(name==='play'&&step===7))continue;
