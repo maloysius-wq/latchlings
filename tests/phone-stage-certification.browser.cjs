@@ -126,6 +126,7 @@ async function capture(page,config,textSize,motion,screenName){
     assert.equal(levelOne.overlays,0,`${viewport.width}x${viewport.height}: Level 1 must be unobstructed`);
     for(const [name,box] of Object.entries({board:levelOne.board,reset:levelOne.reset,hint:levelOne.hint,dpad:levelOne.dpad}))assert(box.left>=-1&&box.right<=viewport.width+1&&box.top>=-1&&box.bottom<=viewport.height+1,`${viewport.width}x${viewport.height}: ${name} must remain in the game viewport (${JSON.stringify(box)})`);
     assert(!overlaps(levelOne.rail,levelOne.board),`${viewport.width}x${viewport.height} ${textSize}: Story rail must not cover the puzzle board (${JSON.stringify(levelOne)})`);
+    if(viewport.width===320&&viewport.height===568)assert(levelOne.board.top-levelOne.rail.bottom>=2,`${viewport.width}x${viewport.height} ${textSize}: Story rail and puzzle board must retain at least a 2px layout gap (${JSON.stringify(levelOne)})`);
     assert(!overlaps(levelOne.board,levelOne.note),`${viewport.width}x${viewport.height} ${textSize}: Route Tip must not cover puzzle cells (${JSON.stringify(levelOne)})`);
     assert(!overlaps(levelOne.note,levelOne.controls),`${viewport.width}x${viewport.height} ${textSize}: Route Tip must not cover gameplay controls (${JSON.stringify(levelOne)})`);
     captures.push(await capture(page,config,textSize,motion,'level-1'));

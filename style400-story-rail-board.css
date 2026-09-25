@@ -143,7 +143,7 @@ html[data-text-size="large"] #game .board{width:min(90vw,460px)}
 @media(max-height:620px){
  #game.screen{padding:4px 8px}
  #game .topbar{min-height:48px;margin-bottom:3px;padding:1px 8px}
- #game .story-rail-slot{margin-bottom:1px}
+ #game .story-rail-slot{margin-bottom:6px}
  #game .story-level-rail{grid-template-columns:34px minmax(0,1fr) 44px;gap:4px;padding:3px 5px}
  #game .story-rail-person{height:auto}
  #game .rail-latchling{width:30px;height:30px}
@@ -158,6 +158,7 @@ html[data-text-size="large"] #game .board{width:min(90vw,460px)}
 /* Keep Large Text gameplay regions separated on the shortest, narrowest phones. */
 @media(max-height:600px) and (max-width:350px) and (orientation:portrait){
  #game .board-wrap{margin-bottom:4px}
+ html:not([data-text-size="large"]) #game #storyRailSlot .story-level-rail .story-rail-main p{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important}
  #game .board{width:min(100%,480px,37svh)}
  html[data-text-size="large"] #game .board{width:min(100%,480px,37svh)}
  html[data-text-size="large"] #game #masteryGuide{display:none}
@@ -166,4 +167,20 @@ html[data-text-size="large"] #game .board{width:min(90vw,460px)}
 @media(min-width:350px) and (max-width:400px) and (max-height:850px) and (orientation:portrait){
  #game #board[data-grid-size="7"]{width:min(100%,480px,39.5svh)}
  html[data-text-size="large"] #game:has(#board[data-grid-size="7"]) #storyRailSlot .story-level-rail .story-rail-main p{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important}
+}
+
+/* Give 360px-wide short-phone layouts room for the full story rail and Route Tip. */
+@media(min-width:350px) and (max-width:380px) and (min-height:721px) and (max-height:850px) and (orientation:portrait){
+ #game .board{width:min(100%,480px,35svh)}
+ html[data-text-size="large"] #game .board{width:min(100%,480px,35svh)}
+ #game #board[data-grid-size="7"]{width:min(100%,480px,35svh)}
+}
+@media(min-width:381px) and (max-width:400px) and (min-height:721px) and (max-height:850px) and (orientation:portrait){
+ #game .board{width:min(100%,480px,39svh)}
+ html[data-text-size="large"] #game .board{width:min(100%,480px,37.25svh)}
+ #game #board[data-grid-size="7"]{width:min(100%,480px,39svh)}
+ html[data-text-size="large"] #game #board[data-grid-size="7"]{width:min(100%,480px,37.25svh)}
+}
+@media(orientation:landscape) and (max-height:420px){
+ #game.screen.active #board{width:min(45vh,360px);height:min(45vh,360px)}
 }
