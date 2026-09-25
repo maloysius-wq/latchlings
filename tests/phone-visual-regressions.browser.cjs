@@ -38,7 +38,7 @@ async function openingGeometry(page,step){
   const toParent=r=>({left:frameRect.left+r.left*scaleX,top:frameRect.top+r.top*scaleY,right:frameRect.left+r.right*scaleX,bottom:frameRect.top+r.bottom*scaleY,width:r.width*scaleX,height:r.height*scaleY});
   const residents=[...doc.querySelectorAll('#c2 [data-resident]')].map(el=>({name:el.dataset.resident,box:toParent(el.getBoundingClientRect())}));
   const visibleProps=[...document.querySelectorAll('[data-opening-mover],.opening-call-box,.opening-player-compass')].filter(el=>parseFloat(getComputedStyle(el).opacity)>.05&&el.getBoundingClientRect().width>0).map(el=>({name:el.getAttribute('data-opening-mover')||el.className,box:el.getBoundingClientRect().toJSON()}));
-  const propOverlaps=visibleProps.flatMap(prop=>residents.map(person=>({prop:prop.name,name:person.name,area:overlap(prop.box,person.box)})));
+  const propOverlaps=visibleProps.flatMap(prop=>residents.map(person=>({prop:prop.name,name:person.name,area:overlap(prop.box,person.box),propBox:prop.box,residentBox:person.box})));
   const routes={};
   for(const [name,targetName] of Object.entries({basket:'porch',water:'garden',play:'play-rock'})){
    const route=document.querySelector(`#opening-route-${name}`),miss=document.querySelector(`.opening-miss-marker[data-miss="${name}"]`).getBoundingClientRect(),target=document.querySelector(`.opening-target-marker[data-target="${targetName}"]`).getBoundingClientRect(),mover=document.querySelector(`[data-opening-mover="${name}"]`).getBoundingClientRect();
@@ -65,7 +65,7 @@ async function openingGeometry(page,step){
 
   const routes=await openingGeometry(page,10);
   assert.equal(routes.action,'rowan-measures-three-offsets',`${viewport.width}x${viewport.height}: Rowan line must have the offset-comparison visual`);
-  assert(routes.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: story props must not cover canonical residents (${routes.propOverlaps.filter(x=>x.area>=20).map(x=>`${x.prop}->${x.name}:${x.area.toFixed(0)}`)})`);
+  assert(routes.propOverlaps.every(x=>x.area<20),`${viewport.width}x${viewport.height}: story props must not cover canonical residents (${JSON.stringify(routes.propOverlaps.filter(x=>x.area>=20))})`);
   for(const [name,data] of Object.entries(routes.routes)){
    assert(data.endpointDistance<3,`${viewport.width}x${viewport.height}: ${name} route must terminate at its semantic miss marker`);
    assert(data.destinationDistance>=14&&data.destinationDistance<=52,`${viewport.width}x${viewport.height}: ${name} miss must remain visibly near but separate from destination, got ${data.destinationDistance.toFixed(1)}px`);

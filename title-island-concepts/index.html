@@ -280,25 +280,25 @@ html[data-motion="reduced"] .resident,html[data-motion="reduced"] .story-keepsak
 
 /* Keep the complete production Home menu inside short portrait viewports. */
 @media(max-height:600px) and (orientation:portrait){
-  #c2{--little-home-island-scale:.72}
-  #c2 .scene{top:100px;height:320px}
-  #c2 .play{top:calc(100svh - 148px);height:50px;font-size:21px}
-  #c2 .secondary{top:calc(100svh - 92px)}
-  #c2 .secondary button{height:52px}
+  body:not(.cinematic-mode) #c2{--little-home-island-scale:.72}
+  body:not(.cinematic-mode) #c2 .scene{top:100px;height:320px}
+  body:not(.cinematic-mode) #c2 .play{top:calc(100svh - 148px);height:50px;font-size:21px}
+  body:not(.cinematic-mode) #c2 .secondary{top:calc(100svh - 92px)}
+  body:not(.cinematic-mode) #c2 .secondary button{height:52px}
 }
 @media(max-height:520px) and (orientation:landscape){
-  #c2{--little-home-island-scale:.62}
-  #c2 .toy-brand{top:68px;left:auto;right:20px;width:300px;text-align:center}
-  #c2 .toy-logo span{font-size:40px;-webkit-text-stroke:5px var(--navy)}
-  #c2 .toy-tagline{margin-top:5px;padding:7px 12px;font-size:13px}
-  #c2 .scene{left:14px;right:330px;top:46px;height:300px}
-  #c2 .island-model{top:-24px}
-  #c2 .play{left:auto;right:20px;width:300px;top:160px;height:56px;font-size:21px;border-radius:19px}
-  #c2 .secondary{left:auto;right:20px;width:300px;top:230px;gap:8px}
-  #c2 .secondary button{height:64px;padding:7px 8px 7px 11px;border-radius:17px;grid-template-columns:minmax(0,1fr) 32px;column-gap:5px}
-  #c2 .secondary strong{font-size:14px}
-  #c2 .secondary span{font-size:9px;line-height:1.1;margin-top:4px}
-  #c2 .secondary svg{width:28px;height:28px;padding:4px}
+  body:not(.cinematic-mode) #c2{--little-home-island-scale:.62}
+  body:not(.cinematic-mode) #c2 .toy-brand{top:68px;left:auto;right:20px;width:300px;text-align:center}
+  body:not(.cinematic-mode) #c2 .toy-logo span{font-size:40px;-webkit-text-stroke:5px var(--navy)}
+  body:not(.cinematic-mode) #c2 .toy-tagline{margin-top:5px;padding:7px 12px;font-size:13px}
+  body:not(.cinematic-mode) #c2 .scene{left:14px;right:330px;top:46px;height:300px}
+  body:not(.cinematic-mode) #c2 .island-model{top:-24px}
+  body:not(.cinematic-mode) #c2 .play{left:auto;right:20px;width:300px;top:160px;height:56px;font-size:21px;border-radius:19px}
+  body:not(.cinematic-mode) #c2 .secondary{left:auto;right:20px;width:300px;top:230px;gap:8px}
+  body:not(.cinematic-mode) #c2 .secondary button{height:64px;padding:7px 8px 7px 11px;border-radius:17px;grid-template-columns:minmax(0,1fr) 32px;column-gap:5px}
+  body:not(.cinematic-mode) #c2 .secondary strong{font-size:14px}
+  body:not(.cinematic-mode) #c2 .secondary span{font-size:9px;line-height:1.1;margin-top:4px}
+  body:not(.cinematic-mode) #c2 .secondary svg{width:28px;height:28px;padding:4px}
 }
 </style>
 </head>
