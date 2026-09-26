@@ -321,6 +321,8 @@ async function runHomewardNetwork(browser,config){
    }
    const lodestone=labels.find(label=>label.id==='lodestone'),cottage=snapshot.homeLandmarks.find(landmark=>landmark.kind==='cottage');
    assert(lodestone&&cottage&&rectClearance(lodestone.box,cottage)>=4,`${name}: LODESTONE must keep a reliable 4px clearance from Little Home's cottage (${JSON.stringify({label:lodestone?.box,cottage,gap:lodestone&&cottage?rectClearance(lodestone.box,cottage):null})})`);
+   const stormswitch=labels.find(label=>label.id==='stormswitch'),stormswitchRightGap=stormswitch?snapshot.stageBox.right-stormswitch.box.right:-Infinity;
+   assert(stormswitch&&stormswitchRightGap>=4,`${name}: STORMSWITCH must remain at least 4px inside the scene's right edge (${JSON.stringify({label:stormswitch?.box,stage:snapshot.stageBox,rightGap:stormswitchRightGap})})`);
   }
   if(visual==='living-network'||visual==='many-routes'||visual==='aurora-crown'||visual==='homeward-network')await captureMapDialogueStates(page,`homeward-${currentWidth}x${currentHeight}-${config.textSize||'normal'}-${config.reduced||config.inGameReduced?'reduced':'normal'}-${visual}`);
   const resizedWidth=config.width===390?430:390,resizedHeight=resizedWidth===390?844:932;await page.setViewportSize({width:resizedWidth,height:resizedHeight});snapshot=await verifyNetworkGeometry(page,`${name} resized ${resizedWidth}x${resizedHeight}`);currentWidth=resizedWidth;currentHeight=resizedHeight;
