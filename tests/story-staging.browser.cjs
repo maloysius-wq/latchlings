@@ -24,6 +24,7 @@ const cue={
 const center=r=>Number.isFinite(r?.x)&&Number.isFinite(r?.y)?{x:r.x,y:r.y}:{x:r.left+r.width/2,y:r.top+r.height/2};
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const overlap=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+const rectClearance=(a,b)=>Math.max(0,b.left-a.right,a.left-b.right,b.top-a.bottom,a.top-b.bottom);
 const waitPaint=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 
 async function startOpening(page,textSize){
@@ -318,6 +319,8 @@ async function runHomewardNetwork(browser,config){
     const crossed=snapshot.routes.flatMap(route=>route.points.filter(point=>point&&point.x>=current.box.left-2&&point.x<=current.box.right+2&&point.y>=current.box.top-2&&point.y<=current.box.bottom+2).map(point=>({from:route.from,to:route.to,point})));
     assert.equal(crossed.length,0,`${name}: route strokes must not pass through ${current.id}'s name (${JSON.stringify({label:current.box,crossed,stage:snapshot.stageBox})})`);
    }
+   const lodestone=labels.find(label=>label.id==='lodestone'),cottage=snapshot.homeLandmarks.find(landmark=>landmark.kind==='cottage');
+   assert(lodestone&&cottage&&rectClearance(lodestone.box,cottage)>=4,`${name}: LODESTONE must keep a reliable 4px clearance from Little Home's cottage (${JSON.stringify({label:lodestone?.box,cottage,gap:lodestone&&cottage?rectClearance(lodestone.box,cottage):null})})`);
   }
   if(visual==='living-network'||visual==='many-routes'||visual==='aurora-crown'||visual==='homeward-network')await captureMapDialogueStates(page,`homeward-${currentWidth}x${currentHeight}-${config.textSize||'normal'}-${config.reduced||config.inGameReduced?'reduced':'normal'}-${visual}`);
   const resizedWidth=config.width===390?430:390,resizedHeight=resizedWidth===390?844:932;await page.setViewportSize({width:resizedWidth,height:resizedHeight});snapshot=await verifyNetworkGeometry(page,`${name} resized ${resizedWidth}x${resizedHeight}`);currentWidth=resizedWidth;currentHeight=resizedHeight;
