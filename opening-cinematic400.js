@@ -117,6 +117,30 @@ function curve(a,b,lift=0){if(!a||!b)return'';const cx=(a.x+b.x)/2,cy=(a.y+b.y)/
 function setPath(root,id,a,b,lift=0){const p=root.querySelector(id);if(p&&a&&b)p.setAttribute('d',curve(a,b,lift))}
 function setPoint(el,p){if(!el||!p)return;el.getAnimations().forEach(a=>a.cancel());el.style.left=p.x+'px';el.style.top=p.y+'px'}
 function pathPoint(root,selector,t){const path=root.querySelector(selector);if(!path||!path.getTotalLength())return null;return path.getPointAtLength(path.getTotalLength()*t)}
+const STEP_TRAVEL={
+ 2:{selector:'.opening-route-cargo',path:'#opening-route-working',duration:1300},
+ 4:{selector:'[data-opening-mover="basket"]',path:'#opening-route-basket',duration:1250},
+ 6:{selector:'[data-opening-mover="water"]',path:'#opening-route-water',duration:1000},
+ 7:{selector:'[data-opening-mover="play"]',path:'#opening-route-play',duration:900},
+ 15:{selector:'.signal-out',path:'#opening-route-call',duration:1050},
+ 16:{selector:'.signal-in',path:'#opening-route-answer',duration:850}
+};
+function captureTravel(root,step){
+ const spec=STEP_TRAVEL[step],el=spec&&root.querySelector(spec.selector),animation=el?.getAnimations().find(item=>item.playState==='running');
+ if(!spec||!el||!animation)return null;
+ const style=getComputedStyle(el),left=Number.parseFloat(style.left),top=Number.parseFloat(style.top);
+ if(!Number.isFinite(left)||!Number.isFinite(top))return null;
+ return {el,spec,point:{x:left,y:top},duration:Number(animation.effect?.getTiming().duration)||spec.duration};
+}
+function nearestPathProgress(root,selector,point){
+ const path=root.querySelector(selector),length=path?.getTotalLength();if(!path||!length)return null;
+ let nearestT=0,best=Infinity;
+ for(let i=0;i<=240;i++){
+  const t=i/240,p=path.getPointAtLength(length*t),distance=(p.x-point.x)**2+(p.y-point.y)**2;
+  if(distance<best){best=distance;nearestT=t}
+ }
+ return nearestT;
+}
 function moverPoint(root,name){const map={basket:'basket',water:'water',play:'play'},el=root.querySelector(`.opening-miss-marker[data-miss="${map[name]}"]`);if(!el)return null;return {x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}}
 function sourcePoint(root,name){if(name==='basket')return localElementCenter(root,'.neighbor-bakery');if(name==='water')return localLandmark(root,'Pippa');if(name==='play')return localLandmark(root,'Pip');return null}
 const ERRAND_LABELS={
@@ -150,15 +174,18 @@ function syncErrandLabels(root,step){
  placeErrandLabel(target,to,camera,toAvoid,a?[a]:[],'below');
 }
 function effectiveReduced(){return matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced'}
-function travel(root,selector,pathSelector,duration){
+function travel(root,selector,pathSelector,duration,startAt=0){
  const el=root.querySelector(selector),path=root.querySelector(pathSelector);if(!el||!path||!path.getTotalLength())return;
  el.getAnimations().forEach(a=>a.cancel());
  if(effectiveReduced()){const p=path.getPointAtLength(path.getTotalLength());setPoint(el,p);return}
- const frames=[],length=path.getTotalLength();for(let i=0;i<=20;i++){const p=path.getPointAtLength(length*i/20);frames.push({left:p.x+'px',top:p.y+'px'})}
- el.animate(frames,{duration,easing:'cubic-bezier(.35,.05,.2,1)',fill:'forwards'});
+ const from=Math.max(0,Math.min(.995,startAt)),frames=[],length=path.getTotalLength(),count=Math.max(2,Math.ceil((1-from)*20));
+ for(let i=0;i<=count;i++){const t=from+(1-from)*i/count,p=path.getPointAtLength(length*t);frames.push({left:p.x+'px',top:p.y+'px'})}
+ if(from>0){const start=path.getPointAtLength(length*from);el.style.left=start.x+'px';el.style.top=start.y+'px'}
+ el.animate(frames,{duration:Math.max(80,duration*(1-from)),easing:'cubic-bezier(.35,.05,.2,1)',fill:'forwards'});
 }
 function syncGeometry(root){
  const camera=root.querySelector('.opening-world-camera'),map=root.querySelector('.opening-route-map');if(!camera||!map||root.dataset.homeReady!=='true')return false;
+ const step=Number(root.dataset.step||1),flight=captureTravel(root,step);
  const w=camera.clientWidth,h=camera.clientHeight;map.setAttribute('viewBox',`0 0 ${w} ${h}`);
  const porch=localLandmark(root,'porch'),garden=localLandmark(root,'garden'),rock=localLandmark(root,'play-rock'),pippa=localLandmark(root,'Pippa'),pip=localLandmark(root,'Pip'),call=localLandmark(root,'call'),home=localLandmark(root,'home-center');
  if(!porch||!garden||!rock||!pippa||!pip||!call||!home)return false;
@@ -178,16 +205,19 @@ function syncGeometry(root){
  setPath(root,'#opening-route-answer',player,call,Math.min(22,h*.07));
  root.dataset.geometryReady='true';
  const callBox=root.querySelector('.opening-call-box'),answer=root.querySelector('.opening-player-compass');setPoint(callBox,call);setPoint(answer,{x:call.x+30,y:call.y-22});
- const signalOut=root.querySelector('.signal-out'),signalIn=root.querySelector('.signal-in');setPoint(signalOut,player);setPoint(signalIn,call);
+ const signalOut=root.querySelector('.signal-out'),signalIn=root.querySelector('.signal-in');if(flight?.el!==signalOut)setPoint(signalOut,player);if(flight?.el!==signalIn)setPoint(signalIn,call);
  const splash=root.querySelector('.opening-miss-splash');setPoint(splash,misses.water);
  const cargo=root.querySelector('.opening-route-cargo'),cargoStart=pathPoint(root,'#opening-route-working',0);if(cargoStart&&Number(root.dataset.step||1)!==2)setPoint(cargo,cargoStart);
  for(const name of ['Pippa','Bramble','Rowan','Pip','Tansy']){const token=root.querySelector(`[data-knowledge="${name}"]`),p=localLandmark(root,name);if(token&&p)setPoint(token,{x:p.x,y:p.y-24})}
- const step=Number(root.dataset.step||1);
  syncErrandLabels(root,step);
  for(const name of ['basket','water','play']){
   const el=root.querySelector(`[data-opening-mover="${name}"]`),src=sourcePoint(root,name),miss=moverPoint(root,name);
   if((name==='basket'&&step===4)||(name==='water'&&step===6)||(name==='play'&&step===7))continue;
   if(step>={basket:5,water:6,play:7}[name])setPoint(el,miss);else setPoint(el,src);
+ }
+ if(flight){
+  const progress=nearestPathProgress(root,flight.spec.path,flight.point);
+  if(progress!==null){const point=pathPoint(root,flight.spec.path,progress);setPoint(flight.el,point);travel(root,flight.spec.selector,flight.spec.path,flight.duration*(1-progress),progress)}
  }
  return true;
 }
@@ -205,7 +235,7 @@ function applyStep(root,step,previous,fromReady=false){
  if(step===15&&((previous!==15)||fromReady))travel(root,'.signal-out','#opening-route-call',1050);
  if(step===16&&((previous!==16)||fromReady))travel(root,'.signal-in','#opening-route-answer',850);
 }
-function bindResize(root){if(root.dataset.resizeBound==='true')return;root.dataset.resizeBound='true';const ro=new ResizeObserver(()=>{syncGeometry(root);applyStep(root,Number(root.dataset.step||1),Number(root.dataset.step||1))});ro.observe(root);const frame=root.querySelector('.opening-home-reference');if(frame)ro.observe(frame)}
+function bindResize(root){if(root.dataset.resizeBound==='true')return;root.dataset.resizeBound='true';const ro=new ResizeObserver(()=>applyStep(root,Number(root.dataset.step||1),Number(root.dataset.step||1)));ro.observe(root);const frame=root.querySelector('.opening-home-reference');if(frame)ro.observe(frame)}
 function sync(stage,step,helpers){
  let root=stage.querySelector('.cin-opening-continuous');
  if(!root){stage.innerHTML=create(helpers);root=stage.querySelector('.cin-opening-continuous');installCanonicalHome(root);bindResize(root)}

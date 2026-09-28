@@ -170,7 +170,8 @@ function mapSheets(mode){
   const label=`Year ${year.year}: Little Home, Waykeeper Keep, Aurora Crown`;
   return `<div class="cin-map-sheet m${index+1}" data-year="${year.year}"><b class="map-year-label">YEAR ${year.year}</b><svg class="cin-map-art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${label}"><g class="map-routes">${routes}</g><g class="map-landmarks">${landmarks}</g></svg><div class="map-landmark-key" aria-hidden="true"><span class="home">HOME</span><span class="keep">KEEP</span><span class="crown">CROWN</span></div></div>`;
  }).join('');
- return `<div class="cin-maps ${mode}" data-map-mode="${mode}">${sheets}</div>`;
+ const placeKey=['spread','sequence'].includes(mode)?'<div class="map-place-legend" aria-hidden="true"><span class="home">Little Home</span><span class="keep">Waykeeper Keep</span><span class="crown">Aurora Crown</span></div>':'';
+ return `<div class="cin-maps ${mode}" data-map-mode="${mode}">${sheets}${placeKey}</div>`;
 }
 const NETWORK_NODES=Object.freeze([
  {id:'meadows',label:'MEADOWS',type:'meadow',className:'n1'},

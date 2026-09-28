@@ -203,7 +203,8 @@ async function mapSnapshot(page){
   const mode=document.querySelector('#cinematicStage .cin-maps'),model=window.LatchlingsCinematics?.MAP_YEARS;
   const center=element=>{const r=element?.getBoundingClientRect();return r&&r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:null};
   const point=(path,t)=>{if(!path||!path.getTotalLength())return null;const p=path.getPointAtLength(path.getTotalLength()*t),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());return{x:screen.x,y:screen.y}};
-  return {mode:mode?.className,modelFrozen:Array.isArray(model)&&Object.isFrozen(model)&&model.every(year=>Object.isFrozen(year)&&Object.isFrozen(year.landmarks)&&Object.isFrozen(year.edges)),cards:[...mode?.querySelectorAll('.cin-map-sheet')||[]].map(sheet=>{
+  const legend=mode?.querySelector('.map-place-legend'),placeLegend=legend?{text:legend.textContent.trim(),fontSize:Number.parseFloat(getComputedStyle(legend).fontSize),box:legend.getBoundingClientRect().toJSON(),places:[...legend.children].map(place=>({text:place.textContent.trim(),fontSize:Number.parseFloat(getComputedStyle(place).fontSize),box:place.getBoundingClientRect().toJSON()}))}:null;
+  return {mode:mode?.className,placeLegend,stageBox:document.querySelector('#cinematicStage')?.getBoundingClientRect().toJSON(),modelFrozen:Array.isArray(model)&&Object.isFrozen(model)&&model.every(year=>Object.isFrozen(year)&&Object.isFrozen(year.landmarks)&&Object.isFrozen(year.edges)),cards:[...mode?.querySelectorAll('.cin-map-sheet')||[]].map(sheet=>{
    const svg=sheet.querySelector('.cin-map-art'),svgBox=svg?.getBoundingClientRect(),landmarks=[...svg?.querySelectorAll('[data-landmark]')||[]].map(anchor=>({name:anchor.dataset.landmark,point:center(anchor),x:Number(anchor.getAttribute('cx')),y:Number(anchor.getAttribute('cy')),box:anchor.getBoundingClientRect().toJSON()}));
    const routes=[...svg?.querySelectorAll('.map-route[data-from][data-to]')||[]].map(path=>({from:path.dataset.from,to:path.dataset.to,start:point(path,0),end:point(path,1),fromPoint:center(svg.querySelector(`[data-landmark="${path.dataset.from}"]`)),toPoint:center(svg.querySelector(`[data-landmark="${path.dataset.to}"]`)),length:path.getTotalLength()}));
    return {year:Number(sheet.dataset.year),title:sheet.querySelector('.map-year-label')?.textContent.trim(),box:sheet.getBoundingClientRect().toJSON(),svgBox:svgBox?.toJSON(),viewBox:svg?.getAttribute('viewBox'),landmarks:landmarks.map(({box,...entry})=>entry),routes,opacity:Number(getComputedStyle(sheet).opacity)};
@@ -213,6 +214,13 @@ async function mapSnapshot(page){
 
 function verifyMapGeometry(snapshot,name){
  assert(snapshot.modelFrozen,`${name}: MAP_YEARS and its nested landmark/edge data must be immutable`);
+ if(/\b(spread|sequence)\b/.test(snapshot.mode||'')){
+  const legend=snapshot.placeLegend,expected=['Little Home','Waykeeper Keep','Aurora Crown'];
+  assert(legend&&legend.fontSize>=9.5&&expected.every(place=>legend.places.some(item=>item.text===place)),`${name}: crowded dated maps must use a readable focused place key (${JSON.stringify(legend)})`);
+  const stage=snapshot.stageBox;
+  assert(stage&&legend.box.left>=stage.left&&legend.box.right<=stage.right&&legend.box.top>=stage.top&&legend.box.bottom<=stage.bottom,`${name}: the place key must remain inside the scenic stage (${JSON.stringify({legend:legend?.box,stage})})`);
+  for(const card of snapshot.cards)assert(!overlap(legend.box,card.box),`${name}: focused place key must not cover a dated map or its routes (${JSON.stringify({legend:legend.box,card:card.box,year:card.year})})`);
+ }
  assert.deepEqual(snapshot.cards.map(card=>card.year),[12,31,58],`${name}: dated map sheets must remain ordered Year 12, 31, 58`);
  assert.deepEqual(snapshot.cards.map(card=>card.title),['YEAR 12','YEAR 31','YEAR 58'],`${name}: all three dated headings must remain visible in order`);
  for(const card of snapshot.cards){
@@ -307,7 +315,7 @@ async function runHomewardNetwork(browser,config){
    assert(snapshot.nodes.some(node=>node.id==='meadows')&&snapshot.nodes.some(node=>node.id==='crown'),`${name}: Homeward must preserve named regional connections behind Little Home`);
    const importantNames=['meadows','lantern','lodestone','stormswitch','crown'];
    assert(snapshot.nodes.filter(node=>importantNames.includes(node.id)).every(node=>node.fontSize>=11),`${name}: the report, anchor, receiving-region, and Crown names must be readable at 11px or larger (${JSON.stringify(snapshot.nodes.map(({id,fontSize})=>({id,fontSize})))})`);
-   assert(snapshot.nodes.every(node=>node.fontSize>=8.5),`${name}: supporting regional names must remain at least 8.5px rather than collapsing to miniature text (${JSON.stringify(snapshot.nodes.map(({id,fontSize})=>({id,fontSize})))})`);
+   assert(snapshot.nodes.every(node=>node.fontSize>=11),`${name}: all eight regional names must remain at least 11px on phone scenes (${JSON.stringify(snapshot.nodes.map(({id,fontSize})=>({id,fontSize})))})`);
    const labels=snapshot.nodes.map(node=>({id:node.id,box:node.labelBox}));
    for(let i=0;i<labels.length;i++){
     const current=labels[i];assert(current.box.left>=snapshot.stageBox.left&&current.box.right<=snapshot.stageBox.right&&current.box.top>=snapshot.stageBox.top&&current.box.bottom<=snapshot.stageBox.bottom,`${name}: ${current.id} label must stay inside the scene bounds (${JSON.stringify({label:current.box,stage:snapshot.stageBox})})`);
@@ -346,7 +354,7 @@ async function runMapStory(browser,config){
   assert(!overlap(spread.cards[i].box,spread.cards[i+1].box),`${name}: the three maps must remain distinguishable (${JSON.stringify(spread.cards.map(card=>({year:card.year,box:card.box})))})`);
   assert(gap>=3.5,`${name}: completed map cards must keep the designed 4px paper gap (${gap.toFixed(2)}px)`);
  }
- if(config.width<=390)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-spread`);
+ if(config.width<=430)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-spread`);
  await page.locator('#cinematicNext').click();await page.waitForFunction(()=>LatchlingsCinematics?.beat===1&&LatchlingsCinematics?.line===1);
  await page.locator('#cinematicNext').click();await page.waitForFunction(()=>LatchlingsCinematics?.beat===2&&LatchlingsCinematics?.line===0);
  await page.waitForFunction(()=>document.querySelector('#cinematicOverlay')?.dataset.visual==='map-sequence');
@@ -365,7 +373,7 @@ async function runMapStory(browser,config){
   assert(observed.simultaneous===1&&[12,31,58].every((year,index)=>observed.seen.indexOf(year)!==-1&&(index===0||observed.seen.indexOf(year)>observed.seen.indexOf([12,31,58][index-1]))),`${name}: normal sequence must hold one sheet at a time in chronological order (${JSON.stringify(observed)})`);
   assert.equal(observed.beat,2,`${name}: automatic map sequence must not advance the cinematic beat`);assert.equal(observed.line,0,`${name}: automatic map sequence must not advance the spoken line`);
  }
- if(config.width<=390)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-sequence`);
+ if(config.width<=430)await captureMapDialogueStates(page,`maps-${config.width}x${config.height}-${motion}-sequence`);
  assert.deepEqual(errors,[],`${name}: dated maps must have no browser errors`);await context.close();
 }
 
@@ -392,7 +400,7 @@ async function runAcrossPorch(browser,config){
  }
  await page.waitForFunction(()=>document.querySelector('#cinematicStage .cin-porch-reconnect')?.dataset.routeConnected==='true',undefined,{timeout:6000});
  await verifyPorchGeometry(page,name);
- if(config.width<=390){
+ if(config.width<=430){
   await page.waitForTimeout(220);
   await page.screenshot({path:path.join(evidence,`across-${config.width}x${config.height}-${motion}-dialogue-visible.png`)});
   await page.locator('.cinematic-copy').evaluate(element=>{element.dataset.previousVisibility=element.style.visibility;element.style.visibility='hidden'});
@@ -415,7 +423,7 @@ async function runAcrossPorch(browser,config){
 (async()=>{
  await listen();const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  if(process.env.STORY_STAGING_OPENING_ONLY==='true'){
-  const all=[{width:320,height:568,reduced:false,textSize:'normal'},{width:390,height:844,reduced:false,textSize:'normal'},{width:320,height:568,reduced:true,textSize:'normal'},{width:390,height:844,reduced:true,textSize:'normal'},{width:320,height:568,reduced:true,textSize:'large'}],requestedWidth=Number(process.env.STORY_STAGING_OPENING_WIDTH||0),configs=requestedWidth?all.filter(config=>config.width===requestedWidth):all;
+  const all=[{width:320,height:568,reduced:false,textSize:'normal'},{width:390,height:844,reduced:false,textSize:'normal'},{width:430,height:932,reduced:false,textSize:'normal'},{width:320,height:568,reduced:true,textSize:'normal'},{width:390,height:844,reduced:true,textSize:'normal'},{width:320,height:568,reduced:true,textSize:'large'}],requestedWidth=Number(process.env.STORY_STAGING_OPENING_WIDTH||0),configs=requestedWidth?all.filter(config=>config.width===requestedWidth):all;
   assert(configs.length,`No Opening browser case matches STORY_STAGING_OPENING_WIDTH=${requestedWidth}`);
   for(const config of configs)await runOpening(browser,config);
   await browser.close();server.close();console.log(`PASS focused Opening errand-label checks; captures ${evidence}`);return;
@@ -437,6 +445,7 @@ async function runAcrossPorch(browser,config){
   return;
  }
  await runMapStory(browser,{width:320,height:568,reduced:false,checkSequence:true});
+ await runMapStory(browser,{width:430,height:932,reduced:false});
  for(const config of [
   {width:390,height:844,reduced:false},{width:320,height:568,reduced:true},{width:390,height:844,reduced:true}
  ])await runMapStory(browser,config);
@@ -449,6 +458,7 @@ async function runAcrossPorch(browser,config){
  for(const config of [
   {width:320,height:568,reduced:false,textSize:'normal'},
   {width:390,height:844,reduced:false,textSize:'normal'},
+  {width:430,height:932,reduced:false,textSize:'normal'},
   {width:320,height:568,reduced:true,textSize:'normal'},
   {width:390,height:844,reduced:true,textSize:'normal'},
   {width:320,height:568,reduced:true,textSize:'large'}

@@ -26,6 +26,19 @@
 4. Inspector output must name door OPEN/CLOSED and link letter in text, not color alone (Task 3).
 5. Settings/Story/Atlas transitions must retain focus restoration and no horizontal overflow (Task 4).
 
+## Completion reconciliation (2026-09-28)
+
+Tasks 1–4 were completed on `codex/audit-polish-20260924` before the focused 2026-09-28 visual follow-up. Their checkboxes below are historical completion records, not claims that the older screenshot matrix was rerun today. Commit IDs and command-level results are preserved in `DEVELOPMENT_HANDOFF.md` under “Phone Presentation completion evidence.”
+
+| Task | Implementation evidence | Verification evidence |
+|---|---|---|
+| 1 — cinematic copy | `a1ede81` | `tests/phone-readability.browser.cjs` and full `npm test`; Normal/Large Text dialogue and fixed footer geometry were checked. |
+| 2 — Atlas detail | `9ad3277` | `tests/phone-readability.browser.cjs` verifies spoiler-safe selection, locked-node behavior, map bounds, and readable selected detail. |
+| 3 — mechanic inspector | `6cd1b3c` | `tests/mechanic-inspector.browser.cjs` covers read-only current state, keyboard access, and Level 366 containment; the 400-route gate remains unchanged. |
+| 4 — phone-stage closeout | `42d6d63`, followed by protected-geometry correction `c3e49c9` | `node tests/phone-stage-certification.browser.cjs` passed 180 settled cases across five viewports, nine screens, Normal/Large Text, and OS/in-game Reduced Motion; targeted layout suites and full `npm test` passed. |
+
+The later story-stage handoff records the then-current game/guard CI. Physical iOS/Android touch and safe-area behavior, exhaustive assistive-technology testing, and real-speaker/headphone listening remain external checks; browser certification does not close them.
+
 ---
 
 ## File map
@@ -43,8 +56,8 @@
 
 **Interfaces:** Consumes `#cinematicOverlay`, `.cinematic-copy`, `.cin-opening-dialogue-dock`, `.cinematic-lines`, `.cinematic-footer`, `#cinematicNext`.
 
-- [ ] **Step 1: Write RED geometry/type tests.** At each required viewport, show the first, longest, and last Opening turns plus one narration/dialogue turn of each later film. Assert computed essential body font size is at least 15px Normal and 17px Large (short-phone layouts may use internal scrolling, not smaller essential copy). Assert copy begins near its heading rather than being bottom-anchored in an empty panel. Save footer/progress/button rectangles on the first turn and require <=1px shift on later turns. Assert no document horizontal overflow.
-- [ ] **Step 2: Implement a content-sized message dock.** Make `.cin-opening-dialogue-dock` and `.cinematic-lines` occupy natural height at the top of the available copy track; increase bubble/narration font and speaker metadata proportionally. Keep `.cinematic-copy` as the only overflow-y container and `.cinematic-footer` as a fixed grid row. Do not place text over the scenic stage. For example, the layout should obey:
+- [x] **Step 1: Write RED geometry/type tests.** At each required viewport, show the first, longest, and last Opening turns plus one narration/dialogue turn of each later film. Assert computed essential body font size is at least 15px Normal and 17px Large (short-phone layouts may use internal scrolling, not smaller essential copy). Assert copy begins near its heading rather than being bottom-anchored in an empty panel. Save footer/progress/button rectangles on the first turn and require <=1px shift on later turns. Assert no document horizontal overflow.
+- [x] **Step 2: Implement a content-sized message dock.** Make `.cin-opening-dialogue-dock` and `.cinematic-lines` occupy natural height at the top of the available copy track; increase bubble/narration font and speaker metadata proportionally. Keep `.cinematic-copy` as the only overflow-y container and `.cinematic-footer` as a fixed grid row. Do not place text over the scenic stage. For example, the layout should obey:
 
 ```css
 .cinematic-overlay[data-cinematic="opening"] .cinematic-copy{
@@ -58,7 +71,7 @@
 ```
 
 The exact CSS may differ if a shorter selector prevents cascade conflicts; remove superseded small-font declarations rather than adding another `!important` layer.
-- [ ] **Step 3: Verify and commit.** Run the new test and `npm test`; inspect screenshots of narrator, Bramble, Rowan, and a later-film line at 320x568 and 390x844 in Normal/Large Text. Commit as `style: make cinematic copy readable on phones`.
+- [x] **Step 3: Verify and commit.** Run the new test and `npm test`; inspect screenshots of narrator, Bramble, Rowan, and a later-film line at 320x568 and 390x844 in Normal/Large Text. Commit as `style: make cinematic copy readable on phones`.
 
 ### Task 2: Give Atlas destinations readable detail without shrinking the map
 
@@ -66,9 +79,9 @@ The exact CSS may differ if a shorter selector prevents cascade conflicts; remov
 
 **Interfaces:** `renderChapter()` renders `#atlasNodeDetail`; focus/hover updates it from a node's existing `data-level`/`data-state`. Clicking an available node still calls `startLevel`; locked nodes remain disabled.
 
-- [ ] **Step 1: Write RED cases.** At 320x568 and 390x844, require the selected/current destination name and state to appear in >=14px visible text. Focus restored and current nodes; verify detail updates without changing level. Confirm a locked node remains disabled, cannot start play, and exposes no future-chapter result in DOM text. Confirm map retains its original dominant height and route nodes remain in map bounds.
-- [ ] **Step 2: Add a compact detail region inside the map.** In `renderChapter()`, append an `aria-live="polite"` read-only `#atlasNodeDetail` with default current/next-stop content. Use existing `STORY.levelMeta()` for spoiler-safe available names; locked nodes show only “Level N · Locked”. On focus/hover, update detail; on blur, restore current selection. Keep the map click action unchanged. Style the detail as a translucent panel along the map's lower safe edge and enlarge chapter objective/route-range supporting text instead of relying on 7–10px microcopy.
-- [ ] **Step 3: Verify and commit.** Run phone-readability test and `npm test`; manually review Chapter 1 and Chapter 5 Atlas at 320x568/390x844, including Large Text and locked nodes. Commit as `style: clarify Atlas destinations on phones`.
+- [x] **Step 1: Write RED cases.** At 320x568 and 390x844, require the selected/current destination name and state to appear in >=14px visible text. Focus restored and current nodes; verify detail updates without changing level. Confirm a locked node remains disabled, cannot start play, and exposes no future-chapter result in DOM text. Confirm map retains its original dominant height and route nodes remain in map bounds.
+- [x] **Step 2: Add a compact detail region inside the map.** In `renderChapter()`, append an `aria-live="polite"` read-only `#atlasNodeDetail` with default current/next-stop content. Use existing `STORY.levelMeta()` for spoiler-safe available names; locked nodes show only “Level N · Locked”. On focus/hover, update detail; on blur, restore current selection. Keep the map click action unchanged. Style the detail as a translucent panel along the map's lower safe edge and enlarge chapter objective/route-range supporting text instead of relying on 7–10px microcopy.
+- [x] **Step 3: Verify and commit.** Run phone-readability test and `npm test`; manually review Chapter 1 and Chapter 5 Atlas at 320x568/390x844, including Large Text and locked nodes. Commit as `style: clarify Atlas destinations on phones`.
 
 ### Task 3: Inspect a mechanic without moving or changing the board
 
@@ -76,15 +89,15 @@ The exact CSS may differ if a shorter selector prevents cascade conflicts; remov
 
 **Interfaces:** `describeMechanic(lev,r,c,doorMask) -> string|null`; `showMechanicInspector(text)`. The board cell supplies row/column. `renderGame()` updates live door descriptions after a move.
 
-- [ ] **Step 1: Write RED tests.** Start Levels 101, 201, 301, and 366 with story cards closed. Focus/click an anchor, suit gate, color gate, rail/turner, switch, and door. Assert the inspector text names the mechanic and its current state; door A says CLOSED before the matching switch and OPEN after it. Assert inspection does not change `movesUsed`, `positions`, selection, or door mask. Verify a keyboard user can reach the same information.
-- [ ] **Step 2: Add a read-only inspector.** Put a small `role="status" aria-live="polite"` region adjacent to the existing Route Tip, not over board cells or inside the D-pad. `describeMechanic` derives its sentence from `findAt(lev.anchors|suitGates|colorGates|rails|turners|switches|doors,r,c)` and `mechanicLinkLabel(id)`. Give only mechanic-bearing cells `tabindex="0"` and a concise `aria-label`; use event delegation on `#board` for pointer selection and focus. Do not make every tiny cell an enlarged overlapping hit target. Preserve piece selection precedence. Restore the normal Route Tip when no mechanic is inspected or a new level starts.
-- [ ] **Step 3: Preserve layout on dense boards.** The inspector must wrap or scroll within its own compact area on 320x568; board and D-pad bounds stay unchanged. Use a visible focus cue and text equivalent for all state icons.
-- [ ] **Step 4: Verify and commit.** Run mechanic-inspector test, 400-solution gate, and `npm test`; compare Level 1 and Level 366 screenshots before/after. Commit as `feat: explain live board mechanics without a move`.
+- [x] **Step 1: Write RED tests.** Start Levels 101, 201, 301, and 366 with story cards closed. Focus/click an anchor, suit gate, color gate, rail/turner, switch, and door. Assert the inspector text names the mechanic and its current state; door A says CLOSED before the matching switch and OPEN after it. Assert inspection does not change `movesUsed`, `positions`, selection, or door mask. Verify a keyboard user can reach the same information.
+- [x] **Step 2: Add a read-only inspector.** Put a small `role="status" aria-live="polite"` region adjacent to the existing Route Tip, not over board cells or inside the D-pad. `describeMechanic` derives its sentence from `findAt(lev.anchors|suitGates|colorGates|rails|turners|switches|doors,r,c)` and `mechanicLinkLabel(id)`. Give only mechanic-bearing cells `tabindex="0"` and a concise `aria-label`; use event delegation on `#board` for pointer selection and focus. Do not make every tiny cell an enlarged overlapping hit target. Preserve piece selection precedence. Restore the normal Route Tip when no mechanic is inspected or a new level starts.
+- [x] **Step 3: Preserve layout on dense boards.** The inspector must wrap or scroll within its own compact area on 320x568; board and D-pad bounds stay unchanged. Use a visible focus cue and text equivalent for all state icons.
+- [x] **Step 4: Verify and commit.** Run mechanic-inspector test, 400-solution gate, and `npm test`; compare Level 1 and Level 366 screenshots before/after. Commit as `feat: explain live board mechanics without a move`.
 
 ### Task 4: Phone-stage verification and handoff
 
 **Files:** Modify `DEVELOPMENT_HANDOFF.md` after evidence is available.
 
-- [ ] **Step 1: Run one fresh phone matrix.** At 320x568, 360x800, 390x844, 430x932, and 844x390, capture Home, Opening long line, later-film line, Level 1, Level 366, Atlas, Story/Journal, Settings, and Ending. Test Normal/Large Text and OS/in-game Reduced Motion. Check no essential text clips, no document horizontal scroll, footer/controls remain onscreen, and modal focus returns.
-- [ ] **Step 2: Run full checks.** Run `npm test`, `git diff --check`, verify campaign SHA-256 unchanged, and inspect committed-branch CI. Record both successful and external-only observations in handoff. Overall status remains IN PROGRESS until story staging is complete.
-- [ ] **Step 3: Commit.** Commit the handoff evidence as `docs: record phone readability verification`.
+- [x] **Step 1: Run one fresh phone matrix.** At 320x568, 360x800, 390x844, 430x932, and 844x390, capture Home, Opening long line, later-film line, Level 1, Level 366, Atlas, Story/Journal, Settings, and Ending. Test Normal/Large Text and OS/in-game Reduced Motion. Check no essential text clips, no document horizontal scroll, footer/controls remain onscreen, and modal focus returns.
+- [x] **Step 2: Run full checks.** Run `npm test`, `git diff --check`, verify campaign SHA-256 unchanged, and inspect committed-branch CI. Record both successful and external-only observations in handoff. Overall status remains IN PROGRESS until story staging is complete.
+- [x] **Step 3: Commit.** Commit the handoff evidence as `docs: record phone readability verification`.

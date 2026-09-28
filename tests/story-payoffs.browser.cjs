@@ -21,16 +21,30 @@ const milestones={
  200:{selector:'.chapter-four-reward',home:'#chapterFourRewardHome',continue:'#chapterFourRewardContinue',keepsake:'bunting'}
 };
 
-async function openReward(page,level,{reduced=false,priorUnlocked=level}={}){
+async function openReward(page,level,{reduced=false,priorUnlocked=level,textSize='normal'}={}){
  await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
- await page.evaluate(({level,reduced,priorUnlocked})=>{
-  LatchlingsPrefs.set('motion',reduced?'reduced':'system');
+ await page.evaluate(({level,reduced,priorUnlocked,textSize})=>{
+  LatchlingsPrefs.set('motion',reduced?'reduced':'system');LatchlingsPrefs.set('textSize',textSize);
   progress={unlocked:priorUnlocked,stars:{}};
   currentLevel=level;playMode='campaign';movesUsed=LEVELS[level-1].optimal;
   positions=LEVELS[level-1].pieces.map(()=>null);
   winLevel();
- },{level,reduced,priorUnlocked});
+ },{level,reduced,priorUnlocked,textSize});
  await page.waitForSelector('.chapter-reward-card');
+}
+
+async function verifyRewardPresentation(browser,level,expected,{width,height,textSize='normal',reduced=false}){
+ const context=await browser.newContext({viewport:{width,height},reducedMotion:reduced?'reduce':'no-preference'}),page=await context.newPage();
+ await openReward(page,level,{reduced,textSize});
+ const layout=await page.evaluate(selector=>{
+  const card=document.querySelector(selector),overlay=document.querySelector('#overlay'),actions=[...card.querySelectorAll('button')].map(button=>button.getBoundingClientRect()),box=card.getBoundingClientRect(),frame=overlay.getBoundingClientRect();
+  return{card:{left:box.left,top:box.top,right:box.right,bottom:box.bottom},overlay:{left:frame.left,top:frame.top,right:frame.right,bottom:frame.bottom},actions:actions.map(rect=>({left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom})),overflow:document.documentElement.scrollWidth>innerWidth};
+ },expected.selector);
+ assert(!layout.overflow,`Level ${level}: ${width}px ${textSize} reward must not create horizontal overflow (${JSON.stringify(layout)})`);
+ assert(layout.card.left>=0&&layout.card.right<=width&&layout.card.top>=layout.overlay.top&&layout.card.bottom<=layout.overlay.bottom,`Level ${level}: ${width}px ${textSize} reward card must stay inside the usable overlay (${JSON.stringify(layout)})`);
+ assert(layout.actions.length>=2&&layout.actions.every(button=>button.left>=0&&button.right<=width&&button.top>=layout.overlay.top&&button.bottom<=layout.overlay.bottom),`Level ${level}: ${width}px ${textSize} reward actions must remain reachable (${JSON.stringify(layout)})`);
+ await page.screenshot({path:path.join(evidence,`level-${level}-${width}-${textSize}-${reduced?'reduced':'normal'}.png`)});
+ await context.close();
 }
 
 async function verifyEarnedVignette(browser,level,expected){
@@ -192,6 +206,8 @@ async function main(){
   await verifyEndingArrival(browser);
   for(const [level,expected] of Object.entries(milestones)){
    const numeric=Number(level);
+   await verifyRewardPresentation(browser,numeric,expected,{width:430,height:932});
+   await verifyRewardPresentation(browser,numeric,expected,{width:320,height:568,textSize:'large',reduced:true});
    await verifyEarnedVignette(browser,numeric,expected);
    await verifyContinue(browser,numeric,expected);
    await verifyReducedAndReplay(browser,numeric,expected);

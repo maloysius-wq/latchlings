@@ -58,7 +58,7 @@ body.cinematic-open{overflow:hidden}
 .map-landmark-key .home{color:#588056}.map-landmark-key .keep{color:#765b85}.map-landmark-key .crown{color:#99783a}
 .cin-maps.stacked .m1{left:11%;top:31%;rotate:-8deg}.cin-maps.stacked .m2{left:24%;top:24%;rotate:3deg}.cin-maps.stacked .m3{left:37%;top:17%;rotate:10deg}
 .cin-maps.spread{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:4px}
-.cin-maps.spread .cin-map-sheet{position:relative;left:auto;top:auto;width:31.5%;height:64%;aspect-ratio:auto;rotate:0;animation:cinMapSpread 600ms ease-out both}
+.cin-maps.spread .cin-map-sheet{position:relative;left:auto;top:auto;width:31.5%;height:58%;aspect-ratio:auto;rotate:0;animation:cinMapSpread 600ms ease-out both}
 .cin-maps.spread .cin-map-art{left:4px;right:4px;top:22px;bottom:19px;width:calc(100% - 8px);height:calc(100% - 41px)}
 .cin-maps.spread .map-year-label{left:5px;top:4px;font-size:12px;letter-spacing:.04em}
 .cin-maps.spread .map-landmark-name{font-size:8px}
@@ -604,7 +604,31 @@ html[data-motion="reduced"] .cin-network.living .network-route{opacity:.94!impor
 }
 @media(prefers-reduced-motion:reduce){
   .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:5px}
- .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence .cin-map-sheet{position:relative;left:auto;top:auto;translate:none;width:31.5%;height:64%;aspect-ratio:auto;opacity:1!important;scale:1!important;animation:none!important;filter:none!important}
+ .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence .cin-map-sheet{position:relative;left:auto;top:auto;translate:none;width:31.5%;height:48%;aspect-ratio:auto;opacity:1!important;scale:1!important;animation:none!important;filter:none!important}
 }
 html[data-motion="reduced"] .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence{position:absolute;inset:22px 16px;display:flex;align-items:center;justify-content:center;gap:5px}
-html[data-motion="reduced"] .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence .cin-map-sheet{position:relative;left:auto;top:auto;translate:none;width:31.5%;height:64%;aspect-ratio:auto;opacity:1!important;scale:1!important;animation:none!important;filter:none!important}
+html[data-motion="reduced"] .cinematic-overlay[data-visual="map-sequence"] .cin-maps.sequence .cin-map-sheet{position:relative;left:auto;top:auto;translate:none;width:31.5%;height:48%;aspect-ratio:auto;opacity:1!important;scale:1!important;animation:none!important;filter:none!important}
+
+/* Focused miniature materials and legible place keys; puzzle surfaces are intentionally untouched. */
+.cin-island{background:transparent;filter:drop-shadow(0 8px 7px rgba(43,62,72,.16))}
+.cin-island-side{background-image:linear-gradient(112deg,rgba(255,246,222,.22),rgba(65,42,29,.32)),var(--cin-earth);box-shadow:inset 0 3px 5px rgba(255,255,255,.1),inset 0 -12px 14px rgba(49,34,25,.2)}
+.cin-island-rim{background-image:linear-gradient(180deg,rgba(255,248,219,.12),rgba(74,47,30,.28)),var(--cin-earth);box-shadow:inset 0 1px rgba(255,255,255,.18),0 4px 5px rgba(62,48,35,.15)}
+.cin-island-top{background-image:linear-gradient(180deg,rgba(250,255,235,.32),rgba(58,106,54,.17)),var(--cin-grass);box-shadow:inset 0 2px 0 rgba(255,255,255,.38),inset 0 -5px 8px rgba(34,78,41,.18)}
+.cin-map-sheet{background-image:linear-gradient(150deg,rgba(255,251,237,.96),rgba(233,214,177,.93)),var(--cin-wood);background-size:cover,72px 72px;box-shadow:0 8px 14px rgba(41,52,61,.17),inset 0 1px rgba(255,255,255,.84),inset 0 -2px rgba(143,111,69,.12)}
+.cin-map-sheet:before{content:"";position:absolute;inset:3px;border:1px solid rgba(156,122,74,.22);border-radius:5px;pointer-events:none}
+.cin-maps.spread{inset:14px 16px 12px}
+.cin-maps.spread .map-landmark-name,.cin-maps.sequence .map-landmark-name{display:none}
+.map-place-legend{position:absolute;z-index:5;left:3px;right:3px;bottom:0;display:grid;grid-template-columns:auto auto;justify-content:center;justify-items:start;column-gap:clamp(8px,3vw,16px);row-gap:3px;padding:5px 9px;border:1px solid rgba(145,112,69,.43);border-radius:9px;background-image:linear-gradient(145deg,rgba(255,251,236,.97),rgba(235,219,187,.96)),var(--cin-wood);background-size:cover,60px 60px;box-shadow:0 3px 7px rgba(47,57,60,.12),inset 0 1px rgba(255,255,255,.8);color:#44586a;font:900 10.5px/1.1 system-ui,sans-serif;white-space:nowrap}
+.map-place-legend span{display:inline-flex;align-items:center;gap:3px}
+.map-place-legend span:nth-child(3){grid-column:1/-1;justify-self:center}
+.map-place-legend span:before{content:"";width:7px;height:7px;flex:none;border:1px solid rgba(54,70,76,.55);border-radius:50%;background:#a5cd86;box-shadow:inset 0 1px rgba(255,255,255,.6)}
+.map-place-legend .keep:before{background:#c2a7d7}.map-place-legend .crown:before{background:#f2d578}
+.cin-maps.spread .map-landmark-key,.cin-maps.sequence .map-landmark-key{display:none}
+.cin-maps.sequence .cin-map-sheet{top:45%;height:min(124px,58%)}
+.cin-maps.sequence .map-place-legend{left:5%;right:5%;bottom:5px;font-size:10.5px;padding:5px 9px;column-gap:clamp(8px,3vw,16px)}
+.cin-homeward-wrap .cin-network .node span{font-size:11px!important;line-height:1.08!important;padding:3px 5px;max-width:112px;text-shadow:0 1px rgba(255,255,255,.8)}
+.cin-homeward-wrap .cin-network.mini .node span{font-size:11px!important;line-height:1.08!important;max-width:116px;padding:3px 5px}
+.cin-homeward-wrap .cin-network.mini [data-network-node="prism"] span{font-size:11px!important;line-height:1.04!important}
+.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"] span{width:58px;max-width:58px;font-size:11px!important;line-height:1.04!important;padding:2px}
+@media(min-width:360px){.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"] span{width:62px;max-width:62px;font-size:11px!important}}
+@media(max-width:350px){.cin-homeward-wrap .cin-network.mini [data-network-node="copperline"] span{left:calc(50% - 32px)!important;top:20px!important}}
