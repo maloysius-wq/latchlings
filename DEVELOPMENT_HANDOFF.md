@@ -8,6 +8,15 @@ GitHub is the canonical repository path for this project. Read this handoff firs
 
 ## Current work
 
+### Focused final visual polish follow-up (2026-09-28)
+**Status: IN PROGRESS on `codex/audit-polish-20260924`, starting from `931de258bd06d8369dd76e12f3c425aef7649128`. No merge or deployment.**
+
+Approved scope: apply a bounded art-direction/readability pass to the cinematic maps, distant islands, early chapter reward postcards, and ending network; investigate the reported intermittent Opening visual-cue timeout; reconcile stale plan/matrix records. Preserve the 21-tap Opening, authored story/dialogue, all 400 campaign files/rules and their hashes, no narrator voice, no Undo, the accepted pre-Astra puzzle controls, Daily isolation, and measured canonical Little Home porch geometry. Use existing miniature materials and lighting, keep story landmarks/actions legible, and do not weaken any route/overlap/clearance/control assertions.
+
+Baseline evidence: GitHub Actions `Validate Game` run `36221885469` and `Validate Repository Access Guard` run `36221885440` both passed at the starting SHA. During the 2026-09-28 audit, one fresh full `npm test` run timed out in `tests/opening-world-coherence.browser.cjs:217` waiting for a visual cue. The isolated Opening suite passed, and a subsequent full `npm test` passed; diagnose and record whether the wait can miss a valid short-lived cue or the scene can fail to present it. Existing `test-artifacts/` is untracked screenshot evidence and must be preserved.
+
+Implementation sequence: label/material review and tests; isolate the Opening wait failure and add a deterministic regression; update the reliability/phone plans and `ASTRA_AUDIT_ACCEPTANCE_MATRIX.md` to reflect actual implementation evidence; perform viewport/Reduced Motion visual review; run the full test suite, whitespace check, campaign hash comparison, and branch CI; update this handoff with exact evidence and external-only checks; commit and push for review.
+
 ### Approved full-game polish implementation (2026-09-24)
 **Status: COMPLETE on `codex/audit-polish-20260924`; pushed implementation and GitHub CI verified. No merge or deployment performed.**
 
