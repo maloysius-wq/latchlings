@@ -1,6 +1,6 @@
 # September 29 independent audit repairs
 
-Scope: the player approved A1–A13 from the independent audit of `63fa4cf`. This is a bounded repair pass on `codex/audit-polish-20260924`, not a redesign, merge, or deployment. All 13 bounded software repairs are implemented and locally verified; universal art acceptance remains player review, and branch CI is pending push.
+Scope: the player approved A1–A13 from the independent audit of `63fa4cf`. This is a bounded repair pass on `codex/audit-polish-20260924`, not a redesign, merge, or deployment. All 13 bounded software repairs are implemented and verified locally and in product-commit CI; universal art acceptance remains player review.
 
 | Item | Repair | Evidence required |
 |---|---|---|
@@ -20,7 +20,9 @@ Scope: the player approved A1–A13 from the independent audit of `63fa4cf`. Thi
 
 ## Verification
 
-Final local results: full `npm test` **PASS, 17 suites**; all 400 authored routes **PASS**; `node tests/phone-stage-certification.browser.cjs` **PASS, 180 captures / five viewports / Normal and Large Text / OS and in-game Reduced Motion**; all eight protected campaign SHA-256 hashes **MATCH**; `git diff --check` **PASS**. The audit suite also passed 800 complete short-phone motives, the full-context Story button, Atlas title/state contrast (including opacity) in all eight themes and restored/current/locked states, all eight chapter knowledge boundaries, grounded residents, measured action routes and courier arrival after resize, whole Opening/Homeward framing and Copperline label clearance. No final local failures remain; branch CI awaits publication.
+Final local results: full `npm test` **PASS, 17 suites**; all 400 authored routes **PASS**; `node tests/phone-stage-certification.browser.cjs` **PASS, 180 captures / five viewports / Normal and Large Text / OS and in-game Reduced Motion**; all eight protected campaign SHA-256 hashes **MATCH**; `git diff --check` **PASS**. The audit suite also passed 800 complete short-phone motives, the full-context Story button, Atlas title/state contrast (including opacity) in all eight themes and restored/current/locked states, all eight chapter knowledge boundaries, grounded residents, measured action routes and courier arrival after resize, whole Opening/Homeward framing and Copperline label clearance. No final local failures remain.
+
+Published product/tests `ddaf0e1c42bfcb133aee1096f5e4586ec9277804`: GitHub [Validate Game](https://github.com/maloysius-wq/latchlings/actions/runs/36669561247) and [Repository Access Guard](https://github.com/maloysius-wq/latchlings/actions/runs/36669561294) **PASS** on that exact SHA. This closeout changes docs only, not verified product/test sources. No merge or deployment.
 
 Evidence directory: `C:/RetroRig_Codex_Handoff/audit-latchlings/final-audit-20260929/`. Final logs: `repair-final-verification.log`, `repair-final-matrix.log`. Fresh audit captures: `C:/Users/Max/AppData/Local/Temp/latchlings-audit-repairs-AU78hV/` (**211 PNGs**); staging: `latchlings-story-staging-Pq0uKP/`; rewards/ending: `latchlings-story-payoffs-zbwzI5/`. The phase-recorder six-configuration check passed separately (`repair-observed-phases.log`, staging `latchlings-story-staging-T7K1n3/`). The failed live-poll diagnostic had requested report while the actual scene was already at redraw with visible report/anchor/window routes; the regression now samples actual rendered phases, without changing product phase timers or visibility/endpoints/overlap assertions. The baseline pre-assertion navigation timeout has no established cause.
 
