@@ -83,23 +83,37 @@ const OPENING_FIRST_RUN_STEPS=CINEMATICS.opening.beats.flatMap((beat,beatIndex)=
 let activeId=null,activeIndex=0,activeLine=0,activeFlow=null,activeStep=0,onDone=null,markOnDone=false,lastFocus=null;
 let porchGeometryObserver=null,porchGeometryScene=null,porchGeometryResize=null,porchGeometryFrame=0;
 function disconnectPorchGeometry(){if(porchGeometryObserver){porchGeometryObserver.disconnect();porchGeometryObserver=null}if(porchGeometryResize){window.removeEventListener('resize',porchGeometryResize);porchGeometryResize=null}if(porchGeometryFrame){cancelAnimationFrame(porchGeometryFrame);porchGeometryFrame=0}porchGeometryScene=null}
-let networkGeometryObserver=null,networkGeometryScene=null,networkGeometryResize=null,networkGeometryFrame=0,networkPhaseTimer=0;
+let networkGeometryObserver=null,networkGeometryScene=null,networkGeometryResize=null,networkGeometryFrame=0,networkPhaseTimer=0,networkGeometryHomeFrame=null;
 function reducedMotionRequested(){return document.documentElement.dataset.motion==='reduced'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true}
-function disconnectNetworkScene(){if(networkGeometryObserver){networkGeometryObserver.disconnect();networkGeometryObserver=null}if(networkGeometryResize){window.removeEventListener('resize',networkGeometryResize);networkGeometryResize=null}if(networkGeometryFrame){cancelAnimationFrame(networkGeometryFrame);networkGeometryFrame=0}if(networkPhaseTimer){clearTimeout(networkPhaseTimer);networkPhaseTimer=0}networkGeometryScene=null}
+function disconnectNetworkScene(){if(networkGeometryObserver){networkGeometryObserver.disconnect();networkGeometryObserver=null}if(networkGeometryResize){window.removeEventListener('resize',networkGeometryResize);networkGeometryHomeFrame?.removeEventListener('load',networkGeometryResize);networkGeometryResize=null}networkGeometryHomeFrame=null;if(networkGeometryFrame){cancelAnimationFrame(networkGeometryFrame);networkGeometryFrame=0}if(networkPhaseTimer){clearTimeout(networkPhaseTimer);networkPhaseTimer=0}networkGeometryScene=null}
 function syncNetworkGeometry(scene){
+ const frame=scene?.closest('.cin-homeward-wrap')?.querySelector('.cin-home-reference'),home=frame?.contentDocument?.querySelector('#c2 .scene');
+ if(home){const fit=Math.min(.76,Math.max(.1,(frame.clientWidth-12)/350),Math.max(.1,(frame.clientHeight-12)/350));home.style.setProperty('transform',`translate(-50%,-50%) scale(${fit})`,'important')}
  const svg=scene?.querySelector('.cin-network-routes');if(!svg||!window.LatchlingsSceneGeometry?.syncPath)return false;
  let ready=true;
  for(const path of svg.querySelectorAll('path[data-from][data-to]')){
   const from=scene.querySelector(`[data-network-anchor="${path.dataset.from}"]`),to=scene.querySelector(`[data-network-anchor="${path.dataset.to}"]`);
   if(!window.LatchlingsSceneGeometry.syncPath(svg,path,from,to)){path.removeAttribute('d');ready=false}
  }
+ const courier=scene.querySelector('.action-courier'),route=scene.querySelector('.courier-route');
+ if(ready&&courier&&route){
+  const elapsed=Math.max(0,performance.now()-Number(scene.dataset.travelStarted||0));
+  const progress=reducedMotionRequested()?1:Math.min(1,elapsed/1800);
+  const point=route.getPointAtLength(route.getTotalLength()*progress),screen=new DOMPoint(point.x,point.y).matrixTransform(route.getScreenCTM()),box=scene.getBoundingClientRect();
+  const sx=box.width/scene.offsetWidth,sy=box.height/scene.offsetHeight;
+  courier.style.left=(screen.x-box.left)/sx+'px';courier.style.top=(screen.y-box.top)/sy+'px';
+  scene.dataset.travelProgress=String(progress);scene.dataset.landed=progress===1?'true':'false';
+ }
  scene.dataset.geometryReady=ready?'true':'false';return ready;
 }
 function bindNetworkScene(scene,visual){
  disconnectNetworkScene();if(!scene)return;
  networkGeometryScene=scene;
+ if(scene.querySelector('.action-courier'))scene.dataset.travelStarted=String(performance.now());
  const sync=()=>{if(networkGeometryScene===scene&&scene.isConnected)syncNetworkGeometry(scene)};
  sync();networkGeometryResize=sync;window.addEventListener('resize',networkGeometryResize,{passive:true});
+ networkGeometryHomeFrame=scene.closest('.cin-homeward-wrap')?.querySelector('.cin-home-reference')||null;
+ networkGeometryHomeFrame?.addEventListener('load',sync);
  if(typeof ResizeObserver==='function'){networkGeometryObserver=new ResizeObserver(sync);networkGeometryObserver.observe(scene);scene.querySelectorAll('[data-network-anchor]').forEach(anchor=>networkGeometryObserver.observe(anchor))}
  if(!reducedMotionRequested()){
   const tick=()=>{if(networkGeometryScene!==scene||!scene.isConnected){disconnectNetworkScene();return}syncNetworkGeometry(scene);networkGeometryFrame=requestAnimationFrame(tick)};
@@ -209,7 +223,21 @@ function keepsakeHtml(){return `<div class="cin-community-work"><div class="work
 function automationHtml(){return `<div class="cin-automation"><div class="hand-map">${mapSheets('tiny')}</div><div class="machine"><i class="gear g1"></i><i class="gear g2"></i><span class="fixed-line"></span></div><div class="cin-unattended-desk" data-story-action="unattended-desk"><i class="desk-window"></i><i class="desk-surface"></i><i class="desk-note"></i><i class="desk-chair"></i></div></div>`}
 function routeDraftingHtml(label='LIVE ROUTE'){return `<div class="cin-route-drafting"><i></i><b>${label}</b></div>`}
 function volunteerHtml(){return `<div class="cin-volunteer-scene">${islandsHtml('volunteer-islands')}<i class="volunteer-route-stake"></i>${character('Bramble','volunteer-bramble')}${helper('#4c8ff4','#79aff9','#2e69c8','spade','volunteer-helper h1')}${helper('#f6b737','#ffd06a','#d18c16','diamond','volunteer-helper h2')}${helper('#66bd72','#94dc98','#469852','club','volunteer-helper h3')}<span class="volunteer-line l1"></span><span class="volunteer-line l2"></span><span class="volunteer-line l3"></span></div>`}
+// The same named stops recur in the wide view, stale chart, and fresh delivery.
+// Routes and the courier use rendered anchors, including during drift/resize.
+function actionLandscapeHtml(type){
+ const copper=type==='brand-new-route',overlay=type==='map-mismatch',stale=['network-miss','frozen-network'].includes(type);
+ const places=copper?[['origin','Copperline','depot'],['home','Little Home','cottage'],['porch','Friend’s Porch','porch']]:[['origin','Prism Gardens','garden'],['home','Little Home','cottage'],['porch','Twin-lit Porch','porch']];
+ const island=([id,name,kind],index)=>`<div class="action-island place-${id} kind-${kind}" style="--place-index:${index}"><i class="action-earth"></i><i class="action-grass"></i><i class="action-landmark"></i><i class="action-landing" data-network-anchor="${id}"></i><b>${name}</b></div>`;
+ const ghosts=stale||overlay?'<i class="action-old-stop old-home" data-network-anchor="old-home"></i><i class="action-old-stop old-porch" data-network-anchor="old-porch"></i>':'';
+ const edge=(from,to,extra='')=>`<path class="network-route ${extra}" data-from="${from}" data-to="${to}" d="" />`;
+ const current=edge('origin','home',copper?'courier-route':'current-route')+edge('home','porch','current-route');
+ const history=stale||overlay?edge('origin','old-home','historical-route')+edge('old-home','old-porch','historical-route'):'';
+ const caption=copper?'NEW LINE · PARCEL REACHES LITTLE HOME':overlay?'ONE MARKER ALIGNS · THE OTHERS MISS':stale?'OLD ROUTES · MOVING DESTINATIONS':'PRISM LOOKOUT · WATCHING THE WIDER DRIFT';
+ return `<div class="cin-action-scene action-${type}" data-story-action="${type}">${places.map(island).join('')}${ghosts}<svg class="cin-network-routes" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true">${stale?history:current+history}</svg>${copper?'<span class="action-courier" aria-label="Parcel"><i></i></span>':''}${overlay?'<div class="action-chart" aria-label="Historical chart aligned at Prism"><i></i></div>':''}<div class="action-caption">${caption}</div></div>`;
+}
 function visualHtml(type){
+ if(['prism-view','network-miss','map-mismatch','brand-new-route','frozen-network'].includes(type))return actionLandscapeHtml(type);
  if(type==='breakfast-journey')return breakfastJourneyHtml();
  if(type==='porch-reconnect')return porchReconnectHtml();
  if(type==='archipelago')return islandsHtml('wide');
@@ -219,17 +247,12 @@ function visualHtml(type){
  if(type==='helper-crew')return volunteerHtml();
  if(type==='snap-demo')return routeDemoHtml();
  if(type==='morning')return `${homeHtml('morning')}<div class="cin-breakfast-route"><span class="old-line"></span><i class="basket"></i><i class="miss">×</i></div>`;
- if(type==='prism-view')return `${islandsHtml('prism')}<div class="cin-prism-beam p1"></div><div class="cin-prism-beam p2"></div><div class="cin-prism-beam p3"></div>`;
  if(type==='porch')return lookoutHtml();
- if(type==='network-miss')return `${islandsHtml('misaligned')}<div class="cin-ghost-map"><span></span><span></span><span></span></div>`;
- if(type==='map-mismatch')return `<div class="cin-overlay-map"><div class="old"><b>OLD MAP</b>${islandsHtml('map-old')}</div><div class="now"><b>NOW</b>${islandsHtml('map-now')}</div></div>`;
  if(type==='new-route')return `${islandsHtml('new')}${routeDraftingHtml('NEW COORDINATES')}`;
  if(type==='map-drawer')return `<div class="cin-drawer"><i></i>${mapSheets('stacked')}</div>${character('Bramble','map-bramble')}`;
  if(type==='dated-maps')return mapSheets('spread');
  if(type==='map-sequence')return mapSheets('sequence');
  if(type==='automation')return automationHtml();
- if(type==='frozen-network')return `${islandsHtml('frozen')}<div class="cin-frozen-lines"><i></i><i></i><i></i></div>`;
- if(type==='brand-new-route')return `${islandsHtml('brand-new')}<div class="cin-compass small"><i></i></div>${routeDraftingHtml('LIVING ROUTE')}`;
  if(type==='signals')return networkHtml('signals');
  if(type==='keepsakes')return keepsakeHtml();
  if(type==='living-network')return networkHtml('living');
@@ -271,7 +294,7 @@ function render(){
  document.getElementById('cinematicCounter').textContent=`${displayIndex+1} / ${displayCount}`;
  disconnectPorchGeometry();disconnectNetworkScene();
  if(opening&&window.LatchlingsOpeningScene)window.LatchlingsOpeningScene.sync(document.getElementById('cinematicStage'),1,{character,suitSvg});
- else{const stage=document.getElementById('cinematicStage');stage.innerHTML=visualHtml(b.visual);if(b.visual==='porch-reconnect')bindPorchGeometry(stage.querySelector('.cin-porch-reconnect'));if(stage.querySelector('.cin-network'))bindNetworkScene(stage.querySelector('.cin-network'),b.visual)}
+ else{const stage=document.getElementById('cinematicStage');stage.innerHTML=visualHtml(b.visual);if(b.visual==='porch-reconnect')bindPorchGeometry(stage.querySelector('.cin-porch-reconnect'));const measuredScene=stage.querySelector('.cin-network,.cin-action-scene');if(measuredScene)bindNetworkScene(measuredScene,b.visual)}
  document.getElementById('cinematicProgress').innerHTML=Array.from({length:displayCount},(_,i)=>`<i class="${i===displayIndex?'active':i<displayIndex?'done':''}"></i>`).join('');
  renderTurn();
  requestAnimationFrame(()=>o.classList.add('beat-ready'));

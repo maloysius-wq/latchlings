@@ -283,6 +283,24 @@ async function verifyNetworkGeometry(page,name){
 
 async function runHomewardNetwork(browser,config){
  const context=await browser.newContext({viewport:{width:config.width,height:config.height},reducedMotion:config.reduced?'reduce':'no-preference'}),page=await context.newPage(),errors=[];
+ // Observe actual painted phases before driver-side clicks/layout checks can
+ // outlast the 1.2s report window. Keep the same visible-route/cause assertions.
+ await page.addInitScript(()=>{
+  const watched=new WeakSet();window.__homewardPhaseFrames={};
+  const watch=()=>{for(const network of document.querySelectorAll('.cin-network.living')){
+   if(watched.has(network))continue;watched.add(network);window.__homewardPhaseFrames={};
+   const sample=()=>{
+    if(!network.isConnected)return;
+    const phase=network.dataset.networkPhase,step=phase==='complete'?'redraw':phase,cause=network.querySelector(`[data-causality-step="${step}"]`),route=network.querySelector(`.cin-network-routes [data-edge-role="${step}"]`);
+    if(cause&&route&&Number(getComputedStyle(route).opacity)>.2&&route.getTotalLength()>0){
+     const box=cause.getBoundingClientRect(),display=getComputedStyle(cause).display;
+     if(display!=='none'&&box.width>0&&box.height>0)window.__homewardPhaseFrames[phase]={beat:window.LatchlingsCinematics.beat,line:window.LatchlingsCinematics.line,cause:{from:cause.dataset.from,to:cause.dataset.to,text:cause.textContent,display,box:box.toJSON()},route:{display:getComputedStyle(route).display,opacity:Number(getComputedStyle(route).opacity),length:route.getTotalLength()}};
+    }
+    if(!window.__homewardPhaseFrames.complete)requestAnimationFrame(sample);
+   };requestAnimationFrame(sample);
+  }};
+  new MutationObserver(watch).observe(document,{childList:true,subtree:true});
+ });
  page.on('pageerror',error=>errors.push(error.message));await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
  if(config.textSize==='large')await page.evaluate(()=>document.documentElement.dataset.textSize='large');if(config.inGameReduced)await page.evaluate(()=>document.documentElement.dataset.motion='reduced');
  let currentWidth=config.width,currentHeight=config.height;
@@ -299,9 +317,10 @@ async function runHomewardNetwork(browser,config){
     snapshot=await page.evaluate(()=>({phase:document.querySelector('#cinematicStage .cin-network')?.dataset.networkPhase,causes:[...document.querySelectorAll('#cinematicStage [data-causality-step]')].map(item=>({step:item.dataset.causalityStep,display:getComputedStyle(item).display,box:item.getBoundingClientRect().toJSON()})),beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line}));
     assert.equal(snapshot.phase,'complete',`${name}: Reduced Motion must settle the full causal sequence immediately`);assert(snapshot.causes.length===4&&snapshot.causes.every(item=>item.display!=='none'&&item.box.width>0&&item.box.height>0),`${name}: Reduced Motion must show all four causality results`);assert.equal(snapshot.beat,2,`${name}: Reduced Motion must not advance the spoken beat`);assert.equal(snapshot.line,0,`${name}: Reduced Motion must not advance the spoken line`);
    }else for(const [phase,from,to] of expected){
-    await page.waitForFunction(phase=>document.querySelector('#cinematicStage .cin-network')?.dataset.networkPhase===phase,phase,{timeout:2500});
-    await page.waitForFunction(phase=>{const route=document.querySelector(`#cinematicStage .cin-network-routes [data-edge-role="${phase==='complete'?'redraw':phase}"]`);return !!route&&Number(getComputedStyle(route).opacity)>.2},phase,{timeout:800});
-    const state=await page.evaluate(phase=>{const network=document.querySelector('#cinematicStage .cin-network'),step=phase==='complete'?'redraw':phase,cause=network?.querySelector(`[data-causality-step="${step}"]`),route=network?.querySelector(`.cin-network-routes [data-edge-role="${step}"]`);return{beat:LatchlingsCinematics.beat,line:LatchlingsCinematics.line,cause:cause?{from:cause.dataset.from,to:cause.dataset.to,text:cause.textContent,display:getComputedStyle(cause).display,box:cause.getBoundingClientRect().toJSON()}:null,route:route?{display:getComputedStyle(route).display,opacity:Number(getComputedStyle(route).opacity),length:route.getTotalLength()}:null}},phase);
+    try{
+     await page.waitForFunction(phase=>!!window.__homewardPhaseFrames?.[phase],phase,{timeout:2500});
+    }catch(error){console.error('HOMEWARD PHASE DIAGNOSTIC',name,phase,JSON.stringify(await networkSnapshot(page)));throw error}
+    const state=await page.evaluate(phase=>window.__homewardPhaseFrames[phase],phase);
     assert(state.cause&&state.cause.display!=='none'&&state.cause.box.width>0&&state.cause.box.height>0,`${name}: ${phase} must visibly identify its causal step (${JSON.stringify(state)})`);assert.equal(state.cause.from,from,`${name}: ${phase} source must remain named`);assert.equal(state.cause.to,to,`${name}: ${phase} destination must remain named`);
      assert(state.route&&state.route.display!=='none'&&state.route.opacity>.2&&state.route.length>0,`${name}: ${phase} must highlight its corresponding connected edge (${JSON.stringify(state)})`);assert.equal(state.beat,2,`${name}: network phases must not advance the spoken beat`);assert.equal(state.line,0,`${name}: network phases must not advance the spoken line`);
     }

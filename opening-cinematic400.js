@@ -130,7 +130,8 @@ function captureTravel(root,step){
  if(!spec||!el||!animation)return null;
  const style=getComputedStyle(el),left=Number.parseFloat(style.left),top=Number.parseFloat(style.top);
  if(!Number.isFinite(left)||!Number.isFinite(top))return null;
- return {el,spec,point:{x:left,y:top},duration:Number(animation.effect?.getTiming().duration)||spec.duration};
+ const duration=Number(animation.effect?.getTiming().duration)||spec.duration;
+ return {el,spec,point:{x:left,y:top},remainingDuration:Math.max(16,duration-(Number(animation.currentTime)||0))};
 }
 function nearestPathProgress(root,selector,point){
  const path=root.querySelector(selector),length=path?.getTotalLength();if(!path||!length)return null;
@@ -181,10 +182,14 @@ function travel(root,selector,pathSelector,duration,startAt=0){
  const from=Math.max(0,Math.min(.995,startAt)),frames=[],length=path.getTotalLength(),count=Math.max(2,Math.ceil((1-from)*20));
  for(let i=0;i<=count;i++){const t=from+(1-from)*i/count,p=path.getPointAtLength(length*t);frames.push({left:p.x+'px',top:p.y+'px'})}
  if(from>0){const start=path.getPointAtLength(length*from);el.style.left=start.x+'px';el.style.top=start.y+'px'}
- el.animate(frames,{duration:Math.max(80,duration*(1-from)),easing:'cubic-bezier(.35,.05,.2,1)',fill:'forwards'});
+ el.animate(frames,{duration:Math.max(16,duration),easing:'cubic-bezier(.35,.05,.2,1)',fill:'forwards'});
 }
 function syncGeometry(root){
  const camera=root.querySelector('.opening-world-camera'),map=root.querySelector('.opening-route-map');if(!camera||!map||root.dataset.homeReady!=='true')return false;
+ // Fit the canonical 350px miniature as a whole; never crop its crown/roof
+ // to manufacture a close-up. Its local porch/resident geometry is unchanged.
+ const frame=root.querySelector('.opening-home-reference'),scene=frame?.contentDocument?.querySelector('#c2 .scene');
+ if(scene){const fit=Math.min(.76,Math.max(.1,(frame.clientWidth-12)/350),Math.max(.1,(frame.clientHeight-12)/350));scene.style.setProperty('transform',`translate(-50%,-50%) scale(${fit})`,'important')}
  const step=Number(root.dataset.step||1),flight=captureTravel(root,step);
  const w=camera.clientWidth,h=camera.clientHeight;map.setAttribute('viewBox',`0 0 ${w} ${h}`);
  const porch=localLandmark(root,'porch'),garden=localLandmark(root,'garden'),rock=localLandmark(root,'play-rock'),pippa=localLandmark(root,'Pippa'),pip=localLandmark(root,'Pip'),call=localLandmark(root,'call'),home=localLandmark(root,'home-center');
@@ -217,7 +222,7 @@ function syncGeometry(root){
  }
  if(flight){
   const progress=nearestPathProgress(root,flight.spec.path,flight.point);
-  if(progress!==null){const point=pathPoint(root,flight.spec.path,progress);setPoint(flight.el,point);travel(root,flight.spec.selector,flight.spec.path,flight.duration*(1-progress),progress)}
+  if(progress!==null){const point=pathPoint(root,flight.spec.path,progress);setPoint(flight.el,point);travel(root,flight.spec.selector,flight.spec.path,flight.remainingDuration,progress)}
  }
  return true;
 }

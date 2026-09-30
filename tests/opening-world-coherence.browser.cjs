@@ -242,15 +242,27 @@ async function waitForOpeningCue(page,step){
     const root=document.querySelector('.cin-opening-continuous');
     const observer=new MutationObserver(()=>{
      if(Number(root.dataset.step)!==15)return;
-     window.__openingTestResizePreviousWidth=root.clientWidth;root.style.width=`${root.clientWidth-24}px`;root.style.right='0px';window.__openingTestResizeApplied=true;observer.disconnect();
+     observer.disconnect();
+     const resizeAfterVisibleTravel=()=>{
+      const signal=root.querySelector('.signal-out'),animation=signal.getAnimations().find(item=>item.playState==='running');
+      if(!animation||Number(animation.currentTime)<300){requestAnimationFrame(resizeAfterVisibleTravel);return}
+      const duration=Number(animation.effect.getTiming().duration);
+      window.__openingTestResizeExpectedRemaining=duration-Number(animation.currentTime);
+      window.__openingTestResizeOldAnimation=animation;
+      window.__openingTestResizePreviousWidth=root.clientWidth;
+      root.style.width=`${root.clientWidth-24}px`;root.style.right='0px';window.__openingTestResizeApplied=true;
+     };
+     requestAnimationFrame(resizeAfterVisibleTravel);
     });
     observer.observe(root,{attributes:true,attributeFilter:['data-step']});window.__openingTestResizeObserver=observer;
    });
    await advanceTo(page,step);
    if(resizeDuringSignal){
-    const resized=await page.evaluate(()=>{const root=document.querySelector('.cin-opening-continuous'),signal=root.querySelector('.signal-out'),animation=signal.getAnimations().find(item=>item.playState==='running');return{applied:window.__openingTestResizeApplied,previousWidth:window.__openingTestResizePreviousWidth,rootWidth:root.clientWidth,animation:animation?{state:animation.playState,currentTime:animation.currentTime}:null}});
+    await page.waitForFunction(()=>{const signal=document.querySelector('.signal-out'),animation=signal?.getAnimations().find(item=>item.playState==='running');return window.__openingTestResizeApplied&&animation&&animation!==window.__openingTestResizeOldAnimation},undefined,{timeout:3000});
+    const resized=await page.evaluate(()=>{const root=document.querySelector('.cin-opening-continuous'),signal=root.querySelector('.signal-out'),animation=signal.getAnimations().find(item=>item.playState==='running');return{applied:window.__openingTestResizeApplied,expectedRemaining:window.__openingTestResizeExpectedRemaining,previousWidth:window.__openingTestResizePreviousWidth,rootWidth:root.clientWidth,animation:animation?{state:animation.playState,currentTime:animation.currentTime,duration:Number(animation.effect.getTiming().duration)}:null}});
     assert(resized.applied&&resized.previousWidth-resized.rootWidth>=20,`Opening resize must settle before travel assertions (${JSON.stringify(resized)})`);
     assert(resized.animation?.state==='running',`Opening signal must still be traveling after scene geometry is resized (${JSON.stringify(resized)})`);
+    assert(Math.abs(resized.animation.duration-resized.expectedRemaining)<=100,`Opening signal must keep its remaining travel time after resizing (${JSON.stringify(resized)})`);
    }
    const action=await page.locator('.cin-opening-continuous').getAttribute('data-story-action');
    assert.equal(action,EXPECTED_ACTIONS[step-1],`${config.width}x${config.height}: turn ${step} must expose its semantic visual action`);

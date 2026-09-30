@@ -42,6 +42,9 @@ function postProcess(){
  processing=true;
  try{
   const speaker=line[0],text=line[1],groups=CAST[speaker]?[[speaker,[text]]]:[],narration=speaker==='Narrator'?[text]:[],copy=lines.closest('.cinematic-copy'),turnKey=`${id}:${index+1}:${lineIndex+1}`;
+  const details={signals:'Sunpetal Meadows · Lanternwood · Lodestone · Masquerade Keep · Prism Gardens · Copperline · Stormswitch · Aurora Crown',keepsakes:'Meadows checks routes · Lodestone adjusts anchors · Copperline redraws lines','living-network':'Stormswitch reports → Meadows listens → Lodestone adjusts → Lanternwood opens', 'many-routes':'Stormswitch → Aurora Crown: two routes, different travel windows','aurora-crown':'Aurora Crown: old route arches meet the new lines','homeward-network':'Sunpetal Meadows · Lanternwood · Lodestone · Masquerade Keep · Prism Gardens · Copperline · Stormswitch · Aurora Crown',automation:'Approved charts: Year 12 · Year 31 · Year 58'};
+  let detail=copy?.querySelector('.cin-scene-detail');const detailText=details[beat.visual];
+  if(detailText&&copy){if(!detail){detail=document.createElement('aside');detail.className='cin-scene-detail';copy.appendChild(detail)}if(detail.textContent!==detailText)detail.textContent=detailText}else if(detail)detail.remove();
   stage.querySelectorAll(':scope > .cin-dialogue-layer').forEach(node=>node.remove());
   let dock=copy?.querySelector(':scope > .cin-opening-dialogue-dock')||null;
   if(dock&&dock.dataset.key!==turnKey){dock.remove();dock=null}

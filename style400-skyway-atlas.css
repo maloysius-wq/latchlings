@@ -262,7 +262,7 @@ body[data-screen="levels"] #app{overflow:hidden}
 @media(max-height:600px){.atlas-chapter-nav{min-height:44px}.atlas-chapter-arrow{width:44px;height:44px;min-width:44px}.atlas-waypoint-nav{min-height:44px}.atlas-range-arrow{width:44px;height:44px;min-width:44px}.atlas-range-current{height:44px}.atlas-chapter-current span{display:none}.atlas-chapter-current b{font-size:12px}}
 @media(max-width:340px){.atlas-chapter-nav{gap:5px}.atlas-waypoint-nav{gap:4px}.atlas-range-current{padding-left:7px;padding-right:7px}.atlas-range-current span{font-size:10.5px}.atlas-range-current small{display:none}}
 
-.atlas-node-detail{position:absolute;z-index:12;bottom:9px;width:46%;height:64px;max-width:194px;box-sizing:border-box;padding:5px 10px;display:grid;align-content:center;gap:2px;border:1px solid rgba(255,255,255,.78);border-radius:15px;background:linear-gradient(145deg,rgba(255,252,238,.96),rgba(249,237,207,.94));box-shadow:0 5px 14px rgba(24,48,62,.2),inset 0 1px rgba(255,255,255,.9);color:var(--atlas-ink,#17334d);pointer-events:none;backdrop-filter:blur(8px);overflow:hidden}
+.atlas-node-detail{position:absolute;z-index:12;bottom:9px;width:46%;height:64px;max-width:194px;box-sizing:border-box;padding:5px 10px;display:grid;align-content:center;gap:2px;border:1px solid rgba(255,255,255,.78);border-radius:15px;background:linear-gradient(145deg,rgba(255,252,238,.96),rgba(249,237,207,.94));box-shadow:0 5px 14px rgba(24,48,62,.2),inset 0 1px rgba(255,255,255,.9);color:#17334d;pointer-events:none;backdrop-filter:blur(8px);overflow:hidden}
 .atlas-node-detail[data-safe-side="left"]{left:14px}.atlas-node-detail[data-safe-side="right"]{right:14px}
 .atlas-node-detail[data-safe-edge="top"]{top:9px;bottom:auto}.atlas-node-detail[data-safe-edge="middle"]{top:50%;bottom:auto;translate:0 -50%}
 .atlas-node-detail strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-family:Georgia,"Times New Roman",serif;font-size:14px;line-height:1.06;font-weight:900;white-space:normal}
@@ -271,6 +271,7 @@ body[data-screen="levels"] #app{overflow:hidden}
 
 
 /* Astra authored Atlas destination landmarks */
+.atlas-landmark-mark[data-kind="porch"],.atlas-landmark-mark[data-kind="archive"],.atlas-landmark-mark[data-kind="table"],.atlas-landmark-mark[data-kind="dock"],.atlas-landmark-mark[data-kind="mailbox"]{background-image:linear-gradient(110deg,rgba(255,242,213,.2),rgba(66,43,28,.15)),url('title-island-concepts/textures/wood.jpg');background-size:cover,35px 35px;box-shadow:inset 1px 1px rgba(255,244,219,.27),inset -2px -2px rgba(70,45,29,.2)}
 .atlas-node.milestone .atlas-prop.authored-landmark-prop{width:45px;height:38px;top:-5px;scale:1;rotate:0deg!important;overflow:visible}
 .atlas-node.milestone .atlas-prop.authored-landmark-prop:before,.atlas-node.milestone .atlas-prop.authored-landmark-prop:after,.atlas-node.milestone .atlas-prop.authored-landmark-prop>i,.atlas-node.milestone .atlas-prop.authored-landmark-prop>b{opacity:.12}
 .atlas-landmark-mark{position:absolute;left:50%;top:50%;translate:-50% -50%;width:39px;height:31px;z-index:6;display:block;filter:drop-shadow(0 3px 2px rgba(22,38,48,.24));box-sizing:border-box}
@@ -290,3 +291,5 @@ body[data-screen="levels"] #app{overflow:hidden}
 .atlas-landmark-mark[data-kind="garden"]{width:39px;height:18px;border-radius:50%;background:radial-gradient(circle at 20% 50%,#f1c45d 0 12%,transparent 14%),radial-gradient(circle at 50% 30%,#72aef5 0 12%,transparent 14%),radial-gradient(circle at 78% 58%,#e7888d 0 12%,transparent 14%),#77a969}
 .atlas-landmark-caption{max-width:68%;pointer-events:none}.atlas-landmark-caption b{white-space:normal;line-height:1.05}.atlas-landmark-caption span{white-space:nowrap}
 @media(max-height:600px){.atlas-landmark-caption{max-width:64%;padding:3px 6px}.atlas-landmark-caption b{font-size:10px}.atlas-landmark-mark{scale:.84}}
+/* Textured wood fixtures retain the existing authored silhouettes and node geometry. */
+#levelGrid .atlas-landmark-mark[data-kind="porch"],#levelGrid .atlas-landmark-mark[data-kind="archive"],#levelGrid .atlas-landmark-mark[data-kind="table"],#levelGrid .atlas-landmark-mark[data-kind="dock"],#levelGrid .atlas-landmark-mark[data-kind="mailbox"]{background-image:linear-gradient(110deg,rgba(255,242,213,.2),rgba(66,43,28,.15)),url('title-island-concepts/textures/wood.jpg');background-size:cover,35px 35px}

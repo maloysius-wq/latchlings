@@ -100,6 +100,10 @@ function assertReadable(layout,config,label){
  assert.equal(layout.copyOverflow,'auto',`${label}: the existing copy panel should be the scrollable story region`);
  assert(layout.stage.bottom<=layout.copy.y+1,`${label}: text must remain below the scenic stage`);
  assert(layout.copy.bottom<=layout.footer.y+1,`${label}: copy must remain above the fixed footer`);
+ if(config.height>720){
+  assert(layout.body.bottom<=layout.copy.bottom+1,`${label}: tall-phone copy budget must contain the complete spoken line (${JSON.stringify(layout)})`);
+  assert(layout.stage.height>layout.copy.height,`${label}: tall phones must give the scenic world more space than the stable dialogue dock`);
+ }
  assert(layout.next.height>=44&&layout.next.bottom<=config.height,`${label}: Continue must remain a reachable 44px target`);
  assert(layout.skip.height>=44&&layout.skip.bottom<=config.height,`${label}: Skip must remain a reachable 44px target`);
  assert(!layout.horizontalOverflow,`${label}: document must not scroll horizontally`);

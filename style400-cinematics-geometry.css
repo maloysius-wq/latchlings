@@ -132,6 +132,13 @@
 }
 
 /* Landscape: put the scene and complete spoken line beside each other so short viewports never crop dialogue above Continue. */
+/* Stable, longest-line copy budgets on tall phones; the world gets remaining space. */
+@media(orientation:portrait) and (min-height:721px){
+ .cinematic-overlay:not([data-cinematic="opening"]) .cinematic-shell{grid-template-rows:auto minmax(0,1fr) 230px auto}
+ html[data-text-size="large"] .cinematic-overlay:not([data-cinematic="opening"]) .cinematic-shell{grid-template-rows:auto minmax(0,1fr) 250px auto}
+ .cinematic-overlay[data-cinematic="homeward"] .cinematic-shell{grid-template-rows:auto minmax(0,1fr) 260px auto}
+ html[data-text-size="large"] .cinematic-overlay[data-cinematic="homeward"] .cinematic-shell{grid-template-rows:auto minmax(0,1fr) 290px auto}
+}
 @media(orientation:landscape) and (max-height:520px){
  .cinematic-overlay{padding:8px}
  .cinematic-shell{width:min(1100px,100%);height:calc(100svh - 16px);max-height:calc(100svh - 16px);grid-template-columns:minmax(0,1.12fr) minmax(350px,.88fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"head head" "scene copy" "footer footer";border-radius:22px}

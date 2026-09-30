@@ -137,6 +137,8 @@ html[data-text-size="large"] #game #storyRailSlot .story-level-rail .story-rail-
 }
 
 /* Large Text yields a little puzzle-surface width before sacrificing readable copy. */
+/* Scenic props may extend beyond the board, but never paint over functional UI. */
+#game .topbar,#game .story-rail-slot,#game #mechanicContext,#game .controls{position:relative;z-index:3}
 html[data-text-size="large"] #game .board{width:min(90vw,460px)}
 
 /* 320x568-class phones reclaim chrome space, not text size or touch-target safety. */

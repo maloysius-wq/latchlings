@@ -6,13 +6,12 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ## Current state — 2026-09-29
 
-**IN PROGRESS: implement the player's approved September 29 independent audit repairs A1–A13.** Work stays on the audit branch; no merge/deployment. Order: contrast/UI layering/grounding/resize and labels; short-phone motives and earned story continuity; six bounded action scenes and shared miniature materials/framing; complete regression and visual verification. Existing local resize fix and compact handoff draft are included in this approved follow-up. Preserve unrelated `test-artifacts/` evidence.
+**LOCALLY VERIFIED / BRANCH CI PENDING: the player's approved September 29 repairs A1–A13 are implemented.** Changes cover grounded residents, readable place/action details and short-phone motives, earned Journal/Atlas summaries, measured action scenes, whole Home framing, consistent materials, tall-phone scene budgets, Atlas contrast, UI layering and Opening resize timing. See `docs/reviews/2026-09-29-audit-repairs.md` for item-by-item evidence. Preserve unrelated untracked evidence; no merge/deployment.
 
-Baseline: clean published `63fa4cf` full `npm test` passed all 16 suites on retry, all 400 routes passed, campaign diff was empty. First full attempt had a 30s navigation timeout before assertions; root cause unestablished. Audit evidence/report: `C:/RetroRig_Codex_Handoff/audit-latchlings/final-audit-20260929/`. This audit reopened visual/readability/earned-knowledge gaps despite passing functional tests; the older completion records are historical, not closure of A1–A13.
+Starting product: `63fa4cf`; the independent audit reopened presentation/earned-knowledge gaps despite its 16-suite functional acceptance. Local audit/repair evidence: `C:/RetroRig_Codex_Handoff/audit-latchlings/final-audit-20260929/`. Older completion records are historical, not closure of A1–A13.
 
-- Repository: `maloysius-wq/latchlings`; working branch: `codex/audit-polish-20260924`. The last published head is `63fa4cf31a559207e98c1795cc1e722879792b15`. Do not merge or deploy without a separate player instruction.
+- Repository: `maloysius-wq/latchlings`; review branch: `codex/audit-polish-20260924`. Starting product was `63fa4cf31a559207e98c1795cc1e722879792b15`. Do not merge or deploy without a separate player instruction.
 - The approved game-polish execution guide (`docs/superpowers/plans/2026-09-24-game-polish-execution-guide.md`) is complete through reliability/gameplay, phone presentation, and story staging. The branch remains unmerged.
-- An independent follow-up review found a mid-flight Opening resize timing error: the resumed signal animation applied the remaining fraction twice. A focused browser regression failed against `63fa4cf` (733 ms remained, but the new animation lasted 337 ms), and passed after a local fix to retain the actual remaining time. Full-suite and branch CI verification for this follow-up are pending. The existing untracked `test-artifacts/` directory is user evidence; preserve it.
 
 ## Product contracts
 
@@ -26,9 +25,11 @@ Baseline: clean published `63fa4cf` full `npm test` passed all 16 suites on retr
 - Opening scene and motion: `opening-cinematic400.js`, `style400-opening-cinematic.css`, `tests/opening-world-coherence.browser.cjs`.
 - Other films and map/Homeward staging: `cinematics400.js`, `style400-cinematics.css`, `tests/story-staging.browser.cjs`.
 - Milestone rewards and ending: `style400-production-slice.css`, `style400-ui.css`, `tests/story-payoffs.browser.cjs`.
-- The shipped `npm test` command runs 16 browser suites, including all 400 authored routes, progress/Daily isolation, current-board hints, phone layouts, cinematics, rewards, and the ending. Check `git diff --check` and compare the campaign hashes below before closing a code change.
+- The shipped `npm test` command runs 17 browser suites, including the new independent-audit regressions, all 400 authored routes, progress/Daily isolation, current-board hints, phone layouts, cinematics, rewards, and the ending. Run `node tests/phone-stage-certification.browser.cjs` separately for the 180-capture matrix. Check `git diff --check` and the campaign hashes below before closing a code change.
 
-At `63fa4cf`, full `npm test`, the 180-capture phone viewport/motion matrix, campaign hash comparison, and `git diff --check` passed. GitHub [Validate Game](https://github.com/maloysius-wq/latchlings/actions/runs/36466555603) and [Repository Access Guard](https://github.com/maloysius-wq/latchlings/actions/runs/36466555599) both passed on that exact head. Settled and moving screenshots were reviewed at 320×568, 390×844, and 430×932 for Opening, Across the Drift, dated maps, Homeward, four rewards, Levels 1 and 366, and Level 400, including Large Text, Reduced Motion, and dialogue visible/hidden. Captures are local temporary files, not repository assets.
+September 29 final local verification: **PASS** full 17-suite `npm test`, all 400 authored routes, the separate 180-capture / five-viewport Normal/Large Text OS/in-game Reduced Motion matrix, all eight campaign hashes, and `git diff --check`. The audit suite produced 211 additional captures at 320×568, 390×844 and 430×932, including motion/settled and dialogue-hidden views; its 800 short-phone motive renders, chapter knowledge boundaries, measured route/parcel landing, and Home framing checks passed. Representative frames were visually reviewed for Opening, Across, dated maps, Homeward, Levels 50/100/150/200 rewards, Levels 1/51/301/366, and the Level 400 ending. Captures are local temporary evidence, not game assets. Branch CI must be verified after push.
+
+Timed-test note: an earlier Homeward attempt missed the 1.2s report phase; diagnostics found the scene already at redraw with visible routes. The test now records each actually rendered phase before driver/layout delay can miss it, retaining cause/route/line assertions. Its focused six-configuration rerun passed. A baseline navigation timeout before assertions remains of unestablished cause; final local checks have no failures. Do not infer physical-device certification from browser-suite names.
 
 ### Protected campaign SHA-256 baseline
 
@@ -45,7 +46,7 @@ At `63fa4cf`, full `npm test`, the 180-capture phone viewport/motion matrix, cam
 
 ## Remaining work and evidence limits
 
-- The acceptance matrix marks V04 material consistency **PARTIAL**: regular non-reward Story props and small Atlas landmarks still differ from the textured Little Home style. This is deferred art direction, not a gameplay regression. Keep the current 21-tap Opening until player testing calls for a pacing change.
+- The bounded A7 Story/Atlas material corrections are implemented. V04 universal subjective art acceptance remains **PARTIAL / PLAYER REVIEW**, not a promise that every surface is professional final art. Keep the current 21-tap Opening until player testing calls for a pacing change.
 - Physical iOS/Android touch, safe-area and performance checks; real screen-reader use; and subjective audio balance on speakers/headphones remain **unverified**. Browser tests do not establish those results.
 
 ## History and stage completion index

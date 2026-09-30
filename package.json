@@ -4,7 +4,7 @@
   "description": "",
   "main": "campaign400-1.js",
   "scripts": {
-    "test": "node tests/opening-world-coherence.browser.cjs && node tests/opening-board-header.browser.cjs && node tests/phone-visual-regressions.browser.cjs && node tests/opening-continuous.browser.cjs && node tests/opening-flow.browser.cjs && node tests/cinematics-regression.browser.cjs && node tests/phone-readability.browser.cjs && node tests/home-short-phone.browser.cjs && node tests/ending-landscape.browser.cjs && node tests/large-text-gameplay.browser.cjs && node tests/mechanic-inspector.browser.cjs && node tests/gameplay-campaign.browser.cjs && node tests/progress-daily.browser.cjs && node tests/current-hint.browser.cjs && node tests/story-staging.browser.cjs && node tests/story-payoffs.browser.cjs"
+    "test": "node tests/opening-world-coherence.browser.cjs && node tests/opening-board-header.browser.cjs && node tests/phone-visual-regressions.browser.cjs && node tests/opening-continuous.browser.cjs && node tests/opening-flow.browser.cjs && node tests/cinematics-regression.browser.cjs && node tests/phone-readability.browser.cjs && node tests/home-short-phone.browser.cjs && node tests/ending-landscape.browser.cjs && node tests/large-text-gameplay.browser.cjs && node tests/mechanic-inspector.browser.cjs && node tests/gameplay-campaign.browser.cjs && node tests/progress-daily.browser.cjs && node tests/current-hint.browser.cjs && node tests/story-staging.browser.cjs && node tests/story-payoffs.browser.cjs && node tests/audit-repairs.browser.cjs"
   },
   "devDependencies": {
     "playwright": "^1.55.0"

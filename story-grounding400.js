@@ -20,7 +20,7 @@ const CONTRIBUTIONS={
 
 const ARCS=[
  {chapterGoal:'Find out why several ordinary Sunpetal routes are failing in the same ways.',atlasObjective:'Compare today’s route failures and learn what changed.',pressure:'Breakfast, watering, mail, and visits are all becoming unreliable at once.',outcome:'Sunpetal proves the hardware still works. The Skyway is describing where the islands used to be, and the drift is continuing.',movements:[
-  {title:'A Pattern at Breakfast',setup:'One basket misses a familiar stop. Then the watering route, Pip’s kite, and an outside bread delivery miss in almost the same way.',question:'Is this one strange morning, or are several routes failing for the same reason?',stakes:'If the failures share a cause, fixing one errand will not fix tomorrow.'},
+  {title:'A Pattern at Breakfast',setup:'The breakfast basket, watering line, and shortcut to the play rock all miss their familiar stops by nearly the same distance.',question:'Is this one strange morning, or are several routes failing for the same reason?',stakes:'If the failures share a cause, fixing one errand will not fix tomorrow.'},
   {title:'The Route Desk',setup:'Neighbor notes pile up at Little Home. A temporary circuit works, then fresh drift immediately changes the problem again.',question:'Can current observations keep a route working when the islands continue to move?',stakes:'A one-time repair is already proving too temporary.'},
   {title:'Markers in the Grass',setup:'Pip finds old Skyway markers sitting slightly away from the routes everyone uses now.',question:'Why do the old markers point toward places the islands no longer occupy?',stakes:'The answer could tell the Waykeeper whether the network or the islands are actually at fault.'},
   {title:'Build for Today',setup:'Local crews start testing stops from current coordinates instead of trusting the old route layout.',question:'Can Sunpetal build a dependable circuit without forcing the islands back into old positions?',stakes:'The meadow needs a route that works with movement, not only between drift checks.'},
@@ -110,6 +110,14 @@ function journeyFor(progress){
 }
 STORY.movementForLevel=movementForLevel;
 STORY.chapterAtlasLine=chapterAtlasLine;
+// Chapter introductions describe only the evidence earned so far, not the ending.
+STORY.chapterSummaryFor=function(chapter,progress,compact=false){
+ const ch=Math.max(1,Math.min(8,Number(chapter)||1)),start=(ch-1)*50+1,c=STORY.chapters[ch-1];
+ if(start>Number(progress?.unlocked||1))return compact?'A region still ahead.':'Restore the earlier regions to discover this community’s routes.';
+ if(milestoneDone(progress,ch*50))return compact?'This region’s routes are restored.':c.arc.outcome;
+ const level=Math.max(start,Math.min(ch*50,Number(progress?.unlocked||1)));
+ const movement=movementForLevel(level);return compact?movement.title:movement.setup;
+};
 STORY.campaignBriefing=campaignBriefing;
 STORY.journeyFor=journeyFor;
 const oldBeatForLevel=STORY.beatForLevel.bind(STORY);
