@@ -6,6 +6,10 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ## Current state — 2026-09-29
 
+### Release — 2026-09-30
+
+**IN PROGRESS — player explicitly authorized merge and deployment.** GitHub Pages publishes `main` from `/` to `https://maloysius-wq.github.io/latchlings/`. Release target is the reviewed `d00cb4b16b9f7549b1a68b54359d44e9a4c9167f` product tree, plus release documentation only. Rerun full tests, verify the merge result, then push `main` and verify Pages/CI and served assets. Preserve the review branch and unrelated local evidence. Earlier no-merge/no-deploy statements below describe the previous review phase and are superseded by this explicit release authorization.
+
 **COMPLETE — software repairs A1–A13, local verification and product-commit CI.** Changes cover grounded residents, readable place/action details and short-phone motives, earned Journal/Atlas summaries, measured action scenes, whole Home framing, consistent materials, tall-phone scene budgets, Atlas contrast, UI layering and Opening resize timing. See `docs/reviews/2026-09-29-audit-repairs.md` for item-by-item evidence. Preserve unrelated untracked evidence; no merge/deployment. Physical-device and subjective player review remain external.
 
 Starting product: `63fa4cf`; the independent audit reopened presentation/earned-knowledge gaps despite its 16-suite functional acceptance. Local audit/repair evidence: `C:/RetroRig_Codex_Handoff/audit-latchlings/final-audit-20260929/`. Older completion records are historical, not closure of A1–A13.
