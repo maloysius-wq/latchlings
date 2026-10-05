@@ -1,9 +1,9 @@
 {
   "51": "Keep blue at the upper edge as coral's temporary wall; bring coral home before releasing blue. An accessible hold-before-capture reminder, not a new movement rule.",
-  "52": "Use coral as a vertical stopping wall for blue, then finish coral. Contrasts with 51's lateral approach and reversed first capture.",
+  "52": "Move coral left into the middle of blue's column; blue must first move below that helper, reverse upward against it, and turn home. Keep the relocated coral useful until blue captures, then release coral last.",
   "53": "Move blue into the right-hand helper position before coral approaches; blue may go home once that stop has been used. First explicit relocated wall.",
-  "54": "Approach the adjacent top-row helper from the right to land blue precisely; shortest, focused reverse-approach breathing room after relocation.",
-  "55": "Hold blue one row above coral's target approach until coral has used the stop; preserve the useful resident instead of capturing immediately.",
+  "54": "Blue initially stops below coral, then coral circles around to use blue as a horizontal wall. Release coral first so blue can enter its own nest on the formerly shared approach; a compact reciprocal role exchange.",
+  "55": {"intention":"Rebuild coral's stop from the left end of the middle corridor to the right. Blue first uses coral on the left, must vacate the corridor downward so coral can cross it, then returns upward to use coral from the other side before turning home. Do not remove coral until blue has used both stops.","rationale":"Eight-move introductory-to-practice bridge: vacating the helper's corridor, relocating it, and returning to the opposite stop are proven necessary setup, not inflated travel. A sparse 5x5 two-resident board closes the focused introduction before nine-to-ten-move practice; the original slot allowance is unchanged."},
   "56": "Relocate coral twice so blue can use perpendicular stops before either capture; one helper must serve two different launch lines.",
   "57": "Use coral's initial upper stop, then move coral to a lower row to stop blue again. Contrasts initial usefulness with deliberately rebuilt usefulness.",
   "58": "Exchange helper roles along the bottom row: coral first stops against blue, then blue needs coral's relocated position before blue can leave.",

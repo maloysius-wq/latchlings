@@ -21,4 +21,6 @@ const falseCapstone={...levels[50],id:96};
 assert(cooperationFailures(falseCapstone,simulateState).some(error=>error.includes('capstone')),'elementary helper use cannot certify a capstone');
 const repeatedMotif=new Set([cooperation(falseCapstone,simulateState).motif]);
 assert(cooperationFailures(falseCapstone,simulateState,repeatedMotif).some(error=>error.includes('Repeated')),'capstones must have distinct dependency motifs');
+const reminderOnly={...levels[50],id:52};
+assert(cooperationFailures(reminderOnly,simulateState).some(error=>error.includes('intro')),'after the reminder, introduction must teach relocated helpers rather than repeat initial-wall errands');
 console.log('PASS deterministic candidates, exclusive geometry and replayable cooperation dependencies');

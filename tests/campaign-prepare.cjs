@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
-const {prepareChapter}=require('../tools/campaign/prepare.cjs');
+const {prepareChapter,patchFor}=require('../tools/campaign/prepare.cjs');
 const root=path.resolve(__dirname,'..'),{levels,simulateState}=require('../tools/campaign/runtime.cjs').loadCampaign(root);
 const baseline=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/baseline.json')));
 assert.throws(()=>prepareChapter(levels.slice(50,99),{},baseline,simulateState),/50/,'partial chapter must not produce an export');
@@ -8,6 +8,11 @@ assert.throws(()=>prepareChapter(levels.slice(50,100),{},baseline,simulateState)
 const pending=Object.fromEntries(levels.slice(50,100).map(l=>[l.id,'PENDING dependency review']));
 assert.throws(()=>prepareChapter(levels.slice(50,100),pending,baseline,simulateState),/intention/,'pending notes must not silently become accepted records');
 console.log('PASS preparation refuses partial chapters, absent author intentions and pending review');
+assert.equal(typeof patchFor,'function','preparation must produce a reviewable patch, not write files itself');
+const patch=patchFor([{path:'/repo/new.json',old:null,content:'[]\n'},{path:'/repo/existing.json',old:'a\r\nb\r\nc\r\n',content:'a\nx\nc\n'}]);
+assert(patch.includes('*** Add File: /repo/new.json\n+[]'));
+assert(patch.includes(' a\n-b\n+x\n c'),'patch preserves unchanged context and normalizes CRLF');
+assert.equal(patchFor([{path:'/repo/same',old:'a\r\n',content:'a\n'}]),'*** Begin Patch\n*** End Patch');
 if(process.argv.includes('--chapter-2')){
  const authored=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/authoring/chapter-2.json'))),notes=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/lanternwood-intentions.json')));
  const result=prepareChapter(authored,notes,baseline,simulateState,{previous:levels.slice(0,50),visualEvidence:{status:'test replay of the recorded author review'}});

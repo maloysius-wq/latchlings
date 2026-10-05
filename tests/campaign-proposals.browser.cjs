@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
     const requiredGap=config.width===320&&config.text==='large'?2:0;
     assert(layout.tip.top-(layout.board.top+layout.board.height)>=requiredGap,`Proposal ${row.level.id} board/Route Tip gap ${config.width}: ${JSON.stringify(layout)}`);
     assert(!layout.overflow);assert(layout.controls.bottom<=config.height,`Proposal ${row.level.id} controls clipped`);
-    if([51,58,67,79,96,100].includes(row.level.id)){
+    if([51,52,54,55,58,67,79,96,100].includes(row.level.id)){
      for(let index=0;index<row.level.solution.length;index++){
       const[pi,dir]=row.level.solution[index];
       await page.locator(`#board .latchling[data-pi="${pi}"]`).click();
@@ -37,6 +37,6 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
    }
    await context.close();
   }
-  console.log(`PASS ${rows.length} proposal board layouts at 320 Large Text and 390 Normal; captures ${evidence}; proposals are NOT exported campaign data`);
+  console.log(`PASS ${rows.length} proposal board layouts at 320 Large Text and 390 Normal; captures ${evidence}; harness does not edit static campaign data`);
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

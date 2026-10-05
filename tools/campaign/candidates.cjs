@@ -32,6 +32,9 @@ function cooperationFailures(level,simulateState,capstoneMotifs=new Set()){
  const local=(level.id-1)%50+1,deps=cooperation(level,simulateState),errors=[];
  const stage=local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';
  const profile={minStops:{intro:1,practice:2,combine:3,planning:4,capstone:5}[stage],minTravelers:local>=16?2:1,minRelocations:local<=5?0:local<=15?1:2,minBeforeCapture:local<=5?1:local<=30?2:3,roleSwap:local>=11&&local<=15};
+ if(local>=2&&local<=5)profile.minRelocations=1;
+ if(local===4){profile.roleSwap=true;profile.minStops=2;profile.minBeforeCapture=2;}
+ if(local===5){profile.minStops=2;profile.minRelocations=2;profile.minBeforeCapture=2;}
  if(!fitsCooperation(deps,profile))errors.push(`Incomplete ${stage} cooperation chain`);
  if(local>=16&&deps.participants!==level.pieces.length)errors.push('Disconnected solo errand in combined cooperation board');
  if(local>=46&&capstoneMotifs.has(deps.motif))errors.push('Repeated capstone dependency motif');

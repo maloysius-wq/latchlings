@@ -31,4 +31,16 @@ function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existin
  }
  return{authoring:levels,manifest:{records:[...existingRecords.filter(r=>r.chapter!==chapter),...records].sort((a,b)=>a.id-b.id)},exported};
 }
-module.exports={prepareChapter};
+function patchFor(files){
+ const lines=s=>s.replace(/\r\n/g,'\n').replace(/\n$/,'').split('\n');let patch='*** Begin Patch\n';
+ for(const file of files){const next=lines(file.content);
+  if(file.old===null){patch+=`*** Add File: ${file.path}\n`+next.map(l=>'+'+l).join('\n')+'\n';continue;}
+  const prior=lines(file.old);let prefix=0,suffix=0;
+  while(prefix<prior.length&&prefix<next.length&&prior[prefix]===next[prefix])prefix++;
+  if(prefix===prior.length&&prefix===next.length)continue;
+  while(suffix<prior.length-prefix&&suffix<next.length-prefix&&prior[prior.length-1-suffix]===next[next.length-1-suffix])suffix++;
+  patch+=`*** Update File: ${file.path}\n@@\n`+(prefix?' '+prior[prefix-1]+'\n':'')+prior.slice(prefix,prior.length-suffix).map(l=>'-'+l+'\n').join('')+next.slice(prefix,next.length-suffix).map(l=>'+'+l+'\n').join('')+(suffix?' '+prior[prior.length-suffix]+'\n':'');
+ }
+ return patch+'*** End Patch';
+}
+module.exports={prepareChapter,patchFor};
