@@ -8,7 +8,7 @@ function candidate(profile,seed,id){
  const n=profile.size,cells=shuffle(Array.from({length:n*n},(_,i)=>[Math.floor(i/n),i%n])),pieces=cells.splice(0,profile.pieces).map((pos,i)=>({color:COLORS[i],suit:SUITS[i],pos,expression:'determined'})),nests=cells.splice(0,profile.pieces);
  // Different obstacle distributions create useful lanes, corner approaches or central crossings.
  const ranked=cells.map(pos=>({pos,rank:random()+(profile.geometry==='corners'?(pos[0]===0||pos[1]===0||pos[0]===n-1||pos[1]===n-1?-.6:.2):profile.geometry==='lanes'?(pos[0]%2?-.35:.35):profile.geometry==='crossing'?(Math.abs(pos[0]-(n-1)/2)+Math.abs(pos[1]-(n-1)/2))*.08:0)})).sort((a,b)=>a.rank-b.rank);
- return {size:n,pieces,nests,rocks:ranked.slice(0,profile.rocks).map(x=>x.pos),anchors:[],suitGates:[],colorGates:[],rails:[],turners:[],switches:[],doors:[],id,chapter:Math.ceil(id/50),solution:[],optimal:0,moveLimit:0,difficultyScore:0};
+ return {size:n,pieces,nests,rocks:ranked.slice(0,profile.rocks).map(x=>x.pos),anchors:ranked.slice(profile.rocks,profile.rocks+(profile.anchors||0)).map(x=>x.pos),suitGates:[],colorGates:[],rails:[],turners:[],switches:[],doors:[],id,chapter:Math.ceil(id/50),solution:[],optimal:0,moveLimit:0,difficultyScore:0};
 }
 function cooperation(level,simulateState){
  const travel=replay(level,simulateState),vectors={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},stops=[],captures=[];

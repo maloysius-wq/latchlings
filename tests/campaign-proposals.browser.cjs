@@ -1,8 +1,12 @@
 'use strict';
 // Review offline proposals in the real game, without changing static exports.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),{chromium}=require('playwright');
-const root=path.resolve(__dirname,'..'),rows=JSON.parse(fs.readFileSync(path.join(root,'test-artifacts/campaign/lanternwood-proposals.json'),'utf8'));
-const evidence=path.join(root,'test-artifacts/campaign/proposal-captures');fs.mkdirSync(evidence,{recursive:true});
+const chapterIndex=process.argv.indexOf('--chapter'),chapter=chapterIndex<0?2:Number(process.argv[chapterIndex+1]);
+assert(Number.isInteger(chapter)&&chapter>=2&&chapter<=8,'proposal review expects chapter 2–8');
+const names={2:'lanternwood',3:'lodestone',4:'masquerade',5:'prism',6:'copperline',7:'stormswitch',8:'aurora'};
+const root=path.resolve(__dirname,'..'),rows=JSON.parse(fs.readFileSync(path.join(root,`test-artifacts/campaign/${names[chapter]}-proposals.json`),'utf8'));
+const evidence=path.join(root,`test-artifacts/campaign/${chapter===2?'proposal':names[chapter]}-captures`);fs.mkdirSync(evidence,{recursive:true});
+const clearIds=chapter===2?[51,52,54,55,58,67,79,96,100]:[1,8,17,29,46,50].map(local=>(chapter-1)*50+local);
 const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(path.relative(root,file).startsWith('..'))return res.writeHead(403).end();fs.readFile(file,(err,data)=>{if(err)return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(data);});});
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;
@@ -22,7 +26,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
     const requiredGap=config.width===320&&config.text==='large'?2:0;
     assert(layout.tip.top-(layout.board.top+layout.board.height)>=requiredGap,`Proposal ${row.level.id} board/Route Tip gap ${config.width}: ${JSON.stringify(layout)}`);
     assert(!layout.overflow);assert(layout.controls.bottom<=config.height,`Proposal ${row.level.id} controls clipped`);
-    if([51,52,54,55,58,67,79,96,100].includes(row.level.id)){
+    if(clearIds.includes(row.level.id)){
      for(let index=0;index<row.level.solution.length;index++){
       const[pi,dir]=row.level.solution[index];
       await page.locator(`#board .latchling[data-pi="${pi}"]`).click();
