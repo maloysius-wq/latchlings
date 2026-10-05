@@ -48,6 +48,7 @@ function validateRecord(level,record,baseline,acceptedLevels){
  if(!focus.length&&level.chapter!==8)errors.push('Missing focus');
  for(const field of focus)if(!record.witnesses?.some(w=>w.mechanic===field))errors.push(`Missing ${field} witness`);
  if(!record.comparisons?.similarityReviewed)errors.push('Similarity review pending');
+ if(!record.visualEvidence?.status?.trim()||/pending/i.test(record.visualEvidence.status))errors.push('Visual review pending');
  if(!record.comparisons?.authoredSolved)errors.push('Authored route incomplete');
  if(level.chapter===2){
   const restricted=record.comparisons?.noHelper;if(!restricted||restricted.status==='unproven')errors.push('Helper bypass proof unproven');

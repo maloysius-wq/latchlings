@@ -1,6 +1,6 @@
 # Campaign rebuild verification ledger
 
-Status: **IN PROGRESS**, Native execution on `codex/campaign-rebuild-20261005`. No replacement campaign exports yet; no merge/deployment. Approved design and implementation plan are under `docs/superpowers/`.
+Status: **IN PROGRESS**, Native execution on `codex/campaign-rebuild-20261005`. Lanternwood replacements exported and targeted acceptance passes; full regression running. Chapters 3–8 pending; no merge/deployment. Approved design and implementation plan are under `docs/superpowers/`.
 
 ## Completed foundations
 
@@ -20,6 +20,15 @@ Diagnostics: the first proposal harness incorrectly required the 320 Large Text 
 
 ## Remaining acceptance
 
-Author-review/export all 50 Lanternwood slots, then Chapters 3–8; stage-accurate teaching/Daily compatibility; current-state Hint and grandfathered-save regressions; all final-ten Aurora design reviews; all 400 fresh proofs and rendered routes; full regression and phone/motion matrix; independent whole-branch review and exact-head pushed CI. Historical baseline tests need full Git history in CI (`fetch-depth: 0`) when added to `npm test`.
+### Lanternwood static export — targeted evidence
+
+- All 50 slots individually reviewed through named dependency intentions in `docs/campaign/lanternwood-intentions.json`; decoded inputs in `docs/campaign/authoring/chapter-2.json`; reproducible proof/witness records in `docs/campaign/acceptance.json`. All replaced; Chapter 1 unchanged.
+- Fresh `accept.cjs --chapter 2`: **50 reviewed, 50 proven, 50 helper-required, zero failures**. Every within-budget no-helper search completes without a clear; no resource exhaustion is treated as success. Five capstones have distinct identity-independent dependency motifs; combined boards have no disconnected solo resident.
+- Fresh rendered gameplay campaign: **400/400 routes PASS**, including unchanged Level 1/201/301 start checks. `campaign-prepare.cjs --chapter-2` regeneration produces the exact static export. Chapter 1 SHA-256 matches its frozen baseline; `git diff --check` passes.
+- All 50 proposal definitions captured and layout-checked at **320×568 Large Text / 390×844 Normal, Reduced Motion**. Actual piece/D-pad optimal clears on **51/58/67/79/96/100** pass. Initial/setup frames sampled and inspected for **51/58/61/67/68/73/81/86/87/90/92/93/94/95/96/97/98/99/100**, including all five capstones. Temporary evidence: `test-artifacts/campaign/proposal-captures/`.
+- Conceptual progression reviewed through individual helper roles, relocations, connected relays and delayed captures. Ten-level median shortest lengths rise **7 → 10 → 10.5 → 14 → 14.5**; these numbers are corroborating evidence, not proof of human difficulty/enjoyment.
+- Acceptance hardening: switch/door is one linked-state class for the finale; pending visual evidence cannot certify a chapter; incomplete or unreviewed author intentions cannot be automatically exported. New regressions observed RED then GREEN.
+
+Complete Lanternwood full regression, then author/review/export Chapters 3–8; stage-accurate teaching/Daily compatibility; current-state Hint and grandfathered-save regressions; all final-ten Aurora design reviews; all 400 fresh proofs and rendered routes; final regression and phone/motion matrix; independent whole-branch review and exact-head pushed CI. Historical baseline tests need full Git history in CI (`fetch-depth: 0`) when added to `npm test`.
 
 Physical iOS/Android, assistive technology, speaker/headphone and player difficulty/enjoyment checks remain unverified. No completion or publication claim is made here.

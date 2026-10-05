@@ -8,3 +8,11 @@ assert.throws(()=>prepareChapter(levels.slice(50,100),{},baseline,simulateState)
 const pending=Object.fromEntries(levels.slice(50,100).map(l=>[l.id,'PENDING dependency review']));
 assert.throws(()=>prepareChapter(levels.slice(50,100),pending,baseline,simulateState),/intention/,'pending notes must not silently become accepted records');
 console.log('PASS preparation refuses partial chapters, absent author intentions and pending review');
+if(process.argv.includes('--chapter-2')){
+ const authored=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/authoring/chapter-2.json'))),notes=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/lanternwood-intentions.json')));
+ const result=prepareChapter(authored,notes,baseline,simulateState,{previous:levels.slice(0,50),visualEvidence:{status:'test replay of the recorded author review'}});
+ assert.equal(result.manifest.records.length,50);
+ assert.deepEqual(result.authoring,levels.slice(50,100));
+ assert.equal(result.exported,fs.readFileSync(path.join(root,'campaign400-2.js'),'utf8').replace(/\r\n/g,'\n'));
+ console.log('PASS complete reviewed Lanternwood input regenerates the exact static chapter export');
+}

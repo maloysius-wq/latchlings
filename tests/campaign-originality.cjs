@@ -44,6 +44,7 @@ function refusesUnprovenOrEmptyRecords(){
  const review=reviewLevel(lev,simulateState,{maxStates:1,maxMs:1000});assert.equal(review.proof.status,'unproven');
  const record={id:51,chapter:2,local:1,stage:'intro',intention:'A meaningful helper setup',focus:['helpers'],prerequisites:['edges'],decision:'retain',baselineMargin:2,canonical:canonical(lev),proof:review.proof,witnesses:[],comparisons:{similarityReviewed:true},rationale:'',contrastWith:[],visualEvidence:{status:'pending'}};
  const errors=validateRecord(lev,record,baseline,[]);assert(errors.some(s=>/proof/i.test(s)));assert(errors.some(s=>/witness/i.test(s)));
+ assert(errors.some(s=>/visual/i.test(s)),'pending visual review must not pass chapter acceptance');
  const changed=clone(lev);changed.moveLimit++;assert(validateRecord(changed,record,baseline,[]).some(s=>/margin/i.test(s)));
  assert(validateRecord(lev,record,baseline,[lev]).some(s=>/duplicate/i.test(s)));
 }

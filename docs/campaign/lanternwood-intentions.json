@@ -47,5 +47,6 @@
   "96": "Capstone: coral's initial wall starts blue, then blue and mint must repeatedly rebuild adjacent upper stops through a long return loop; mint still needs coral on a perpendicular exit after blue captures. Coral must remain until last.",
   "97": "Capstone: relocate coral to serve mint vertically and blue horizontally; mint then serves blue's upward approach twice, with blue serving coral between those visits. A cross-axis hub-and-return sequence, all prepared before the first capture.",
   "98": "Capstone: assemble three adjacent bottom-row stops through a cyclic relay, then mint must use relocated blue horizontally and coral vertically before anyone can leave. The lower-row cascade feeds a two-helper upper exit.",
-  "99": "Capstone: blue and mint trade lower vertical stops, but mint must subsequently use coral above and blue to the right; coral can then capture while blue still needs mint below. A long setup that releases a third-party helper before the reciprocal pair."
+  "99": "Capstone: blue and mint trade lower vertical stops, but mint must subsequently use coral above and blue to the right; coral can then capture while blue still needs mint below. A long setup that releases a third-party helper before the reciprocal pair.",
+  "100": "Regional finale: mint first needs relocated coral below, coral needs blue above and mint below, then blue needs coral for its own intermediate stop. After coral captures, mint still needs blue at the upper stop. Keep blue out of its tempting lower nest until mint is home, then release blue last."
 }

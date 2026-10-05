@@ -8,7 +8,7 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ### Campaign rebuild — 2026-10-05
 
-**IN PROGRESS — Tasks 1–2 tools verified; Lanternwood proposals under review, no levels replaced yet.** The player approved the campaign rebuild spec/plan under `docs/superpowers/`, chose Native execution in the existing branch, and authorized routine decisions without repeated prompts. Review branch: `codex/campaign-rebuild-20261005`, based on live `c79f39f`. Baseline 17-suite runs passed before/after tools; independent proof matched all 400 optima. Evidence and remaining work: `docs/reviews/2026-10-05-campaign-rebuild.md`; execution scratch ledger: `.superpowers/sdd/2026-10-05-campaign-rebuild/progress.md`. Preserve Chapter 1, progress, scoring, per-slot allowances, controls and story. Chapter 2–8 board changes are approved; their old hashes below are historical. No new rule; mastery-only Aurora. No merge/deploy without separate release approval.
+**IN PROGRESS — Lanternwood replacements exported and targeted checks pass; full regression running. Chapters 3–8 remain pending.** The approved spec/plan is under `docs/superpowers/`. Native execution uses the existing `codex/campaign-rebuild-20261005` branch, based on live `c79f39f`; routine decisions are authorized without repeated prompts. Lanternwood acceptance: 50 reviewed/proven/helper-required boards; all 400 rendered routes replay successfully. Detailed evidence, limitations and remaining work: `docs/reviews/2026-10-05-campaign-rebuild.md`; execution scratch: `.superpowers/sdd/2026-10-05-campaign-rebuild/progress.md`. Preserve Chapter 1, progress, scoring, per-slot allowances, controls and story. Old Chapter 2–8 hashes below are historical, not a prohibition on this approved rebuild. No new rule; mastery-only Aurora. No merge/deploy without separate release approval.
 
 ### Release — 2026-09-30
 
@@ -28,7 +28,7 @@ Starting product: `63fa4cf`; the independent audit reopened presentation/earned-
 
 ## Product contracts
 
-- Preserve all 400 authored campaign levels, solutions, move/star rules, and campaign/Daily progress isolation. The eight `campaign400-*.js` files are protected by the hashes below.
+- Preserve 400 numbered campaign slots, move/star rules, and campaign/Daily progress isolation. Chapter 1 remains byte-protected. The approved October 5 rebuild may replace Chapter 2–8 definitions/solutions while preserving each slot's allowance; their hashes below describe the historical release.
 - Preserve the player-paced 21-line Opening, tap/keyboard advancement for every spoken line, the canonical title-screen Little Home and measured porch, Story replay/Skip, and Reduced Motion and Large Text behavior. There is no narrator voice.
 - Keep the accepted pre-Astra Reset/D-pad/Hint puzzle controls. Do not add Undo.
 - Preserve route endpoints, resident/landmark/dialogue clearances, the 320×568 Large Text board/Route Tip gap, earned and immediately skippable Level 50/100/150/200 rewards, and the Level 400 parcel's measured arrival at the canonical porch.
