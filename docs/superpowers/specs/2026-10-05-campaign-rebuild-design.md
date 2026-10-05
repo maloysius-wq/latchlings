@@ -163,4 +163,4 @@ Before implementation closeout:
 
 This is one campaign-content program with sequential chapter acceptance, not seven independently generated sets joined at the end. The implementation plan should establish shared quality tooling first, author/accept Lanternwood, proceed through Lodestone to Stormswitch, then build Aurora against the complete earlier curriculum. A chapter is not done because it contains 50 valid arrays.
 
-The next step is player review of this written specification. Once approved, write a detailed implementation plan with chapter acceptance checkpoints and choose its execution method. Do not start product code or replace authored data before those reviews.
+The player approved this written specification and the detailed implementation plan, chose Native execution, and chose the existing dedicated branch. Those review gates are complete; execute the approved plan without reopening them. Chapter acceptance and final verification remain mandatory, and merge/deployment still need separate release approval.
