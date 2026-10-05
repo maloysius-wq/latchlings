@@ -1,6 +1,7 @@
 'use strict';
 // Deterministic offline proposals; every slot still needs individual author/visual review.
 const fs=require('node:fs'),path=require('node:path');
+const {guidePermissions}=require('./guided-permissions.cjs');
 const {loadCampaign}=require('./runtime.cjs'),{solve}=require('./solve.cjs'),{canonical,nearClones}=require('./fingerprint.cjs'),{candidate}=require('./candidates.cjs'),{permissionDependencies,permissionFailures}=require('./permission-review.cjs');
 const chapter=Number(process.argv[process.argv.indexOf('--chapter')+1]);if(![4,5].includes(chapter))throw new Error('Specify --chapter 4 or 5');
 const root=path.resolve(__dirname,'../..'),{levels,simulateState}=loadCampaign(root),baseline=require('../../docs/campaign/baseline.json'),name=chapter===4?'masquerade':'prism',file=path.join(root,`test-artifacts/campaign/${name}-proposals.json`),checkpoint=fs.existsSync(file)?JSON.parse(fs.readFileSync(file)):[],rows=[],prior=levels.slice(0,(chapter-1)*50),keys=new Set(prior.map(l=>canonical(l))),ideas=new Set();
@@ -21,10 +22,18 @@ for(let local=1;local<=50;local++){
   return{level,proof,decision,profile,dependencies,similarities:nearClones(level,prior),reviewStatus:'pending individual author/visual review',...extra};
  };
  const saved=checkpoint.find(r=>r.level.id===id);if(saved)selected=qualify(saved.level,solve(saved.level,simulateState),saved.decision,{origin:saved.origin||id});
+ // Diagnostic full reproof recovered this design from the exploratory timeout pool.
+ if(!selected&&id===183){const attempt=1781,seed=(0x356de927^Math.imul(id,2654435761)^Math.imul(attempt,2246822519))>>>0,level=candidate(profile,seed,id);selected=qualify(level,solve(level,simulateState,{maxStates:800000,maxMs:30000}),'replace',{seed,attempt,origin:'complete reproof of bounded-search candidate'});}
  if(!selected)selected=qualify(JSON.parse(JSON.stringify(levels[id-1])),solve(levels[id-1],simulateState),'retain',{origin:id});
  for(let attempt=1;!selected&&attempt<=15000;attempt++){
   if(attempt%250===0)console.log(`SEARCH ${name} ${id}: ${attempt}`);
-  const seed=(0x356de927^Math.imul(id,2654435761)^Math.imul(attempt,2246822519))>>>0,level=candidate(profile,seed,id),proof=solve(level,simulateState,{maxStates:200000,maxMs:500});
+  const seed=(0x356de927^Math.imul(id,2654435761)^Math.imul(attempt,2246822519))>>>0,level=candidate(profile,seed,id);let proof=solve(level,simulateState,{maxStates:200000,maxMs:500});
+  if(proof.status==='unproven'&&attempt%16===0)proof=solve(level,simulateState,{maxStates:800000,maxMs:30000});
+  if(stage>=3&&attempt%2===0){
+   const base=candidate({...profile,anchors:0,suitGates:chapter===5?profile.suitGates:0,colorGates:0},seed,id),basis=solve(base,simulateState,{maxStates:200000,maxMs:500});
+   if(basis.status==='solved'){base.solution=basis.route;for(const guided of guidePermissions(base,simulateState,field)){selected=qualify(guided,solve(guided,simulateState,{maxStates:800000,maxMs:30000}),'replace',{seed,attempt,origin:'witness-guided exact stop and permission blocker'});if(selected)break;}}
+  }
+  if(selected)break;
   if(proof.status!=='solved'||proof.optimum<band[0]||proof.optimum>band[1])continue;
   selected=qualify(level,solve(level,simulateState,{maxStates:800000,maxMs:30000}),'replace',{seed,attempt});
  }

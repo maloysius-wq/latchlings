@@ -1,6 +1,6 @@
 # Campaign rebuild verification ledger
 
-Status: **IN PROGRESS**, Native execution on `codex/campaign-rebuild-20261005`. Lanternwood accepted at `0d7bd66`: targeted acceptance and fresh full 17-suite regression PASS. Lodestone offline tools verified; Chapter 3–8 data pending. No merge/deployment. Approved design and implementation plan are under `docs/superpowers/`.
+Status: **IN PROGRESS**, Native execution on `codex/campaign-rebuild-20261005`. Chapters 2–4 are accepted; each passed fresh targeted acceptance and the full 17-suite regression. Chapters 5–8, final compatibility, full visual matrix, independent review and final-head CI remain pending. Prism proposals are offline preparation, not a runtime replacement. No merge/deployment. Approved design and implementation plan are under `docs/superpowers/`.
 
 ## Completed foundations
 
@@ -43,4 +43,15 @@ Remaining: author/review/export Chapters 3–8; stage-accurate teaching/Daily co
 - Ten-level median optima **5 → 8 → 9.5 → 11.5 → 13.5**, corroborating the individual setup/capture-order review, not certifying human difficulty. Physical devices and player enjoyment remain unverified.
 - Chapter regression **PASS, all 17 suites**, session 82499 exit 0; exact full log `task-4-suite.log`. Chapters 4–8 and final compatibility/review/CI tasks remain unfinished. Offline permission tooling and partial Masquerade author notes are preparation, not Chapter 4 acceptance. The proposal harness now also checks actual resident/nest suit SVG agreement; its 32-board Masquerade rerun passes, including shared-suit and shared-color introductions.
 
-Physical iOS/Android, assistive technology, speaker/headphone and player difficulty/enjoyment checks remain unverified. No completion or publication claim is made here.
+### Masquerade accepted — suit/identity routing
+
+- Static authoring/export and 50 individual intentions are complete: **45 replacements, five retained** (158/161/167/172/176). The manifest now has 150 review records. Early shared-suit/different-color and shared-color/different-suit contrasts are freshly checked, not inferred from a search profile.
+- Fresh design acceptance: **50 reviewed / 50 proven / zero failures**, no canonical or near-clone flags against earlier accepted boards. Planning/capstones require causal permission/anchor/helper links and lack an equally short helper-free clear. A faulty prototype 191 was rejected despite its plausible cooperative route; its independently solvable bypass is a regression fixture, never exported.
+- Five distinct capstones: 196 retains Mint for a reciprocal anchor/Spade relay; 197 combines shared Spades with Mint's corner relocation; 198 delays both captures around a permitted anchor launch and lower mismatch stop; 199 releases Mint first but retains Coral for Blue's return; 200 reuses the Club restriction to establish two different launch approaches around a relocated anchored helper.
+- Final proposal pass: **50 boards** at **320×568 Large Text / 390×844 Normal, Reduced Motion**, including resident/nest SVG agreement, displayed starting budgets, Route Tip gap and unchanged visible controls. Actual-control three-star clears: **151/158/167/179/196/200**. Initial frames inspected: **151/152/153/154/155/161/167/169/179/181/191/195/196/197/198/199/200**; setup frames **196/200**. Evidence: `test-artifacts/campaign/masquerade-captures/`.
+- Ten-level median optima **5.5 → 8.5 → 10 → 12.5 → 14.5** support, but do not replace, the individual decision/dependency review. No human difficulty certification is claimed.
+- Exact export/retention round-trip, tools/originality/anchor/permission/guided/route checks, and **all 400 rendered campaign routes PASS**. Chapter 1 matches its frozen Git blob byte-for-byte and SHA-256; `git diff --check` PASS. Read-only occupancy inventory of all 150 accepted replacements/retentions found **zero overlapping resident/nest/mechanic cells**.
+- Fresh full `npm test`: **all 17 suites PASS**, session 5308 exit 0; all 17 PASS results explicitly read. Full log: `.superpowers/sdd/2026-10-05-campaign-rebuild/task-5-suite.log`. Final-head CI and the complete viewport/motion matrix remain Task 11.
+- Offline safeguards added with RED→GREEN tests: meaningful bent-path helper attribution (including a turn on the last traversed tile), actual single-input visible bends, rejection of authored travel stopped only by the engine loop guard, and exclusive route/state tile suggestions. The shipped movement engine is unchanged. No later chapter runtime export is included in this checkpoint.
+
+Physical iOS/Android, assistive technology, speaker/headphone and player difficulty/enjoyment checks remain unverified. No whole-campaign completion or publication claim is made here.

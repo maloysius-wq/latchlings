@@ -4,7 +4,7 @@ const {loadCampaign}=require('./runtime.cjs'),{canonical}=require('./fingerprint
 const {exportChapter}=require('./export.cjs');
 const {cooperation,cooperationFailures}=require('./candidates.cjs');
 const {anchorDependencies,anchorFailures}=require('./anchor-review.cjs');
-const {permissionDependencies,permissionFailures}=require('./permission-review.cjs');
+const {permissionDependencies,permissionFailures,permissionIdentityFailures}=require('./permission-review.cjs');
 const stageFor=id=>{const local=(id-1)%50+1;if(id>=351)return local<=10?'expert-pairs':local<=25?'expert-triples':local<=40?'future-states':local<=45?'expert-interactions':local<50?'culmination':'finale';return local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';};
 
 /** Freshly verify proof and witnesses; stored success flags cannot certify a board. */
@@ -27,6 +27,7 @@ function acceptCampaign(root,{chapter=null}={}){
   const fresh=reviewLevel(level,simulateState,{...record.proof?.settings,focus:record.focus});
   if(fresh.proof.status!=='solved'||fresh.proof.optimum!==level.optimal)fail(level.id,'Fresh shortest proof failed');else proven++;
   if(!fresh.comparisons.authoredSolved)fail(level.id,'Actual authored replay incomplete');
+  if(fresh.comparisons.loopingMoves.length)fail(level.id,'Authored travel hits the engine loop guard');
   for(const focus of record.focus||[])if(!fresh.witnesses.some(w=>w.mechanic===focus))fail(level.id,`Focus ${focus} lacks fresh reachable evidence`);
   if(level.chapter===2){
    for(const error of cooperationFailures(level,simulateState,capstoneMotifs))fail(level.id,error);
@@ -48,7 +49,7 @@ function acceptCampaign(root,{chapter=null}={}){
   const local=(level.id-1)%50+1,forbidden=({2:['anchors','suitGates','colorGates','rails','turners','switches','doors'],3:['suitGates','colorGates','rails','turners','switches','doors'],4:['colorGates','rails','turners','switches','doors'],5:['rails','turners','switches','doors'],6:['switches','doors']})[level.chapter]||[];
   for(const field of forbidden)if(level[field].length)fail(level.id,`Untaught ${field}`);
   if(level.chapter===6&&local<=5&&level.turners.length)fail(level.id,'Premature turner before Level 256');
-  if(level.chapter===6&&local>=6&&local<=8&&!fresh.witnesses.some(w=>w.mechanic==='turners'&&w.effect==='intended-trajectory'))fail(level.id,'Missing introductory turner bend');
+  if(level.chapter===6&&local>=6&&local<=8&&!fresh.witnesses.some(w=>w.mechanic==='turners'&&w.effect==='intended-trajectory'&&w.bend===true))fail(level.id,'Missing introductory turner bend');
   if(level.size<5||level.size>7||level.pieces.length>4)fail(level.id,'Unsupported board size/piece count');
   if(level.id===366&&level.size!==7)fail(level.id,'Lost dense Level 366 stress board');
   if(level.id===400&&(mechanicClasses(fresh.witnesses).size<3||!fresh.witnesses.some(w=>w.mechanic==='helpers')||!level.switches.length))fail(level.id,'Finale lacks staged cooperation/state synthesis');
@@ -58,6 +59,7 @@ function acceptCampaign(root,{chapter=null}={}){
   if(!fs.existsSync(source))fail(level.id,'Missing deterministic authoring source');
  }
  if((!chapter||chapter===2)&&selected.some(l=>l.chapter===2)&&helperRequiredCount<40)fail(2,`Only ${helperRequiredCount}/50 helper-required boards`);
+ for(const ch of [4,5])if(selected.some(l=>l.chapter===ch))for(const error of permissionIdentityFailures(selected,ch))fail(ch,error);
  for(const ch of [...new Set(selected.map(l=>l.chapter))]){
   const file=path.join(root,`docs/campaign/authoring/chapter-${ch}.json`);if(!fs.existsSync(file))continue;
   const authored=JSON.parse(fs.readFileSync(file,'utf8'));if(exportChapter(authored,ch)!==fs.readFileSync(path.join(root,`campaign400-${ch}.js`),'utf8').replace(/\r\n/g,'\n'))fail(ch,'Static export differs from authored source');

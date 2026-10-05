@@ -5,6 +5,12 @@ const effect=move=>move?JSON.stringify([move.r,move.c,move.path,move.mask,move.c
 const focusForChapter=chapter=>({2:['helpers'],3:['anchors'],4:['suitGates'],5:['colorGates'],6:['rails','turners'],7:['switches','doors'],8:[]})[chapter]||[];
 // A switch and its door are two parts of one linked-state rule, not two mechanics.
 const mechanicClasses=witnesses=>new Set(witnesses.map(w=>['switches','doors'].includes(w.mechanic)?'linked-state':w.mechanic));
+function hasVisibleBend(move,from){
+ if(!move)return false;
+ const points=[from,...move.path];let previous;
+ for(let i=1;i<points.length;i++){const direction=[points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]].join(',');if(previous&&previous!==direction)return true;previous=direction;}
+ return false;
+}
 function replay(level,simulateState,route=level.solution){
  let positions=level.pieces.map(p=>p.pos.slice()),doorMask=0;const steps=[];
  for(let prefix=0;prefix<route.length;prefix++){
@@ -26,11 +32,11 @@ function reviewLevel(level,simulateState,settings={}){
    // Solution states make each counterfactual reachable and reproducible.
    for(let pi=0;pi<state.positions.length;pi++)if(state.positions[pi])for(const dir of ['U','D','L','R']){
     const actual=simulateState(level,state.positions,state.doorMask,pi,dir),removed=simulateState(without,state.positions,state.doorMask,pi,dir);
-    if(effect(actual)!==effect(removed))witnesses.push({mechanic:field,prefix,state,move:[pi,dir],effect:move[0]===pi&&move[1]===dir?'intended-trajectory':'relevant-choice',actual:clone(actual),removed:clone(removed)});
+    if(effect(actual)!==effect(removed))witnesses.push({mechanic:field,prefix,state,move:[pi,dir],effect:move[0]===pi&&move[1]===dir?'intended-trajectory':'relevant-choice',actual:clone(actual),removed:clone(removed),...(field==='turners'?{bend:hasVisibleBend(actual,state.positions[pi])}:{})});
    }
   }
  }
- const comparisons={authoredSolved:travel.solved,terrain:canonical(level,{terrainOnly:true}),focus,removal:{}};
+ const comparisons={authoredSolved:travel.solved,terrain:canonical(level,{terrainOnly:true}),focus,removal:{},loopingMoves:travel.steps.filter(s=>s.result.path.length>=level.size*level.size*4&&s.result.reason==='edge').map(s=>s.prefix)};
  for(const field of focus.filter(f=>f!=='helpers'))comparisons.removal[field]=replay({...level,[field]:[]},simulateState).solved;
  if(level.chapter===2)comparisons.noHelper=solve(level,simulateState,{...settings,forbidHelperStops:true,maxDepth:level.moveLimit});
  return {proof:{...proof,settings:{maxStates:settings.maxStates||800000,maxMs:settings.maxMs??30000}},witnesses,comparisons};
@@ -50,6 +56,7 @@ function validateRecord(level,record,baseline,acceptedLevels){
  if(!record.comparisons?.similarityReviewed)errors.push('Similarity review pending');
  if(!record.visualEvidence?.status?.trim()||/pending/i.test(record.visualEvidence.status))errors.push('Visual review pending');
  if(!record.comparisons?.authoredSolved)errors.push('Authored route incomplete');
+ if(record.comparisons?.loopingMoves?.length)errors.push('Authored travel hits the engine loop guard');
  if(level.chapter===2){
   const restricted=record.comparisons?.noHelper;if(!restricted||restricted.status==='unproven')errors.push('Helper bypass proof unproven');
   if(restricted?.status==='solved'&&restricted.optimum<=level.optimal&&!record.contrastWith?.length)errors.push('Perfect no-helper bypass without purposeful contrast');

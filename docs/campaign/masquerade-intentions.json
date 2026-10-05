@@ -1,34 +1,502 @@
 {
-  "151": "Coral traverses the lower Heart permission while Blue has a separate short approach. The wrong suit is blocked at reachable choices: read the mark, not just the gate's appearance.",
-  "152": "Blue and Coral share Spade despite different colors. Coral uses the nonmatching Heart gate as a bottom-row stopper, then turns home; color does not grant passage.",
-  "153": "Both residents are blue but their suits differ. The Heart-marked resident crosses the upper Heart gate while the Spade-marked resident cannot: make the color/suit distinction observable.",
-  "154": "Two differently colored Spade residents share passage through the interior Spade permission. Blue first uses Coral as a top-row stop before taking that permitted route.",
-  "155": "Coral uses Blue near the left edge before Blue takes the interior Spade passage. Read which resident matches each permission while preserving the familiar helper rule.",
-  "156": "Coral and Blue again share Spade; Coral uses Blue's initial stop before traversing the bottom Spade gate. Compare the upper Heart restriction rather than assuming differently colored residents have different permissions.",
-  "157": "Coral first uses Blue at the lower left, then relocates to stop Blue vertically. Blue's Spade passage follows that reciprocal setup; hold Coral until Blue has made its approach.",
-  "158": "Lavender crosses its Star gate along the top row and stops against Blue. Mint and Blue then complete their short approaches; practice a permission crossing that ends against a familiar helper.",
-  "159": "Coral launches from an anchor, crosses Heart and stops against Blue below. Coral then relocates to the bottom left to stop Blue on its later Spade approach.",
-  "160": "Coral launches from its anchor through the top Spade gate. Both residents share Spade despite their colors; contrast the nonmatching right-side Heart restriction.",
-  "161": "Coral crosses the right-side Heart gate and stops against Mint on the left. Mint later approaches that same gate from the opposite side and uses its mismatch as a stop: one permission has two different functions.",
-  "162": "Blue crosses the right-column Spade gate before turning home; Coral has a shorter contrasting route. Review reachable wrong-suit choices without adding another new rule.",
-  "163": "Coral launches from an anchor through its Heart permission, then uses Blue on the right as a stop. Keep the precision setup distinct from the later resident stop.",
-  "164": "Coral traverses the left-column Spade gate shared with differently colored Blue. It later uses Blue on the right: permissions follow suit, while resident stopping follows position.",
-  "165": "Coral's anchor launch takes it through the interior Heart gate; its later position stops Blue's approach. Delay Coral's capture until that helper service is complete.",
-  "166": "Coral launches from an anchor through Heart and stops against Blue at the top left. Blue and Coral subsequently relocate twice along the top row before their captures; suit passage participates in the reciprocal setup.",
-  "167": "Gold crosses the right-edge Club gate and uses Coral below as a stop. Coral later cannot cross that same Club gate and stops below it for its own approach: matching passage and mismatch blocking share one corridor.",
-  "168": "Coral traverses the shared Spade gate and stops against Mint at the lower edge, then needs Blue farther up. Two helper positions establish Coral's approach before any resident is captured.",
-  "169": "Blue deliberately stops above Coral's Heart gate, becoming Coral's second helper. Coral crosses its matching gate and stops against Blue; the mismatch creates the position the permitted traveler needs.",
-  "170": "Coral launches from an anchor, crosses Heart and stops immediately before the adjacent Spade gate. Reciprocal Blue/Coral services surround this two-permission corridor; match and mismatch are both useful.",
-  "171": "Mint launches from its anchor toward the top Spade gate, whose mismatch supplies a precise stop. This anchor/permission combination is a breathing-room three-resident contrast, not a required helper relay.",
-  "172": "Lavender crosses the right-side Star permission and stops against Gold above. Blue finishes its approach first; retain Gold until Lavender's permitted launch has its stop.",
-  "173": "Coral's mismatch at the left Spade gate parks it above that gate, where it stops Blue horizontally. Blue and Coral exchange earlier services on the right before this permission-created helper placement.",
-  "174": "Coral launches from the anchor through Spade, shared with differently colored Blue. Contrast Mint's Club identity and the Heart restriction; use exact launch geometry rather than a long helper chain here.",
-  "175": "Coral crosses the right-side Heart permission and stops against Blue below. Hold Blue until that matching passage has established Coral's final approach.",
-  "176": "Lavender crosses the top Star gate and stops against Coral, then later relocates to stop Blue. Blue subsequently stops Coral in the shared interior row: all residents serve the connected capture chain.",
-  "177": "Coral launches from an anchor and uses the nonmatching interior Spade gate as a stop from two directions. Compare a matching passage available to Blue; the focus is permission-shaped approach geometry.",
-  "178": "Coral's permitted Heart passage parks it in the right column, where it stops Blue moving upward. Blue first supplies Coral's left-side stop; finish Blue before releasing Coral.",
-  "179": "Blue uses Coral's Heart gate as a downward stopper; later Coral launches from its anchor toward Blue's Spade gate and stops beside it. Reciprocal helpers connect these two differently restricted approaches.",
-  "180": "Mint uses Blue at the left edge before a nonmatching right-side gate parks Mint in row three. Coral uses Blue first and Mint second; retain the permission-placed helper until Coral is ready to finish.",
-  "181": "Mint uses Blue above before Coral launches from its anchor, crosses Heart, and stops against Mint. Coral's resulting position then stops Blue: three-way cooperation connects permitted travel to the final release order.",
-  "182": "Blue launches from an anchor through Spade and parks where it stops Coral horizontally. Coral's relocated position then stops Mint vertically; finish Coral, Blue, then Mint only after the two-stage relay is secured."
+  "151": {
+    "intention": "Coral traverses the lower Heart permission while Blue has a separate short approach. The wrong suit is blocked at reachable choices: read the mark, not just the gate's appearance.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "152": {
+    "intention": "Blue and Coral share Spade despite different colors. Coral uses the nonmatching Heart gate as a bottom-row stopper, then turns home; color does not grant passage.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "153": {
+    "intention": "Both residents are blue but their suits differ. The Heart-marked resident crosses the upper Heart gate while the Spade-marked resident cannot: make the color/suit distinction observable.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "154": {
+    "intention": "Two differently colored Spade residents share passage through the interior Spade permission. Blue first uses Coral as a top-row stop before taking that permitted route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "155": {
+    "intention": "Coral uses Blue near the left edge before Blue takes the interior Spade passage. Read which resident matches each permission while preserving the familiar helper rule.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "156": {
+    "intention": "Coral and Blue again share Spade; Coral uses Blue's initial stop before traversing the bottom Spade gate. Compare the upper Heart restriction rather than assuming differently colored residents have different permissions.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "157": {
+    "intention": "Coral first uses Blue at the lower left, then relocates to stop Blue vertically. Blue's Spade passage follows that reciprocal setup; hold Coral until Blue has made its approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "158": {
+    "intention": "Lavender crosses its Star gate along the top row and stops against Blue. Mint and Blue then complete their short approaches; practice a permission crossing that ends against a familiar helper.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "159": {
+    "intention": "Coral launches from an anchor, crosses Heart and stops against Blue below. Coral then relocates to the bottom left to stop Blue on its later Spade approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "160": {
+    "intention": "Coral launches from its anchor through the top Spade gate. Both residents share Spade despite their colors; contrast the nonmatching right-side Heart restriction.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "161": {
+    "intention": "Coral crosses the right-side Heart gate and stops against Mint on the left. Mint later approaches that same gate from the opposite side and uses its mismatch as a stop: one permission has two different functions.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "162": {
+    "intention": "Blue crosses the right-column Spade gate before turning home; Coral has a shorter contrasting route. Review reachable wrong-suit choices without adding another new rule.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "163": {
+    "intention": "Coral launches from an anchor through its Heart permission, then uses Blue on the right as a stop. Keep the precision setup distinct from the later resident stop.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "164": {
+    "intention": "Coral traverses the left-column Spade gate shared with differently colored Blue. It later uses Blue on the right: permissions follow suit, while resident stopping follows position.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "165": {
+    "intention": "Coral's anchor launch takes it through the interior Heart gate; its later position stops Blue's approach. Delay Coral's capture until that helper service is complete.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "166": {
+    "intention": "Coral launches from an anchor through Heart and stops against Blue at the top left. Blue and Coral subsequently relocate twice along the top row before their captures; suit passage participates in the reciprocal setup.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "167": {
+    "intention": "Gold crosses the right-edge Club gate and uses Coral below as a stop. Coral later cannot cross that same Club gate and stops below it for its own approach: matching passage and mismatch blocking share one corridor.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "168": {
+    "intention": "Coral traverses the shared Spade gate and stops against Mint at the lower edge, then needs Blue farther up. Two helper positions establish Coral's approach before any resident is captured.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "169": {
+    "intention": "Blue deliberately stops above Coral's Heart gate, becoming Coral's second helper. Coral crosses its matching gate and stops against Blue; the mismatch creates the position the permitted traveler needs.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "170": {
+    "intention": "Coral launches from an anchor, crosses Heart and stops immediately before the adjacent Spade gate. Reciprocal Blue/Coral services surround this two-permission corridor; match and mismatch are both useful.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "171": {
+    "intention": "Mint launches from its anchor toward the top Spade gate, whose mismatch supplies a precise stop. This anchor/permission combination is a breathing-room three-resident contrast, not a required helper relay.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "172": {
+    "intention": "Lavender crosses the right-side Star permission and stops against Gold above. Blue finishes its approach first; retain Gold until Lavender's permitted launch has its stop.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "173": {
+    "intention": "Coral's mismatch at the left Spade gate parks it above that gate, where it stops Blue horizontally. Blue and Coral exchange earlier services on the right before this permission-created helper placement.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "174": {
+    "intention": "Coral launches from the anchor through Spade, shared with differently colored Blue. Contrast Mint's Club identity and the Heart restriction; use exact launch geometry rather than a long helper chain here.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "175": {
+    "intention": "Coral crosses the right-side Heart permission and stops against Blue below. Hold Blue until that matching passage has established Coral's final approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "176": {
+    "intention": "Lavender crosses the top Star gate and stops against Coral, then later relocates to stop Blue. Blue subsequently stops Coral in the shared interior row: all residents serve the connected capture chain.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "177": {
+    "intention": "Coral launches from an anchor and uses the nonmatching interior Spade gate as a stop from two directions. Compare a matching passage available to Blue; the focus is permission-shaped approach geometry.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "178": {
+    "intention": "Coral's permitted Heart passage parks it in the right column, where it stops Blue moving upward. Blue first supplies Coral's left-side stop; finish Blue before releasing Coral.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "179": {
+    "intention": "Blue uses Coral's Heart gate as a downward stopper; later Coral launches from its anchor toward Blue's Spade gate and stops beside it. Reciprocal helpers connect these two differently restricted approaches.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "180": {
+    "intention": "Mint uses Blue at the left edge before a nonmatching right-side gate parks Mint in row three. Coral uses Blue first and Mint second; retain the permission-placed helper until Coral is ready to finish.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "181": {
+    "intention": "Mint uses Blue above before Coral launches from its anchor, crosses Heart, and stops against Mint. Coral's resulting position then stops Blue: three-way cooperation connects permitted travel to the final release order.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "182": {
+    "intention": "Blue launches from an anchor through Spade and parks where it stops Coral horizontally. Coral's relocated position then stops Mint vertically; finish Coral, Blue, then Mint only after the two-stage relay is secured.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "183": {
+    "intention": "Blue first uses Coral at the top left, then launches from its anchor through the lower Spade gate before using Mint in the right column. Blue and Coral share Spade but Mint has Club: the permitted anchor launch and two helpers establish Blue's approach before the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "184": {
+    "intention": "Coral crosses the lower Heart permission and parks on an anchor where it stops Blue. Blue's resulting position stops Mint vertically; complete both helper services before capturing Blue, Coral, then Mint.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "185": {
+    "intention": "Blue supplies Coral's first stop, then Mint parks on the interior anchor for Coral's Heart passage. After Coral captures, Blue and Mint each use that same Heart gate as a mismatch stopper at the same right-side coordinate; retain Blue until Mint has used its later stop.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "186": {
+    "intention": "Blue launches from an anchor through Spade while Mint supplies two different helper positions for Coral and Blue. Coral later stops Mint on the upper row; capture Blue, Mint, then Coral only after the reciprocal services are finished.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "187": {
+    "intention": "Blue first uses the top Heart gate as a stopper. Coral crosses it twice and uses Mint on the top row, while Blue launches from its anchor against Coral, then uses Coral again farther right. Retain the relocated helper until both Blue approaches are established.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "188": {
+    "intention": "Coral launches from an anchor against Mint, then uses Blue after Blue's Spade passage parks it on a left-side anchor. Coral's new position stops Mint, which then stops Blue's final launch: four connected services determine the release order.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "189": {
+    "intention": "Mint first stops Blue below and Coral then stops Blue above. Blue's later anchor launch crosses Spade before its capture; this shorter contrast ties permission choice to two different helper services.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "190": {
+    "intention": "Coral launches from an anchor through Heart, then uses Mint parked on an anchor and Blue relocated on the left. Coral later stops Mint on the upper row, and Mint relocates to stop Coral again; do not release either resident before the reciprocal chain is complete.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "191": {
+    "intention": "Blue and Coral share Spade despite their different colors; Mint does not. Arrange the bottom-row relay before Mint parks on the interior anchor for Coral's final vertical stop. Only after both Spades capture does Mint launch left from that anchor: the Spade gate blocks Mint one column short, lining up its final Club nest. The gate's permitted Spade passage is a reachable contrast, not part of the shortest route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "192": {
+    "intention": "Mint's mismatch at the upper Spade gate parks it on the top row for Blue. Blue and Coral then exchange stops, Mint uses Coral, and Coral finally uses Blue on an interior anchor: five services precede the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "193": {
+    "intention": "Coral crosses Heart and stops against Blue above. Blue subsequently uses that same gate as a mismatch stopper and supplies Coral's second approach; Mint uses the gate from the other side before relying on Coral's later row-four helper position.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "194": {
+    "intention": "Blue repeatedly launches through Spade, first supplying Coral's top-row stop, then returning to its anchor. Blue uses the lower Heart restriction as a stopper before Mint supplies its horizontal approach; complete both shared services before the captures.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "195": {
+    "intention": "Coral supplies Blue's initial stop, and Blue then serves Mint on the left. After Coral captures, Blue crosses Spade onto an anchor to supply Mint's second stop; Blue must delay its next permitted launch until Mint has used that position.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "196": {
+    "intention": "Keep Mint out of its adjacent nest while it supplies Coral's first stop. Blue then parks on the left anchor for Coral's return, launches through Spade, and uses Coral at its lower relocated position before capturing. Coral later approaches that same Spade gate as a mismatch stopper to turn into its Heart nest; release Mint only after both services are finished.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "197": {
+    "intention": "Blue and Coral are both Spades, but the lower Heart gate stops Coral while Blue crosses the upper Spade gate against Mint. Carry Mint around the left-side anchor to the top-left corner before bringing Coral up against it. Coral then launches from the shared anchor against Blue to align its nest; retain Blue until that stop is used, and capture Mint only after both Spades are home.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "198": {
+    "intention": "Coral holds Blue's destination while Blue launches from the right anchor through Spade and stops short. Blue must circulate to the left, then use Mint on the top row; its new position gives Coral a return stop before Coral captures. Capture Blue only after that service, then launch Mint from the lower anchor against the mismatching Heart gate to align its last approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "199": {
+    "intention": "Mint uses both initial helpers to approach its top-row nest; Blue and Coral must each move out of that approach before Mint captures. Coral then travels through Heart onto the central anchor, moves to the right edge to stop Blue's return, and comes back to the anchor only after Blue captures. Its second permitted launch establishes the loop around the upper rocks into the Heart nest.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  },
+  "200": {
+    "intention": "The Club gate admits Mint on a reachable tempting shortcut, but Mint must stay to serve the relay. Blue uses that gate as a mismatch stopper, then Mint's interior anchor position lines up Blue for Coral's next stop. Release Mint only after those services; keep Coral until Blue has returned through the shared anchor and captured. Finally the same Club restriction stops Coral one row short of the gate, aligning its Heart nest.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "anchors"
+    ]
+  }
 }

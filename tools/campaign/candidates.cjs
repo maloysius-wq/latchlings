@@ -15,21 +15,30 @@ function candidate(profile,seed,id){
  const free=ranked.slice(profile.rocks).map(x=>x.pos).filter(p=>!anchors.some(a=>a[0]===p[0]&&a[1]===p[1]));
  const permissions=(count,property,values,authored)=>free.splice(0,count||0).map((p,i)=>[...p,authored?.[i]??(i<pieces.length?pieces[i][property]:values[Math.floor(random()*values.length)])]);
  const suitGates=permissions(profile.suitGates,'suit',SUITS,profile.suitPermissions),colorGates=permissions(profile.colorGates,'color',COLORS,profile.colorPermissions);
- return {size:n,pieces,nests,rocks:ranked.slice(0,profile.rocks).map(x=>x.pos),anchors,suitGates,colorGates,rails:[],turners:[],switches:[],doors:[],id,chapter:Math.ceil(id/50),solution:[],optimal:0,moveLimit:0,difficultyScore:0};
+ const routeTiles=(count,values)=>free.splice(0,count||0).map(p=>[...p,values[Math.floor(random()*values.length)]]);
+ const rails=routeTiles(profile.rails,['U','D','L','R']),turners=routeTiles(profile.turners,['CW','CCW']);
+ const switches=[],doors=[];
+ for(let link=0;link<(profile.links||0);link++){const sw=free.shift(),door=free.shift();if(!sw||!door)throw new Error('Not enough exclusive cells for linked-state suggestions');switches.push([...sw,link]);doors.push([...door,link]);}
+ return {size:n,pieces,nests,rocks:ranked.slice(0,profile.rocks).map(x=>x.pos),anchors,suitGates,colorGates,rails,turners,switches,doors,id,chapter:Math.ceil(id/50),solution:[],optimal:0,moveLimit:0,difficultyScore:0};
 }
 function cooperation(level,simulateState){
  const travel=replay(level,simulateState),vectors={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},stops=[],captures=[];
  for(const step of travel.steps){
   if(step.result.capture)captures.push(step.prefix);
   if(step.result.reason!=='piece')continue;
-  const [dr,dc]=vectors[step.move[1]],at=[step.result.r+dr,step.result.c+dc],helper=step.state.positions.findIndex((p,i)=>i!==step.move[0]&&p&&p[0]===at[0]&&p[1]===at[1]);
+  // The blocker is ahead of the final travel direction, not necessarily the input.
+  // Include a turn on the last traversed tile: rotation happens before the blocked step.
+  let finalDirection=step.move[1];
+  const clockwise={U:'R',R:'D',D:'L',L:'U'},counterclockwise={U:'L',L:'D',D:'R',R:'U'};
+  for(const [r,c] of step.result.path){const turn=level.turners.find(t=>t[0]===r&&t[1]===c);if(turn)finalDirection=(turn[2]==='CW'?clockwise:counterclockwise)[finalDirection];}
+  const [dr,dc]=vectors[finalDirection],at=[step.result.r+dr,step.result.c+dc],helper=step.state.positions.findIndex((p,i)=>i!==step.move[0]&&p&&p[0]===at[0]&&p[1]===at[1]);
   if(helper<0)continue;
   const initial=level.pieces[helper].pos,relocated=initial[0]!==at[0]||initial[1]!==at[1];
-  stops.push({...step,traveler:step.move[0],helper,helperPosition:at,relocated});
+  stops.push({...step,traveler:step.move[0],helper,helperPosition:at,relocated,finalDirection});
  }
  const roles=new Set(stops.map(s=>s.traveler)),edges=new Set(stops.map(s=>s.traveler+'>'+s.helper));
  const captureOrder=travel.steps.filter(s=>s.result.capture).map(s=>s.move[0]);
- const motif=stops.map((s,i)=>{const axis=s.move[1]==='U'||s.move[1]==='D'?'vertical':'horizontal',previous=i?(stops[i-1].move[1]==='U'||stops[i-1].move[1]==='D'?'vertical':'horizontal'):axis;return `${captureOrder.indexOf(s.traveler)}>${captureOrder.indexOf(s.helper)}:${s.relocated?'relocated':'initial'}:${axis===previous?'same-axis':'cross-axis'}:after-${captures.filter(p=>p<s.prefix).length}-captures`;}).join('/');
+ const motif=stops.map((s,i)=>{const axis=s.finalDirection==='U'||s.finalDirection==='D'?'vertical':'horizontal',previous=i?(stops[i-1].finalDirection==='U'||stops[i-1].finalDirection==='D'?'vertical':'horizontal'):axis;return `${captureOrder.indexOf(s.traveler)}>${captureOrder.indexOf(s.helper)}:${s.relocated?'relocated':'initial'}:${axis===previous?'same-axis':'cross-axis'}:after-${captures.filter(p=>p<s.prefix).length}-captures`;}).join('/');
  return {stops,captures,motif,captureOrder,participants:new Set(stops.flatMap(s=>[s.traveler,s.helper])).size,relocations:stops.filter(s=>s.relocated).length,travelers:roles.size,roleSwap:[...edges].some(e=>{const[a,b]=e.split('>');return edges.has(b+'>'+a);}),beforeFirstCapture:stops.filter(s=>s.prefix<(captures[0]??Infinity)).length,signature:stops.map(s=>`${s.traveler}>${s.helper}${s.relocated?'m':'s'}`).join('/'),solved:travel.solved};
 }
 function fitsCooperation(deps,profile){

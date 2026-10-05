@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict'),path=require('node:path');
+const {loadCampaign}=require('../tools/campaign/runtime.cjs'),{reviewLevel}=require('../tools/campaign/review.cjs');
+const {simulateState}=loadCampaign(path.resolve(__dirname,'..'));
+const bent={id:256,chapter:6,size:5,pieces:[{color:'blue',suit:'spade',pos:[2,0]},{color:'coral',suit:'heart',pos:[4,2]}],nests:[[3,4],[4,4]],rocks:[],anchors:[],suitGates:[],colorGates:[],rails:[],turners:[[2,2,'CW']],switches:[],doors:[],solution:[[0,'R'],[0,'R'],[1,'R']]};
+const actual=reviewLevel(bent,simulateState,{focus:['turners'],maxStates:10000,maxMs:1000});
+assert(actual.comparisons.authoredSolved);
+assert(actual.witnesses.some(w=>w.mechanic==='turners'&&w.effect==='intended-trajectory'&&w.bend===true),'turner introduction needs a visible bend within a single input');
+const lastTile={...bent,pieces:[bent.pieces[0],{...bent.pieces[1],pos:[3,2]}],nests:[[2,4],[3,4]]};
+const stopped=reviewLevel(lastTile,simulateState,{focus:['turners'],maxStates:10000,maxMs:1000});
+assert(stopped.witnesses.some(w=>w.mechanic==='turners'&&w.effect==='intended-trajectory'),'last-tile turn remains a real relevant stopping choice');
+assert(!stopped.witnesses.some(w=>w.mechanic==='turners'&&w.effect==='intended-trajectory'&&w.bend===true),'a rotation immediately blocked by a helper is not a visible introductory bend on the authored route');
+const loop={...bent,pieces:[{color:'blue',suit:'spade',pos:[1,2]}],nests:[[4,4]],turners:[[1,3,'CW'],[3,3,'CW'],[3,1,'CW'],[1,1,'CW']],solution:[[0,'R']]};
+const loopMove=simulateState(loop,[[1,2]],0,0,'R');
+assert.equal(loopMove.path.length,loop.size*loop.size*4,'fixture must hit the actual engine loop guard');
+const loopReview=reviewLevel(loop,simulateState,{focus:['turners'],maxStates:1000,maxMs:1000});
+assert.deepEqual(loopReview.comparisons.loopingMoves,[0],'offline review must flag travel stopped only by the engine loop guard');
+console.log('PASS visible one-input bends, meaningful last-tile turns and honest bounded-loop rejection');

@@ -55,12 +55,12 @@ Shared types (plain JavaScript objects, documented with JSDoc): `Level` is the d
 
 **Interfaces:** `loadCampaign(root) -> {levels, simulateState}`; `solve(level, simulateState, {initialState?, maxStates, maxMs, maxDepth?, forbidHelperStops?}) -> {status:'solved'|'unsolvable'|'depth-exhausted'|'unproven', route?, optimum?, states}`. Unsolvable requires exhausting the reachable graph; depth-exhausted only disproves solutions within the bound.
 
-- [ ] Add failing tests named `matchesRenderedTransitions`, `provesTinyShortestRoute`, `reportsExhaustionHonestly` and `honorsDoorStateAndHelperRestriction`. Assert exact shortest lengths on hand-checkable fixtures; a deliberately tiny state limit returns `unproven`; depth limit cannot return globally `unsolvable`; helper restriction forbids moves with `reason === 'piece'`.
-- [ ] Run `node tests/campaign-tools.cjs`; expect missing-module failure before implementation.
-- [ ] Implement VM loading following the existing read-only October 5 audit, using `game400-b.js`'s actual `simulateState` and its documented constants. Fail clearly if source boundaries change. Breadth-first state keys include every piece position/capture plus door mask; reconstruct routes from parent links rather than copying every path into the queue.
-- [ ] Capture all 400 baseline margins from Git revision `c79f39f`, not an already edited working tree. Add a Playwright comparison of returned movement paths/events/masks for representative mechanics to prevent VM drift.
-- [ ] Run tool tests and prove all 400 baseline boards (retry unresolved searches with explicitly larger budgets); expect 400 proven optima matching metadata. Record resource settings, not machine-specific completion promises.
-- [ ] Commit only the named tools, fixtures and baseline: `test: establish campaign baseline and shortest-path proof tools`.
+- [x] Add failing tests named `matchesRenderedTransitions`, `provesTinyShortestRoute`, `reportsExhaustionHonestly` and `honorsDoorStateAndHelperRestriction`. Assert exact shortest lengths on hand-checkable fixtures; a deliberately tiny state limit returns `unproven`; depth limit cannot return globally `unsolvable`; helper restriction forbids moves with `reason === 'piece'`.
+- [x] Run `node tests/campaign-tools.cjs`; expect missing-module failure before implementation.
+- [x] Implement VM loading following the existing read-only October 5 audit, using `game400-b.js`'s actual `simulateState` and its documented constants. Fail clearly if source boundaries change. Breadth-first state keys include every piece position/capture plus door mask; reconstruct routes from parent links rather than copying every path into the queue.
+- [x] Capture all 400 baseline margins from Git revision `c79f39f`, not an already edited working tree. Add a Playwright comparison of returned movement paths/events/masks for representative mechanics to prevent VM drift.
+- [x] Run tool tests and prove all 400 baseline boards (retry unresolved searches with explicitly larger budgets); expect 400 proven optima matching metadata. Record resource settings, not machine-specific completion promises.
+- [x] Commit only the named tools, fixtures and baseline: `test: establish campaign baseline and shortest-path proof tools`.
 
 ### Task 2: Add originality, relevance and deterministic export gates
 
@@ -70,13 +70,13 @@ Shared types (plain JavaScript objects, documented with JSDoc): `Level` is the d
 
 CLI: `node tools/campaign/accept.cjs --chapter N` checks the current chapter against Chapter 1 and earlier accepted chapters; `--all` requires all 350 records. Output nonzero for failure or unproven required evidence. Write reports under `test-artifacts/campaign/`, never overwrite authoring inputs on a failed check.
 
-- [ ] Add failing assertions: reflected rails/turners and consistent identity/link renaming share fingerprints; wrong nest association and reversed turner handedness do not. Reproduce baseline duplicate counts (130 excess instances) as baseline-only evidence, not final tolerance.
-- [ ] Add export round-trip assertion `deepEqual(decodedExport, inputLevels)` and repeat-export byte equality. Assert IDs/chapter/margins and Chapter 1 hash; reject missing design records, exhausted proofs, unreviewed similarity flags and empty mechanic witnesses.
-- [ ] Run `node tests/campaign-tools.cjs`; expect missing interfaces/assertion failure.
-- [ ] Implement signatures above. Preserve color/suit distinctions while consistently renaming identities; transform directions/handedness and shared switch/door links correctly. Near-clone output flags geometry and dependency motifs for review; it does not automatically certify originality.
-- [ ] Implement alternative-route searches: Chapter 2 within-budget and optimal-depth searches forbidding helper stops; feature-removal comparisons and reachable relevant blocking/pass/turn/toggle witnesses for other focus mechanics. Record uncertainty as unproven. Gates may legitimately block wrong choices even if intended travel survives removal.
-- [ ] Run tools, baseline analysis and export round-trip fixtures; expect PASS. Add final `campaign-design.cjs` assertions for zero duplicate replacements, all 350 complete records and baseline margins; leave final campaign acceptance visibly pending until authored, not silently disabled.
-- [ ] Commit `feat: add campaign originality and mechanic acceptance gates`.
+- [x] Add failing assertions: reflected rails/turners and consistent identity/link renaming share fingerprints; wrong nest association and reversed turner handedness do not. Reproduce baseline duplicate counts (130 excess instances) as baseline-only evidence, not final tolerance.
+- [x] Add export round-trip assertion `deepEqual(decodedExport, inputLevels)` and repeat-export byte equality. Assert IDs/chapter/margins and Chapter 1 hash; reject missing design records, exhausted proofs, unreviewed similarity flags and empty mechanic witnesses.
+- [x] Run `node tests/campaign-tools.cjs`; expect missing interfaces/assertion failure.
+- [x] Implement signatures above. Preserve color/suit distinctions while consistently renaming identities; transform directions/handedness and shared switch/door links correctly. Near-clone output flags geometry and dependency motifs for review; it does not automatically certify originality.
+- [x] Implement alternative-route searches: Chapter 2 within-budget and optimal-depth searches forbidding helper stops; feature-removal comparisons and reachable relevant blocking/pass/turn/toggle witnesses for other focus mechanics. Record uncertainty as unproven. Gates may legitimately block wrong choices even if intended travel survives removal.
+- [x] Run tools, baseline analysis and export round-trip fixtures; expect PASS. Add final `campaign-design.cjs` assertions for zero duplicate replacements, all 350 complete records and baseline margins; leave final campaign acceptance visibly pending until authored, not silently disabled.
+- [x] Commit `feat: add campaign originality and mechanic acceptance gates`.
 
 ## Chapter Authoring Cycle (Tasks 3–9)
 
@@ -94,6 +94,8 @@ Each chapter is its own reviewed deliverable. The steps below apply separately t
 
 ### Task 3: Lanternwood, Levels 51–100
 
+**Status:** Complete at `0d7bd66`; 50 reviewed/proven boards, fresh full 17-suite regression PASS. See the campaign review ledger for exact visual evidence.
+
 **Files:** Create `docs/campaign/authoring/chapter-2.json`, `docs/campaign/acceptance.json`; modify `campaign400-2.js`, `tests/campaign-design.cjs`.
 
 Curriculum: advanced cooperation, not a falsely new helper rule. Introduce relocation, swapping roles and delayed captures through sparse geometry, then connected multi-piece dependencies. No anchors/gates/rails/turners/switches/doors. At least 40/50 boards have no within-budget clear with helper-stop moves forbidden; every non-contrast board has no optimal clear without a helper stop. Explicitly mark remaining purposeful teaching contrasts. Include witness of a helper relocation and of delayed capture in later bands; capstones must not be independent solo errands.
@@ -102,11 +104,15 @@ Chapter assertions include `helperRequiredCount >= 40`, no unproven restricted s
 
 ### Task 4: Lodestone, Levels 101–150
 
+**Status:** Complete at `7eb11d3`; 50 reviewed/proven boards, fresh full 17-suite regression PASS. See the campaign review ledger for exact visual evidence.
+
 **Files:** Create chapter-3 authoring JSON; modify `campaign400-3.js`, acceptance manifest, design tests.
 
 Curriculum: relevant exact anchor stops/launch points first; later connected helper relocation and capture order. No later mechanics. Every anchor-focus board has actual route evidence of its stop/launch dependence, not an unused tile. Distinct final five include different helper/anchor relationships. Commit: `feat: rebuild Lodestone anchor progression`.
 
 ### Task 5: Masquerade, Levels 151–200
+
+**Status:** Complete; 50 reviewed/proven boards, exact export/retention round-trip, 50-board phone pass and fresh full 17-suite regression PASS. Exact evidence is in the campaign review ledger. Later chapters and final closeout remain pending.
 
 **Files:** Create chapter-4 authoring JSON; modify `campaign400-4.js`, manifest, design tests.
 

@@ -21,10 +21,15 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
     await page.waitForFunction(()=>document.body.dataset.screen==='game'&&document.querySelector('#board .latchling'));
     await page.evaluate(async()=>{await document.fonts.ready;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
     assert.equal(await page.locator('#storyCardOverlay.show').count(),0,'proposal review must not capture behind a story card');
+    assert.equal(await page.locator('#movesLeft').textContent(),String(row.level.moveLimit),`Proposal ${row.level.id} initial budget must match its proven target and preserved margin`);
     const identities=await page.evaluate(()=>LEVELS[currentLevel-1].pieces.map((piece,pi)=>{const expected=document.createElement('span');expected.innerHTML=suitSvg(piece.suit);return {pi,color:piece.color,suit:piece.suit,nest:document.querySelector(`#board .nest[data-pi="${pi}"] svg`)?.outerHTML,piece:document.querySelector(`#board .latchling[data-pi="${pi}"] .suit-mark svg`)?.outerHTML,expected:expected.firstElementChild.outerHTML};}));
     for(const identity of identities){assert.equal(identity.nest,identity.expected,`Proposal ${row.level.id} nest ${identity.pi} must show its actual ${identity.color} ${identity.suit} identity`);assert.equal(identity.piece,identity.expected,`Proposal ${row.level.id} resident ${identity.pi} suit must agree with its nest`);}
     const layout=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {board:box('#board'),tip:box('#mechanicNote'),controls:box('.controls'),overflow:document.documentElement.scrollWidth>innerWidth};});
     await page.screenshot({path:path.join(evidence,`${config.width}-${config.text}-level-${row.level.id}.png`)});
+    if(process.argv.includes('--diagnose-budget')&&row.level.id===196){
+     console.log(JSON.stringify(await page.evaluate(()=>({level:currentLevel,movesUsed,limit:LEVELS[currentLevel-1].moveLimit,text:document.querySelector('#movesLeft').textContent,font:getComputedStyle(document.querySelector('#movesLeft')).font,box:document.querySelector('#movesLeft').getBoundingClientRect().toJSON()}))));
+     await page.locator('#movesLeft').screenshot({path:path.join(evidence,`${config.width}-${config.text}-level-196-budget.png`)});
+    }
     const requiredGap=config.width===320&&config.text==='large'?2:0;
     assert(layout.tip.top-(layout.board.top+layout.board.height)>=requiredGap,`Proposal ${row.level.id} board/Route Tip gap ${config.width}: ${JSON.stringify(layout)}`);
     assert(!layout.overflow);assert(layout.controls.bottom<=config.height,`Proposal ${row.level.id} controls clipped`);
