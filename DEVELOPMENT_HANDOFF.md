@@ -6,6 +6,10 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ## Current state — 2026-09-29
 
+### Campaign rebuild — 2026-10-05
+
+**IN PROGRESS — design/specification, not level implementation.** The player requested a substantial Levels 51–400 rebuild and approved Chapter 8 as a challenging mastery-only finale. Review branch: `codex/campaign-rebuild-20261005`, based on live `c79f39f`. Preserve Chapter 1 exactly, existing progress, scoring formulas, controls, and story. The new request permits changing Chapter 2–8 boards; their old hashes below remain historical baselines, not a prohibition on the approved rebuild. No new rule is planned; Lanternwood advances existing cooperation, Chapters 3–7 introduce their existing mechanics progressively, and Aurora tests their synthesis. Specification: `docs/superpowers/specs/2026-10-05-campaign-rebuild-design.md`; written-spec approval and implementation planning remain pending. Do not merge/deploy this rewrite without separate release approval. Keep this status concise; record evidence in the spec/review artifacts, not a new giant handoff.
+
 ### Release — 2026-09-30
 
 **COMPLETE — authorized merge and live deployment verified.** The player explicitly authorized publication on September 30. `main` fast-forwarded from `47103e9` to release `7e8188f1932ff01ee7698a213678e9225e5253f3`, preserving the reviewed `d00cb4b` game/test tree; release closeout changes documentation only. GitHub Pages publishes `main` from `/` to [the live game](https://maloysius-wq.github.io/latchlings/). Earlier no-merge/no-deploy and unmerged statements below describe the previous review phase, not current release status. Preserve the review branch and unrelated local evidence.
