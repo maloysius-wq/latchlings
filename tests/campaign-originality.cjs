@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),path=require('node:path'),vm=require(
 const {loadCampaign}=require('../tools/campaign/runtime.cjs');
 const {canonical,nearClones}=require('../tools/campaign/fingerprint.cjs');
 const {encodeLevel,exportChapter}=require('../tools/campaign/export.cjs');
-const {reviewLevel,validateRecord}=require('../tools/campaign/review.cjs');
+const {reviewLevel,validateRecord,mechanicClasses}=require('../tools/campaign/review.cjs');
 const {levels,simulateState}=loadCampaign(path.resolve(__dirname,'..'));
 const baselineLevels=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels;
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -47,4 +47,9 @@ function refusesUnprovenOrEmptyRecords(){
  const changed=clone(lev);changed.moveLimit++;assert(validateRecord(changed,record,baseline,[]).some(s=>/margin/i.test(s)));
  assert(validateRecord(lev,record,baseline,[lev]).some(s=>/duplicate/i.test(s)));
 }
-for(const test of [reflectsDirectionsAndHandedness,exportsRoundTrip,catchesBaselineRepeats,flagsCloseTerrainWithoutCallingItCertified,refusesUnprovenOrEmptyRecords]){test();console.log(`PASS ${test.name}`);}
+function countsLinkedStateAsOneMechanic(){
+ assert.equal(typeof mechanicClasses,'function','finale must count mechanic classes, not switch and door tiles separately');
+ assert.equal(mechanicClasses([{mechanic:'helpers'},{mechanic:'switches'},{mechanic:'doors'}]).size,2);
+ assert.equal(mechanicClasses([{mechanic:'helpers'},{mechanic:'anchors'},{mechanic:'switches'},{mechanic:'doors'}]).size,3);
+}
+for(const test of [reflectsDirectionsAndHandedness,exportsRoundTrip,catchesBaselineRepeats,flagsCloseTerrainWithoutCallingItCertified,refusesUnprovenOrEmptyRecords,countsLinkedStateAsOneMechanic]){test();console.log(`PASS ${test.name}`);}

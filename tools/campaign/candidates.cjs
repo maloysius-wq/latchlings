@@ -21,7 +21,9 @@ function cooperation(level,simulateState){
   stops.push({...step,traveler:step.move[0],helper,helperPosition:at,relocated});
  }
  const roles=new Set(stops.map(s=>s.traveler)),edges=new Set(stops.map(s=>s.traveler+'>'+s.helper));
- return {stops,captures,relocations:stops.filter(s=>s.relocated).length,travelers:roles.size,roleSwap:[...edges].some(e=>{const[a,b]=e.split('>');return edges.has(b+'>'+a);}),beforeFirstCapture:stops.filter(s=>s.prefix<(captures[0]??Infinity)).length,signature:stops.map(s=>`${s.traveler}>${s.helper}${s.relocated?'m':'s'}`).join('/'),solved:travel.solved};
+ const captureOrder=travel.steps.filter(s=>s.result.capture).map(s=>s.move[0]);
+ const motif=stops.map((s,i)=>{const axis=s.move[1]==='U'||s.move[1]==='D'?'vertical':'horizontal',previous=i?(stops[i-1].move[1]==='U'||stops[i-1].move[1]==='D'?'vertical':'horizontal'):axis;return `${captureOrder.indexOf(s.traveler)}>${captureOrder.indexOf(s.helper)}:${s.relocated?'relocated':'initial'}:${axis===previous?'same-axis':'cross-axis'}:after-${captures.filter(p=>p<s.prefix).length}-captures`;}).join('/');
+ return {stops,captures,motif,captureOrder,participants:new Set(stops.flatMap(s=>[s.traveler,s.helper])).size,relocations:stops.filter(s=>s.relocated).length,travelers:roles.size,roleSwap:[...edges].some(e=>{const[a,b]=e.split('>');return edges.has(b+'>'+a);}),beforeFirstCapture:stops.filter(s=>s.prefix<(captures[0]??Infinity)).length,signature:stops.map(s=>`${s.traveler}>${s.helper}${s.relocated?'m':'s'}`).join('/'),solved:travel.solved};
 }
 function fitsCooperation(deps,profile){
  return deps.solved&&deps.stops.length>=(profile.minStops||0)&&deps.travelers>=(profile.minTravelers||0)&&deps.relocations>=(profile.minRelocations||0)&&deps.beforeFirstCapture>=(profile.minBeforeCapture||0)&&(!profile.roleSwap||deps.roleSwap);

@@ -3,6 +3,8 @@ const {solve}=require('./solve.cjs'),{canonical,FIELDS}=require('./fingerprint.c
 const clone=value=>JSON.parse(JSON.stringify(value));
 const effect=move=>move?JSON.stringify([move.r,move.c,move.path,move.mask,move.capture]):'blocked';
 const focusForChapter=chapter=>({2:['helpers'],3:['anchors'],4:['suitGates'],5:['colorGates'],6:['rails','turners'],7:['switches','doors'],8:[]})[chapter]||[];
+// A switch and its door are two parts of one linked-state rule, not two mechanics.
+const mechanicClasses=witnesses=>new Set(witnesses.map(w=>['switches','doors'].includes(w.mechanic)?'linked-state':w.mechanic));
 function replay(level,simulateState,route=level.solution){
  let positions=level.pieces.map(p=>p.pos.slice()),doorMask=0;const steps=[];
  for(let prefix=0;prefix<route.length;prefix++){
@@ -53,4 +55,4 @@ function validateRecord(level,record,baseline,acceptedLevels){
  }
  return errors;
 }
-module.exports={reviewLevel,validateRecord,replay,focusForChapter};
+module.exports={reviewLevel,validateRecord,replay,focusForChapter,mechanicClasses};

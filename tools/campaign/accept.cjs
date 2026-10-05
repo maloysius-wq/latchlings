@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {loadCampaign}=require('./runtime.cjs'),{canonical}=require('./fingerprint.cjs'),{reviewLevel,validateRecord,focusForChapter}=require('./review.cjs');
+const {loadCampaign}=require('./runtime.cjs'),{canonical}=require('./fingerprint.cjs'),{reviewLevel,validateRecord,focusForChapter,mechanicClasses}=require('./review.cjs');
 const {exportChapter}=require('./export.cjs');
 const stageFor=id=>{const local=(id-1)%50+1;if(id>=351)return local<=10?'expert-pairs':local<=25?'expert-triples':local<=40?'future-states':local<=45?'expert-interactions':local<50?'culmination':'finale';return local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';};
 
@@ -37,7 +37,7 @@ function acceptCampaign(root,{chapter=null}={}){
   if(level.chapter===6&&local>=6&&local<=8&&!fresh.witnesses.some(w=>w.mechanic==='turners'&&w.effect==='intended-trajectory'))fail(level.id,'Missing introductory turner bend');
   if(level.size<5||level.size>7||level.pieces.length>4)fail(level.id,'Unsupported board size/piece count');
   if(level.id===366&&level.size!==7)fail(level.id,'Lost dense Level 366 stress board');
-  if(level.id===400&&(new Set(fresh.witnesses.map(w=>w.mechanic)).size<3||!fresh.witnesses.some(w=>w.mechanic==='helpers')||!level.switches.length))fail(level.id,'Finale lacks staged cooperation/state synthesis');
+  if(level.id===400&&(mechanicClasses(fresh.witnesses).size<3||!fresh.witnesses.some(w=>w.mechanic==='helpers')||!level.switches.length))fail(level.id,'Finale lacks staged cooperation/state synthesis');
   const bands={intro:[3,6],practice:[5,10],combine:[7,13],planning:[10,18],capstone:[12,22]},band=bands[record.stage]||[12,26];
   if((level.optimal<band[0]||level.optimal>band[1])&&!record.rationale?.trim())fail(level.id,'Missing numeric pacing exception rationale');
   const source=path.join(root,`docs/campaign/authoring/chapter-${level.chapter}.json`);
