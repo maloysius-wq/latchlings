@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('node:assert/strict'),path=require('node:path');
+const {loadCampaign}=require('../tools/campaign/runtime.cjs');
+const {candidate,cooperation,fitsCooperation}=require('../tools/campaign/candidates.cjs');
+const {levels,simulateState}=loadCampaign(path.resolve(__dirname,'..'));
+const a=candidate({size:5,pieces:2,rocks:5,geometry:'lanes'},1234,51),b=candidate({size:5,pieces:2,rocks:5,geometry:'lanes'},1234,51);
+assert.deepEqual(a,b,'offline candidate construction must be deterministic');
+const occupied=[...a.pieces.map(p=>p.pos),...a.nests,...a.rocks].map(v=>v.join(','));assert.equal(new Set(occupied).size,occupied.length);
+assert(a.pieces.every(p=>p.pos.every(v=>v>=0&&v<5)));assert(a.nests.every(p=>p.every(v=>v>=0&&v<5)));
+const deps=cooperation(levels[50],simulateState);assert(deps.stops.length>0);assert(deps.stops.every(s=>s.helper!==s.traveler));
+assert.equal(typeof fitsCooperation,'function','missing cooperation selection gate');
+assert(fitsCooperation(deps,{minStops:1,minTravelers:1,minRelocations:0,minBeforeCapture:0}));
+assert(!fitsCooperation(deps,{minStops:99,minTravelers:1,minRelocations:0,minBeforeCapture:0}));
+assert(!fitsCooperation(deps,{minStops:1,minTravelers:99,minRelocations:0,minBeforeCapture:0}));
+for(const stop of deps.stops){assert.deepEqual(stop.state.positions[stop.helper],stop.helperPosition);assert.equal(stop.result.reason,'piece');}
+console.log('PASS deterministic candidates, exclusive geometry and replayable cooperation dependencies');
