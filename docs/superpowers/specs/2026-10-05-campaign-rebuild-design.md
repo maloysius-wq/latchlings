@@ -1,6 +1,6 @@
 # Campaign rebuild design — October 5, 2026
 
-Status: **written specification awaiting player review**. The player approved the rebuild direction and specifically chose a challenging mastery-only Chapter 8. That conversational approval permits this specification; it is not approval of an implementation plan that has not yet been written. No replacement levels are implemented.
+Status: **player-approved specification; Native implementation authorized**. The player reviewed and approved this specification, then the written implementation plan, and chose Native execution. Chapter 8 is a challenging mastery-only finale. Track actual implementation/verification in the plan ledger and handoff; this approval is not a completion claim.
 
 ## 1. Intended experience and scope
 

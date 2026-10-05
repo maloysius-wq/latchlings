@@ -165,4 +165,4 @@ Curriculum: 351–360 compact expert pairwise interactions; 361–375 three-way 
 
 ## Execution Gate
 
-The player has approved the specification, not yet this written plan. Review the plan and choose **Native** (the current agent implements sequentially, with a final independent review) or **Subagent-driven** (fresh implementation/review agents per task). Recommend Native here: chapter design depends strongly on the accepted preceding curriculum, and sequential authoring preserves that context. Neither choice authorizes deployment or unverified completion claims.
+The player approved this written plan and chose **Native**, then explicitly chose the existing dedicated branch and authorized routine development decisions without repeated prompts. Implement sequentially with a final independent review. This does not authorize deployment or unverified completion claims.
