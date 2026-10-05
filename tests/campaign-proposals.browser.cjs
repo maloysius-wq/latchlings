@@ -21,6 +21,8 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
     await page.waitForFunction(()=>document.body.dataset.screen==='game'&&document.querySelector('#board .latchling'));
     await page.evaluate(async()=>{await document.fonts.ready;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
     assert.equal(await page.locator('#storyCardOverlay.show').count(),0,'proposal review must not capture behind a story card');
+    const identities=await page.evaluate(()=>LEVELS[currentLevel-1].pieces.map((piece,pi)=>{const expected=document.createElement('span');expected.innerHTML=suitSvg(piece.suit);return {pi,color:piece.color,suit:piece.suit,nest:document.querySelector(`#board .nest[data-pi="${pi}"] svg`)?.outerHTML,piece:document.querySelector(`#board .latchling[data-pi="${pi}"] .suit-mark svg`)?.outerHTML,expected:expected.firstElementChild.outerHTML};}));
+    for(const identity of identities){assert.equal(identity.nest,identity.expected,`Proposal ${row.level.id} nest ${identity.pi} must show its actual ${identity.color} ${identity.suit} identity`);assert.equal(identity.piece,identity.expected,`Proposal ${row.level.id} resident ${identity.pi} suit must agree with its nest`);}
     const layout=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {board:box('#board'),tip:box('#mechanicNote'),controls:box('.controls'),overflow:document.documentElement.scrollWidth>innerWidth};});
     await page.screenshot({path:path.join(evidence,`${config.width}-${config.text}-level-${row.level.id}.png`)});
     const requiredGap=config.width===320&&config.text==='large'?2:0;

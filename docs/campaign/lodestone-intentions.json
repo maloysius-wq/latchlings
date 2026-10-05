@@ -1,0 +1,497 @@
+{
+  "101": {
+    "intention": "Learn that an anchor interrupts a glide: Blue stops at two adjacent interior anchors before turning home. This single-resident reminder isolates the new rule.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers"
+    ]
+  },
+  "102": {
+    "intention": "Mint uses the right-column anchor as an interior launch point for its nest approach. Remove the decorative corner anchor so the highlighted stop is the actual lesson.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers"
+    ]
+  },
+  "103": {
+    "intention": "Gold reaches the left-column anchor and launches horizontally toward home. Contrast the previous vertical approach; remove the corner tile that never changes movement.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers"
+    ]
+  },
+  "104": {
+    "intention": "Lavender establishes the row-one anchor stop while Blue has a separate short approach. Introduce reading two residents without requiring a new cooperation chain yet.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers"
+    ]
+  },
+  "105": {
+    "intention": "Coral changes direction from the interior row-two anchor before Mint completes its approach. Read the new fixed stop separately from residents that can move away.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers"
+    ]
+  },
+  "106": {
+    "intention": "Gold parks on the bottom-row anchor to stop Blue one cell to its right; Blue turns home before Gold finishes. Open the redundant rock so the anchor, not the neighboring rock, creates Gold's position.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "107": {
+    "intention": "Blue uses the upper-row anchor to obtain a precise launch column while Coral finishes a short contrasting approach. Practice recognizing an anchor even on the board edge.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "108": {
+    "intention": "Coral approaches the lower interior anchor before changing direction home. Its longer setup contrasts Blue's shorter route without adding an untaught tile.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "109": {
+    "intention": "Blue uses the row-two interior anchor after Lavender's setup. Distinguish stopping on a tile from stopping immediately before a resident.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "110": {
+    "intention": "Coral launches from the right-side anchor and uses Mint at the left edge as a temporary stop. Mint's position is a natural edge stop, not an anchor placement; keep that distinction explicit.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "111": {
+    "intention": "Blue uses Gold in two different columns, with Gold's interior anchor stop between those services. Do not capture the relocated helper before Blue's second downward approach.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "112": {
+    "intention": "Mint first uses Lavender near the bottom-right corner; Lavender then visits two right-column anchors on its own approach. Contrast an ordinary helper stop with exact tile stops.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "113": {
+    "intention": "Coral launches from the bottom-row anchor using Gold at the right edge; after Coral arrives home, Gold reuses the same anchor. One fixed tile supports two sequential routes.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "114": {
+    "intention": "Blue reaches the left-side anchor before stopping against Lavender along the top row. Plan the launch direction rather than treating every anchor as a destination.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "115": {
+    "intention": "Coral uses the central anchor for a real stop. Compare Mint's different incoming direction at that location: an anchor label alone does not prove that it changed a glide.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "116": {
+    "intention": "Blue parks on the left-side anchor, creating Coral's horizontal turn point. Coral goes home first; Blue must remain available until that shared approach is complete.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "117": {
+    "intention": "Blue launches from the upper anchor and uses Coral below it; after Blue goes home, Coral reuses that anchor. Share a launch tile while preserving the helper until its service is finished.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "118": {
+    "intention": "Coral occupies the right-column anchor so Blue can stop immediately beneath it. Blue captures first, releasing Coral for its own nest approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "119": {
+    "intention": "Blue makes an initial anchor stop, then Coral parks on the interior row-two anchor for Blue's horizontal approach. Separate the first launch setup from the later helper placement.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "120": {
+    "intention": "Coral launches left from the right-edge anchor and uses Blue as its stop. Blue finishes first only after that launch has established Coral's route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "121": {
+    "intention": "Mint supplies Coral's first stop, then relocates onto the left-side anchor to serve Blue. Finish Coral and Blue before releasing Mint; all three residents contribute to the chain.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "122": {
+    "intention": "Mint launches from its interior anchor using Blue, while Blue later relies on Coral below. Keep Mint available through the two-resident relay, then capture it last.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "123": {
+    "intention": "Gold launches from the upper interior anchor against Coral on the left, then Coral uses Gold in the right column. Reciprocal helper roles connect the anchor setup to the capture order.",
+    "decision": "retain",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "124": {
+    "intention": "Coral launches horizontally from the lower anchor toward Blue's temporary stop. This shorter two-resident contrast asks for direction and release timing rather than extra board clutter.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "125": {
+    "intention": "Mint's first anchor setup enables Blue's initial approach; Blue then parks on a second anchor to stop Coral. Capture Blue, Coral, then Mint only after the relay has done its work.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "126": {
+    "intention": "Mint first stops Blue on the left side, then stops Coral after Coral launches from the right anchor. One helper serves two travelers before it can finish last.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "127": {
+    "intention": "Coral parks on an interior anchor to stop Mint, and Mint's new position stops Blue. Capture Blue and Mint before releasing the original anchor helper.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "128": {
+    "intention": "Blue and Coral reuse the bottom anchor, then each stops the other in a different row. This two-resident reciprocal puzzle depends on relocation, not simply two independent anchor errands.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "129": {
+    "intention": "Coral launches from the upper anchor using Blue below, and Mint later uses Blue on the right. Blue must serve both routes before Mint can complete the chain.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "130": {
+    "intention": "Blue first uses Coral on the right edge, then parks on the interior anchor to stop Mint. A resident changes from traveler to helper before its final capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "131": {
+    "intention": "Mint first uses Coral on the right, then Blue parked on the central anchor. Mint's remaining two anchor launches become available only after that shared setup; hold Blue until both early stops are complete.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "132": {
+    "intention": "Blue launches from the left anchor against Coral, then its resulting position stops Mint. Coral relocates farther right to supply Blue's second approach before any capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "133": {
+    "intention": "Coral parks on the left anchor for Mint, whose new position stops Blue; Mint then relocates downward for Coral's launch. Blue subsequently stops Coral horizontally: four services must precede the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "134": {
+    "intention": "Blue and Coral repeatedly reuse the lower anchor; Blue relocates left to stop Coral, which then also needs Mint above. Keep both helpers until Coral's two-axis setup is complete.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "135": {
+    "intention": "Mint first stops Blue on the right, then moves onto the interior anchor. Blue stops Coral vertically before capturing; Mint's anchor placement supplies Coral's later horizontal approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "136": {
+    "intention": "Mint launches from the interior anchor against relocated Coral on the right. Mint's new position then stops Blue below: a two-stage launch-to-helper relay precedes all captures.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "137": {
+    "intention": "Coral uses Blue and Mint for its two early turns and captures first. Mint then parks on the right-side anchor to stop Blue, demonstrating a helper arrangement that changes after a capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "138": {
+    "intention": "Blue initially stops Mint near the bottom; Coral later parks on the upper anchor to provide Mint's second stop. Mint captures first only after both distinct helpers have served it.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "139": {
+    "intention": "Mint uses Coral on the right edge and relocates upward to stop Blue launching from its anchor. Blue's second anchor approach follows the shared setup; all residents remain connected.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "140": {
+    "intention": "Coral launches from the right anchor against Blue on the left, then stops Mint vertically. Mint reuses the right anchor to stop Coral's return glide: reciprocal service must happen before capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "141": {
+    "intention": "Mint uses Coral on the top row, then launches from the shared interior anchor against Blue below. Blue later relocates upward for Coral, and all three reuse the central launch geometry.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "142": {
+    "intention": "Coral parks on the top-row anchor so Blue can turn downward; Mint supplies Blue's second stop below. Delay both helpers until Blue's two-axis approach is secured.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "143": {
+    "intention": "Mint stops Blue upward, Blue then stops Coral launching from the left anchor, and Coral remains to stop Mint after Blue captures. The release order changes which left-column stop is available.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "144": {
+    "intention": "Mint launches from the upper-right anchor against Coral below, then stops Blue's horizontal approach. Two connected services establish all routes before the first resident leaves.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "145": {
+    "intention": "Coral stops Mint on the lower row; Mint then parks on the interior anchor to stop Blue. Blue's earlier use of that same anchor contrasts direct launch with later helper placement.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "146": {
+    "intention": "Mint establishes Coral's lower-left stop before Coral relocates to stop Blue launching from the right anchor. After Coral captures, Mint relocates to the upper left for Blue's second stop; preserve the final helper until Blue is home.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "147": {
+    "intention": "Coral first stops Mint horizontally, Mint relocates to the bottom to stop Blue, and Blue moves into Coral's column for its anchor launch. Three different travelers exchange services before the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "148": {
+    "intention": "Coral and Blue supply Mint's two initial stops; Mint relocates to stop Blue launching from the top anchor, and Blue's new position stops Coral horizontally. Capture Coral, Mint, then Blue only after this four-service reciprocal chain is complete.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "149": {
+    "intention": "Mint stops Blue across the top, Blue stops Coral, and Coral then stops Mint on that same row. Blue needs Mint again before Coral parks on the interior anchor for Blue's final approach: five services across a shared passage precede the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  },
+  "150": {
+    "intention": "Blue stops Coral on the top row and Mint supplies its second turn near the bottom. Delay Coral's final anchor placement while Blue completes its route; Coral then stops Mint before capturing, leaving Mint to finish last. The final service occurs after the first capture, unlike the preceding all-services-first relay.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "advanced helpers",
+      "exact anchors"
+    ]
+  }
+}

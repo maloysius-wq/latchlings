@@ -7,6 +7,8 @@ const a=candidate({size:5,pieces:2,rocks:4,anchors:2,geometry:'corners'},7643,10
 assert.equal(a.anchors.length,2,'offline construction must place the requested anchor stops');
 const occupied=[...a.pieces.map(p=>p.pos),...a.nests,...a.rocks,...a.anchors].map(p=>p.join(','));assert.equal(new Set(occupied).size,occupied.length,'stops may not hide beneath residents, nests or rocks');
 assert.deepEqual(a,candidate({size:5,pieces:2,rocks:4,anchors:2,geometry:'corners'},7643,101));
+const cornerProbe=candidate({size:5,pieces:2,rocks:0,anchors:10,geometry:'scattered'},7,101);
+assert(cornerProbe.anchors.every(([r,c])=>!([0,4].includes(r)&&[0,4].includes(c))),'a corner anchor cannot add a precise stop beyond the natural edge');
 const exact=JSON.parse(JSON.stringify(levels[0]));Object.assign(exact,{id:101,chapter:3,nests:[[2,3]],rocks:[],anchors:[[2,0]],solution:[[0,'D'],[0,'R']],optimal:2,moveLimit:4});exact.pieces[0].pos=[0,0];
 const evidence=reviewLevel(exact,simulateState,{focus:['anchors']});
 assert.equal(evidence.proof.status,'solved');assert.equal(evidence.proof.optimum,2);assert(evidence.comparisons.authoredSolved);
@@ -14,9 +16,16 @@ assert(evidence.witnesses.some(w=>w.mechanic==='anchors'&&w.effect==='intended-t
 assert.equal(evidence.comparisons.removal.anchors,false,'exact anchor stop must change the intended route, not decorate it');
 assert.deepEqual(anchorFailures(exact,simulateState),[],'focused introduction need not invent helper complexity');
 const frozen=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels;
-const parked=anchorDependencies(frozen[109],simulateState);
-assert(parked.connections.some(w=>w.type==='parked-helper'),'an anchor must place a helper before it can certify a parked-helper connection');
-assert(parked.connections.some(w=>w.type==='anchor-launch'),'exact launch can connect an anchor to the next helper stop');
+const launch=anchorDependencies(frozen[109],simulateState);
+assert(launch.connections.some(w=>w.type==='anchor-launch'),'exact launch can connect an anchor to the next helper stop');
+assert(!launch.connections.some(w=>w.type==='parked-helper'),'a helper ending naturally at the left edge cannot certify anchor placement');
+const parked=JSON.parse(JSON.stringify(frozen[109]));parked.pieces[0].pos=[2,4];parked.pieces[1].pos=[0,2];Object.assign(parked,{nests:[[0,3],[2,0]],rocks:[],anchors:[[2,2]],solution:[[1,'D'],[0,'L'],[0,'U'],[1,'L']]});
+assert(anchorDependencies(parked,simulateState).connections.some(w=>w.type==='parked-helper'),'actual interior stop must position the helper');
+assert(anchorFailures({...parked,id:116,optimal:4,moveLimit:6},simulateState).some(e=>/helper bypass/.test(e)),'a same-length independent clear cannot certify a combined cooperation puzzle');
 assert.equal(anchorDependencies({...frozen[109],anchors:[]},simulateState).connections.length,0);
 assert(anchorFailures({...frozen[103],id:116},simulateState).some(e=>/connection|Disconnected/.test(e)),'independent anchor errands do not certify a combination board');
+const repaired=JSON.parse(JSON.stringify(frozen[105]));repaired.rocks=repaired.rocks.filter(([r,c])=>r!==4||c!==1);
+const repairProof=require('../tools/campaign/solve.cjs').solve(repaired,simulateState);repaired.solution=repairProof.route;
+assert.equal(repairProof.optimum,6,'opening the redundant rock creates a compact practice board, not a ten-move early spike');
+assert(anchorDependencies(repaired,simulateState).connections.some(w=>w.type==='parked-helper'&&w.helper===1&&w.traveler===0),'Gold must really park on the anchor for Blue');
 console.log('PASS deterministic exclusive anchor construction and real-engine exact-stop evidence');
