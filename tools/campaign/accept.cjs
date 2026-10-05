@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {loadCampaign}=require('./runtime.cjs'),{canonical}=require('./fingerprint.cjs'),{reviewLevel,validateRecord,focusForChapter,mechanicClasses}=require('./review.cjs');
 const {exportChapter}=require('./export.cjs');
+const {cooperation,cooperationFailures}=require('./candidates.cjs');
 const stageFor=id=>{const local=(id-1)%50+1;if(id>=351)return local<=10?'expert-pairs':local<=25?'expert-triples':local<=40?'future-states':local<=45?'expert-interactions':local<50?'culmination':'finale';return local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';};
 
 /** Freshly verify proof and witnesses; stored success flags cannot certify a board. */
@@ -9,7 +10,7 @@ function acceptCampaign(root,{chapter=null}={}){
  if(chapter!==null&&(!Number.isInteger(chapter)||chapter<2||chapter>8))throw new Error('Expected chapter 2–8');
  const {levels,simulateState}=loadCampaign(root),baseline=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/baseline.json'),'utf8'));
  const manifestFile=path.join(root,'docs/campaign/acceptance.json'),records=fs.existsSync(manifestFile)?JSON.parse(fs.readFileSync(manifestFile,'utf8')).records:[];
- const failures=[],seen=new Map(),selected=levels.filter(l=>l.chapter>1&&(!chapter||l.chapter===chapter));let reviewed=0,proven=0,helperRequiredCount=0;
+ const failures=[],seen=new Map(),capstoneMotifs=new Set(),selected=levels.filter(l=>l.chapter>1&&(!chapter||l.chapter===chapter));let reviewed=0,proven=0,helperRequiredCount=0;
  const fail=(id,message)=>failures.push({id,message});
  const hash=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'campaign400-1.js'))).digest('hex').toUpperCase();
  if(hash!==baseline.chapter1Sha256)fail(1,'Chapter 1 bytes changed');
@@ -26,6 +27,8 @@ function acceptCampaign(root,{chapter=null}={}){
   if(!fresh.comparisons.authoredSolved)fail(level.id,'Actual authored replay incomplete');
   for(const focus of record.focus||[])if(!fresh.witnesses.some(w=>w.mechanic===focus))fail(level.id,`Focus ${focus} lacks fresh reachable evidence`);
   if(level.chapter===2){
+   for(const error of cooperationFailures(level,simulateState,capstoneMotifs))fail(level.id,error);
+   if(level.id>=96)capstoneMotifs.add(cooperation(level,simulateState).motif);
    const restricted=fresh.comparisons.noHelper;
    if(restricted.status==='unproven')fail(level.id,'Restricted helper search unproven');
    else if(restricted.status!=='solved')helperRequiredCount++;

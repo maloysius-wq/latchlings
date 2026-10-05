@@ -12,6 +12,9 @@ const limitIndex=process.argv.indexOf('--limit'),limit=limitIndex<0?50:Number(pr
 for(let local=proposals.length+1;local<=limit;local++){
  const stage=local<=5?0:local<=15?1:local<=30?2:local<=45?3:4;
  const profile={size:stage===0?5:stage===1?(local%3===0?6:5):stage===2?6:stage===3&&(local<=35||local%2===0)?6:7,pieces:stage<2?2:local%4===0&&stage===2?2:3,rocks:stage===0?3+local%3:stage===1?5+local%4:stage===2?6+local%5:8+local%6,geometry:['lanes','corners','crossing','scattered'][local%4],minMoves:[3,5,7,10,14][stage],maxMoves:[6,10,13,18,22][stage],minStops:[1,2,3,4,5][stage],minTravelers:stage>=2?2:1,minRelocations:stage===0?0:stage===1?1:2,minBeforeCapture:stage>=3?3:stage>=1?2:1,roleSwap:stage===1&&local>=11};
+ // Late challenge comes from the dependency chain, not an obligatorily larger grid.
+ // Keep the already-proposed seven-cell boards; explore compact remaining slots.
+ if(local>=43)profile.size=6;
  const id=50+local;let selected=null;const rejected={unproven:0,unsolvable:0,length:0,cooperation:0,duplicate:0,bypass:0};
  for(let attempt=1;attempt<=10000;attempt++){
   const seed=(0x9e3779b9^Math.imul(id,2654435761)^Math.imul(attempt,2246822519))>>>0,lev=candidate(profile,seed,id);

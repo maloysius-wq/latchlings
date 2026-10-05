@@ -28,4 +28,13 @@ function cooperation(level,simulateState){
 function fitsCooperation(deps,profile){
  return deps.solved&&deps.stops.length>=(profile.minStops||0)&&deps.travelers>=(profile.minTravelers||0)&&deps.relocations>=(profile.minRelocations||0)&&deps.beforeFirstCapture>=(profile.minBeforeCapture||0)&&(!profile.roleSwap||deps.roleSwap);
 }
-module.exports={candidate,cooperation,fitsCooperation};
+function cooperationFailures(level,simulateState,capstoneMotifs=new Set()){
+ const local=(level.id-1)%50+1,deps=cooperation(level,simulateState),errors=[];
+ const stage=local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';
+ const profile={minStops:{intro:1,practice:2,combine:3,planning:4,capstone:5}[stage],minTravelers:local>=16?2:1,minRelocations:local<=5?0:local<=15?1:2,minBeforeCapture:local<=5?1:local<=30?2:3,roleSwap:local>=11&&local<=15};
+ if(!fitsCooperation(deps,profile))errors.push(`Incomplete ${stage} cooperation chain`);
+ if(local>=16&&deps.participants!==level.pieces.length)errors.push('Disconnected solo errand in combined cooperation board');
+ if(local>=46&&capstoneMotifs.has(deps.motif))errors.push('Repeated capstone dependency motif');
+ return errors;
+}
+module.exports={candidate,cooperation,fitsCooperation,cooperationFailures};

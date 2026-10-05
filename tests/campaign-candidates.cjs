@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),path=require('node:path');
 const {loadCampaign}=require('../tools/campaign/runtime.cjs');
-const {candidate,cooperation,fitsCooperation}=require('../tools/campaign/candidates.cjs');
+const {candidate,cooperation,fitsCooperation,cooperationFailures}=require('../tools/campaign/candidates.cjs');
 const {levels,simulateState}=loadCampaign(path.resolve(__dirname,'..'));
 const a=candidate({size:5,pieces:2,rocks:5,geometry:'lanes'},1234,51),b=candidate({size:5,pieces:2,rocks:5,geometry:'lanes'},1234,51);
 assert.deepEqual(a,b,'offline candidate construction must be deterministic');
@@ -16,4 +16,9 @@ assert(fitsCooperation(deps,{minStops:1,minTravelers:1,minRelocations:0,minBefor
 assert(!fitsCooperation(deps,{minStops:99,minTravelers:1,minRelocations:0,minBeforeCapture:0}));
 assert(!fitsCooperation(deps,{minStops:1,minTravelers:99,minRelocations:0,minBeforeCapture:0}));
 for(const stop of deps.stops){assert.deepEqual(stop.state.positions[stop.helper],stop.helperPosition);assert.equal(stop.result.reason,'piece');}
+assert.equal(typeof cooperationFailures,'function','missing fresh Lanternwood curriculum verification');
+const falseCapstone={...levels[50],id:96};
+assert(cooperationFailures(falseCapstone,simulateState).some(error=>error.includes('capstone')),'elementary helper use cannot certify a capstone');
+const repeatedMotif=new Set([cooperation(falseCapstone,simulateState).motif]);
+assert(cooperationFailures(falseCapstone,simulateState,repeatedMotif).some(error=>error.includes('Repeated')),'capstones must have distinct dependency motifs');
 console.log('PASS deterministic candidates, exclusive geometry and replayable cooperation dependencies');
