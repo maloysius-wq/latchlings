@@ -1,5 +1,6 @@
 'use strict';
 const {replay}=require('./review.cjs');
+const {meaningfulHelperStop}=require('./helper-stop.cjs');
 const COLORS=['blue','coral','mint','lavender'],SUITS=['spade','heart','club','star'];
 /** Offline only: reproducible candidate geometry, not campaign certification. */
 function candidate(profile,seed,id){
@@ -25,7 +26,7 @@ function cooperation(level,simulateState){
  const travel=replay(level,simulateState),vectors={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},stops=[],captures=[];
  for(const step of travel.steps){
   if(step.result.capture)captures.push(step.prefix);
-  if(step.result.reason!=='piece')continue;
+  if(!meaningfulHelperStop(level,step.state.positions,step.state.doorMask,...step.move,step.result,simulateState))continue;
   // The blocker is ahead of the final travel direction, not necessarily the input.
   // Include a turn on the last traversed tile: rotation happens before the blocked step.
   let finalDirection=step.move[1];
@@ -56,4 +57,10 @@ function cooperationFailures(level,simulateState,capstoneMotifs=new Set()){
  if(local>=46&&capstoneMotifs.has(deps.motif))errors.push('Repeated capstone dependency motif');
  return errors;
 }
-module.exports={candidate,cooperation,fitsCooperation,cooperationFailures};
+function searchGeometry(geometry,attempt){
+ const styles=['lanes','crossing','corners','scattered'],index=styles.indexOf(geometry);
+ if(index<0)throw new Error('Unknown search geometry');
+ if(!Number.isInteger(attempt)||attempt<1)throw new Error('Expected positive search attempt');
+ return styles[(index+Math.floor((attempt-1)/250))%styles.length];
+}
+module.exports={candidate,cooperation,fitsCooperation,cooperationFailures,searchGeometry};

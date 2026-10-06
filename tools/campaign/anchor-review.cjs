@@ -1,7 +1,7 @@
 'use strict';
 const {replay}=require('./review.cjs'),{cooperation}=require('./candidates.cjs');
 const {solve}=require('./solve.cjs');
-const anchorHelperProof=(level,simulateState)=>solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidHelperStops:true});
+const anchorHelperProof=(level,simulateState)=>solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});
 function anchorDependencies(level,simulateState){
  const travel=replay(level,simulateState),deps=cooperation(level,simulateState),connections=[];
  const effect=move=>move?JSON.stringify([move.r,move.c,move.path,move.capture,move.mask]):'blocked';

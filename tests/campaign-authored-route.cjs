@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict'),path=require('node:path');
+const {loadCampaign}=require('../tools/campaign/runtime.cjs'),{solve}=require('../tools/campaign/solve.cjs');
+const {chooseAuthoredRoute}=require('../tools/campaign/authored-route.cjs');
+const {levels,simulateState}=loadCampaign(path.resolve(__dirname,'..')),level=levels[0],proof=solve(level,simulateState);
+assert.deepEqual(chooseAuthoredRoute(level,proof,simulateState),proof.route);
+assert.deepEqual(chooseAuthoredRoute(level,proof,simulateState,proof.route),proof.route);
+assert.throws(()=>chooseAuthoredRoute(level,proof,simulateState,[]),/optimal/);
+const opposite={U:'D',D:'U',L:'R',R:'L'};
+assert.throws(()=>chooseAuthoredRoute(level,proof,simulateState,proof.route.map(([pi,dir])=>[pi,opposite[dir]])),/clear/);
+assert.throws(()=>chooseAuthoredRoute(level,{status:'unproven'},simulateState,proof.route),/proof/);
+console.log('PASS authored route requires independently proven optimal length and real-engine completion');

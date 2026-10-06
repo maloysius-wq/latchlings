@@ -1,9 +1,10 @@
 'use strict';
+const {meaningfulHelperStop}=require('./helper-stop.cjs');
 const DIRECTIONS=['U','D','L','R'];
 const stateKey=state=>state.doorMask+'|'+state.positions.map(p=>p?p[0]+','+p[1]:'-').join(';');
 
 /** BFS proves the optimum or reports the exact reason proof is incomplete. */
-function solve(level,simulateState,{initialState,maxStates=800000,maxMs=30000,maxDepth=Infinity,forbidHelperStops=false}={}){
+function solve(level,simulateState,{initialState,maxStates=800000,maxMs=30000,maxDepth=Infinity,forbidHelperStops=false,forbidMeaningfulHelperStops=false}={}){
  if(!Number.isInteger(maxStates)||maxStates<1||!Number.isFinite(maxMs)||maxMs<0||maxDepth<0)throw new Error('Invalid solver limits');
  const started=Date.now(),initial=initialState||{positions:level.pieces.map(p=>p.pos.slice()),doorMask:0};
  const nodes=[{positions:initial.positions.map(p=>p&&p.slice()),doorMask:initial.doorMask,depth:0,parent:-1,move:null}];
@@ -18,6 +19,7 @@ function solve(level,simulateState,{initialState,maxStates=800000,maxMs=30000,ma
   for(let pi=0;pi<state.positions.length;pi++)if(state.positions[pi])for(const dir of DIRECTIONS){
    const move=simulateState(level,state.positions,state.doorMask,pi,dir);
    if(!move||(forbidHelperStops&&move.reason==='piece'))continue;
+   if(forbidMeaningfulHelperStops&&meaningfulHelperStop(level,state.positions,state.doorMask,pi,dir,move,simulateState))continue;
    const positions=state.positions.map(p=>p&&p.slice());positions[pi]=move.capture?null:[move.r,move.c];
    const next={positions,doorMask:move.mask,depth:state.depth+1,parent:index,move:[pi,dir]},key=stateKey(next);
    if(seen.has(key))continue;

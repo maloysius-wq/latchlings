@@ -1,8 +1,9 @@
 'use strict';
 const {solve}=require('./solve.cjs'),{canonical,FIELDS}=require('./fingerprint.cjs');
+const {meaningfulHelperStop}=require('./helper-stop.cjs');
 const clone=value=>JSON.parse(JSON.stringify(value));
 const effect=move=>move?JSON.stringify([move.r,move.c,move.path,move.mask,move.capture]):'blocked';
-const focusForChapter=chapter=>({2:['helpers'],3:['anchors'],4:['suitGates'],5:['colorGates'],6:['rails','turners'],7:['switches','doors'],8:[]})[chapter]||[];
+const focusForChapter=(chapter,id)=>chapter===6&&id>=251&&id<=255?['rails']:chapter===6&&id>=256&&id<=258?['turners']:({2:['helpers'],3:['anchors'],4:['suitGates'],5:['colorGates'],6:['rails','turners'],7:['switches','doors'],8:[]})[chapter]||[];
 // A switch and its door are two parts of one linked-state rule, not two mechanics.
 const mechanicClasses=witnesses=>new Set(witnesses.map(w=>['switches','doors'].includes(w.mechanic)?'linked-state':w.mechanic));
 function hasVisibleBend(move,from){
@@ -23,10 +24,10 @@ function replay(level,simulateState,route=level.solution){
 }
 function reviewLevel(level,simulateState,settings={}){
  const proof=solve(level,simulateState,settings),travel=replay(level,simulateState),witnesses=[];
- const focus=settings.focus||focusForChapter(level.chapter);
+ const focus=settings.focus||focusForChapter(level.chapter,level.id);
  for(const step of travel.steps){
   const {prefix,state,move,result}=step;
-  if(result.reason==='piece')witnesses.push({mechanic:'helpers',prefix,state,move,effect:'piece-stop'});
+  if(meaningfulHelperStop(level,state.positions,state.doorMask,...move,result,simulateState))witnesses.push({mechanic:'helpers',prefix,state,move,effect:'piece-stop'});
   for(const field of FIELDS.filter(f=>f!=='rocks'&&level[f]?.length)){
    const without={...level,[field]:[]};
    // Solution states make each counterfactual reachable and reproducible.

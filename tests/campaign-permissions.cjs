@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),path=require('node:path');
 const {loadCampaign}=require('../tools/campaign/runtime.cjs');
-const {permissionDependencies,permissionFailures,permissionIdentityFailures}=require('../tools/campaign/permission-review.cjs');
+const {permissionDependencies,permissionFailures,permissionIdentityFailures,permissionIdentityDecisions}=require('../tools/campaign/permission-review.cjs');
 const {candidate}=require('../tools/campaign/candidates.cjs');
 const {levels,simulateState}=loadCampaign(path.resolve(__dirname,'..'));
 const fixture=()=>({...JSON.parse(JSON.stringify(levels[0])),id:151,chapter:4,size:5,pieces:[{color:'blue',suit:'spade',pos:[2,0]},{color:'coral',suit:'heart',pos:[0,2]}],nests:[[2,4],[1,4]],rocks:[],anchors:[],suitGates:[[2,2,'spade']],colorGates:[],solution:[[0,'R'],[1,'D'],[1,'R']],optimal:3,moveLimit:5});
@@ -20,6 +20,14 @@ const sharedColor={...board,id:153,pieces:[board.pieces[0],{...board.pieces[1],c
 assert.equal(permissionIdentityFailures([board],4).length,2);
 assert.deepEqual(permissionIdentityFailures([{...sameSuit,id:152},sharedColor],4),[]);
 assert.equal(permissionIdentityFailures([{...sameSuit,id:196},{...sharedColor,id:197}],4).length,2,'contrasts buried in capstones cannot certify introductory teaching');
+assert.equal(typeof permissionIdentityDecisions,'function','mixed Prism must demonstrate a non-interchangeable color/suit decision, not merely two gate types');
+const mixed={...color,id:216,suitGates:[[3,2,'spade']]};
+assert.deepEqual(permissionIdentityDecisions(mixed,simulateState),[],'one-to-one color/suit identities do not distinguish the permission rules');
+const differentiated={...mixed,pieces:[mixed.pieces[0],{...mixed.pieces[1],color:'blue'}],solution:[[0,'R'],[1,'D'],[1,'R'],[1,'U']]};
+assert(permissionDependencies(differentiated,simulateState,'colorGates').solved,'identity witness fixture must actually clear, not certify an optimum');
+const decisions=permissionIdentityDecisions(differentiated,simulateState);
+assert(decisions.some(w=>w.field==='suitGates'&&w.pi===1&&w.prefix===1),'Blue Heart passes the shared blue gate but is stopped where Blue Spade would pass');
+assert(decisions.every(w=>w.actualEffect!==w.changedIdentityEffect),'each decision has an actual engine counterfactual');
 assert(permissionFailures({...board,id:166},simulateState).some(e=>/connection/.test(e)),'later permissions must connect to an earlier skill');
 assert(permissionFailures({...board,id:181},simulateState).some(e=>/anchor/.test(e)),'planning combines permission and helpers with actual anchor use, not merely a painted extra tile');
 const relay={...fixture(),id:184,size:7,pieces:[{color:'blue',suit:'spade',pos:[6,6]},{color:'coral',suit:'heart',pos:[6,0]},{color:'mint',suit:'club',pos:[0,2]}],nests:[[1,4],[1,3],[4,0]],rocks:[[4,6]],anchors:[[5,2]],suitGates:[[4,5,'spade'],[4,4,'spade']],solution:[[2,'D'],[1,'R'],[1,'U'],[1,'L'],[0,'U'],[0,'L'],[0,'U'],[1,'U'],[2,'D'],[2,'L'],[2,'U']]};

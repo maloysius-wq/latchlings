@@ -1,7 +1,7 @@
 'use strict';
 const {replay}=require('./review.cjs'),{cooperation}=require('./candidates.cjs'),{anchorDependencies}=require('./anchor-review.cjs');
 const {solve}=require('./solve.cjs');
-const permissionHelperProof=(level,simulateState)=>solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidHelperStops:true});
+const permissionHelperProof=(level,simulateState)=>solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});
 const effect=m=>m?JSON.stringify([m.r,m.c,m.path,m.capture,m.mask]):'blocked';
 function permissionIdentityFailures(levels,chapter){
  const teaching=levels.filter(l=>l.chapter===chapter&&l.id>(chapter-1)*50&&l.id<=(chapter-1)*50+15);
@@ -30,7 +30,7 @@ function permissionDependencies(level,simulateState,field){
  const intended=[...permitted,...blocked].filter(w=>w.intended);
  for(const w of intended){
   const current=travel.steps[w.prefix],previous=travel.steps.filter(s=>s.prefix<w.prefix&&s.move[0]===w.pi).at(-1);
-  if(current.result.reason==='piece')connections.push({type:'permission-helper-trajectory',prefix:w.prefix,pi:w.pi});
+  if(deps.stops.some(s=>s.prefix===w.prefix))connections.push({type:'permission-helper-trajectory',prefix:w.prefix,pi:w.pi});
   if(previous&&anchors.stops.some(s=>s.prefix===previous.prefix))connections.push({type:'anchor-permission-launch',prefix:w.prefix,pi:w.pi,anchorPrefix:previous.prefix});
   for(const stop of deps.stops){
    const lastTraveler=travel.steps.filter(s=>s.prefix<stop.prefix&&s.move[0]===stop.traveler).at(-1);
@@ -44,6 +44,24 @@ function permissionDependencies(level,simulateState,field){
  const idea=deps.motif+'|'+[...new Set(connections.map(w=>w.type))].sort().join('/')+'|'+(blocked.some(w=>w.intended)?'stopper':'permission')+'|'+(sharedProperty?'shared':'distinct');
  return{permitted,blocked,connections,anchorStops:anchors.stops,anchorConnections:anchors.connections,cooperation:deps,sharedProperty,idea,solved:travel.solved};
 }
+function permissionIdentityDecisions(level,simulateState){
+ const decisions=[];
+ for(const sameProperty of ['color','suit']){
+  const differentProperty=sameProperty==='color'?'suit':'color',field=differentProperty==='color'?'colorGates':'suitGates';
+  const d=permissionDependencies(level,simulateState,field);
+  for(let i=0;i<level.pieces.length;i++)for(let j=i+1;j<level.pieces.length;j++){
+   const a=level.pieces[i],b=level.pieces[j];if(a[sameProperty]!==b[sameProperty]||a[differentProperty]===b[differentProperty])continue;
+   for(const w of [...d.permitted,...d.blocked].filter(w=>w.intended&&(w.pi===i||w.pi===j))){
+    const gate=level[field].find(g=>g[0]===w.at[0]&&g[1]===w.at[1]);
+    if((a[differentProperty]===gate[2])===(b[differentProperty]===gate[2]))continue;
+    const peer=w.pi===i?j:i,changed={...level,pieces:level.pieces.map((p,k)=>k===w.pi?{...p,[differentProperty]:level.pieces[peer][differentProperty]}:p)};
+    const actualEffect=effect(simulateState(level,w.state.positions,w.state.doorMask,w.pi,w.dir)),changedIdentityEffect=effect(simulateState(changed,w.state.positions,w.state.doorMask,w.pi,w.dir));
+    if(actualEffect!==changedIdentityEffect)decisions.push({...w,field,pair:[i,j],sameProperty,differentProperty,actualEffect,changedIdentityEffect});
+   }
+  }
+ }
+ return decisions;
+}
 function permissionFailures(level,simulateState,capstoneIdeas=new Set()){
  const local=(level.id-1)%50+1,field=level.chapter===4?'suitGates':'colorGates',d=permissionDependencies(level,simulateState,field),errors=[];
  if(!d.solved)errors.push('Authored permission route incomplete');
@@ -52,8 +70,8 @@ function permissionFailures(level,simulateState,capstoneIdeas=new Set()){
  if(local>=31&&(d.cooperation.participants!==level.pieces.length||d.cooperation.beforeFirstCapture<2))errors.push('Incomplete connected permission planning chain');
  if(local>=31&&(!d.anchorStops.length||(!d.anchorConnections.length&&!d.connections.some(w=>w.type==='anchor-permission-launch'))))errors.push('Missing causal anchor/permission/helper planning connection');
  if(local>=46){if(d.cooperation.stops.length<3||d.cooperation.travelers<2)errors.push('Incomplete permission capstone cooperation');if(capstoneIdeas.has(d.idea))errors.push('Repeated permission capstone idea');}
- if(level.chapter===5&&local>=16){const suit=permissionDependencies(level,simulateState,'suitGates');if(!suit.permitted.length||!suit.blocked.length||!suit.connections.length)errors.push('Missing mixed suit/color causal distinction');}
+ if(level.chapter===5&&local>=16){const suit=permissionDependencies(level,simulateState,'suitGates');if(!suit.permitted.length||!suit.blocked.length||!suit.connections.length)errors.push('Missing mixed suit/color causal distinction');if(!permissionIdentityDecisions(level,simulateState).length)errors.push('Mixed permissions lack a non-interchangeable identity decision');}
  if(local>=31&&!errors.length){const restricted=permissionHelperProof(level,simulateState);if(restricted.status==='unproven')errors.push('Permission planning helper bypass proof unproven');else if(restricted.status==='solved')errors.push('Permission planning has a perfect helper bypass');}
  return errors;
 }
-module.exports={permissionDependencies,permissionFailures,permissionHelperProof,permissionIdentityFailures};
+module.exports={permissionDependencies,permissionFailures,permissionHelperProof,permissionIdentityFailures,permissionIdentityDecisions};

@@ -2,6 +2,12 @@
 const assert=require('node:assert/strict'),path=require('node:path');
 const {loadCampaign}=require('../tools/campaign/runtime.cjs'),{reviewLevel}=require('../tools/campaign/review.cjs');
 const {simulateState}=loadCampaign(path.resolve(__dirname,'..'));
+const {focusForChapter}=require('../tools/campaign/review.cjs');
+assert.deepEqual(focusForChapter(6,251),['rails'],'first rail lesson must not require an untaught turner');
+assert.deepEqual(focusForChapter(6,255),['rails']);
+assert.deepEqual(focusForChapter(6,256),['turners'],'sparse turner introduction focuses its actual new action');
+assert.deepEqual(focusForChapter(6,258),['turners']);
+assert.deepEqual(focusForChapter(6,259),['rails','turners']);
 const bent={id:256,chapter:6,size:5,pieces:[{color:'blue',suit:'spade',pos:[2,0]},{color:'coral',suit:'heart',pos:[4,2]}],nests:[[3,4],[4,4]],rocks:[],anchors:[],suitGates:[],colorGates:[],rails:[],turners:[[2,2,'CW']],switches:[],doors:[],solution:[[0,'R'],[0,'R'],[1,'R']]};
 const actual=reviewLevel(bent,simulateState,{focus:['turners'],maxStates:10000,maxMs:1000});
 assert(actual.comparisons.authoredSolved);
@@ -15,4 +21,24 @@ const loopMove=simulateState(loop,[[1,2]],0,0,'R');
 assert.equal(loopMove.path.length,loop.size*loop.size*4,'fixture must hit the actual engine loop guard');
 const loopReview=reviewLevel(loop,simulateState,{focus:['turners'],maxStates:1000,maxMs:1000});
 assert.deepEqual(loopReview.comparisons.loopingMoves,[0],'offline review must flag travel stopped only by the engine loop guard');
-console.log('PASS visible one-input bends, meaningful last-tile turns and honest bounded-loop rejection');
+const {routingDependencies,routingFailures}=require('../tools/campaign/routing-review.cjs');
+const rail={...bent,id:251,turners:[],rails:[[2,2,'R']],pieces:[bent.pieces[0],{...bent.pieces[1],pos:[0,2]}],nests:[[2,4],[1,4]],solution:[[0,'R'],[1,'D'],[1,'R']]};
+const directional=routingDependencies(rail,simulateState);
+assert(directional.railPassed.some(w=>w.prefix===0&&w.intended),'matching rail entry is real intended travel');
+assert(directional.railBlocked.some(w=>w.prefix===1&&w.intended),'wrong-direction rail is a useful specific stopper');
+assert.deepEqual(routingFailures(rail,simulateState),[]);
+assert(routingFailures({...rail,rails:[[4,0,'R']]},simulateState).length,'unused painted arrow cannot certify focus');
+assert.deepEqual(routingFailures(bent,simulateState),[],'turner introduction demonstrates a bend and a helper stop');
+assert(routingFailures(lastTile,simulateState).some(e=>/bend/.test(e)),'last-tile rotation is not a visible introduction');
+const afterTurn={...bent,rails:[[3,2,'D']]};
+assert(routingDependencies(afterTurn,simulateState).railPassed.some(w=>w.prefix===0&&w.entry==='D'),'a bent path enters the rail in its current direction, not the original input');
+assert(routingDependencies(bent,simulateState).connections.some(w=>w.type==='routing-helper-trajectory'),'turner and helper must have a causal connection, not just occupy one board');
+assert(routingFailures({...bent,id:281},simulateState).some(e=>/planning/.test(e)),'later planning needs an actual connected pre-capture chain');
+console.log('PASS visible bends, directional permission/blocking, connected route setup and bounded-loop rejection');
+const {routingProfile}=require('../tools/campaign/search-routing.cjs');
+for(let local=1;local<=5;local++){const p=routingProfile(local);assert(p.rails>0);assert.equal(p.turners,0);assert.equal(p.links||0,0);}
+for(let local=6;local<=8;local++){const p=routingProfile(local);assert.equal(p.turners,1,'first turns are sparse');assert.equal(p.size,5);assert.equal(p.pieces,2);}
+for(let local=1;local<=50;local++){const p=routingProfile(local);assert.equal(p.links||0,0,'Copperline never proposes untaught linked state');assert(p.pieces<=3);assert(p.size>=5&&p.size<=7);}
+assert(routingProfile(16).anchors&&routingProfile(16).suitGates,'combinations include taught stopping/identity skills');
+assert.equal(routingProfile(46).pieces,3);
+console.log('PASS offline Copperline stage profiles preserve rail-first and sparse turner introductions');

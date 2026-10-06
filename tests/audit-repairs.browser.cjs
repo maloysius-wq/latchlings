@@ -2,6 +2,7 @@
 const assert=require('assert');
 const fs=require('fs'),http=require('http'),path=require('path'),os=require('os');
 const {chromium}=require('playwright');
+const {waitForOpeningFramePaint}=require('./opening-frame-ready.cjs');
 const root=path.resolve(__dirname,'..');
 const evidence=fs.mkdtempSync(path.join(os.tmpdir(),'latchlings-audit-repairs-'));
 const server=http.createServer((req,res)=>{
@@ -181,7 +182,7 @@ const server=http.createServer((req,res)=>{
   for(const width of [320,390,430]){
    await page.setViewportSize({width,height:width===320?568:width===390?844:932});
    await page.evaluate(()=>{LatchlingsPrefs.set('textSize','large');LatchlingsCinematics.show('opening',{markSeen:false})});
-   await page.waitForFunction(()=>document.querySelector('.cin-opening-continuous')?.dataset.geometryReady==='true');
+   await waitForOpeningFramePaint(page);
    const framing=await page.evaluate(()=>{const frame=document.querySelector('.opening-home-reference'),doc=frame.contentDocument;return {cropped:[...doc.querySelectorAll('#c2 .cottage,#c2 .little-home-tree .foliage')].filter(el=>{const r=el.getBoundingClientRect();return r.left<0||r.top<0||r.right>frame.contentWindow.innerWidth||r.bottom>frame.contentWindow.innerHeight}).map(el=>el.className),stage:document.querySelector('#cinematicStage').clientHeight,copy:document.querySelector('.cinematic-copy').clientHeight}});
    check(framing.cropped.length===0,`${width}: Opening crown/cottage must fit the canonical iframe, cropped ${framing.cropped}`);
    if(width>320)check(framing.stage>framing.copy,`${width}: scenic Opening should not yield most of its height to an empty copy dock`);

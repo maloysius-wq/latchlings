@@ -23,4 +23,16 @@ function guidePermissions(base,simulateState,field){
  }
  return suggestions;
 }
-module.exports={guidePermissions};
+function guideMatchingPermissions(base,simulateState,field){
+ const travel=replay(base,simulateState);if(!travel.solved)return[];
+ if(!['suitGates','colorGates'].includes(field))throw new Error('Expected a permission field');
+ const property=field==='suitGates'?'suit':'color',occupied=[...base.pieces.map(p=>p.pos),...base.nests,...['rocks','anchors','suitGates','colorGates','rails','turners','switches','doors'].flatMap(f=>base[f])],seen=new Set(),suggestions=[];
+ for(const step of travel.steps)for(const at of step.result.path){
+  if(occupied.some(p=>same(p,at)))continue;
+  const permission=[...at,base.pieces[step.move[0]][property]],key=permission.join(',');if(seen.has(key))continue;seen.add(key);
+  const proposal=JSON.parse(JSON.stringify(base));proposal[field].push(permission);
+  if(replay(proposal,simulateState).solved)suggestions.push(proposal);
+ }
+ return suggestions;
+}
+module.exports={guidePermissions,guideMatchingPermissions};

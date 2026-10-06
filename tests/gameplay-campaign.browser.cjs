@@ -66,17 +66,22 @@ const server=http.createServer((req,res)=>{
      doors:board.querySelectorAll('.door-tile').length
     };
    };
-   return {normal:inspect(1),gated:inspect(201),switched:inspect(301)};
+   return {normal:inspect(1),gated:inspect(201),switched:inspect(301),definitions:{
+    gated:{cells:LEVELS[200].size**2,pieces:LEVELS[200].pieces.length,colorGates:LEVELS[200].colorGates.length},
+    switched:{cells:LEVELS[300].size**2,pieces:LEVELS[300].pieces.length}
+   }};
   });
   assert.deepStrictEqual(smoke.normal,{id:1,cells:25,pieces:1,suitGates:0,colorGates:0,switches:0,doors:0},'Level 1 must start as the normal opening board');
   assert.equal(smoke.gated.id,201,'Level 201 must start');
-  assert(smoke.gated.suitGates>0&&smoke.gated.colorGates>0,'Level 201 must render its suit and color gates');
-  assert.equal(smoke.gated.cells,25,'Level 201 must render its complete board');
-  assert.equal(smoke.gated.pieces,2,'Level 201 must render both Latchlings');
+  assert(smoke.gated.colorGates>0,'Level 201 must render its introductory color permissions');
+  assert.equal(smoke.gated.suitGates,0,'Level 201 isolates color permission before mixed suit/color practice');
+  assert.equal(smoke.gated.colorGates,smoke.definitions.gated.colorGates,'every introductory color gate must be visible');
+  assert.equal(smoke.gated.cells,smoke.definitions.gated.cells,'Level 201 must render its complete authored board');
+  assert.equal(smoke.gated.pieces,smoke.definitions.gated.pieces,'Level 201 must render every authored Latchling');
   assert.equal(smoke.switched.id,301,'Level 301 must start');
   assert(smoke.switched.switches>0&&smoke.switched.doors>0,'Level 301 must render its linked switch and door');
-  assert.equal(smoke.switched.cells,36,'Level 301 must render its complete board');
-  assert.equal(smoke.switched.pieces,2,'Level 301 must render both Latchlings');
+  assert.equal(smoke.switched.cells,smoke.definitions.switched.cells,'Level 301 must render its complete authored board');
+  assert.equal(smoke.switched.pieces,smoke.definitions.switched.pieces,'Level 301 must render every authored Latchling');
 
   await context.close();
   console.log('PASS all 400 authored campaign routes, metadata, and Level 1/201/301 board-start smoke checks');

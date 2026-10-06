@@ -1,4 +1,14 @@
 'use strict';
+const {searchGeometry}=require('../tools/campaign/candidates.cjs');
+const geometryAssert=require('node:assert/strict');
+geometryAssert.equal(typeof searchGeometry,'function','offline search must explore multiple obstacle distributions without weakening acceptance');
+geometryAssert.equal(searchGeometry('corners',1),'corners');
+geometryAssert.equal(searchGeometry('corners',250),'corners');
+geometryAssert.equal(searchGeometry('corners',251),'scattered');
+geometryAssert.equal(searchGeometry('corners',501),'lanes');
+geometryAssert.equal(searchGeometry('corners',1001),'corners');
+geometryAssert.throws(()=>searchGeometry('unknown',1),/geometry/);
+geometryAssert.throws(()=>searchGeometry('corners',0),/attempt/);
 const assert=require('node:assert/strict'),path=require('node:path');
 const {loadCampaign}=require('../tools/campaign/runtime.cjs');
 const {candidate,cooperation,fitsCooperation,cooperationFailures}=require('../tools/campaign/candidates.cjs');

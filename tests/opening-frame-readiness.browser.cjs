@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),{chromium}=require('playwright');
+const {waitForOpeningFramePaint}=require('./opening-frame-ready.cjs');
+const root=path.resolve(__dirname,'..');
+const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(path.relative(root,file).startsWith('..'))return res.writeHead(403).end();fs.readFile(file,(error,data)=>{if(error)return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(data);});});
+(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});try{
+ const page=await browser.newPage({viewport:{width:430,height:932},reducedMotion:'reduce'});await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+ await page.setViewportSize({width:320,height:568});await page.evaluate(()=>{LatchlingsPrefs.set('textSize','large');LatchlingsCinematics.show('opening',{markSeen:false});});
+ await page.waitForFunction(()=>document.querySelector('.cin-opening-continuous')?.dataset.geometryReady==='true');await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ // Hold the previous painted scale while the parent flag is already true. This
+ // makes the observed cross-document paint race deterministic, not CPU dependent.
+ await page.evaluate(()=>{const root=document.querySelector('.cin-opening-continuous'),f=root.querySelector('.opening-home-reference'),scene=f.contentDocument.querySelector('#c2 .scene');const fit=Math.min(.76,Math.max(.1,(f.clientWidth-12)/350),Math.max(.1,(f.clientHeight-12)/350));scene.style.setProperty('transform','translate(-50%,-50%) scale(.76)','important');window.__frameRestore=()=>scene.style.setProperty('transform',`translate(-50%,-50%) scale(${fit})`,'important');});
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const stale=await page.evaluate(()=>{const f=document.querySelector('.opening-home-reference');return f.contentDocument.querySelector('#c2 .scene').getBoundingClientRect().width;});assert(Math.abs(stale-266)<1,'fixture must actually show the stale painted scale');
+ await page.evaluate(()=>setTimeout(window.__frameRestore,250));await waitForOpeningFramePaint(page);
+ const framing=await page.evaluate(()=>{const f=document.querySelector('.opening-home-reference'),d=f.contentDocument,fit=Math.min(.76,Math.max(.1,(f.clientWidth-12)/350),Math.max(.1,(f.clientHeight-12)/350));return {width:d.querySelector('#c2 .scene').getBoundingClientRect().width,expected:350*fit,cropped:[...d.querySelectorAll('#c2 .cottage,#c2 .little-home-tree .foliage')].filter(el=>{const r=el.getBoundingClientRect();return r.left<0||r.top<0||r.right>f.contentWindow.innerWidth||r.bottom>f.contentWindow.innerHeight;}).map(el=>el.className)};});
+ assert(Math.abs(framing.width-framing.expected)<1,'readiness must wait for the fitted scene to be painted, not only the parent data flag');assert.deepEqual(framing.cropped,[],'settled canonical crown and cottage must fit');console.log('PASS cross-document Opening readiness waits for actual fitted geometry without relaxing framing');
+}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}})().catch(error=>{console.error(error);process.exitCode=1;});

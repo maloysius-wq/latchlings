@@ -1,0 +1,587 @@
+{
+  "201": {
+    "intention": "Isolate color permission: Coral travels through the coral-colored gate into its upper-left nest, while Blue has a separate short edge approach. Coral cannot take the nearby blue-colored gate; suit marks do not grant color passage.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "202": {
+    "intention": "The Blue Spade and Blue Heart share their color despite different suits. Blue Heart uses the coral-colored gate as a lower-row stopper, then turns home; the Heart mark does not make that coral gate permissive.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "203": {
+    "intention": "Both residents are Spades but their colors differ. Coral passes the coral-colored gate; that gate itself stops Blue horizontally on its nest column, whether Coral is there or not. Capture Blue from that approach, then bring Coral around the lower edge into its nest. The shared Spade mark does not grant shared color access.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "204": {
+    "intention": "Two Blue residents have different suit marks but both qualify for blue gates. Blue Heart passes the interior blue gate on its vertical approach, while Blue Spade takes the lower edge route; read color separately from the nest's suit.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "205": {
+    "intention": "Use the same coral-colored gate in opposite ways. It stops Blue one column short to line up Blue's left-side nest, then admits Coral to the top-left corner for its final rightward capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "206": {
+    "intention": "Both Blue residents reject the upper coral-colored restriction. Blue Spade clears the upper approach first; Blue Heart then crosses the bottom blue gate, stops on the lower anchor and launches vertically into the vacated nest column.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "207": {
+    "intention": "Blue crosses the lower blue-colored gate before turning up into its nest. Coral uses the coral-colored gate for a different interior launch around the upper rocks; practice two permitted passages with different approach geometry.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "208": {
+    "intention": "Blue's direct column contains a coral-colored restriction. Take the left edge through the blue gate instead, then turn into the top nest; Coral finishes its separate lower-left approach. Choosing the matching lane matters more than the suit mark.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "209": {
+    "intention": "Both residents use the same interior anchor, but only Coral can enter it through the coral-colored permission above. Blue turns left from the anchor first; Coral later needs a second downward input after the anchor interrupts its permitted passage.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "210": {
+    "intention": "Move Blue Heart out of Blue Spade's horizontal corridor before bringing Spade to its upper nest. Heart then follows the upper edge and descends through the blue-colored gate; identical colors grant passage even though the suit destinations differ.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "211": {
+    "intention": "Coral first supplies Blue's bottom-row stop after Blue crosses a blue-colored gate. Once Blue captures, that same gate stops Coral on the exact launch column for its vertical nest; permission and mismatch produce different useful decisions.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "212": {
+    "intention": "After Blue clears its upper approach, Coral uses the lower blue-colored gate as a mismatch stopper. The resulting column leads onto an interior anchor, so Coral must launch again from that exact stop to reach its nest. Matching Coral passage is a reachable contrast, not the authored route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "213": {
+    "intention": "Park Blue on the interior anchor, then capture Coral to vacate the top-row corridor. Blue can now launch through its blue-colored gate and turn left into its nest without being stopped prematurely by Coral.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "214": {
+    "intention": "Keep Blue Heart on the lower-left edge while Blue Spade launches from the upper anchor and uses Heart as its vertical stop. Capture Spade before sending Heart through the blue-colored corner permission; both suits share the same color access.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "215": {
+    "intention": "Blue first crosses the left blue-colored gate, while Coral vacates the upper corridor. The coral-colored gate then stops Blue on a useful column; let Coral finish its horizontal capture before Blue returns down that column and turns home.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions"
+    ]
+  },
+  "216": {
+    "intention": "Both residents are Blue, but only Spade can cross the lower-left Spade gate. Heart uses that suit mismatch to enter the lower relay row. Park Spade on the right edge, move Heart against it, then return Spade against Heart to reach its bottom nest. The coral-colored gate stops both residents equally; the suit restriction does not.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "217": {
+    "intention": "The two Spades have different colors. Coral can cross the lower coral gate while Blue cannot. Park Blue on the lower Spade tile, use it to position Coral, then bring Coral around to the upper nest column as Blue's return stopper. Capture Blue first to release Coral's downward nest approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "218": {
+    "intention": "Park Blue Spade on the right anchor before moving Blue Heart left to the coral-colored mismatch. Heart stops Mint for its upper nest, then returns right beneath Spade. Their shared Blue color admits both to the upper blue lane, but Heart's own suit gate gives access that Spade lacks. Keep Spade until Heart's launch is positioned, then capture Spade before Heart.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "219": {
+    "intention": "Coral Spade first moves to the upper-right corner to stop Blue Spade below Blue's nest. Blue crosses the blue gate horizontally while Coral's matching suit would not grant that color passage. Move Coral below Blue to release Blue's final upward capture, then launch Coral left from the anchor against the Heart mismatch and down through its own coral gate.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "220": {
+    "intention": "Blue Spade must wait on the right edge while Blue Heart makes a long lower detour through its Heart gate. Heart then stops Spade on the anchor column. From the anchor, Spade crosses the blue gate but stops before the coral gate, giving its upper nest launch. Heart cannot substitute for Spade at the Spade gate despite sharing Blue color; keep Heart until Spade captures.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "221": {
+    "intention": "Blue Spade crosses its blue gate but stops before the Heart restriction, then uses Mint's starting position to enter the left relay row. Capture Coral to free its nest lane. Mint uses the blue-color mismatch and Blue as successive stoppers; Blue returns across its blue gate into its nest before Mint launches twice from the bottom anchor. Coral shares Spade's suit, not its color access.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "222": {
+    "intention": "Blue Spade crosses the left Spade gate; Blue Heart instead stops below that same gate. Use Heart to park Spade on the gate tile, then move Heart around to the upper coral-color mismatch. Heart now stops Spade one column before its upper nest. Capture Spade before Heart finishes through its Heart gate; shared Blue color does not erase the suit difference.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "223": {
+    "intention": "Blue Spade uses the coral-colored gate as a vertical stopper, then crosses its blue gate to park below Coral's nest. Coral Spade takes an anchor launch between two Heart mismatches and uses Blue as the lower stopper for a rightward capture. Only after Coral captures may Blue rise into its nest. Equal suits do not give equal color passage.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "224": {
+    "intention": "Blue Spade stops above the Heart gate, then holds Mint in the lower-left row. Move Blue to the lower-right corner to position Blue Heart vertically; Mint's parked position supplies Heart's next horizontal stop. Capture Blue via the left blue gate, then Heart, then Mint. The shared Blue pair have different access to the Heart gate that creates the first stopping row.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "225": {
+    "intention": "Park Blue Spade on the middle-right anchor through the blue gate while Coral Spade passes its coral gate onto the upper edge. Launch Blue across the Spade gate to hold Coral on that gate column, then return Blue to the anchor and detour against the Heart mismatch into its nest. Once Blue has left the shared anchor, Coral can use it for the leftward finish. Their common suit cannot substitute for the separate color permissions.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "226": {
+    "intention": "Blue Spade launches from the right anchor only after Blue Heart parks below it, giving Spade its leftward nest row. Heart crosses their shared blue gate while taking that parked position. Keep Heart as the stopper until Spade captures, then send Heart up to the anchor. A second upward input stops Heart below the Spade gate; Spade would pass it. That suit-specific stop establishes Heart's final horizontal nest approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "227": {
+    "intention": "Send Blue around the bottom edge to its left launch column before clearing Coral from the shared right anchor. Mint then launches from that anchor into the top row and uses the Heart mismatch as a stopper above its own nest. Keep Mint there while Blue passes the blue-colored gate and stops below Mint, then turns left and down into its nest. Mint descends afterward; Coral's matching Spade suit would not give Blue-color access.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "228": {
+    "intention": "Blue Spade rejects the upper coral gate and detours to the lower-left corner. Blue Heart descends through its Heart gate, crosses the shared blue-colored gate, then stops before the Spade gate. Keep Heart on that precise bottom tile so Spade can cross the Spade gate and stop on its nest column. Capture Spade first, then Heart; same color, different useful suit permissions.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "229": {
+    "intention": "Park Blue Spade on the upper-right edge while Coral Spade reaches the anchor, launches again through the Spade gate and stops above the blue-color restriction. Coral's permitted coral gate leads around the right edge to hold Blue below its nest. Move Coral against the Heart mismatch and back against the blue-color mismatch, then use Coral as Blue's horizontal stopper. Capture Blue before Coral finishes rightward.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "230": {
+    "intention": "The Heart gate stops Blue Spade just above the lower row, but admits Blue Heart. Heart first uses the coral-color mismatch to align its downward approach, then stops against Spade. Capture Spade leftward before sending Heart left into its own nest; Mint's final left/up route is released afterward. Color gates treat the Blue pair equally while the Heart gate supplies their distinct setup.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "231": {
+    "intention": "Coral Spade reaches the lower anchor, launches again and parks on the bottom row. It stops Blue Spade beneath that anchor, letting Blue rise onto it. Blue launches through the Spade gate but stops before the coral-colored gate; Coral would pass the latter despite sharing Blue's suit. Keep Blue in the upper relay row while moving Mint against it, then capture Blue. Mint descends against the Spade mismatch and stops Coral on the permitted Spade tile. Coral captures before Mint finishes its released horizontal approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "232": {
+    "intention": "Mint vacates the top row, then returns against Blue Spade to guard Spade's nest while Spade descends to the Mint-color mismatch. Blue Heart can cross its own Heart gate to stop against Mint and capture downward; Spade cannot use that same suit shortcut despite their shared color. Mint then uses the Heart mismatch to enter the bottom anchor. Keep Mint there as Spade's launch stopper, capture Spade, then release Mint through its matching color gate and against the Spade mismatch into its own nest.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "233": {
+    "intention": "Keep Mint on the upper row while Coral Spade detours upward and stops against it. Coral descends to the middle anchor, crosses the shared Spade gate and its own coral gate, then parks on the lower anchor. Blue Spade uses Coral as its bottom-row stopper but would reject Coral's color passage. Blue climbs onto the Spade tile and launches from the middle anchor into its nest before Coral captures. Mint's original helper job is complete only then; it takes the released left/down approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "234": {
+    "intention": "Blue Heart crosses its Heart gate and vacates the right anchor so Mint can park there. Heart returns against Mint to stop Blue Spade on the Spade gate, after Spade passes their shared blue-color permission. Heart would pass that blue gate too, but not Spade's suit gate. Spade then parks beside Mint's nest as Heart's horizontal stopper; capture Heart first, bring Spade back against Mint and home, then release Mint. The Mint-color restriction supplies a reachable wrong-color contrast rather than a traversal on this shortest route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "235": {
+    "intention": "Blue Spade passes its blue gate but stops immediately above Coral's color permission. Park Mint on the middle-right anchor while Coral Spade crosses the middle row against Mint, then turns through their shared Spade gate and parks one column left. Coral now stops Blue exactly on its nest column. Capture Blue before Coral and keep Mint parked until both Spades finish; shared suits do not grant Coral's color access to Blue.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "236": {
+    "intention": "Mint launches from the left anchor against the blue-color mismatch, then parks on the second row as Blue Heart's stopper. Heart crosses its Heart gate and holds Blue Spade on the upper nest column; Spade would not pass that suit gate despite their shared color. After Spade captures, Mint uses the coral-color mismatch to reach the lower relay row and stops Heart beside its bottom nest. Capture Heart before releasing Mint's final right/down route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "237": {
+    "intention": "Keep Blue Spade on the bottom anchor while moving Mint across the upper edge to stop Coral Spade over the second anchor. Coral descends through its own coral gate and parks in the lower-right corner. Blue launches through their shared Spade gate, stops against Coral and rises through its blue gate into its nest. Coral would not gain that blue-color passage from the common suit. Return Coral to the middle anchor, launch again into its nest, then release Mint's upper-row approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "238": {
+    "intention": "Keep Blue Spade above the right column while Blue Heart crosses its Heart gate and stops beneath Spade, then crosses the blue-colored gate onto the interior anchor. Spade stops before the very Heart gate that admitted Heart, but crosses their shared blue gate to stop against anchored Heart and descend home. Before Heart captures, Mint must use it as an upper stopper, then turn against the Heart mismatch to line up Mint's nest column. Capture Heart before Mint; its anchored position supplies both genuine helper jobs.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "239": {
+    "intention": "Blue Spade holds the upper-left corner so Mint can stop on the next column, while Coral Spade remains below Mint as a second stopper. Blue descends through the Spade gate but stops before the Heart gate. Move Mint to the right edge, use it as Blue's horizontal stopper, then send Blue through its blue-color gate into its nest; Coral's shared suit would not admit it there. Capture Coral only after its initial helper job, then launch Mint twice from the right anchor against the coral-color mismatch into its final leftward nest approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "240": {
+    "intention": "Blue Spade crosses the bottom blue gate and waits on the right edge. Blue Heart uses the Mint-color mismatch to enter the middle relay row while Mint parks on the left interior anchor. Heart stops against Mint, then descends through its own Heart gate and their shared blue-color gate to hold Spade on its nest column. After Spade captures, the Spade mismatch stops Heart back above that very Heart gate; identical colors do not grant identical suit access. Capture Mint to release the anchor, then launch Heart from it into its upper nest.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "241": {
+    "intention": "Blue descends but stays left of the bottom blue gate while Coral uses that gate as a mismatch stopper, then crosses the shared Spade gate to stop against Mint. Blue now crosses the very color gate that rejected Coral and parks on the upper anchor. Keep Blue there while Mint loops left and stops against anchored Blue on its nest column. Capture Mint first, Coral second, and Blue last; the two genuine helper jobs must happen before either resident is released.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "242": {
+    "intention": "Blue Spade takes the left edge and rises against the Mint-color restriction to reach the middle row, then passes the shared blue gate and stops before the Heart gate that would admit Blue Heart. Heart parks on the upper anchor while Mint stops beneath Spade. Spade rises against anchored Heart, turns onto its nest column and captures. Heart can then launch from the anchor, stop over Mint and cross their shared blue gate into its left nest; release Mint last. Same color does not grant passage through the other suit's gate.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "243": {
+    "intention": "Coral Spade waits on the right edge while Mint comes up and stops beside it, then climbs to the top row. Move Mint right so Blue Spade can stop beside Mint and descend via the right anchor. Launch Blue through its blue gate onto the bottom edge. The neighboring coral gate rejects a rightward Blue turn despite the shared Spade suit; instead use the lower rock's left-then-up approach to the middle relay row. Blue holds the left edge so Coral stops on its nest column. Capture Coral, Blue and Mint in that order, preserving both helper jobs before releasing their residents.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "244": {
+    "intention": "Move Blue Spade up and left against the Heart gate so Blue Heart can stop beside it. Their shared color does not give Spade Heart's suit permission. Park Spade on the interior anchor. Mint rises only as far as the blue gate it cannot enter, then stops against anchored Spade and climbs against Heart to its nest column. Spade leaves the anchor and captures on the right; Mint turns right home. Release Heart straight down its nest column last. Blue's permitted entry into the color gate is a reachable contrast, not a crossing on the authored shortest route.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "245": {
+    "intention": "Blue Spade crosses its blue-color permission but stops above the coral gate. Coral Spade climbs onto the right anchor, stopping Mint one column short; the Heart mismatch stops Mint on the row where it can hold Blue on its nest column. Coral returns through the shared Spade gate and rises against the upper-left rock before stopping beside Blue. The shared Spade suit would not admit Coral through the blue-color gate that Blue crossed. Capture Blue first, retain Coral for Mint's leftward stop, and release Coral before Mint's downward capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "246": {
+    "intention": "Build a five-stop relay before releasing anyone. Blue Heart crosses the bottom blue gate but uses the Spade mismatch to reach Mint's upper launch row. Mint and Heart trade upper-row stopper jobs, then Mint parks above the very Spade gate that stopped Heart. Heart holds Blue Spade on the top column; Mint holds Spade on the middle row, letting Spade reach the left anchor. Heart crosses its own Heart gate but stops above Mint's color restriction, then descends against anchored Spade to capture sideways. Capture Heart, Mint and Spade in that order; Mint must leave Spade's final horizontal corridor.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "247": {
+    "intention": "Coral Spade parks on the middle anchor to hold Blue Spade below it. Mint uses the Blue-color mismatch to reach the second anchor, then launches again to hold Coral above the first anchor. Blue passes its blue gate while Coral passes the separate coral gate against Mint; their shared Spade suit does not grant shared color passage. Coral crosses the Spade gate into its right-edge capture. Mint returns through the second anchor and uses the Heart mismatch to establish Blue's downward stop. Blue captures with two rightward inputs interrupted by that anchor; Mint follows down its released nest column.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "248": {
+    "intention": "Leave Blue Spade on the left anchor while Mint detours around the right edge against the coral-color mismatch. Mint positions Blue Heart on the upper anchor, then relocates left to supply Heart's second stopper. Heart launches against the same coral-color restriction and crosses its own Heart gate plus the shared blue gate to park on the bottom row. Spade cannot substitute for that Heart passage despite their common color. Spade now launches through the blue gate and stops above Heart to reach its right-side nest. Return Heart through its gate for the downward capture, then finish Mint from the upper-right approach.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "249": {
+    "intention": "Coral vacates the top-left corner while Mint moves to the lower-left edge to set Blue's upward Spade-gate approach. Blue holds Coral on the anchor column; Coral launches again through its coral gate and parks as Mint's horizontal stopper. Mint uses the Spade mismatch to hold Blue on the permitted Spade tile, then Blue takes the anchor. Coral returns through its own color gate against anchored Blue, establishing its rightward nest approach. Shared Spade marks cannot grant Blue that coral passage. Capture Blue, Coral and Mint after their five linked helper jobs; the separate blue gate supplies a reachable identity contrast rather than an authored crossing.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  },
+  "250": {
+    "intention": "Blue Heart leaves the lower column and launches twice via the right anchor and blue gate. Blue Spade replaces Heart on that anchor, so Heart can return through their shared color passage, stop above Spade and take its left nest approach. Spade follows the same blue lane but must keep Mint on the top-left edge as its next stopper. From the second anchor, only Spade can cross the Spade gate despite sharing Heart's color. After Heart captures, move Mint around the top edge and use Spade as Mint's return stopper. Spade captures downward, then Mint launches twice from the second anchor into its final horizontal nest. The coral-color and Heart permissions are reachable contrasts, not shortest-route crossings.",
+    "decision": "replace",
+    "prerequisites": [
+      "edges",
+      "rocks",
+      "helpers",
+      "anchors",
+      "suit permissions",
+      "color permissions"
+    ]
+  }
+}

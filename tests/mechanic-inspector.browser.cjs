@@ -30,7 +30,7 @@ const mechanicTypes=['anchors','suitGates','colorGates','rails','turners','switc
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
   await page.evaluate(()=>{
    localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));
-   localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify({101:1,201:1,301:1,366:1}));
+   localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify({101:1,151:1,201:1,301:1,366:1}));
    LatchlingsPrefs.set('textSize','normal');
   });
 
@@ -96,9 +96,11 @@ const mechanicTypes=['anchors','suitGates','colorGates','rails','turners','switc
   const openingAnchor=await inspect('anchors',['anchor','stop']);
   await assertKeyboardTargets();
 
-  await start(201);
+  await start(151);
   await inspect('suitGates',['suit gate','spade','mark']);
-  await inspect('colorGates',['color gate','gold']);
+  await assertKeyboardTargets();
+  await start(201);
+  await inspect('colorGates',['color gate','blue']);
   await assertKeyboardTargets();
 
   await start(301);

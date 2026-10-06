@@ -120,6 +120,8 @@ Curriculum: suit permission and nonmatching blocker behavior; distinguish shared
 
 ### Task 6: Prism, Levels 201–250
 
+**Status:** Complete; all 50 individually reviewed replacements, exact export and 200 total records, 50-board phone pass, all 400 rendered routes and fresh full 17-suite regression PASS. Exact evidence and reproduced regression fixes are in the campaign review ledger. Later chapters and final closeout remain pending.
+
 **Files:** Create chapter-5 authoring JSON; modify `campaign400-5.js`, manifest, design tests, Level 201 semantic smoke if needed.
 
 Curriculum: isolate color permission first; teach same color/different suit and same suit/different color, then mixed permissions, anchor setup and helper sequencing. First board need not include a suit gate. No rails/turners/switches/doors. Tests require both identity contrasts across the introduction/practice sequence and actual distinct permission decisions on mixed focus boards. Commit: `feat: rebuild Prism color and suit integration`.

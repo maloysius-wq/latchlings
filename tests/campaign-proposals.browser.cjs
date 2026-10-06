@@ -7,6 +7,7 @@ const names={2:'lanternwood',3:'lodestone',4:'masquerade',5:'prism',6:'copperlin
 const root=path.resolve(__dirname,'..'),rows=JSON.parse(fs.readFileSync(path.join(root,`test-artifacts/campaign/${names[chapter]}-proposals.json`),'utf8'));
 const evidence=path.join(root,`test-artifacts/campaign/${chapter===2?'proposal':names[chapter]}-captures`);fs.mkdirSync(evidence,{recursive:true});
 const clearIds=chapter===2?[51,52,54,55,58,67,79,96,100]:[1,8,17,29,46,50].map(local=>(chapter-1)*50+local);
+const budgetIndex=process.argv.indexOf('--budget-level'),budgetLevel=budgetIndex<0?196:Number(process.argv[budgetIndex+1]);
 const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(path.relative(root,file).startsWith('..'))return res.writeHead(403).end();fs.readFile(file,(err,data)=>{if(err)return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(data);});});
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;
@@ -26,9 +27,9 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
     for(const identity of identities){assert.equal(identity.nest,identity.expected,`Proposal ${row.level.id} nest ${identity.pi} must show its actual ${identity.color} ${identity.suit} identity`);assert.equal(identity.piece,identity.expected,`Proposal ${row.level.id} resident ${identity.pi} suit must agree with its nest`);}
     const layout=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {board:box('#board'),tip:box('#mechanicNote'),controls:box('.controls'),overflow:document.documentElement.scrollWidth>innerWidth};});
     await page.screenshot({path:path.join(evidence,`${config.width}-${config.text}-level-${row.level.id}.png`)});
-    if(process.argv.includes('--diagnose-budget')&&row.level.id===196){
+    if(process.argv.includes('--diagnose-budget')&&row.level.id===budgetLevel){
      console.log(JSON.stringify(await page.evaluate(()=>({level:currentLevel,movesUsed,limit:LEVELS[currentLevel-1].moveLimit,text:document.querySelector('#movesLeft').textContent,font:getComputedStyle(document.querySelector('#movesLeft')).font,box:document.querySelector('#movesLeft').getBoundingClientRect().toJSON()}))));
-     await page.locator('#movesLeft').screenshot({path:path.join(evidence,`${config.width}-${config.text}-level-196-budget.png`)});
+     await page.locator('#movesLeft').screenshot({path:path.join(evidence,`${config.width}-${config.text}-level-${budgetLevel}-budget.png`)});
     }
     const requiredGap=config.width===320&&config.text==='large'?2:0;
     assert(layout.tip.top-(layout.board.top+layout.board.height)>=requiredGap,`Proposal ${row.level.id} board/Route Tip gap ${config.width}: ${JSON.stringify(layout)}`);
