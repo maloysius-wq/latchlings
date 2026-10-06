@@ -29,6 +29,8 @@ function routingDependencies(level,simulateState){
  for(const w of intended){
   const current=travel.steps[w.prefix],previous=travel.steps.filter(s=>s.prefix<w.prefix&&s.move[0]===w.pi).at(-1);
   if(coop.stops.some(s=>s.prefix===w.prefix))connections.push({type:'routing-helper-trajectory',prefix:w.prefix,pi:w.pi});
+  const helperLaunch=previous&&coop.stops.find(s=>s.prefix===previous.prefix);
+  if(helperLaunch)connections.push({type:'helper-routing-launch',prefix:w.prefix,helperPrefix:previous.prefix,pi:w.pi,helper:helperLaunch.helper});
   if(previous&&anchors.stops.some(s=>s.prefix===previous.prefix))connections.push({type:'anchor-routing-launch',prefix:w.prefix,pi:w.pi,anchorPrefix:previous.prefix});
   if(previous&&['suitGates','colorGates'].some(field=>effect(previous.result)!==effect(simulateState({...level,[field]:[]},previous.state.positions,previous.state.doorMask,...previous.move))))connections.push({type:'permission-routing-launch',prefix:w.prefix,pi:w.pi,permissionPrefix:previous.prefix});
   for(const stop of coop.stops){
@@ -50,7 +52,8 @@ function routingFailures(level,simulateState,capstoneIdeas=new Set()){
  if(local>=16&&!d.connections.length)errors.push('Missing routing/earlier-skill causal connection');
  if(local>=31&&(d.cooperation.participants!==level.pieces.length||d.cooperation.beforeFirstCapture<2||d.cooperation.relocations<1))errors.push('Incomplete connected routing planning chain');
  if(local>=46){if(d.cooperation.stops.length<3||d.cooperation.travelers<2)errors.push('Incomplete routing capstone cooperation');if(capstoneIdeas.has(d.idea))errors.push('Repeated routing capstone idea');}
- if(local>=31&&!errors.length){const proof=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});if(proof.status==='unproven')errors.push('Routing helper bypass proof unproven');else if(proof.status==='solved')errors.push('Routing planning has a perfect helper bypass');}
+ if(local>=31&&!errors.length){const proof=routingHelperProof(level,simulateState);if(proof.status==='unproven')errors.push('Routing helper bypass proof unproven');else if(proof.status==='solved')errors.push('Routing planning has a perfect helper bypass');}
  return errors;
 }
-module.exports={routingDependencies,routingFailures};
+function routingHelperProof(level,simulateState){return solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});}
+module.exports={routingDependencies,routingFailures,routingHelperProof};

@@ -128,6 +128,8 @@ Curriculum: isolate color permission first; teach same color/different suit and 
 
 ### Task 7: Copperline, Levels 251–300
 
+**Status:** Complete chapter authoring/export: 50 individually reviewed/proven boards, exact regeneration and 250 cumulative records, 50-board phone pass, required tooling/design/all-400 gameplay gates and fresh full 17-suite regression PASS. Earlier anchor cleanup and Tasks 8–11 remain pending. See the evidence ledger; this is not whole-campaign acceptance.
+
 **Files:** Create chapter-6 authoring JSON; modify `campaign400-6.js`, manifest, design tests.
 
 Curriculum: 251–255 rails only as new focus, 256–258 sparse turner introduction, then combined continuous routes with earlier identity/stopping skills. Turn witnesses must show a real bend during a single input; rail witnesses must show useful directional entry/blocking. No switches/doors. Test no turners in 251–255 and meaningful turner use in 256–258. Commit: `feat: rebuild Copperline rail and turner curriculum`.

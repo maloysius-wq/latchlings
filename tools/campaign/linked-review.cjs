@@ -54,6 +54,8 @@ function linkedDependencies(level,simulateState){
 }
 function linkedFailures(level,simulateState,capstoneIdeas=new Set()){
  const local=(level.id-1)%50+1,d=linkedDependencies(level,simulateState),errors=[];
+ if(local<=5&&['anchors','suitGates','colorGates','rails','turners'].some(f=>level[f].length))errors.push('Premature mixed mechanics in linked introduction');
+ if(local<=15&&['suitGates','colorGates','rails','turners'].some(f=>level[f].length))errors.push('Premature mixed routing before linked practice');
  if(!d.solved)errors.push('Authored linked-state route incomplete');
  if(!d.openPasses.some(w=>w.intended)||!d.closedStops.length||!d.connections.some(w=>w.type==='opened-passage'))errors.push('Missing actual linked opening passage and closed-state evidence');
  for(const link of new Set(level.switches.map(s=>s[2])))if(!d.linksUsed.includes(link))errors.push('Unused linked-state pair '+link);

@@ -5,6 +5,8 @@ const {exportChapter}=require('./export.cjs');
 const {cooperation,cooperationFailures}=require('./candidates.cjs');
 const {anchorDependencies,anchorFailures}=require('./anchor-review.cjs');
 const {permissionDependencies,permissionFailures,permissionIdentityFailures}=require('./permission-review.cjs');
+const {routingDependencies,routingFailures}=require('./routing-review.cjs');
+const {linkedDependencies,linkedFailures,linkedCurriculumFailures}=require('./linked-review.cjs');
 const stageFor=id=>{const local=(id-1)%50+1;if(id>=351)return local<=10?'expert-pairs':local<=25?'expert-triples':local<=40?'future-states':local<=45?'expert-interactions':local<50?'culmination':'finale';return local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';};
 
 /** Freshly verify proof and witnesses; stored success flags cannot certify a board. */
@@ -12,7 +14,7 @@ function acceptCampaign(root,{chapter=null}={}){
  if(chapter!==null&&(!Number.isInteger(chapter)||chapter<2||chapter>8))throw new Error('Expected chapter 2–8');
  const {levels,simulateState}=loadCampaign(root),baseline=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/baseline.json'),'utf8'));
  const manifestFile=path.join(root,'docs/campaign/acceptance.json'),records=fs.existsSync(manifestFile)?JSON.parse(fs.readFileSync(manifestFile,'utf8')).records:[];
- const failures=[],seen=new Map(),capstoneMotifs=new Set(),anchorIdeas=new Set(),permissionIdeas=new Map(),selected=levels.filter(l=>l.chapter>1&&(!chapter||l.chapter===chapter));let reviewed=0,proven=0,helperRequiredCount=0;
+ const failures=[],seen=new Map(),capstoneMotifs=new Set(),anchorIdeas=new Set(),permissionIdeas=new Map(),routingIdeas=new Set(),linkedIdeas=new Set(),selected=levels.filter(l=>l.chapter>1&&(!chapter||l.chapter===chapter));let reviewed=0,proven=0,helperRequiredCount=0;
  const fail=(id,message)=>failures.push({id,message});
  const hash=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'campaign400-1.js'))).digest('hex').toUpperCase();
  if(hash!==baseline.chapter1Sha256)fail(1,'Chapter 1 bytes changed');
@@ -46,6 +48,8 @@ function acceptCampaign(root,{chapter=null}={}){
    for(const error of permissionFailures(level,simulateState,ideas))fail(level.id,error);
    if((level.id-1)%50>=45)ideas.add(permissionDependencies(level,simulateState,level.chapter===4?'suitGates':'colorGates').idea);
   }
+  if(level.chapter===6){for(const error of routingFailures(level,simulateState,routingIdeas))fail(level.id,error);if(level.id>=296)routingIdeas.add(routingDependencies(level,simulateState).idea);}
+  if(level.chapter===7){for(const error of linkedFailures(level,simulateState,linkedIdeas))fail(level.id,error);if(level.id>=346)linkedIdeas.add(linkedDependencies(level,simulateState).idea);}
   const local=(level.id-1)%50+1,forbidden=({2:['anchors','suitGates','colorGates','rails','turners','switches','doors'],3:['suitGates','colorGates','rails','turners','switches','doors'],4:['colorGates','rails','turners','switches','doors'],5:['rails','turners','switches','doors'],6:['switches','doors']})[level.chapter]||[];
   for(const field of forbidden)if(level[field].length)fail(level.id,`Untaught ${field}`);
   if(level.chapter===6&&local<=5&&level.turners.length)fail(level.id,'Premature turner before Level 256');
@@ -60,6 +64,7 @@ function acceptCampaign(root,{chapter=null}={}){
  }
  if((!chapter||chapter===2)&&selected.some(l=>l.chapter===2)&&helperRequiredCount<40)fail(2,`Only ${helperRequiredCount}/50 helper-required boards`);
  for(const ch of [4,5])if(selected.some(l=>l.chapter===ch))for(const error of permissionIdentityFailures(selected,ch))fail(ch,error);
+ if(selected.some(l=>l.chapter===7))for(const error of linkedCurriculumFailures(selected.filter(l=>l.chapter===7),simulateState))fail(7,error);
  for(const ch of [...new Set(selected.map(l=>l.chapter))]){
   const file=path.join(root,`docs/campaign/authoring/chapter-${ch}.json`);if(!fs.existsSync(file))continue;
   const authored=JSON.parse(fs.readFileSync(file,'utf8'));if(exportChapter(authored,ch)!==fs.readFileSync(path.join(root,`campaign400-${ch}.js`),'utf8').replace(/\r\n/g,'\n'))fail(ch,'Static export differs from authored source');

@@ -29,3 +29,19 @@ assert(linkedFailures({...introduction,id:331},simulateState).some(e=>/planning/
 assert(linkedCurriculumFailures([introduction],simulateState).length,'an opening-only curriculum lacks earned closing and delayed-opening decisions');
 assert.deepEqual(linkedCurriculumFailures([{...closure,id:331},{...delayed,id:332}],simulateState),[]);
 console.log('PASS linked-state acceptance rejects decorative toggles and requires later closing/delayed decisions');
+const {linkedProfile}=require('../tools/campaign/search-linked.cjs');
+for(let local=1;local<=50;local++){
+ const p=linkedProfile(local);assert(p.pieces>=2&&p.pieces<=3);assert(p.links>=1&&p.links<=2);
+ if(local<=5){assert.equal(p.size,5);assert.equal(p.pieces,2);for(const field of ['anchors','suitGates','colorGates','rails','turners'])assert.equal(p[field],0,'first linked lessons must isolate the pair');}
+ if(local<=15){assert.equal(p.links,1);for(const field of ['suitGates','colorGates','rails','turners'])assert.equal(p[field],0,'practice adds familiar stopping before full routing');}
+ if(local>=31){assert.equal(p.size,6);assert.equal(p.pieces,3);}
+}
+assert.equal(linkedProfile(36).requiredState,'closed-launch');assert.equal(linkedProfile(43).requiredState,'delayed-opening');
+assert.throws(()=>linkedProfile(0),/1–50/);assert.throws(()=>linkedProfile(51),/1–50/);
+console.log('PASS offline Stormswitch profiles isolate linked entry and reserve meaningful later state decisions');
+{
+ const {prepareChapter}=require('../tools/campaign/prepare.cjs'),baseline=require('../docs/campaign/baseline.json');
+ const historical=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels.slice(300,350),notes=Object.fromEntries(historical.map(l=>[l.id,{intention:'Fixture: inspect actual linked openings and useful closed states.'}]));
+ assert.throws(()=>prepareChapter(historical,notes,baseline,simulateState,{visualEvidence:{status:'fixture only'}}),/301: Premature mixed mechanics in linked introduction/,'preparation must refuse historical full-mix entry before producing state review records');
+ console.log('PASS preparation rejects mixed-first Stormswitch curriculum before export');
+}

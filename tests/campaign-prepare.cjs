@@ -51,3 +51,12 @@ if(process.argv.includes('--chapter-5')){
  for(const record of result.manifest.records)assert.equal(record.decision,records.find(r=>r.id===record.id).decision,'retention decisions must round-trip');
  console.log('PASS complete reviewed Prism input regenerates the exact static chapter and retention decisions');
 }
+if(process.argv.includes('--chapter-6')){
+ const authored=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/authoring/chapter-6.json'))),notes=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/copperline-intentions.json')));
+ const records=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/acceptance.json'))).records;
+ const result=prepareChapter(authored,notes,baseline,simulateState,{previous:levels.slice(0,250),visualEvidence:{status:'test replay of the recorded author review'}});
+ assert.equal(result.manifest.records.length,50);assert.deepEqual(result.authoring,levels.slice(250,300));
+ assert.equal(result.exported,fs.readFileSync(path.join(root,'campaign400-6.js'),'utf8').replace(/\r\n/g,'\n'));
+ for(const record of result.manifest.records){assert.equal(record.decision,records.find(r=>r.id===record.id).decision,'retention decisions must round-trip');assert(record.comparisons.routing,'actual routing evidence must survive preparation');}
+ console.log('PASS complete reviewed Copperline input regenerates exact export, routing evidence and retention decisions');
+}

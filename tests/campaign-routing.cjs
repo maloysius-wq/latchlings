@@ -34,6 +34,11 @@ const afterTurn={...bent,rails:[[3,2,'D']]};
 assert(routingDependencies(afterTurn,simulateState).railPassed.some(w=>w.prefix===0&&w.entry==='D'),'a bent path enters the rail in its current direction, not the original input');
 assert(routingDependencies(bent,simulateState).connections.some(w=>w.type==='routing-helper-trajectory'),'turner and helper must have a causal connection, not just occupy one board');
 assert(routingFailures({...bent,id:281},simulateState).some(e=>/planning/.test(e)),'later planning needs an actual connected pre-capture chain');
+// A helper can establish the launch BEFORE a directional stop, not only be
+// installed BY that stop. No anchor tax is needed to certify this real chain.
+const helperLaunch={id:293,chapter:6,size:6,pieces:[{color:'blue',suit:'spade',pos:[1,1]},{color:'coral',suit:'heart',pos:[2,0]},{color:'mint',suit:'club',pos:[5,0]}],nests:[[5,2],[5,5],[3,1]],rocks:[[2,4],[2,1],[5,4],[1,2],[1,4],[1,0],[2,2]],anchors:[],suitGates:[[0,5,'spade']],colorGates:[[5,1,'blue']],rails:[[4,2,'U'],[0,3,'R']],turners:[[0,1,'CW']],switches:[],doors:[],solution:[[0,'U'],[0,'D'],[1,'D'],[1,'R'],[1,'U'],[1,'L'],[2,'U'],[1,'R'],[0,'U'],[0,'L'],[0,'D'],[0,'L'],[1,'D'],[2,'R'],[2,'U']]};
+assert.deepEqual(routingFailures(helperLaunch,simulateState),[],'a physical helper stop creates the next actual rail approach; preparation must recognize that direction of causality without adding an anchor pause');
+assert(routingDependencies(helperLaunch,simulateState).connections.some(w=>w.type==='helper-routing-launch'&&w.prefix===9&&w.helperPrefix===8),'witness must reference the actual helper stop and next rail approach');
 console.log('PASS visible bends, directional permission/blocking, connected route setup and bounded-loop rejection');
 const {routingProfile}=require('../tools/campaign/search-routing.cjs');
 for(let local=1;local<=5;local++){const p=routingProfile(local);assert(p.rails>0);assert.equal(p.turners,0);assert.equal(p.links||0,0);}
@@ -42,3 +47,10 @@ for(let local=1;local<=50;local++){const p=routingProfile(local);assert.equal(p.
 assert(routingProfile(16).anchors&&routingProfile(16).suitGates,'combinations include taught stopping/identity skills');
 assert.equal(routingProfile(46).pieces,3);
 console.log('PASS offline Copperline stage profiles preserve rail-first and sparse turner introductions');
+const {prepareChapter}=require('../tools/campaign/prepare.cjs');
+const baseline=require('../docs/campaign/baseline.json');
+{
+ const historical=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels.slice(250,300),notes=Object.fromEntries(historical.map(l=>[l.id,{intention:'Fixture: inspect the actual directional entry and continuous route.'}]));
+ assert.throws(()=>prepareChapter(historical,notes,baseline,simulateState,{visualEvidence:{status:'test fixture only'}}),/251: Turners introduced before rail practice/,'preparation must enforce the staged routing curriculum before producing records');
+ console.log('PASS preparation rejects historical mixed-first Copperline teaching before export');
+}

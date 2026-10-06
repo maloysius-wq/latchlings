@@ -7,6 +7,7 @@ const names={2:'lanternwood',3:'lodestone',4:'masquerade',5:'prism',6:'copperlin
 const root=path.resolve(__dirname,'..'),rows=JSON.parse(fs.readFileSync(path.join(root,`test-artifacts/campaign/${names[chapter]}-proposals.json`),'utf8'));
 const evidence=path.join(root,`test-artifacts/campaign/${chapter===2?'proposal':names[chapter]}-captures`);fs.mkdirSync(evidence,{recursive:true});
 const clearIds=chapter===2?[51,52,54,55,58,67,79,96,100]:[1,8,17,29,46,50].map(local=>(chapter-1)*50+local);
+if(chapter===6)clearIds.push(256); // Execute the first real single-input bend through protected controls.
 const budgetIndex=process.argv.indexOf('--budget-level'),budgetLevel=budgetIndex<0?196:Number(process.argv[budgetIndex+1]);
 const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(path.relative(root,file).startsWith('..'))return res.writeHead(403).end();fs.readFile(file,(err,data)=>{if(err)return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(data);});});
 (async()=>{
