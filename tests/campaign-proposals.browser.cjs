@@ -4,9 +4,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const chapterIndex=process.argv.indexOf('--chapter'),chapter=chapterIndex<0?2:Number(process.argv[chapterIndex+1]);
 assert(Number.isInteger(chapter)&&chapter>=2&&chapter<=8,'proposal review expects chapter 2–8');
 const names={2:'lanternwood',3:'lodestone',4:'masquerade',5:'prism',6:'copperline',7:'stormswitch',8:'aurora'};
-const root=path.resolve(__dirname,'..'),rows=JSON.parse(fs.readFileSync(path.join(root,`test-artifacts/campaign/${names[chapter]}-proposals.json`),'utf8'));
-const evidence=path.join(root,`test-artifacts/campaign/${chapter===2?'proposal':names[chapter]}-captures`);fs.mkdirSync(evidence,{recursive:true});
-const clearIds=chapter===2?[51,52,54,55,58,67,79,96,100]:[1,8,17,29,46,50].map(local=>(chapter-1)*50+local);
+const root=path.resolve(__dirname,'..'),fileIndex=process.argv.indexOf('--review-file'),reviewFile=fileIndex<0?`test-artifacts/campaign/${names[chapter]}-proposals.json`:process.argv[fileIndex+1],rows=JSON.parse(fs.readFileSync(path.resolve(root,reviewFile),'utf8'));
+const evidenceName=fileIndex<0?(chapter===2?'proposal':names[chapter]):path.parse(reviewFile).name.replace(/-proposals$/,'');
+const evidence=path.join(root,`test-artifacts/campaign/${evidenceName}-captures`);fs.mkdirSync(evidence,{recursive:true});
+const clearIds=process.argv.includes('--all-controls')?rows.map(r=>r.level.id):chapter===2?[51,52,54,55,58,67,79,96,100]:[1,8,17,29,46,50].map(local=>(chapter-1)*50+local);
 if(chapter===6)clearIds.push(256); // Execute the first real single-input bend through protected controls.
 const budgetIndex=process.argv.indexOf('--budget-level'),budgetLevel=budgetIndex<0?196:Number(process.argv[budgetIndex+1]);
 const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(path.relative(root,file).startsWith('..'))return res.writeHead(403).end();fs.readFile(file,(err,data)=>{if(err)return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(data);});});

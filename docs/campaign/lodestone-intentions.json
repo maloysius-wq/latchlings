@@ -205,7 +205,7 @@
     ]
   },
   "122": {
-    "intention": "Mint launches from its interior anchor using Blue, while Blue later relies on Coral below. Keep Mint available through the two-resident relay, then capture it last.",
+    "intention": "Mint first uses Blue as a wall to reach its lower nest and clears that tile early. Blue takes the genuine upper anchor in column three while Coral moves onto Mint's former nest tile as a new stopper. Blue descends against Coral and captures leftward; Coral then goes upward home. The early Mint capture enables, rather than ends, the three-resident relay.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -225,7 +225,7 @@
     ]
   },
   "124": {
-    "intention": "Coral launches horizontally from the lower anchor toward Blue's temporary stop. This shorter two-resident contrast asks for direction and release timing rather than extra board clutter.",
+    "intention": "Blue's upper-edge position stops Mint on column three before Blue can finish. Coral first uses the left anchor to reach its middle-row helper position; Mint descends against Coral, goes left, and returns through that same anchor. Mint's anchored position now stops Coral beside its bottom nest column. Capture Coral before releasing Mint rightward. The lower anchor constrains a shorter alternative route; removing it admits an eleven-input route without the intended connected anchor relay.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -295,7 +295,7 @@
     ]
   },
   "131": {
-    "intention": "Mint first uses Coral on the right, then Blue parked on the central anchor. Mint's remaining two anchor launches become available only after that shared setup; hold Blue until both early stops are complete.",
+    "intention": "Park Blue on the central anchor. Mint first descends against Coral on the right, then moves left against anchored Blue to queue its final column. Only after both helper jobs are complete may Blue and Coral finish. Mint then takes the lower boundary and left edge home directly, without the old two extra anchor-pause taps.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -325,7 +325,7 @@
     ]
   },
   "134": {
-    "intention": "Blue and Coral repeatedly reuse the lower anchor; Blue relocates left to stop Coral, which then also needs Mint above. Keep both helpers until Coral's two-axis setup is complete.",
+    "intention": "Blue's lower-left position stops Coral on column one. Move Mint onto the interior anchor above Coral, then bring Coral upward against Mint to prepare its leftward nest approach. Blue can leave its helper post and return around the right-hand rocks before capturing. Coral finishes left, then Mint descends into its nest; both helpers remain until their actual jobs are secured.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -375,14 +375,15 @@
     ]
   },
   "139": {
-    "intention": "Mint uses Coral on the right edge and relocates upward to stop Blue launching from its anchor. Blue's second anchor approach follows the shared setup; all residents remain connected.",
+    "intention": "Hold Blue on the upper anchor while Mint uses Coral to reach the top of column four. Blue's resumed rightward move now stops against Mint and fixes its lower-nest column. Blue can descend directly to the boundary and finish, then release Coral and Mint. This genuine wait survives; the second downward pause and unused extra anchor do not.",
     "decision": "replace",
     "prerequisites": [
       "edges",
       "rocks",
       "advanced helpers",
       "exact anchors"
-    ]
+    ],
+    "rationale": "Nine inputs preserve the actual three-resident wait and relocation chain; do not pad the ten-input planning band with a downward pause."
   },
   "140": {
     "intention": "Coral launches from the right anchor against Blue on the left, then stops Mint vertically. Mint reuses the right anchor to stop Coral's return glide: reciprocal service must happen before capture.",

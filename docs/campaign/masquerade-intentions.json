@@ -150,7 +150,7 @@
     ]
   },
   "166": {
-    "intention": "Coral launches from an anchor through Heart and stops against Blue at the top left. Blue and Coral subsequently relocate twice along the top row before their captures; suit passage participates in the reciprocal setup.",
+    "intention": "Coral crosses the Heart permission and stops against Blue at the upper-left corner. Move Coral right and up to become Blue's upper-row wall, then reposition both residents along that row: Blue returns upward and holds Coral on its nest column. Release Blue rightward only after Coral's final downward launch is prepared. No anchor-pause tile is required for this reciprocal suit/helper chain.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -240,7 +240,7 @@
     ]
   },
   "175": {
-    "intention": "Coral crosses the right-side Heart permission and stops against Blue below. Hold Blue until that matching passage has established Coral's final approach.",
+    "intention": "Coral crosses the right-hand Heart permission and stops against Blue below. Keep Blue in that helper position until Coral's final leftward approach is prepared; Blue then goes directly across the lower row, around the left rock, and home. The removed anchor only interrupted that straight transit and added no decision.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -310,7 +310,7 @@
     ]
   },
   "182": {
-    "intention": "Blue launches from an anchor through Spade and parks where it stops Coral horizontally. Coral's relocated position then stops Mint vertically; finish Coral, Blue, then Mint only after the two-stage relay is secured.",
+    "intention": "Blue uses the upper-right anchor and crosses the Spade permission to become Coral's vertical stopper. Coral's new middle-row position becomes Mint's horizontal stopper. Finish Coral and Blue once the two-stage relay is prepared, then bring Mint around the bottom rock and upward home without the old lower-left anchor pause.",
     "decision": "replace",
     "prerequisites": [
       "edges",

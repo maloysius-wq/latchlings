@@ -30,7 +30,15 @@ function permissionDependencies(level,simulateState,field){
  const intended=[...permitted,...blocked].filter(w=>w.intended);
  for(const w of intended){
   const current=travel.steps[w.prefix],previous=travel.steps.filter(s=>s.prefix<w.prefix&&s.move[0]===w.pi).at(-1);
+  const next=travel.steps.find(s=>s.prefix>w.prefix&&s.move[0]===w.pi),peerField=field==='suitGates'?'colorGates':'suitGates',ownReason=field==='suitGates'?'suitGate':'colorGate',peerReason=field==='suitGates'?'colorGate':'suitGate';
   if(deps.stops.some(s=>s.prefix===w.prefix))connections.push({type:'permission-helper-trajectory',prefix:w.prefix,pi:w.pi});
+  const helperLaunch=previous&&deps.stops.find(s=>s.prefix===previous.prefix);
+  if(helperLaunch)connections.push({type:'helper-permission-launch',prefix:w.prefix,helperPrefix:previous.prefix,pi:w.pi,helper:helperLaunch.helper});
+  // Actual wrong-permission stops can set up the other identity approach.
+  // Require a changed physical move when that preceding restriction is removed;
+  // mere co-presence of two permission fields never creates this witness.
+  if(previous?.result.reason===peerReason&&effect(previous.result)!==effect(simulateState({...level,[peerField]:[]},previous.state.positions,previous.state.doorMask,...previous.move)))connections.push({type:'permission-permission-launch',prefix:w.prefix,peerPrefix:previous.prefix,pi:w.pi,peerField});
+  if(current.result.reason===ownReason&&next?.result.reason===peerReason&&effect(current.result)!==effect(simulateState({...level,[field]:[]},current.state.positions,current.state.doorMask,...current.move)))connections.push({type:'permission-permission-launch',prefix:w.prefix,peerPrefix:next.prefix,pi:w.pi,peerField});
   if(previous&&anchors.stops.some(s=>s.prefix===previous.prefix))connections.push({type:'anchor-permission-launch',prefix:w.prefix,pi:w.pi,anchorPrefix:previous.prefix});
   for(const stop of deps.stops){
    const lastTraveler=travel.steps.filter(s=>s.prefix<stop.prefix&&s.move[0]===stop.traveler).at(-1);

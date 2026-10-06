@@ -10,6 +10,7 @@ const {permissionDependencies,permissionFailures,permissionHelperProof,permissio
 const {routingDependencies,routingFailures,routingHelperProof}=require('./routing-review.cjs');
 const {linkedDependencies,linkedFailures,linkedCurriculumFailures}=require('./linked-review.cjs');
 const {solve}=require('./solve.cjs');
+const {anchorPaddingFailures}=require('./anchor-padding.cjs');
 function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existingRecords=[],visualEvidence={status:'pending'}}={}){
  if(levels.length!==50)throw new Error('Preparation requires 50 reviewed slots');
  const chapter=levels[0].chapter,exported=exportChapter(levels,chapter),records=[],keys=new Set(previous.map(l=>canonical(l))),capstoneMotifs=new Set(),anchorIdeas=new Set(),permissionIdeas=new Set(),routingIdeas=new Set(),linkedIdeas=new Set();
@@ -17,6 +18,7 @@ function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existin
  for(const level of levels){const note=notes[level.id],intention=typeof note==='string'?note:note?.intention;
   if(typeof intention!=='string'||intention.trim().length<15||/pending/i.test(intention))throw new Error(`Missing reviewed intention for ${level.id}`);
  }
+ for(const level of levels){const errors=anchorPaddingFailures(level,simulateState);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);}
  if(chapter===4||chapter===5){const errors=permissionIdentityFailures(levels,chapter);if(errors.length)throw new Error(errors.join('; '));}
  for(const level of levels){
   const note=typeof notes[level.id]==='string'?{intention:notes[level.id]}:notes[level.id];

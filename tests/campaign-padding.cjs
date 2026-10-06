@@ -9,3 +9,8 @@ const delayed={"size":6,"pieces":[{"color":"blue","suit":"spade","pos":[0,0],"ex
 const errors=anchorPaddingFailures(delayed,simulateState);assert(errors.some(e=>e.includes('3,3')));assert(!errors.some(e=>e.includes('0,1')),'the first anchor holds Blue while Mint creates the later stopper');
 assert.deepEqual(anchorPaddingFailures({...pause,id:101,chapter:3},simulateState),[],'the introduction may explicitly demonstrate stopping and resuming before demanding combined reasoning');
 console.log('PASS straight anchor-tax rejection, shared launches and genuine delayed helpers');
+const {prepareChapter}=require('../tools/campaign/prepare.cjs'),baseline=require('../docs/campaign/baseline.json'),runtime=require('../tools/campaign/runtime.cjs').loadCampaign(path.resolve(__dirname,'..'));
+const fixture=runtime.levels.slice(150,200).map(l=>l.id===175?pause:l),notes=Object.fromEntries(fixture.map(l=>[l.id,{intention:'Fixture: inspect actual physical permission and anchor connections.'}]));
+assert.throws(()=>prepareChapter(fixture,notes,baseline,simulateState,{visualEvidence:{status:'fixture only'}}),/Straight anchor pause/,'complete authoring inputs cannot bypass the actual padding check');
+assert(anchorPaddingFailures({...pause,id:351,chapter:8},simulateState).length,'mastery entries are not stop-and-resume introductory lessons');
+console.log('PASS complete preparation refuses anchor taxes, including early mastery slots');

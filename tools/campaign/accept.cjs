@@ -7,6 +7,7 @@ const {anchorDependencies,anchorFailures}=require('./anchor-review.cjs');
 const {permissionDependencies,permissionFailures,permissionIdentityFailures}=require('./permission-review.cjs');
 const {routingDependencies,routingFailures}=require('./routing-review.cjs');
 const {linkedDependencies,linkedFailures,linkedCurriculumFailures}=require('./linked-review.cjs');
+const {anchorPaddingFailures}=require('./anchor-padding.cjs');
 const stageFor=id=>{const local=(id-1)%50+1;if(id>=351)return local<=10?'expert-pairs':local<=25?'expert-triples':local<=40?'future-states':local<=45?'expert-interactions':local<50?'culmination':'finale';return local<=5?'intro':local<=15?'practice':local<=30?'combine':local<=45?'planning':'capstone';};
 
 /** Freshly verify proof and witnesses; stored success flags cannot certify a board. */
@@ -25,6 +26,7 @@ function acceptCampaign(root,{chapter=null}={}){
  for(const level of selected){
   const record=records.find(r=>r.id===level.id);if(!record){fail(level.id,'Missing review record');continue;}
   reviewed++;for(const error of validateRecord(level,record,baseline,[]))fail(level.id,error);
+  for(const error of anchorPaddingFailures(level,simulateState))fail(level.id,error);
   if(record.stage!==stageFor(level.id))fail(level.id,'Incorrect learning stage');
   const fresh=reviewLevel(level,simulateState,{...record.proof?.settings,focus:record.focus});
   if(fresh.proof.status!=='solved'||fresh.proof.optimum!==level.optimal)fail(level.id,'Fresh shortest proof failed');else proven++;

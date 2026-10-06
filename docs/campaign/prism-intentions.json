@@ -201,7 +201,7 @@
     ]
   },
   "219": {
-    "intention": "Coral Spade first moves to the upper-right corner to stop Blue Spade below Blue's nest. Blue crosses the blue gate horizontally while Coral's matching suit would not grant that color passage. Move Coral below Blue to release Blue's final upward capture, then launch Coral left from the anchor against the Heart mismatch and down through its own coral gate.",
+    "intention": "Coral Spade first holds the upper-right corner so Blue Spade stops below its nest. Blue crosses its blue permission, relocates, and then holds Coral below that row. Release Blue upward once Coral's launch is prepared. Coral moves directly left against the Heart mismatch, then down through its own coral-color lane and left home. The physical helper-to-suit approach is real; an intermediate anchor pause is not.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -225,7 +225,7 @@
     ]
   },
   "221": {
-    "intention": "Blue Spade crosses its blue gate but stops before the Heart restriction, then uses Mint's starting position to enter the left relay row. Capture Coral to free its nest lane. Mint uses the blue-color mismatch and Blue as successive stoppers; Blue returns across its blue gate into its nest before Mint launches twice from the bottom anchor. Coral shares Spade's suit, not its color access.",
+    "intention": "Blue and Coral share Spade but not color permission; Coral's one-input finish is a short identity contrast and is independent, not a falsely claimed third helper. Blue passes its blue gate, stops before Heart, and uses Mint to reach the left relay row. Mint uses the blue mismatch and then Blue as successive stoppers. Blue returns through its allowed color lane home before Mint finishes directly across the bottom, without an anchor tax.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -234,6 +234,9 @@
       "anchors",
       "suit permissions",
       "color permissions"
+    ],
+    "contrastWith": [
+      219
     ]
   },
   "222": {
@@ -321,7 +324,7 @@
     ]
   },
   "229": {
-    "intention": "Park Blue Spade on the upper-right edge while Coral Spade reaches the anchor, launches again through the Spade gate and stops above the blue-color restriction. Coral's permitted coral gate leads around the right edge to hold Blue below its nest. Move Coral against the Heart mismatch and back against the blue-color mismatch, then use Coral as Blue's horizontal stopper. Capture Blue before Coral finishes rightward.",
+    "intention": "Coral crosses the Spade permission, stops above the blue-color mismatch, and takes its allowed coral lane around the right edge to hold Blue below its nest. Coral then stops against the Heart mismatch and turns upward against the blue mismatch, becoming Blue's horizontal wall. Finish Blue upward before Coral goes right home. The suit-to-color launch is an actual stopping chain, not an anchor pause.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -441,7 +444,7 @@
     ]
   },
   "239": {
-    "intention": "Blue Spade holds the upper-left corner so Mint can stop on the next column, while Coral Spade remains below Mint as a second stopper. Blue descends through the Spade gate but stops before the Heart gate. Move Mint to the right edge, use it as Blue's horizontal stopper, then send Blue through its blue-color gate into its nest; Coral's shared suit would not admit it there. Capture Coral only after its initial helper job, then launch Mint twice from the right anchor against the coral-color mismatch into its final leftward nest approach.",
+    "intention": "Blue holds the upper-left corner for Mint; Coral then stops Mint on the next row. Blue crosses Spade but stops before Heart, uses Mint on the right as a wall, and descends through its allowed blue gate to the meaningful lower anchor. Keep Blue available: after Mint moves left, Blue returns upward to stop Mint on the final launch column. Blue can then finish. Mint goes around the bottom, stops below the relocated coral-color restriction, and uses the shared anchor on its leftward homeward approach. The anchor's later extra transit stops are intrinsic to its earlier real launch, not independent padding.",
     "decision": "replace",
     "prerequisites": [
       "edges",
@@ -489,7 +492,7 @@
     ]
   },
   "243": {
-    "intention": "Coral Spade waits on the right edge while Mint comes up and stops beside it, then climbs to the top row. Move Mint right so Blue Spade can stop beside Mint and descend via the right anchor. Launch Blue through its blue gate onto the bottom edge. The neighboring coral gate rejects a rightward Blue turn despite the shared Spade suit; instead use the lower rock's left-then-up approach to the middle relay row. Blue holds the left edge so Coral stops on its nest column. Capture Coral, Blue and Mint in that order, preserving both helper jobs before releasing their residents.",
+    "intention": "Blue uses the upper-right anchor to take the lower blue-permission lane while Coral waits at the right edge. Mint stops below Heart, moves against Coral, and uses the middle-right anchor to hold Blue on the relay row. Blue moves left to stop Coral on its upward nest column. Finish Coral, then Blue; Mint returns through the upper anchor for its final leftward capture. Both right-side anchors serve genuine shared launches, so Blue's straight intermediate transit is not a standalone pause marker.",
     "decision": "replace",
     "prerequisites": [
       "edges",
