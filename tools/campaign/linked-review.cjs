@@ -41,10 +41,31 @@ function linkedDependencies(level,simulateState){
   }
  }
  const coop=cooperation(level,simulateState),anchors=anchorDependencies(level,simulateState),earlierConnections=[];
+ const crossesSwitch=move=>move?.path.some(at=>level.switches.some(sw=>same(sw,at)));
  for(const w of [...openPasses,...closedStops].filter(w=>w.intended)){
   const previous=travel.steps.filter(s=>s.prefix<w.prefix&&s.move[0]===w.pi).at(-1);
   if(coop.stops.some(s=>s.prefix===w.prefix))earlierConnections.push({type:'door-helper-trajectory',prefix:w.prefix,pi:w.pi});
   if(previous&&anchors.stops.some(s=>s.prefix===previous.prefix))earlierConnections.push({type:'anchor-door-launch',prefix:w.prefix,anchorPrefix:previous.prefix,pi:w.pi});
+  // A placed resident can establish a later door approach through intervening
+  // rock/edge turns. Follow the same traveler's actual inputs counterfactually,
+  // holding other residents and reachable masks at each recorded state fixed.
+  // Do not attribute chains that capture or toggle: those need state replay,
+  // not a geometric counterfactual with the original masks.
+  for(const helper of coop.stops.filter(s=>s.traveler===w.pi&&s.prefix<w.prefix)){
+   const positions=helper.state.positions.map((p,i)=>i===helper.helper?null:p);
+   let changed=simulateState(level,positions,helper.state.doorMask,...helper.move);
+   if(!changed||changed.capture||changed.mask!==helper.state.doorMask||crossesSwitch(helper.result)||crossesSwitch(changed))continue;
+   let at=[changed.r,changed.c],valid=true;
+   const approach=travel.steps.filter(s=>s.prefix>helper.prefix&&s.prefix<=w.prefix&&s.move[0]===w.pi);
+   for(const step of approach){
+    if(step.result.capture||step.result.mask!==step.state.doorMask||crossesSwitch(step.result)){valid=false;break;}
+    const state=step.state.positions.map((p,i)=>i===w.pi?at:p);
+    changed=simulateState(level,state,step.state.doorMask,...step.move);
+    if(changed?.capture||changed&&changed.mask!==step.state.doorMask||crossesSwitch(changed)){valid=false;break;}
+    if(changed)at=[changed.r,changed.c];
+   }
+   if(valid&&physical(changed)!==physical(travel.steps[w.prefix].result))earlierConnections.push({type:'helper-door-approach',prefix:w.prefix,helperPrefix:helper.prefix,pi:w.pi,helper:helper.helper,approachPrefixes:approach.map(s=>s.prefix)});
+  }
   for(const s of coop.stops){const placed=travel.steps.filter(p=>p.prefix<s.prefix&&p.move[0]===s.helper).at(-1);if(placed?.prefix===w.prefix)earlierConnections.push({type:'door-placed-helper',prefix:s.prefix,doorPrefix:w.prefix,pi:w.pi});}
   for(const field of ['suitGates','colorGates','rails','turners'])if(level[field].length&&physical(simulateState(level,w.state.positions,w.state.doorMask,w.pi,w.dir))!==physical(simulateState({...level,[field]:[]},w.state.positions,w.state.doorMask,w.pi,w.dir)))earlierConnections.push({type:'door-routing-trajectory',prefix:w.prefix,pi:w.pi,field});
  }

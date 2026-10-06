@@ -41,7 +41,20 @@ assert.throws(()=>linkedProfile(0),/1–50/);assert.throws(()=>linkedProfile(51)
 console.log('PASS offline Stormswitch profiles isolate linked entry and reserve meaningful later state decisions');
 {
  const {prepareChapter}=require('../tools/campaign/prepare.cjs'),baseline=require('../docs/campaign/baseline.json');
- const historical=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels.slice(300,350),notes=Object.fromEntries(historical.map(l=>[l.id,{intention:'Fixture: inspect actual linked openings and useful closed states.'}]));
+ // Isolate the mixed-first failure from the separately tested padding guard.
+ const historical=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels.slice(300,350).map(l=>({...l,anchors:[]})),notes=Object.fromEntries(historical.map(l=>[l.id,{intention:'Fixture: inspect actual linked openings and useful closed states.'}]));
  assert.throws(()=>prepareChapter(historical,notes,baseline,simulateState,{visualEvidence:{status:'fixture only'}}),/301: Premature mixed mechanics in linked introduction/,'preparation must refuse historical full-mix entry before producing state review records');
- console.log('PASS preparation rejects mixed-first Stormswitch curriculum before export');
+console.log('PASS preparation rejects mixed-first Stormswitch curriculum before export');
+}
+{
+ const relay={...introduction,id:348,chapter:7,size:6,pieces:[{color:'blue',suit:'spade',pos:[2,5]},{color:'coral',suit:'heart',pos:[5,3]},{color:'mint',suit:'club',pos:[0,0]}],nests:[[1,2],[0,2],[5,0]],rocks:[[3,1],[1,0],[3,5],[1,5],[1,1],[3,3],[5,4]],anchors:[],switches:[[5,2,0]],doors:[[2,0,0]],solution:[[1,'L'],[1,'U'],[1,'R'],[1,'U'],[0,'L'],[2,'R'],[2,'D'],[0,'R'],[0,'U'],[1,'L'],[2,'L'],[2,'D']],optimal:12,moveLimit:15};
+ assert(replay(relay,simulateState).solved);
+ const chain=linkedDependencies(relay,simulateState);
+ assert(chain.earlierConnections.some(w=>w.type==='helper-door-approach'&&w.helperPrefix===5&&w.prefix===10&&w.pi===2&&w.helper===1),'Coral stops Mint in column 3; the rock turn then approaches the open doorway, without a fake anchor pause');
+ assert.deepEqual(linkedFailures(relay,simulateState),[]);
+ const independent={...relay,doors:[[4,0,0]]};
+ assert(!linkedDependencies(independent,simulateState).earlierConnections.some(w=>w.type==='helper-door-approach'),'helper occupancy alone cannot imply a useful door approach');
+ const retoggled={...relay,switches:[...relay.switches,[0,1,0],[0,2,0]]};
+ assert(!linkedDependencies(retoggled,simulateState).earlierConnections.some(w=>w.type==='helper-door-approach'&&w.helperPrefix===5),'two crossed switches cancel their final mask but still invalidate a geometry-only attribution');
+ console.log('PASS actual multi-input helper placement causes the later door approach');
 }

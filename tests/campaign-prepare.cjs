@@ -60,3 +60,12 @@ if(process.argv.includes('--chapter-6')){
  for(const record of result.manifest.records){assert.equal(record.decision,records.find(r=>r.id===record.id).decision,'retention decisions must round-trip');assert(record.comparisons.routing,'actual routing evidence must survive preparation');}
  console.log('PASS complete reviewed Copperline input regenerates exact export, routing evidence and retention decisions');
 }
+if(process.argv.includes('--chapter-7')){
+ const authored=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/authoring/chapter-7.json'))),notes=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/stormswitch-intentions.json')));
+ const records=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/acceptance.json'))).records;
+ const result=prepareChapter(authored,notes,baseline,simulateState,{previous:levels.slice(0,300),visualEvidence:{status:'test replay of the recorded author review'}});
+ assert.equal(result.manifest.records.length,50);assert.deepEqual(result.authoring,levels.slice(300,350));
+ assert.equal(result.exported,fs.readFileSync(path.join(root,'campaign400-7.js'),'utf8').replace(/\r\n/g,'\n'));
+ for(const record of result.manifest.records){assert.equal(record.decision,records.find(r=>r.id===record.id).decision,'retention decisions must round-trip');assert(record.comparisons.linked,'reachable state evidence must survive preparation');}
+ console.log('PASS complete reviewed Stormswitch input regenerates exact export, reachable state evidence and retention decisions');
+}

@@ -136,6 +136,8 @@ Curriculum: 251–255 rails only as new focus, 256–258 sparse turner introduct
 
 ### Task 8: Stormswitch, Levels 301–350
 
+**Status:** Complete chapter checkpoint: 50 individually traced/proven boards (49 replaced, 323 retained), 300 cumulative records, exact regeneration, all-400 rendered route pass, all 50 actual-control clears at both phone layouts, and fresh full 17-suite regression PASS. See the campaign evidence ledger; Aurora and whole-program closeout are not complete.
+
 **Files:** Create chapter-7 authoring JSON; modify `campaign400-7.js`, manifest, design tests, Level 301 semantic smoke if needed.
 
 Curriculum: clear linked switch/door pair first, then meaningful open/closed states and deliberately delayed toggles; add earlier routes later, not every mechanic on Level 301. Include later witnesses where closing or postponing a change matters, with reachable masks and blocked/pass outcomes. Reject toggles on irrelevant routes. Commit: `feat: rebuild Stormswitch linked-state progression`.

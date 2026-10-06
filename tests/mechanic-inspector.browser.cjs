@@ -103,25 +103,26 @@ const mechanicTypes=['anchors','suitGates','colorGates','rails','turners','switc
   await inspect('colorGates',['color gate','blue']);
   await assertKeyboardTargets();
 
-  await start(301);
-  await inspect('anchors',['anchor','stop']);
-  await inspect('suitGates',['suit gate','star']);
-  await inspect('colorGates',['color gate','gold']);
-  await inspect('rails',['rail','down']);
+  await start(251);
+  await inspect('rails',['rail','up']);
+  await assertKeyboardTargets();
+  await start(256);
   await inspect('turners',['turner','counter-clockwise']);
+  await assertKeyboardTargets();
+  await start(301);
   await inspect('switches',['switch A','door A','closed']);
   const door=await inspect('doors',['door A','closed','switch A']);
   const mechanicRegion=await page.evaluate(()=>({role:document.querySelector('#mechanicInspector')?.getAttribute('role'),live:document.querySelector('#mechanicInspector')?.getAttribute('aria-live')}));
   assert.deepStrictEqual(mechanicRegion,{role:'status',live:'polite'},'the mechanic explanation must be announced without interrupting the route tip');
 
   await page.evaluate(async()=>{
-   const moves=[[0,'R'],[1,'D'],[1,'U'],[0,'D'],[0,'R']];
+   const moves=[[1,'L']];
    for(const [piece,direction] of moves){selected=piece;renderPieces(LEVELS[currentLevel-1]);await moveSelected(direction)}
   });
-  await page.waitForFunction(()=>!animating&&movesUsed===5&&doorMask===1);
+  await page.waitForFunction(()=>!animating&&movesUsed===1&&doorMask===1);
   const openDoorText=await page.locator('#mechanicInspector').innerText();
   assert(openDoorText.includes('Door A')&&openDoorText.includes('OPEN'),'door inspection must update from CLOSED to OPEN after linked switch A is activated');
-  assert.deepStrictEqual(await page.evaluate(()=>({level:currentLevel,movesUsed,doorMask})),{level:301,movesUsed:5,doorMask:1},'the authored switch route should open door A without completing the level');
+  assert.deepStrictEqual(await page.evaluate(()=>({level:currentLevel,movesUsed,doorMask})),{level:301,movesUsed:1,doorMask:1},'the authored switch route should open door A without completing the level');
 
   await start(366);
   await assertKeyboardTargets();
