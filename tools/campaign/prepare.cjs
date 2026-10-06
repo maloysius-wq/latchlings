@@ -11,9 +11,10 @@ const {routingDependencies,routingFailures,routingHelperProof}=require('./routin
 const {linkedDependencies,linkedFailures,linkedCurriculumFailures}=require('./linked-review.cjs');
 const {solve}=require('./solve.cjs');
 const {anchorPaddingFailures}=require('./anchor-padding.cjs');
+const {expertDependencies,expertFailures}=require('./expert-review.cjs');
 function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existingRecords=[],visualEvidence={status:'pending'}}={}){
  if(levels.length!==50)throw new Error('Preparation requires 50 reviewed slots');
- const chapter=levels[0].chapter,exported=exportChapter(levels,chapter),records=[],keys=new Set(previous.map(l=>canonical(l))),capstoneMotifs=new Set(),anchorIdeas=new Set(),permissionIdeas=new Set(),routingIdeas=new Set(),linkedIdeas=new Set();
+ const chapter=levels[0].chapter,exported=exportChapter(levels,chapter),records=[],keys=new Set(previous.map(l=>canonical(l))),capstoneMotifs=new Set(),anchorIdeas=new Set(),permissionIdeas=new Set(),routingIdeas=new Set(),linkedIdeas=new Set(),expertIdeas=new Set();
  // Check every annotation before running expensive proof; no generic stamp is generated.
  for(const level of levels){const note=notes[level.id],intention=typeof note==='string'?note:note?.intention;
   if(typeof intention!=='string'||intention.trim().length<15||/pending/i.test(intention))throw new Error(`Missing reviewed intention for ${level.id}`);
@@ -25,7 +26,8 @@ function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existin
   const key=canonical(level);if(keys.has(key))throw new Error(`Duplicate board ${level.id}`);
   const similarities=nearClones(level,[...previous,...levels.filter(l=>l.id<level.id)]);
   if(similarities.length&&!note.nearCloneReview)throw new Error(`Unreviewed similarities for ${level.id}`);
-  const focus=note.focus||focusForChapter(chapter,level.id),fresh=reviewLevel(level,simulateState,{focus,maxStates:800000,maxMs:30000});
+  const expert=chapter===8?expertDependencies(level,simulateState):null;
+  const focus=note.focus||(expert?expert.classes.flatMap(f=>f==='linked-state'?['switches','doors']:[f]):focusForChapter(chapter,level.id)),fresh=reviewLevel(level,simulateState,{focus,maxStates:800000,maxMs:30000});
   if(fresh.proof.status!=='solved'||fresh.proof.optimum!==level.optimal)throw new Error(`Unproven optimum for ${level.id}`);
   if(fresh.comparisons.loopingMoves.length)throw new Error(`Nonterminating authored travel for ${level.id}`);
   if(chapter===2){const errors=cooperationFailures(level,simulateState,capstoneMotifs);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);if(level.id>=96)capstoneMotifs.add(cooperation(level,simulateState).motif);}
@@ -33,6 +35,7 @@ function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existin
   if(chapter===4||chapter===5){const errors=permissionFailures(level,simulateState,permissionIdeas);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);if((level.id-1)%50>=45)permissionIdeas.add(permissionDependencies(level,simulateState,chapter===4?'suitGates':'colorGates').idea);}
   if(chapter===6){const errors=routingFailures(level,simulateState,routingIdeas);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);if(level.id>=296)routingIdeas.add(routingDependencies(level,simulateState).idea);}
   if(chapter===7){const errors=linkedFailures(level,simulateState,linkedIdeas);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);if(level.id>=346)linkedIdeas.add(linkedDependencies(level,simulateState).idea);}
+  if(chapter===8){const errors=expertFailures(level,simulateState,expertIdeas);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);if(level.id>=391)expertIdeas.add(expert.idea);}
   const witnesses=fresh.witnesses.filter(w=>focus.includes(w.mechanic)||w.mechanic==='helpers').map(({mechanic,prefix,state,move,effect,bend})=>({mechanic,prefix,state,move,effect,...(bend===undefined?{}:{bend})}));
   const {elapsedMs,route,...proof}=fresh.proof;
   const comparisons={...fresh.comparisons,similarityReviewed:true,similarities,nearCloneReview:note.nearCloneReview||'No terrain or route near-clone flags; distinct board-specific dependency reviewed.'};
@@ -44,6 +47,7 @@ function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existin
   if(chapter===5&&(level.id-1)%50>=15)comparisons.identityDecisions=permissionIdentityDecisions(level,simulateState);
   if(chapter===6){const d=routingDependencies(level,simulateState);comparisons.routing={railPassed:d.railPassed,railBlocked:d.railBlocked,bends:d.bends,connections:d.connections,idea:d.idea};if(level.id>=281){const {elapsedMs,route,...restricted}=routingHelperProof(level,simulateState);comparisons.noHelper=restricted;}}
   if(chapter===7){const d=linkedDependencies(level,simulateState);comparisons.linked={toggles:d.toggles,openPasses:d.openPasses,closedStops:d.closedStops,connections:d.connections,earlierConnections:d.earlierConnections,linksUsed:d.linksUsed,idea:d.idea};if(level.id>=331){const {elapsedMs,route,...restricted}=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});comparisons.noHelper=restricted;}}
+  if(expert){comparisons.expert={classes:expert.classes,connections:expert.connections,idea:expert.idea,futureState:expert.futureState,identity:expert.identity,linked:expert.linked,cooperation:expert.cooperation};const {elapsedMs,route,...restricted}=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});comparisons.noHelper=restricted;}
   const record={id:level.id,chapter,local:(level.id-1)%50+1,stage:stageFor(level.id),intention:note.intention,prerequisites:note.prerequisites||['edges','rocks','basic helpers'],focus,decision:note.decision||'replace',baselineMargin:baseline.margins[level.id-1],canonical:key,proof,witnesses,comparisons,contrastWith:note.contrastWith||[],rationale:note.rationale||'',visualEvidence};
   const errors=validateRecord(level,record,baseline,[]);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);
   records.push(record);keys.add(key);
