@@ -21,7 +21,7 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}});
-  await context.addInitScript(()=>localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1})));
+  await context.addInitScript(()=>{localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(Object.fromEntries(Array.from({length:400},(_,i)=>[i+1,1]))))});
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
 
@@ -141,6 +141,42 @@ const server=http.createServer((req,res)=>{
   await page.screenshot({path:lateHintScreenshot});
   console.log(`Level 301 progressed switch/door hint: ${lateHint.status} in ${lateHint.elapsedMs.toFixed(0)}ms; screenshot ${lateHintScreenshot}`);
 
+  const offRouteFixtures=[
+   {id:51,off:[0,'D'],continuation:[[0,'U'],[1,'U'],[1,'R'],[1,'D'],[0,'L']]},
+   {id:151,off:[0,'L'],continuation:[[0,'D'],[1,'L'],[1,'D'],[0,'R'],[0,'U']]},
+   {id:256,off:[0,'R'],continuation:[[0,'U'],[0,'L'],[0,'D'],[1,'D'],[0,'L'],[0,'U'],[0,'D'],[1,'L']]},
+   {id:301,off:[0,'U'],continuation:[[0,'D'],[1,'L'],[0,'L'],[0,'U'],[1,'U'],[1,'R']]}
+  ];
+  for(const fixture of offRouteFixtures){
+   const result=await page.evaluate(async({id,off,continuation})=>{
+    const lev=LEVELS[id-1],initial=lev.pieces.map(p=>p.pos.slice()),key=(p,m)=>JSON.stringify([p,m]),authored=new Set([key(initial,0)]);
+    let route=initial.map(p=>p.slice()),mask=0;
+    for(const [pi,dir] of lev.solution){const m=simulateState(lev,route,mask,pi,dir);route[pi]=m.capture?null:[m.r,m.c];mask=m.mask;authored.add(key(route,mask));}
+    const first=simulateState(lev,initial,0,...off);if(!first)throw Error('off-route fixture input is illegal');
+    const current=initial.map(p=>p.slice());current[off[0]]=first.capture?null:[first.r,first.c];
+    const isOff=!authored.has(key(current,first.mask));let known=current.map(p=>p&&p.slice()),knownMask=first.mask;
+    for(const [pi,dir] of continuation){const m=simulateState(lev,known,knownMask,pi,dir);if(!m)throw Error('known continuation is illegal');known[pi]=m.capture?null:[m.r,m.c];knownMask=m.mask;}
+    let remaining=lev.moveLimit-1,steps=0,state={positions:current,doorMask:first.mask},status;
+    while(state.positions.some(Boolean)&&remaining>0){
+     const h=await LatchlingsRouteHint.findNext(lev,{...state,remaining},{maxStates:12000,maxMs:900});status=h.status;
+     if(h.status!=='found'||h.pi===null)break;
+     const m=simulateState(lev,state.positions,state.doorMask,h.pi,h.dir);if(!m)throw Error('hint gave illegal input');
+     state.positions[h.pi]=m.capture?null:[m.r,m.c];state.doorMask=m.mask;steps++;remaining--;
+    }
+    return{isOff,knownSolved:known.every(p=>!p),knownFits:continuation.length<=lev.moveLimit-1,solved:state.positions.every(p=>!p),steps,status};
+   },fixture);
+   assert(result.isOff,fixture.id+': fixture must be outside every authored-prefix state');
+   assert(result.knownSolved&&result.knownFits,fixture.id+': literal independently found continuation still fits');
+   assert(result.solved,fixture.id+': real current-state Hint must lead home within remaining moves '+JSON.stringify(result));
+  }
+  for(const action of ['reset','change']){
+   await page.evaluate(()=>{closeModal();startLevel(51);LatchlingsStoryTheme.close(false);window.__realFindNext=LatchlingsRouteHint.findNext;LatchlingsRouteHint.findNext=()=>new Promise(resolve=>window.__resolveHeldHint=resolve)});
+   await page.locator('#hintBtn').click();await page.locator('#hintSearching').waitFor({state:'visible'});
+   await page.evaluate(action=>{if(action==='reset')document.getElementById('resetLevelBtn').click();else startLevel(151);window.__resolveHeldHint({status:'found',pi:0,dir:'L'});LatchlingsRouteHint.findNext=window.__realFindNext},action);
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   assert.equal(await page.locator('#hintFound').count(),0,action+': stale search cannot reopen a hint');
+   assert.equal(await page.locator('.hint-focus').count(),0,action+': stale search cannot highlight the new board');
+  }
   await context.close();
   console.log('PASS pure simulation, current-state search, honest bounds, cancellable hint UI, and persistent next-step highlight');
  }finally{

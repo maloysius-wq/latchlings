@@ -152,7 +152,7 @@ const CHAPTERS=[
  {
   name:'Old Ways',theme:'Copperline Junction',mechanic:'Directional rails and turners reshape continuous snaps',color:'#9a6748',
   desc:'Copperline Junction holds old Waykeeper records that overturn the household’s assumption: the original Skyway was designed to keep changing.',
-  tip:'A turner changes direction without ending the move. Trace the entire snap before pressing.',
+  tip:'Rails admit travel only in the arrow direction. Read the entry before pressing.',
   opening:'The household expects Copperline to contain instructions for putting the old map back. Instead it contains decades of different correct maps.',
   homeReward:'A Waykeeper compass appears beside the cottage.',
   beats:[
@@ -206,7 +206,7 @@ const CHAPTERS=[
   phase:['',' Switched',' In Sequence',' All Together',' Networked']
  },
  {
-  name:'Homeward',theme:'Aurora Crown',mechanic:'Every campaign mechanic is active',color:'#172b52',
+  name:'Homeward',theme:'Aurora Crown',mechanic:'Familiar skills combine through shared stops and planned captures',color:'#172b52',
   desc:'Aurora Crown reveals the final truth of the Skyway: there is no master route to restore. The network survives by changing with the islands and the people using it.',
   tip:'Read the board as a sequence of future board states, not as a single move.',
   opening:'The oldest Skyway lines overlap beneath the aurora. Nothing here offers a button that puts the world back. It offers the tools to keep moving forward.',
@@ -220,7 +220,7 @@ const CHAPTERS=[
   ],
   bases:['Aurora Crossing','Crown Parcel','Home Lantern','Living Map','Friend Route','Last Old Gate','New Skyway','Little Home Run','Drifting Together','Tomorrow’s Route'],
   situations:[
-   'An aurora-lit route combines lessons from every region and politely refuses to be solved one mechanic at a time.',
+   'An aurora-lit crossing asks familiar skills to work together before anyone heads home.',
    'Bramble has one more parcel and, for once, an entire community helping keep the route open.',
    'A lantern bound for Little Home passes through connections that did not exist at the start of the journey.',
    'The living route map changes while everyone watches and nobody treats that as a failure anymore.',
@@ -246,12 +246,14 @@ const PHASE_FLAVOR=[
 function clampLevel(level){return Math.max(1,Math.min(400,Number(level)||1))}
 function levelMeta(level){
  const L=clampLevel(level),chapter=Math.ceil(L/50),local=(L-1)%50+1,c=CHAPTERS[chapter-1],slot=(local-1)%10,phase=Math.floor((local-1)/10);
+ const railEntry=chapter===6&&local<=5;
+ const railContexts={0:'A tiny express cart needs a useful stopping place and the right approach to the rail.',1:'Tea for the station crew waits for neighbors to line up a permitted rail entry.',4:'Bramble’s station parcel needs a shared stopping place before it can approach the rail.'};
  return {
   level:L,chapter,local,
-  title:c.bases[slot]+c.phase[phase],
-  context:c.situations[slot],
-  flavor:PHASE_FLAVOR[phase],
-  mechanic:c.mechanic,
+  title:(railEntry&&slot===1?'Rail Tea':c.bases[slot])+c.phase[phase],
+  context:railEntry&&railContexts[slot]?railContexts[slot]:c.situations[slot],
+  flavor:chapter===8&&phase===0?'Familiar skills are the starting point. Keep a useful helper in place until every route that needs it is ready.':PHASE_FLAVOR[phase],
+  mechanic:railEntry?'Directional rails admit travel in the arrow direction':chapter===6&&local<=8?'Turners bend a continuous snap without spending another move':c.mechanic,
   storyName:c.name,
   location:c.theme
  };

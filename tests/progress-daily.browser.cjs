@@ -65,6 +65,46 @@ const server=http.createServer((req,res)=>{
   assert.equal(daily.storedAfter,daily.storedBefore,'clearing Daily must not write campaign progress');
   assert.equal(daily.dailyRecord.level,daily.dailyLevel,'Daily clear must save to its separate daily history');
 
+  const boundaries=await page.evaluate(()=>[50,100,150,200,250,251,255,256,300,350].map(completed=>{
+   const p={unlocked:400,stars:{[completed]:3}},date=new Date('2026-09-24T12:00:00Z');
+   const samples=Array.from({length:400},(_,day)=>dailyRouteInfo(new Date(date.getTime()+day*86400000),p));
+   return {completed,first:dailyRouteInfo(date,p),repeat:dailyRouteInfo(date,p),samples:samples.map(s=>({id:s.level,turners:LEVELS[s.level-1].turners.length,switches:LEVELS[s.level-1].switches.length}))};
+  }));
+  for(const b of boundaries){
+   assert.deepStrictEqual(b.first,b.repeat,'same date and completed history must select the same route');
+   assert(b.samples.every(s=>s.id<=b.completed),`completed ${b.completed}: unlocked400 cannot introduce future content`);
+   if(b.completed<=255)assert(b.samples.every(s=>s.turners===0),`completed ${b.completed}: no untaught turners`);
+   if(b.completed<=300)assert(b.samples.every(s=>s.switches===0),`completed ${b.completed}: no untaught switches`);
+   if(b.completed===256)assert(b.samples.some(s=>s.id===256&&s.turners>0),'completing256 makes the introduced turner available');
+  }
+
+  // A separate fresh context exercises a real version-1 returning-player save,
+  // without inheriting the quota-failure doubles used later in this suite.
+  const legacy=await browser.newContext({viewport:{width:390,height:844}});
+  await legacy.addInitScript(()=>{
+   localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{50:1,51:3,100:2,150:1,200:3,250:2,300:1,350:3,400:3}}));
+   localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));
+   localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify({51:1}));
+  });
+  const legacyPage=await legacy.newPage();await legacyPage.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+  const preserved=await legacyPage.evaluate(()=>{
+   const films=['opening','across-drift','old-maps','homeward'],sparse={unlocked:400,stars:{51:3,400:3}},backup=LatchlingsProgressBackup.create(sparse,films),parsed=LatchlingsProgressBackup.parse(JSON.stringify(backup));
+   const before={progress:JSON.parse(JSON.stringify(progress)),seen:localStorage.getItem('latchlings_cinematics_seen_v1'),cards:localStorage.getItem('latchlings_story_cards_seen_v1'),earned:STORY.completedChapters(progress)};
+   startLevel(51);const filmReplayed=document.querySelector('#cinematicOverlay')?.classList.contains('show')||false;
+   const lev=LEVELS[50];for(const [pi,dir] of lev.solution){const m=simulate(pi,dir);if(!m)throw Error('Returning-player replay route invalid');positions[pi]=m.capture?null:[m.r,m.c];doorMask=m.mask;}
+   movesUsed=lev.optimal+2;winLevel();
+   return{backupVersion:backup.version,backupKeys:Object.keys(backup).sort(),parsed,before,after:{progress:JSON.parse(JSON.stringify(progress)),stored:JSON.parse(localStorage.getItem('latchlings_campaign400_progress_v1')),seen:localStorage.getItem('latchlings_cinematics_seen_v1'),cards:localStorage.getItem('latchlings_story_cards_seen_v1'),earned:STORY.completedChapters(progress)},filmReplayed,allCaptured:positions.every(p=>p===null),earnedLabel:document.querySelector('.win-stars')?.getAttribute('aria-label'),rewardCards:document.querySelectorAll('.chapter-reward-card').length};
+  });
+  assert.equal(preserved.backupVersion,1);assert.deepStrictEqual(preserved.backupKeys,['campaign','cinematics','format','version']);
+  assert.deepStrictEqual(preserved.parsed,{progress:{unlocked:400,stars:{51:3,400:3}},seen:['across-drift','homeward','old-maps','opening']},'sparse old400save round-trips without migration');
+  assert(preserved.allCaptured);assert.equal(Number.parseInt(preserved.earnedLabel,10),1,'a nonoptimal completed replay still earns its current one-star grade');
+  assert.deepStrictEqual(preserved.after.progress,preserved.before.progress,'replaying replacement51 cannot lower old stars or unlocks');
+  assert.deepStrictEqual(preserved.after.stored,preserved.before.progress,'persisted old achievements remain intact');
+  assert.equal(preserved.before.earned,8);assert.equal(preserved.after.earned,8,'already-earned keepsakes are not revoked');
+  assert.equal(preserved.after.seen,preserved.before.seen);assert.equal(preserved.after.cards,preserved.before.cards);
+  assert.equal(preserved.filmReplayed,false);assert.equal(preserved.rewardCards,0,'loading and replaying ordinary51 must not replay an old milestone reward');
+  await legacy.close();
+
   const roundTrip=await page.evaluate(()=>{
    const backup=LatchlingsProgressBackup.create({unlocked:12,stars:{'1':3,'2':1,'12':2}},['opening','old-maps']);
    return LatchlingsProgressBackup.parse(JSON.stringify(backup));
@@ -185,6 +225,14 @@ const server=http.createServer((req,res)=>{
   await page.locator('#saveStatusDismiss').click();
   assert(await page.locator('#saveStatusBanner').isHidden(),'unsaved banner must be dismissible');
 
+  const teaching=await page.evaluate(()=>({tips:[251,252,253,254,255,256,257,258].map(id=>({id,tip:chapterNote(id),meta:STORY.levelMeta(id)})),aurora:STORY.levelMeta(351)}));
+  for(const row of teaching.tips.filter(row=>row.id<=255)){
+   assert(/rail/i.test(row.tip)&&!(/turner|bend/i.test(row.tip)),`${row.id} must teach rail entry before turners`);
+   assert(!(/\bturner|first turn|change direction/i.test([row.meta.title,row.meta.context,row.meta.mechanic].join(' '))),`${row.id} story copy must match its rail-only board`);
+  }
+  for(const row of teaching.tips.filter(row=>row.id>=256))assert(/turner|bend/i.test(row.tip),'256–258 must explain the newly introduced continuous bend');
+  assert(!/every.*mechanic.*active/i.test(teaching.aurora.mechanic),'Aurora selectively combines learned mechanics, not every mechanic on every board');
+  assert(!/simple.*introduce/i.test(teaching.aurora.flavor),'Aurora re-entry is mastery, not a new-rule tutorial');
   await context.close();
   console.log('PASS progress backup, Daily learned-mechanic tiers and isolation, reset copy, and unsaved-win handling');
  }finally{

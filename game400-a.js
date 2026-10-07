@@ -7,15 +7,15 @@ const CHAPTERS=STORY?STORY.chapters:[
  {name:'Magnetic Anchors',theme:'Lodestone Caverns',desc:'Anchors create precise stops inside crystal caverns while earlier stopper logic remains in play.',tip:'Treat anchors as movable-route geometry: landing on one can set up the next two or three snaps.',color:'#25354d'},
  {name:'Suit Gates',theme:'Masquerade Keep',desc:'Black suit marks decide which Latchling can cross each gate inside the moonlit keep.',tip:'If a route looks blocked, ask whether the wrong Latchling is approaching the gate.',color:'#403052'},
  {name:'Color Gates',theme:'Prism Gardens',desc:'Body color joins suit logic in a luminous garden where identity matters as much as position.',tip:'Separate the two clues: body color answers one gate, black suit answers another.',color:'#82cbd0'},
- {name:'Rails and Turns',theme:'Copperline Junction',desc:'Directional rails and turners reshape continuous snaps across a warm copper transit hub.',tip:'A turner changes direction without ending the move. Trace the entire snap before pressing.',color:'#9a6748'},
+ {name:'Rails and Turns',theme:'Copperline Junction',desc:'Directional rails and turners reshape continuous snaps across a warm copper transit hub.',tip:'Rails admit travel only in the arrow direction. Read the entry before pressing.',color:'#9a6748'},
  {name:'Switchworks',theme:'Stormswitch Foundry',desc:'Switches, doors, rails, and identity gates combine inside an electric storm foundry.',tip:'A switch is about timing, not just activation. Opening a door can also remove a useful stopping wall.',color:'#283a4c'},
- {name:'Master Circuit',theme:'Aurora Crown',desc:'Every mechanic is active beneath the aurora. These are the campaign’s longest and most layered routes.',tip:'Read the board as a sequence of future board states, not as a single move.',color:'#172b52'}
+ {name:'Master Circuit',theme:'Aurora Crown',desc:'Familiar skills combine beneath the aurora. Prepare shared stops and plan how each capture changes the remaining routes.',tip:'Read the board as a sequence of future board states, not as a single move.',color:'#172b52'}
  ];
 const COLORS={coral:'#ef5f66',blue:'#4c8ff4',mint:'#66bd72',gold:'#f6b737',lavender:'#9a72df'};
 const LIGHT={coral:'#ff9297',blue:'#79aff9',mint:'#94dc98',gold:'#ffd06a',lavender:'#c3a0f1'};
 const DARK={coral:'#c33d49',blue:'#2e69c8',mint:'#469852',gold:'#d18c16',lavender:'#724fbd'};
 const DIRV={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]}; const CW={U:'R',R:'D',D:'L',L:'U'},CCW={U:'L',L:'D',D:'R',R:'U'};
-let currentLevel=1,chapterView=1,rangeView=0,selected=0,movesUsed=0,doorMask=0,positions=[],animating=false,hintStep=0,inspectedMechanic=null;
+let currentLevel=1,chapterView=1,rangeView=0,selected=0,movesUsed=0,doorMask=0,positions=[],animating=false,hintStep=0,inspectedMechanic=null,moveRequestSerial=0;
 let lastNestArrival=null,blockerFeedbackTimer=null;
 const PROGRESS_KEY='latchlings_campaign400_progress_v1';
 let progress=loadProgress();
@@ -168,6 +168,7 @@ function initializeEndingHomecoming(){
 }
 function screen(id){
  const next=document.getElementById(id);if(!next)return;
+ if(id!=='game'&&document.body.dataset.screen==='game'){moveRequestSerial++;animating=false;if(activeHintSearch){cancelHintSearch(activeHintSearch.id);closeModal()}clearHintFocus()}
  if(activeScreenTransition&&typeof activeScreenTransition.skipTransition==='function')activeScreenTransition.skipTransition();
  const current=document.querySelector('.screen.active');
  if(current===next){document.body.dataset.screen=id;if(id==='home')setTimeout(()=>updateHome(true),0);if(id==='complete')initializeEndingHomecoming();return}
@@ -330,6 +331,8 @@ const ch=CHAPTERS[chapterView-1],atlasBlurb=STORY?.chapterSummaryFor?{full:STORY
  const continueBtn=document.getElementById('continueBtn');if(continueBtn)continueBtn.innerHTML=`<span>${progress.stars[progress.unlocked]?'Return to latest stop':'Continue journey'}</span><b>Level ${progress.unlocked}</b>`;
 }
 function startLevel(L,mode='campaign'){
+ moveRequestSerial++;
+ if(activeHintSearch){cancelHintSearch(activeHintSearch.id);closeModal()}clearHintFocus();
  playMode=mode==='daily'?'daily':'campaign';document.body.dataset.playMode=playMode;
  currentLevel=Math.max(1,Math.min(400,L));const lev=LEVELS[currentLevel-1];if(!lev){showError('Missing level '+currentLevel);return}clearMechanicInspector();
  if(playMode==='daily'&&!dailySession)dailySession={...dailyRouteInfo(),level:currentLevel};
@@ -349,7 +352,7 @@ function renderGame(full=false){
  board.style.setProperty('--n',lev.size);board.dataset.gridSize=String(lev.size);board.dataset.boardRange=String(boardRange);board.dataset.boardStyle=`ch${chapter}-r${boardRange}`;if(full){board.querySelectorAll('.cell').forEach(x=>x.remove());for(let r=0;r<lev.size;r++)for(let c=0;c<lev.size;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.dataset.tileVariant=String((r*3+c*5+currentLevel+boardRange)%4);board.insertBefore(cell,document.getElementById('pieceLayer'));decorateCell(cell,lev,r,c)}}updateMechanicCells(lev,board);renderPieces(lev);if(lastNestArrival!==null){const arrivedPi=lastNestArrival;setTimeout(()=>{const n=document.querySelector(`#board .nest[data-pi="${arrivedPi}"]`);if(n)n.classList.remove('just-arrived');if(lastNestArrival===arrivedPi)lastNestArrival=null},effectiveReducedMotion()?0:850)}
 }
 const ROUTE_TIPS=['Use edges and rocks for stops.','Park helpers as stopping walls.','Anchors make exact stops.','Suit gates read black suit marks.','Color gates read body color.','Rails limit entry; turners bend.','Switches toggle doors.','Plan several board states ahead.'];
-function chapterNote(L){const k=(L-1)%50+1,ch=Math.ceil(L/50),tip=ROUTE_TIPS[ch-1];if(k>=46)return 'Expert route: plan blockers.';return tip}
+function chapterNote(L){const k=(L-1)%50+1,ch=Math.ceil(L/50),tip=ROUTE_TIPS[ch-1];if(ch===6&&k<=5)return 'Rails admit arrow-direction entry.';if(ch===6&&k<=8)return 'Turners bend one continuous move.';if(k>=46)return 'Expert route: plan blockers.';return tip}
 function findAt(arr,r,c){return (arr||[]).find(x=>x[0]===r&&x[1]===c)}
 function mechanicLinkLabel(id){const n=Number(id)||0;return String.fromCharCode(65+(n%26))}
 function clearMechanicInspector(){inspectedMechanic=null;showMechanicInspector('')}

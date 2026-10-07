@@ -19,8 +19,8 @@ const server=http.createServer((req,res)=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844}});
-  await context.addInitScript(()=>localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1})));
+  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});
+  await context.addInitScript(()=>{localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(Object.fromEntries(Array.from({length:400},(_,i)=>[i+1,1]))))});
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
 
@@ -83,6 +83,32 @@ const server=http.createServer((req,res)=>{
   assert.equal(smoke.switched.cells,smoke.definitions.switched.cells,'Level 301 must render its complete authored board');
   assert.equal(smoke.switched.pieces,smoke.definitions.switched.pieces,'Level 301 must render every authored Latchling');
 
+  for(const target of [51,151]){
+   const reset=await page.evaluate(async target=>{
+    closeModal();LatchlingsPrefs.set('motion','system');startLevel(51);
+    const [pi,dir]=LEVELS[50].solution[0];
+    document.querySelector('.latchling[data-pi="'+pi+'"]').click();
+    const oldMove=moveSelected(dir),inMotion=animating&&movesUsed===1;
+    if(target===51)document.getElementById('resetLevelBtn').click();else startLevel(target);
+    const expected=LEVELS[target-1].pieces.map(p=>p.pos.slice());
+    await oldMove;
+    return{inMotion,expected,positions,level:currentLevel,moves:movesUsed,mask:doorMask,animating};
+   },target);
+   assert(reset.inMotion,'lifecycle regression must interrupt a real normal-motion move');
+   assert.deepStrictEqual(reset.positions,reset.expected,target+': a late animation cannot overwrite a reset or newly selected board');
+   assert.equal(reset.level,target);assert.equal(reset.moves,0);assert.equal(reset.mask,0);assert.equal(reset.animating,false);
+  }
+  const dailyExit=await page.evaluate(async()=>{
+   closeModal();startLevel(1,'daily');const lev=LEVELS[0],before=JSON.stringify(progress);
+   for(const [pi,dir] of lev.solution.slice(0,-1)){const m=simulate(pi,dir);if(!m)throw Error('invalid Daily fixture prefix');positions[pi]=m.capture?null:[m.r,m.c];doorMask=m.mask;movesUsed++;}
+   renderGame(true);const [pi,dir]=lev.solution.at(-1);selected=pi;
+   const oldMove=moveSelected(dir),inMotion=animating;
+   leaveDailyForHome();await oldMove;
+   return{inMotion,before,after:JSON.stringify(progress),mode:playMode,screen:document.body.dataset.screen,overlay:document.getElementById('overlay').classList.contains('show')};
+  });
+  assert(dailyExit.inMotion,'Daily exit regression must interrupt the actual final movement');
+  assert.equal(dailyExit.after,dailyExit.before,'leaving Daily during its final animation must not award campaign stars');
+  assert.equal(dailyExit.mode,'campaign');assert.equal(dailyExit.screen,'home');assert.equal(dailyExit.overlay,false,'abandoned movement cannot reopen a stale win modal');
   await context.close();
   console.log('PASS all 400 authored campaign routes, metadata, and Level 1/201/301 board-start smoke checks');
  }finally{
