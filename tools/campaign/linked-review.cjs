@@ -6,6 +6,26 @@ const {anchorDependencies}=require('./anchor-review.cjs');
 const {solve}=require('./solve.cjs');
 const same=(a,b)=>a[0]===b[0]&&a[1]===b[1];
 const physical=m=>m?JSON.stringify([m.r,m.c,m.path,m.capture]):'blocked';
+function usefulClosedLaunch(level,simulateState,travel,w){
+ const step=travel.steps[w.prefix],without={...level,doors:level.doors.filter(d=>!same(d,w.at))};
+ const positions=w.state.positions.map(p=>p&&p.slice());let mask=w.state.doorMask;
+ const opened=simulateState(without,positions,mask,w.pi,w.dir);
+ if(!opened)return true;
+ if(opened.capture!==step.result.capture||opened.mask!==step.result.mask)return true;
+ positions[w.pi]=opened.capture?null:[opened.r,opened.c];mask=opened.mask;
+ const end=m=>m?JSON.stringify([m.r,m.c,m.capture,m.mask]):'blocked';
+ // Remove only the stopping door for this input; restore the real board for
+ // later inputs and replay actual masks. Reversing from a boundary is not
+ // an earned closing if it gives the same subsequent board state.
+ for(const next of travel.steps.slice(w.prefix+1)){
+  const m=simulateState(level,positions,mask,...next.move),own=next.move[0]===w.pi,at=positions[next.move[0]];
+  const observed=m||own&&at&&{r:at[0],c:at[1],capture:false,mask};
+  if(end(observed)!==end(next.result))return true;
+  if(own)break;
+  positions[next.move[0]]=m.capture?null:[m.r,m.c];mask=m.mask;
+ }
+ return false;
+}
 function linkedDependencies(level,simulateState){
  const travel=replay(level,simulateState),toggles=[],openPasses=[],closedStops=[],connections=[];
  for(const step of travel.steps){
@@ -32,7 +52,7 @@ function linkedDependencies(level,simulateState){
   if(openPasses.includes(w)&&toggle?.open)connections.push({type:'opened-passage',prefix:w.prefix,togglePrefix:toggle.prefix,pi:w.pi,link:w.link});
   if(closedStops.includes(w)&&!toggle?.open&&w.stop){
    const launch=travel.steps.find(s=>s.prefix>w.prefix&&s.move[0]===w.pi);
-   if(launch&&(launch.result.capture||meaningfulHelperStop(level,launch.state.positions,launch.state.doorMask,...launch.move,launch.result,simulateState))){
+   if(launch&&(launch.result.capture||meaningfulHelperStop(level,launch.state.positions,launch.state.doorMask,...launch.move,launch.result,simulateState))&&usefulClosedLaunch(level,simulateState,travel,w)){
     if(toggle)connections.push({type:'closed-launch',prefix:w.prefix,togglePrefix:toggle.prefix,launchPrefix:launch.prefix,pi:w.pi,link:w.link});
     const opening=toggles.find(t=>t.link===w.link&&t.open&&t.prefix>launch.prefix);
     const passage=opening&&openPasses.find(p=>p.intended&&p.link===w.link&&(p.prefix>opening.prefix||(p.prefix===opening.prefix&&p.pathIndex>opening.pathIndex)));

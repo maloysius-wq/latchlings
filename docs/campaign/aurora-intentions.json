@@ -1,0 +1,263 @@
+{
+  "351": {
+    "intention": "A shared-anchor expert pair, not a new-rule demonstration: Blue reaches the right anchor, while Coral moves to the left boundary to stop Blue on its downward nest column. Coral then comes up against a rock, circles right and reuses the same anchor to stop against Blue in its own upward capture column. Blue must finish downward before Coral goes up and left home. Removed the second anchor masked by the adjacent rock; the two physical helper launches and thirteen-input optimum remain.",
+    "decision": "replace",
+    "prerequisites": [
+      "shared anchor launches",
+      "reciprocal relocated helpers",
+      "deferred captures"
+    ]
+  },
+  "352": {
+    "intention": "Blue drops while Coral loops down and left to become Blue's bottom-row wall. The Heart-only gate then rejects Blue upward, giving Blue the row to travel right and become Coral's upper wall. Coral relocates through the lower rocks and stops against Blue; Blue returns left, down and left home before Coral captures left on its own row. The same gate permits Coral in reachable alternatives but stops Blue in the actual solution. Removed the unused Spade gate rather than claiming another permission interaction.",
+    "decision": "replace",
+    "prerequisites": [
+      "identity-dependent stopping",
+      "reciprocal relocated helpers",
+      "capture timing"
+    ]
+  },
+  "353": {
+    "intention": "Coral initially stops Blue's lower-left and downward approaches. Blue parks on the left boundary so Coral can loop right, up and left against it while passing its own Coral gate. Coral then moves upward; the same Coral-only gate rejects Blue rightward and fixes Blue's upward capture column. Release Coral for its rightward nest only after Blue captures. Removed the unused Blue gate: one color permission already serves both the allowed traveler and the rejected traveler in the reciprocal setup.",
+    "decision": "replace",
+    "prerequisites": [
+      "permitted and rejected color entry",
+      "reciprocal helper roles",
+      "late captures"
+    ]
+  },
+  "354": {
+    "intention": "Two directional rejections build a reciprocal launch: the upper rail stops Coral leftward, allowing Blue to loop around the lower-right rock and stop below Coral. Coral's downward input is then rejected by the upward rail and it moves left against Blue. After Coral relocates along the lower-left column, it stops Blue in its final downward capture column; Coral captures left last. The upward rail also permits Blue's earlier upward passage, so the directions do different physical jobs.",
+    "decision": "replace",
+    "prerequisites": [
+      "directional entry and rejection",
+      "reciprocal helper relocation",
+      "late captures"
+    ]
+  },
+  "355": {
+    "intention": "Coral first vacates the left column to the bottom. Blue moves left, up and right to stop Coral's return across the upper row, then loops up and left. Coral moves upward to stop Blue immediately above the remaining counterclockwise turner; Blue's downward input visibly bends right into its nest. Coral captures left afterward. Removed the first corner turner, whose boundary/rock stop did not contribute a useful bend or change the independent twelve-input optimum.",
+    "decision": "replace",
+    "prerequisites": [
+      "continuous turner bends",
+      "reciprocal helper placement",
+      "retain the final helper"
+    ]
+  },
+  "356": {
+    "intention": "A seventeen-input state/cooperation pair: Blue first uses Coral at the right edge, then returns downward to stop Coral in the switch column. Coral uses the still-closed upper door to stop on the switch row, crosses the switch rightward, goes up and left through the opened door, and returns down to become Blue's final wall. Blue captures upward; Coral returns through the persistent open route, goes down through its own switch again, and captures left. The state and relocated helper loop are connected, not isolated toggles.",
+    "decision": "replace",
+    "prerequisites": [
+      "closed-door launch geometry",
+      "persistent linked state",
+      "reciprocal relocated helpers"
+    ]
+  },
+  "357": {
+    "intention": "Blue uses the lower anchor and side rocks to reach the upper-left helper position. Coral approaches upward against Blue; Blue then moves right and down onto the central anchor. Coral relocates right and upward to become Blue's upper stopper, allowing Blue to move up and left home. Coral captures left only after Blue leaves. Both precise launch points feed the changing helper roles; neither is a straight continuation tax.",
+    "decision": "replace",
+    "prerequisites": [
+      "two precise launch points",
+      "reciprocal relocated helpers",
+      "deferred captures"
+    ]
+  },
+  "358": {
+    "intention": "Keep exchanging roles before releasing either resident: Coral at the upper-right first stops Blue after Blue's permitted Spade-gate passage. The Heart-only gate rejects Blue leftward for its next approach. Blue and Coral then exchange upper-row stopping positions before Blue drops and circles left; Coral drops to the rock row and stops Blue in its final downward nest column. Blue captures down, then Coral captures left. Both gates have actual identity-dependent work, and four helper jobs occur before the first release.",
+    "decision": "replace",
+    "prerequisites": [
+      "allowed and rejected suit entry",
+      "repeated reciprocal helper jobs",
+      "deferred captures"
+    ]
+  },
+  "359": {
+    "intention": "The Coral-only upper gate rejects Blue, placing it where it stops Coral from below. Coral moves to the right edge while Blue circles along the bottom and passes its own Blue gate upward against Coral. Blue captures downward from the adjacent rock's column. The Blue-only gate now rejects Coral's downward approach, giving Coral the row to move left and then upward home. The residents need opposite permissions at different stages, not matching colored scenery.",
+    "decision": "replace",
+    "prerequisites": [
+      "opposing color permissions",
+      "reciprocal helper placement",
+      "late captures"
+    ]
+  },
+  "360": {
+    "intention": "Coral first passes the left-entry rail toward the left edge, then tries the reverse entry and stops short of that same tile. This rejection gives Coral the column to move upward against Blue. After Coral circles to the right, it stops Blue downward; Coral then returns upward until the top right-entry rail rejects it, preparing Blue's rightward stop and upward capture. Release Coral leftward last. The first rail has both actual allowed and rejected entries in the intended solution, and three helper jobs connect the two residents. This thirteen-input replacement supersedes the rejected universal-arrow-wall proposal.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-rail allowed and rejected entry",
+      "reciprocal helper relocation",
+      "retain the final stopper"
+    ]
+  },
+  "361": {
+    "intention": "Coral waits on the lower anchor while Mint uses Blue at the top-right. Mint descends and then visibly bends upward at the clockwise turner; its new top position stops Blue beside its nest column. Mint next descends through the same turner, bends left, and drops to the bottom to stop Coral as it leaves the anchor. Coral's upward input bends right at the turner, then its next upward move stops below Blue. Coral captures left before Blue captures down; Mint loops around the lower-left edge and captures upward last. Four physical helper jobs connect the shared turner and timed anchor departure. This fourteen-input design replaces the earlier cosmetic-rail proposal.",
+    "decision": "replace",
+    "prerequisites": [
+      "precise timed departure",
+      "shared continuous turner paths",
+      "three-way staged helper relay"
+    ]
+  },
+  "362": {
+    "intention": "Blue reaches the bottom-right approach and travels up through the permitted Spade gate and upward rail to become Mint's rightward wall. Mint relocates upward and stops Coral's approach; Coral then becomes Blue's leftward wall after the rail rejects Blue downward. Blue captures down, while the same Spade gate rejects Coral rightward onto its downward nest column. Coral captures next, freeing Mint's downward capture last. The rail and suit gate each have actual permitted and rejected uses; the bottom anchor was physically redundant with the boundary and was removed.",
+    "decision": "replace",
+    "prerequisites": [
+      "allowed and rejected suit entry",
+      "allowed and rejected rail entry",
+      "three-way staged helper relay"
+    ]
+  },
+  "363": {
+    "intention": "Mint first uses Coral at the right side, then travels up and left against Blue at the top-left. The Blue-only gate rejects Mint downward, preparing Mint's relocation to the upper-right helper position. Meanwhile Coral's downward input visibly bends left at the clockwise bottom turner to become Blue's lower wall. Blue uses Mint to align its column, then Coral to align its leftward bottom capture. Coral captures upward next and Mint captures left after returning down around the rocks. Four physical helper jobs connect the color restriction and turn; the unused anchor was removed with the sixteen-input optimum intact.",
+    "decision": "replace",
+    "prerequisites": [
+      "identity-dependent stopping",
+      "continuous turner bends",
+      "three-way staged helper relay"
+    ]
+  },
+  "364": {
+    "intention": "Blue crosses the switch leftward, then uses Coral below to reach the right side. Mint descends through the permitted downward rail and open door against Coral, moves right against Blue and drops. Blue returns left and upward until the same rail rejects its reverse entry; Coral rises against Blue. Blue captures right, Coral right, and Mint left. The linked passage, two-direction rail and four helper jobs form one relay. The unvisited anchor was removed without changing the twelve-input optimum.",
+    "decision": "replace",
+    "prerequisites": [
+      "persistent linked passage",
+      "permitted and rejected rail entry",
+      "three-way staged helper relay"
+    ]
+  },
+  "365": {
+    "intention": "The two Blue residents have different suits. Blue Heart loops right and down through the anchor, then rises against Blue Spade parked there. Spade can pass the Spade-only gate leftward, while Heart cannot take that alternative. Spade loops downward and left against Mint; Heart moves left against Spade. Only then may Spade capture upward, Heart downward, and Mint right. The shared anchor, identity distinction and three physical helper jobs all matter; the unused Blue gate was removed with the fifteen-input optimum intact.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-color different-suit identities",
+      "shared precise anchor",
+      "three-way deferred capture"
+    ]
+  },
+  "366": {
+    "intention": "A dense seven-by-seven relay without an anchor pause: Blue passes its Spade gate upward, while Coral moves left to stop Blue on the shared capture column. Mint loops down across the left-entry rail, reverses against its rejection and becomes Blue's lower wall. The same Spade gate rejects Coral's rightward approach; Blue returns upward to stop Coral in Coral's downward capture column. Capture Coral, then Mint upward, then Blue downward through the cleared column. Suit contrast, directional rail and three physical helper jobs now make a genuine fourteen-input synthesis. Removed the masked/turnaround anchor and unused corner turner.",
+    "decision": "replace",
+    "prerequisites": [
+      "dense readable seven-by-seven geometry",
+      "opposing suit permissions",
+      "rail-assisted three-way capture order"
+    ]
+  },
+  "367": {
+    "intention": "Mint and Blue first stop below the rail; the Spade gate rejects Mint leftward but admits Blue to the left anchor. Blue loops down, right and up to become Mint's top-row wall. Mint shifts right against Blue, then stops Coral on the top row. Blue returns to the lower-left so Coral can descend and stop against it. Blue rises to the anchor and captures right through its own suit gate; Coral captures down and Mint right. The anchor, opposite suit permissions and three helper jobs are the connected mastery classes. The auxiliary rail blocks an early vertical approach; it is not claimed as two-way rail mastery.",
+    "decision": "replace",
+    "prerequisites": [
+      "anchor-to-permission launch",
+      "opposing suit permissions",
+      "three-way relocated helper chain"
+    ]
+  },
+  "368": {
+    "intention": "Coral first descends and circles left and up to stop Blue on the top row. Blue moves down and left; Coral drops to the bottom row, is rejected by the Blue-only gate and returns upward and left against Blue. Mint stays below to stop Blue on the turner's row. Blue travels right, bends downward onto its permitted color tile and captures left. Coral captures upward before Mint leaves its blocking position. The sixteen-input route connects opposing color permission, a real continuous turn and three-way cooperation. Removed the anchor's later straight continuation tax; the remaining three mastery classes and perfect helper-bypass rejection still hold.",
+    "decision": "replace",
+    "prerequisites": [
+      "opposing color permissions",
+      "helper-to-turner launch",
+      "three-way deferred capture"
+    ]
+  },
+  "369": {
+    "intention": "Mint crosses the top switch to open the door, while Blue goes up, left and down to become Mint's lower wall. Mint returns left and drops against Blue, uses the rejecting rail to reach the bottom row, then stops Blue rightward in the turner's column. Blue rises through a clockwise bend, travels right through the open door and stops against Coral. Blue captures down, Coral captures left through the door, and Mint captures left last. The thirteen-input route connects a physical helper-to-turn launch, persistent state and the final helper endpoint. Removed the old turnaround anchor's two wasted inputs; no decorative anchor is counted as mastery.",
+    "decision": "replace",
+    "prerequisites": [
+      "persistent linked passage",
+      "helper-to-continuous-turn launch",
+      "three-way deferred captures"
+    ]
+  },
+  "370": {
+    "intention": "Blue moves right to its upward column. Coral shifts left to stop Mint below, then returns right so Mint can move left and up against the Blue-only gate. Mint stops Blue upward; Blue moves to the right edge to stop Coral through Coral's permitted Spade gate. Coral goes left while Blue captures down, then Coral captures down. Mint finishes right and down after both helpers leave. Blue and Coral share a Spade mark but not body color, so the two permission types are not interchangeable. Removed the anchor masked by the adjacent bottom rock without changing the fourteen-input optimum.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-suit different-color identities",
+      "permission-to-helper relay",
+      "three-way deferred capture"
+    ]
+  },
+  "371": {
+    "intention": "Coral bends downward at the counterclockwise turner, then bends left on the reverse upward approach through the left-entry rail. Mint repeats the initial bend and rises through the turner against Coral, rather than following it to the edge. Coral descends and turns right around the rocks before Blue stops it below; Mint drops against Coral to reach its own rightward capture row. Coral captures down at the right edge, Mint right, and Blue upward last. The real shared bend, directional contrast and three physical helper jobs connect the route. Removed the unused right-side anchor with the twelve-input optimum unchanged.",
+    "decision": "replace",
+    "prerequisites": [
+      "shared continuous turner",
+      "permitted and rejected rail approach",
+      "three-way helper relay"
+    ]
+  },
+  "372": {
+    "intention": "Blue and Coral rise from the lower corners; Coral stops Blue on the right. Blue passes the Spade gate upward, then Mint stops Blue on the top row so it can descend through the downward rail. Blue continues below the anchor to stop Coral leftward, then returns to the anchor for its left-and-down capture launch. The same suit gate now rejects Coral upward, setting Coral's leftward capture row; Mint captures downward last. Actual allowed/rejected rail and suit entries connect the three helper jobs. The anchor's later launch is useful: removing it raises the independent optimum to fifteen and loses the proven permission chain; it is not counted as a fourth mastery class.",
+    "decision": "replace",
+    "prerequisites": [
+      "opposing suit permissions",
+      "directional entry contrast",
+      "three-way helper relay"
+    ]
+  },
+  "373": {
+    "intention": "Blue's rightward input bends down through its permitted Blue gate and stops against Mint, then moves left and up around the rocks. Coral shifts left on the bottom row; Mint loops left, down and left against Coral, then rises to become Blue's leftward wall. Blue captures down first. Mint must stay available: it relocates left to stop Coral upward for Coral's rightward capture. Mint captures downward last. The same color tile rejects Mint's premature upward departure. Four physical helper jobs connect the permitted turn route and retained-helper capture order, including a job after Blue has already left.",
+    "decision": "replace",
+    "prerequisites": [
+      "permission-aware continuous turn",
+      "three-way relocated helpers",
+      "retain a helper after the first capture"
+    ]
+  },
+  "374": {
+    "intention": "Coral descends through the switch to open the shared door. Blue goes right and up through the same switch, closing it while Mint stops Blue leftward. Coral returns upward through the switch to reopen the door and stops against Blue on the upper row. Blue descends through the open door; Coral is rejected downward by the right-entry rail while Mint relocates against the helpers. Mint moves left to stop Coral, then captures right first. Coral must stay on the bottom row to stop Blue through the door for Blue's leftward capture; Coral captures upward last. Six physical helper jobs, including one after Mint's capture, connect the directional restriction and persistent switch timing.",
+    "decision": "replace",
+    "prerequisites": [
+      "coordinated persistent linked state",
+      "directional stopping and entry contrast",
+      "retain a helper after the first capture"
+    ]
+  },
+  "375": {
+    "intention": "Blue Spade and Blue Heart share body color but not suit. Spade passes the Blue gate rightward and rises against Heart, then moves left to stop Mint upward. Heart descends through both its matching color tile and Heart-only gate. Spade relocates to stop Heart on the color tile; Spade captures left on the top row, then Mint captures left, releasing Heart's crossing row. Heart passes left through that cleared row, drops against a rock and captures right. Mint cannot enter the Blue tile and Spade cannot take Heart's downward gate. Three physical helper jobs make the two identity systems do different work rather than act as interchangeable labels.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-color different-suit identities",
+      "opposing suit and color permissions",
+      "three-way staged captures"
+    ]
+  },
+  "376": {
+    "intention": "Blue and Coral share a Spade mark but not body color. Blue's upward input bends left across its Blue gate. The upward rail rejects Coral's downward approach so Coral can cross the shared Spade gate leftward, while Mint drops into position as the wall that stops both Spade residents. Coral relocates below to stop Blue on the color tile; Blue rises and returns against Mint on the Spade tile, then stops Coral upward. Release Blue left, Coral left, and finally Mint up and left. Four physical helper jobs make color and suit non-interchangeable. Removing the rail drops the required staged cooperation; removing the turner loses both that cooperation and future-state evidence, so neither is decorative even though only the connected permission/helper classes are counted.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-suit different-color identities",
+      "opposing suit and color permissions",
+      "four-job three-way helper plan"
+    ]
+  },
+  "377": {
+    "intention": "Blue Spade crosses the switch upward and relocates left. Blue Heart descends through its matching Blue gate, crosses the switch leftward to close both doors and stops against Spade. The closed lower door positions Mint as Heart's rightward wall so Heart can reopen the network. Heart drops to the bottom to stop Mint downward; Mint crosses the switch to close the network again. Spade travels right through its permitted color tile, reopens the door and captures downward. Heart captures right and Mint left last. Four helper jobs connect useful closed-door positioning, reopening and the color permission. Removed the unused suit gate without changing the fourteen-input optimum.",
+    "decision": "replace",
+    "prerequisites": [
+      "useful closed-door helper positioning",
+      "persistent reopening decisions",
+      "three-way staged capture"
+    ]
+  },
+  "378": {
+    "intention": "Blue rises until the right-entry rail rejects it, then moves left to stop Coral after Coral's downward input bends left through the shared Spade gate. The Mint-only gate prevents Coral from leaving upward. Mint moves below Coral, then Blue uses Mint to align its downward capture. Mint relocates down to stop Coral for Coral's rightward capture and rises through its matching color gate to capture right last. Four helper jobs connect actual continuous turning and different permissions. The rail is retained because its initial rejected entry prepares this chosen fourteen-input route; it is not counted as a fourth mastery class.",
+    "decision": "replace",
+    "prerequisites": [
+      "opposing permissions",
+      "helper-to-continuous-turn relay",
+      "retain a helper after first capture"
+    ]
+  },
+  "380": {
+    "intention": "Coral's rejected rail entry prepares Blue's upward stop and continuous leftward turn. Blue passes its color tile downward while Coral later cannot. The residents exchange left-edge and right-side helper jobs until Coral stops Blue on the final nest column. Capture Coral first but retain Blue: Mint must descend against Blue before Blue captures upward. Mint then rises through the shared turner and captures left. Six physical helper jobs connect directional entry, opposing color permission and turning over twenty-four proven inputs. Removed the unvisited anchor and unused suit restriction; neither is claimed as expert mastery.",
+    "decision": "replace",
+    "prerequisites": [
+      "opposing color permissions",
+      "rail and continuous-turn relay",
+      "retain a helper after first capture"
+    ]
+  }
+}

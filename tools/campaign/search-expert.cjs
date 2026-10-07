@@ -17,6 +17,37 @@ function expertRoute(level,proof,simulateState){
  const authored=level.solution?.length===proof.optimum?level.solution:undefined;
  return require('./authored-route.cjs').chooseAuthoredRoute(level,proof,simulateState,authored);
 }
+function expertFoundationSuggestions(base,simulateState,profile){
+ const {replay}=require('./review.cjs');
+ if(!replay(base,simulateState).solved)return[];
+ const {guidePermissions,guideMatchingPermissions}=require('./guided-permissions.cjs');
+ const {guideTurns,guideRailBlockers,guideMatchingRails}=require('./guided-routing.cjs');
+ const {guideLinkedPassages,guideClosedDoors}=require('./guided-linked.cjs');
+ let variants=[base];
+ for(const field of ['suitGates','colorGates'])if(profile[field])variants=variants.flatMap(l=>[...guidePermissions(l,simulateState,field),...guideMatchingPermissions(l,simulateState,field)].slice(0,30)).slice(0,900);
+ if(profile.turners)variants=variants.flatMap(l=>guideTurns(l,simulateState).slice(0,6)).slice(0,900);
+ if(profile.links)variants=variants.flatMap(l=>guideLinkedPassages(l,simulateState).slice(0,10).flatMap(opened=>profile.requiredState?[...guideClosedDoors(opened,simulateState),opened]:[opened,...guideClosedDoors(opened,simulateState).slice(0,3)])).slice(0,900);
+ if(profile.rails)variants=variants.flatMap(l=>[...guideRailBlockers(l,simulateState),...guideMatchingRails(l,simulateState)].slice(0,30)).slice(0,2700);
+ return variants;
+}
+function* iterateExpertFoundations(base,simulateState,profile){
+ const fields=['suitGates','colorGates','rails','turners','links'].filter(f=>profile[f]);
+ const selections=[...fields.map(f=>[f]),...fields.flatMap((f,i)=>fields.slice(i+1).map(g=>[f,g]))];
+ for(const selected of selections){
+  if(selected.length===fields.length||profile.requiredState&&!selected.includes('links'))continue;
+  const focused={...profile,suitGates:0,colorGates:0,rails:0,turners:0,links:0};
+  for(const field of selected)focused[field]=profile[field];
+  yield* expertFoundationSuggestions(base,simulateState,focused);
+ }
+ yield* expertFoundationSuggestions(base,simulateState,profile);
+}
+function proveExpertSuggestion(level,simulateState,band){
+ const {solve}=require('./solve.cjs');
+ const quick=solve(level,simulateState,{maxStates:200000,maxMs:5000});
+ if(quick.status!=='solved'||quick.optimum<band[0]||quick.optimum>band[1])return null;
+ const full=solve(level,simulateState);
+ return full.status==='solved'&&full.optimum>=band[0]&&full.optimum<=band[1]?full:null;
+}
 function search(){
  const fs=require('node:fs'),path=require('node:path'),{loadCampaign}=require('./runtime.cjs'),{candidate,searchGeometry}=require('./candidates.cjs'),{solve}=require('./solve.cjs'),{canonical,nearClones}=require('./fingerprint.cjs'),{expertDependencies,expertFailures,expertEvidenceFailures}=require('./expert-review.cjs'),{anchorPaddingFailures}=require('./anchor-padding.cjs');
  const {guideTurns,guideRailBlockers}=require('./guided-routing.cjs'),{guideLinkedPassages,guideClosedDoors}=require('./guided-linked.cjs');
@@ -40,12 +71,21 @@ function search(){
    if(level.solution.length<band[0])return null;
    const d=expertDependencies(level,simulateState);
    if(expertEvidenceFailures(level,d,ideas).length||anchorPaddingFailures(level,simulateState).length||profile.requiredState&&!d.linked.connections.some(w=>w.type===profile.requiredState))return null;
-   return qualify(level,solve(level,simulateState),'replace',origin);
+   const proof=proveExpertSuggestion(level,simulateState,band);
+   return proof?qualify(level,proof,'replace',origin):null;
   };
   for(let attempt=1;!selected&&attempt<=15000;attempt++){
    if(attempt%250===0)console.log(`SEARCH aurora ${id}: ${attempt}`);
    const seed=(0x71a9f04d^Math.imul(id,2654435761)^Math.imul(attempt,2246822519))>>>0,p={...profile,geometry:searchGeometry(profile.geometry,attempt)},level=candidate(p,seed,id),quick={maxStates:200000,maxMs:500},proof=solve(level,simulateState,quick);
    if(proof.status==='solved'&&proof.optimum>=band[0]&&proof.optimum<=band[1]){level.solution=proof.route;selected=guided(level,{seed,attempt,kind:'bounded deterministic suggestion'});}
+   if(selected)break;
+   if(local>10&&attempt%4===1){
+    const base=candidate({...p,rocks:5+attempt%5,anchors:0,suitGates:0,colorGates:0,rails:0,turners:0,links:0},seed,id),basis=solve(base,simulateState,{maxStates:200000,maxMs:1500});
+    if(basis.status==='solved'){
+     base.solution=basis.route;const c=require('./candidates.cjs').cooperation(base,simulateState);
+     if(c.participants===base.pieces.length&&c.beforeFirstCapture>=3&&c.travelers>=2)for(const v of iterateExpertFoundations(base,simulateState,p)){selected=guided(v,{seed,attempt,kind:'actual cooperative foundation guidance'});if(selected)break;}
+    }
+   }
    if(selected)break;
    if(p.links&&attempt%4===0){
     const base=candidate({...p,links:0},seed,id),basis=solve(base,simulateState,quick);
@@ -68,4 +108,4 @@ function search(){
  console.log('50 Aurora suggestions; individual final-ten author/phone and human playtesting review still required');
 }
 if(require.main===module)search();
-module.exports={expertProfile,expertRoute};
+module.exports={expertProfile,expertRoute,expertFoundationSuggestions,iterateExpertFoundations,proveExpertSuggestion};

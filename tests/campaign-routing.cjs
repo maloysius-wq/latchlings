@@ -50,7 +50,9 @@ console.log('PASS offline Copperline stage profiles preserve rail-first and spar
 const {prepareChapter}=require('../tools/campaign/prepare.cjs');
 const baseline=require('../docs/campaign/baseline.json');
 {
- const historical=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels.slice(250,300),notes=Object.fromEntries(historical.map(l=>[l.id,{intention:'Fixture: inspect the actual directional entry and continuous route.'}]));
- assert.throws(()=>prepareChapter(historical,notes,baseline,simulateState,{visualEvidence:{status:'test fixture only'}}),/251: Turners introduced before rail practice/,'preparation must enforce the staged routing curriculum before producing records');
+ const mixedFirst=structuredClone(loadCampaign(path.resolve(__dirname,'..')).levels.slice(250,300));
+ mixedFirst[0]=loadCampaign(path.resolve(__dirname,'..'),{revision:'c79f39f'}).levels[250];
+ const notes=Object.fromEntries(mixedFirst.map(l=>[l.id,{intention:'Fixture: inspect the actual directional entry and continuous route.'}]));
+ assert.throws(()=>prepareChapter(mixedFirst,notes,baseline,simulateState,{visualEvidence:{status:'test fixture only'}}),/251: Turners introduced before rail practice/,'preparation must enforce the staged routing curriculum before producing records');
  console.log('PASS preparation rejects historical mixed-first Copperline teaching before export');
 }

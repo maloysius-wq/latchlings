@@ -22,6 +22,12 @@ const delayed={...closure,pieces:[{...closure.pieces[0],pos:[0,4]},closure.piece
 assert(replay(delayed,simulateState).solved);
 assert(linkedDependencies(delayed,simulateState).connections.some(w=>w.type==='delayed-opening'&&w.prefix===0&&w.launchPrefix===1&&w.togglePrefix===2&&w.passagePrefix===3),'preserve a useful closed launch before another resident opens the same route');
 console.log('PASS reachable linked-door passage, real closure launch, within-input masks and irrelevant-toggle rejection');
+{
+ const turnaround={id:377,chapter:8,size:6,pieces:[{color:'blue',suit:'spade',pos:[2,5]},{color:'blue',suit:'heart',pos:[4,2]},{color:'mint',suit:'club',pos:[5,5]}],nests:[[4,3],[3,4],[1,3]],rocks:[[3,3],[3,0],[3,1],[3,5],[5,0],[1,5],[1,1]],anchors:[[5,4]],suitGates:[[1,4,'heart']],colorGates:[[4,5,'blue']],rails:[],turners:[],switches:[[2,4,0]],doors:[[2,0,0]],solution:[[0,'L'],[1,'D'],[2,'L'],[2,'U'],[1,'R'],[2,'R'],[0,'R'],[0,'D'],[2,'L'],[0,'U'],[2,'R'],[0,'D'],[0,'L'],[1,'U'],[2,'U']]};
+ assert(replay(turnaround,simulateState).solved);
+ assert(!linkedDependencies(turnaround,simulateState).connections.some(w=>w.type==='closed-launch'),'a closed edge door cannot earn a launch when reversing from the edge gives the same next helper landing');
+ assert(!require('../tools/campaign/expert-review.cjs').expertDependencies(turnaround,simulateState).classes.includes('linked-state'),'a cosmetic closing turnaround cannot inflate a third mastery class');
+}
 const {linkedFailures,linkedCurriculumFailures}=require('../tools/campaign/linked-review.cjs');
 assert.deepEqual(linkedFailures(introduction,simulateState),[]);
 assert(linkedFailures(decorative,simulateState).some(e=>/passage/.test(e)),'decorative mask toggles cannot qualify a lesson');

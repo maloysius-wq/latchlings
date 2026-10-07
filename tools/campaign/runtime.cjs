@@ -12,7 +12,10 @@ function loadCampaign(root,{revision}={}){
  const findAt=constants.match(/function findAt\([^\n]+/)?.[0]||source.match(/function findAt\([^\n]+/)?.[0];
  const start=source.indexOf('function simulateState('),end=source.indexOf('function simulate(pi,',start);
  if(!vectors||!findAt||start<0||end<=start)throw new Error('Gameplay source boundaries changed; update and verify VM loader');
- vm.runInContext(vectors+'\n'+findAt+'\n'+source.slice(start,end),context,{timeout:5000});
- return {levels:JSON.parse(JSON.stringify(context.window.LEVELS)),simulateState:context.simulateState};
+ // Compile the exact trusted repository transition in the host realm: repeated
+ // array callbacks across the VM boundary dominate offline BFS authoring time.
+ // Static exports stay isolated, and browser parity tests cover this extraction.
+ const simulateState=new Function(vectors+'\n'+findAt+'\n'+source.slice(start,end)+'\nreturn simulateState;')();
+ return {levels:JSON.parse(JSON.stringify(context.window.LEVELS)),simulateState};
 }
 module.exports={loadCampaign};

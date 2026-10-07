@@ -52,3 +52,29 @@ console.log('PASS connected expert classes, staged mastery, real state use, dens
  assert.throws(()=>expertProfile(0),/1–50/);assert.throws(()=>expertProfile(51),/1–50/);
  console.log('PASS expert suggestion profiles keep focused pairs, dense366 and selective mastery combinations');
 }
+{
+ const {expertFoundationSuggestions}=require('../tools/campaign/search-expert.cjs');
+ const base={id:372,chapter:8,size:6,pieces:[{color:'blue',suit:'spade',pos:[1,5]},{color:'coral',suit:'heart',pos:[3,5]},{color:'mint',suit:'club',pos:[3,3]}],nests:[[3,0],[0,2],[5,5]],rocks:[[5,2],[2,0],[0,5],[5,4],[0,3],[2,5],[4,0],[0,0]],anchors:[],suitGates:[],colorGates:[],rails:[],turners:[],switches:[],doors:[],solution:[[0,'L'],[1,'L'],[1,'D'],[2,'U'],[0,'R'],[0,'D'],[0,'R'],[2,'D'],[0,'L'],[1,'L'],[1,'U'],[2,'R'],[2,'D'],[0,'R'],[0,'U'],[0,'L']]};
+ const before=JSON.stringify(base),variants=expertFoundationSuggestions(base,simulateState,{suitGates:1,rails:1});
+ assert.equal(JSON.stringify(base),before,'foundation guidance cannot mutate its source route');
+ const specific=variants.find(l=>l.anchors.some(a=>a[0]===4&&a[1]===1)&&l.suitGates.some(a=>a[0]===5&&a[1]===2&&a[2]==='heart')&&l.rails.some(a=>a[0]===5&&a[1]===4&&a[2]==='U'));
+ assert(specific,'compose the hand-traced helper anchor, Heart permission and blocked upward rail');
+ const {solve}=require('../tools/campaign/solve.cjs'),p=solve(specific,simulateState);
+ assert.equal(p.status,'solved');assert.equal(p.optimum,15,'independent proof shortens the guided foundation without padding');
+ const proved={...specific,solution:p.route,optimal:p.optimum};
+ assert.deepEqual(expertDependencies(proved,simulateState).classes,['anchors','helpers','suitGates'],'real replay exposes the connected classes, not a cosmetic rail class');
+ assert.deepEqual(expertFailures(proved,simulateState),[],'foundation suggestions still require every normal mastery gate');
+ assert.deepEqual(expertFoundationSuggestions({...base,solution:[]},simulateState,{suitGates:1,rails:1}),[],'incomplete foundations produce no fabricated route evidence');
+ console.log('PASS actual foundation guidance composes causal fields without bypassing fresh proof');
+ const {iterateExpertFoundations}=require('../tools/campaign/search-expert.cjs');
+ const focused=[...iterateExpertFoundations(base,simulateState,{suitGates:1,rails:1})].find(l=>l.anchors.some(a=>a[0]===4&&a[1]===1)&&l.suitGates.some(a=>a[0]===5&&a[1]===2&&a[2]==='heart')&&l.rails.length===0);
+ assert(focused,'offer the connected anchor/helper/permission design without requiring a cosmetic rail');
+ const fp=solve(focused,simulateState);assert.equal(fp.status,'solved');
+ assert.deepEqual(expertFailures({...focused,optimal:fp.optimum,solution:fp.route},simulateState),[],'focused suggestions still satisfy the complete expert contract');
+ console.log('PASS focused cooperative foundations precede complete mixtures without relaxing mastery');
+ const {proveExpertSuggestion}=require('../tools/campaign/search-expert.cjs');
+ assert.equal(proveExpertSuggestion(focused,simulateState,[16,26]),null,'reject a proven fifteen-input suggestion outside the chosen band before full qualification');
+ const accepted=proveExpertSuggestion(focused,simulateState,[12,26]);
+ assert.equal(accepted.status,'solved');assert.equal(accepted.optimum,15,'only complete shortest proofs proceed to normal qualification');
+ console.log('PASS bounded suggestion screening rejects short routes without inventing proof');
+}
