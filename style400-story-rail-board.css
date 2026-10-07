@@ -186,3 +186,8 @@ html[data-text-size="large"] #game .board{width:min(90vw,460px)}
 @media(orientation:landscape) and (max-height:420px){
  #game.screen.active #board{width:min(45vh,360px);height:min(45vh,360px)}
 }
+/* Tall portrait layouts need the same reliable separation as short phones.
+   Reserve flow space instead of changing the restored puzzle controls. */
+@media(orientation:portrait) and (min-height:621px){
+ #game .board-wrap{margin-bottom:4px}
+}

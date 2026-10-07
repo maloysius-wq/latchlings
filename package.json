@@ -4,7 +4,7 @@
   "description": "",
   "main": "campaign400-1.js",
   "scripts": {
-    "test": "node tests/opening-world-coherence.browser.cjs && node tests/opening-board-header.browser.cjs && node tests/phone-visual-regressions.browser.cjs && node tests/opening-continuous.browser.cjs && node tests/opening-flow.browser.cjs && node tests/cinematics-regression.browser.cjs && node tests/phone-readability.browser.cjs && node tests/home-short-phone.browser.cjs && node tests/ending-landscape.browser.cjs && node tests/large-text-gameplay.browser.cjs && node tests/mechanic-inspector.browser.cjs && node tests/gameplay-campaign.browser.cjs && node tests/progress-daily.browser.cjs && node tests/current-hint.browser.cjs && node tests/story-staging.browser.cjs && node tests/story-payoffs.browser.cjs && node tests/audit-repairs.browser.cjs"
+    "test": "node tests/campaign-tools.cjs && node tests/campaign-candidates.cjs && node tests/campaign-originality.cjs && node tests/campaign-anchors.cjs && node tests/campaign-padding.cjs && node tests/campaign-permissions.cjs && node tests/campaign-routing.cjs && node tests/campaign-linked-state.cjs && node tests/campaign-guided-permissions.cjs && node tests/campaign-guided-routing.cjs && node tests/campaign-guided-linked.cjs && node tests/campaign-meaningful-helpers.cjs && node tests/campaign-authored-route.cjs && node tests/campaign-prepare.cjs --chapter-2 --chapter-3 --chapter-4 --chapter-5 --chapter-6 --chapter-7 --chapter-8 && node tests/campaign-expert.cjs && node tests/campaign-export-eol.cjs && node tests/campaign-design.cjs && node tests/opening-world-coherence.browser.cjs && node tests/opening-board-header.browser.cjs && node tests/phone-visual-regressions.browser.cjs && node tests/opening-continuous.browser.cjs && node tests/opening-flow.browser.cjs && node tests/cinematics-regression.browser.cjs && node tests/phone-readability.browser.cjs && node tests/home-short-phone.browser.cjs && node tests/ending-landscape.browser.cjs && node tests/large-text-gameplay.browser.cjs && node tests/mechanic-inspector.browser.cjs && node tests/gameplay-campaign.browser.cjs && node tests/progress-daily.browser.cjs && node tests/current-hint.browser.cjs && node tests/story-staging.browser.cjs && node tests/story-payoffs.browser.cjs && node tests/audit-repairs.browser.cjs && node tests/opening-frame-readiness.browser.cjs && node tests/campaign-polish.browser.cjs"
   },
   "devDependencies": {
     "playwright": "^1.55.0"
@@ -21,5 +21,3 @@
   },
   "homepage": "https://github.com/maloysius-wq/latchlings#readme"
 }
-
-
