@@ -69,3 +69,13 @@ if(process.argv.includes('--chapter-7')){
  for(const record of result.manifest.records){assert.equal(record.decision,records.find(r=>r.id===record.id).decision,'retention decisions must round-trip');assert(record.comparisons.linked,'reachable state evidence must survive preparation');}
  console.log('PASS complete reviewed Stormswitch input regenerates exact export, reachable state evidence and retention decisions');
 }
+if(process.argv.includes('--chapter-8')){
+ const authored=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/authoring/chapter-8.json'))),notes=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/aurora-intentions.json')));
+ const records=JSON.parse(fs.readFileSync(path.join(root,'docs/campaign/acceptance.json'))).records;
+ const result=prepareChapter(authored,notes,baseline,simulateState,{previous:levels.slice(0,350),existingRecords:records,visualEvidence:{status:'test replay of individually recorded author review'}});
+ assert.equal(result.manifest.records.length,350);assert.deepEqual(result.authoring,levels.slice(350,400));
+ assert.equal(result.exported,fs.readFileSync(path.join(root,'campaign400-8.js'),'utf8').replace(/\r\n/g,'\n'));
+ assert.deepEqual(result.manifest.records.slice(0,300),records.slice(0,300),'expert regeneration preserves every earlier review record');
+ for(const record of result.manifest.records.slice(300)){assert.equal(record.decision,records.find(r=>r.id===record.id).decision);assert(record.comparisons.expert.classes.length>=2);assert.notEqual(record.comparisons.noHelper.status,'unproven');}
+ console.log('PASS all fifty reviewed Aurora designs regenerate exact export and complete mastery proof without rewriting earlier records');
+}

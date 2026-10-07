@@ -251,13 +251,202 @@
       "retain a helper after first capture"
     ]
   },
+  "379": {
+    "intention": "Blue Spade loops around the upper rocks and passes its Spade gate to stop against Blue Heart on the Blue tile. Heart moves to the lower-left; Mint descends into Heart's rightward stopping column. Mint then uses Spade at the lower-right to line up its upward capture. Capture Mint first, but retain Heart: Heart must stop Spade leftward onto Spade's upward nest column before Heart captures upward last. The shared Blue color does not grant Heart Spade's suit permission, and Mint cannot enter the Blue tile. Four physical helper jobs connect the distinct permissions and future capture order.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-color different-suit permissions",
+      "reciprocal relocated helpers",
+      "retain Heart after Mint capture"
+    ]
+  },
   "380": {
-    "intention": "Coral's rejected rail entry prepares Blue's upward stop and continuous leftward turn. Blue passes its color tile downward while Coral later cannot. The residents exchange left-edge and right-side helper jobs until Coral stops Blue on the final nest column. Capture Coral first but retain Blue: Mint must descend against Blue before Blue captures upward. Mint then rises through the shared turner and captures left. Six physical helper jobs connect directional entry, opposing color permission and turning over twenty-four proven inputs. Removed the unvisited anchor and unused suit restriction; neither is claimed as expert mastery.",
+    "intention": "Coral descends and moves left to stop Mint, which stops Blue above it. Mint moves right until the downward rail rejects it; Coral moves upward against Blue. Blue travels right and continuously bends upward to capture. Mint relocates to the right edge and must remain there after Blue leaves, stopping Coral rightward on Coral's upward capture column. Capture Coral and then Mint downward. Four helper jobs connect the rail approach and actual turn. Removed the boundary-only anchor and unused suit tile with the fifteen-input optimum intact; the auxiliary Blue-only tile limits alternate bottom approaches, not a claimed fourth mastery class.",
+    "decision": "replace",
+    "prerequisites": [
+      "helper-to-continuous-turn capture",
+      "directional entry restriction",
+      "retain Mint after Blue capture"
+    ]
+  },
+  "381": {
+    "intention": "Blue Spade opens the side corridor for Heart's first descent, then reaches the central anchor and lower-left. Mint's rejected Spade-gate approach prepares a four-job relay: Heart stops Spade, Spade stops Mint, Mint stops Spade, and Spade stops Heart. Mint leaves Heart's nest row for the central anchor before Heart captures right. Spade then captures across the Blue-only tile and Mint completes the outer return to its right-side nest. The two Blue residents have different suits, and Mint cannot use their color passage. The twenty-six-input optimum includes real repositioning and final delivery, not extra anchor pauses; linked state is supporting geometry, not counted as a fourth connected class.",
+    "decision": "replace",
+    "prerequisites": [
+      "non-interchangeable suit and color identities",
+      "four-job relocated helper relay",
+      "clear another resident's nest before capture"
+    ]
+  },
+  "382": {
+    "intention": "Mint rises to the upper anchor while Blue passes the Spade gate leftward against Coral. Mint returns downward against Blue, uses the rejecting upward rail to reach the lower row and stops Coral on the suit tile. Mint then passes upward through the same rail and stays at the upper-right to stop Coral after Blue's upward capture. Coral captures down before Mint captures left. Five physical helper jobs connect the permitted suit route, directional contrast and retained helper. Removed the unused Blue tile and corner turner, preserving the fifteen-input optimum.",
+    "decision": "replace",
+    "prerequisites": [
+      "shared-suit permission and wrong-suit rejection",
+      "permitted and rejected rail entry",
+      "retain Mint after Blue capture"
+    ]
+  },
+  "383": {
+    "intention": "Heart opens the linked door from the top-left. Mint descends and uses Spade on the left, then returns to stop Spade on its Blue tile. Spade crosses the open door downward, preparing Mint's rightward relocation. Mint returns to the lower-left to stop Spade, which stops Heart downward. Heart passes its matching Blue tile, rises and captures right first. Retain Spade at the right edge so Mint can cross the open door, stop on its capture column and capture upward; Spade returns to capture right last. Five helper jobs connect color permissions and a persistent door across twenty-four inputs. Removed a physically redundant anchor.",
+    "decision": "replace",
+    "prerequisites": [
+      "persistent door passage",
+      "opposing color permissions",
+      "retain Spade after Heart capture"
+    ]
+  },
+  "384": {
+    "intention": "Coral loops above Mint and stops on the turner before descending against Blue. Coral opens the door from the lower switch; only then may Mint descend through the previously closed left corridor. Blue rises through the turner's continuous left bend and uses Mint below. Blue crosses the switch again to close the door; Mint uses that closed door to align its rightward switch approach and captures downward first. Blue and Coral exchange helper positions and toggle the passage during their returns. Blue captures right; Coral descends to capture through the newly closed stopping arrangement. Four helper jobs connect useful delayed opening, later closure and shared continuous turning. Removed three unused markers without changing the nineteen-input optimum.",
+    "decision": "replace",
+    "prerequisites": [
+      "useful delayed opening",
+      "closed-door alignment and reopening",
+      "shared turner and staged captures"
+    ]
+  },
+  "385": {
+    "intention": "Blue Spade opens the door from the left switch and parks at the upper-right. Heart's suit rejection positions it beside the open-door row while Mint rises to the interior anchor. Mint stops Heart leftward through the door, then leaves the anchor, closes the network from the left and uses Heart at the top as a wall. Heart uses Spade to capture down first; retain Mint at the top so it can stop Spade on Spade's downward capture column. Mint captures right last. Four physical helper jobs make the anchor departure and stored doorway useful; the suit tile is a supporting restriction, not a claimed extra class.",
+    "decision": "replace",
+    "prerequisites": [
+      "interior anchor departure",
+      "persistent linked passage",
+      "retain Mint after Heart capture"
+    ]
+  },
+  "386": {
+    "intention": "Blue and Coral share a Spade mark but not body color. Blue passes their shared suit tile leftward against Coral, circles to the top-left and stops Mint on the top row. Coral returns to the lower-left to stop Mint downward, then loops back to use Blue above. Mint's retained position stops Coral on the row of its own Coral-only passage. Capture Blue right first, then Coral right through its own color and upward to its nest. Mint returns around the left rocks to capture right last. Four helper jobs connect suit access and different color permissions; the twenty-input route requires storing the helper arrangement before either Spade resident leaves.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-suit different-color permissions",
+      "stored three-way helper arrangement",
+      "permission-aware staged captures"
+    ]
+  },
+  "387": {
+    "intention": "Heart opens the upper door and stops Spade rightward on the door tile. Spade descends, Heart returns down through the switch to close it, and Mint crosses the switch to reopen it while reaching the upper helper column. Mint stops Spade upward, then Spade stops Heart upward before capturing left. Retain Heart after Spade leaves: Heart must stop Mint downward onto the row of Mint's Club-only passage before Heart captures left and down. Mint passes its own suit gate and captures down last. Four helper jobs connect the linked opening, identity-specific route and stored helper after the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "opening a helper corridor",
+      "Club-only permission",
+      "retain Heart after Spade capture"
+    ]
+  },
+  "388": {
+    "intention": "Coral and Blue share Spade marks but different colors. Coral passes its Coral-only tile leftward and continuously bends upward at the lower-left turner. Mint relocates to stop Blue upward through the shared Spade gate, then uses Coral above as its leftward wall. Coral returns through its own color passage, rises through the suit gate and stops below Blue. Blue rises and uses Mint to reach its downward capture column. Release Blue, Coral left, then Mint down. Four helper jobs connect a real long bend and non-interchangeable permissions. Removed the redundant lower-right rail with the fifteen-input optimum unchanged.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-suit different-color routes",
+      "continuous corner turning",
+      "four-job deferred capture relay"
+    ]
+  },
+  "389": {
+    "intention": "Spade opens the upper door from the distant bottom switch. Heart rises and stops on the top anchor, giving Mint a rightward wall after Mint crosses the open door. Spade closes the door and stays below while Heart leaves the anchor to reach the central helper column. Spade stops Mint downward; Heart stops Mint upward so Mint can capture left. Retain Heart: it then stops Spade upward for Spade's leftward capture before Heart captures up last. Four helper jobs connect the anchor departure and persistent network. Removed the unused suit gate; the Blue-only corner remains supporting alternate-route geometry, not an extra claimed mastery class.",
+    "decision": "replace",
+    "prerequisites": [
+      "interior anchor departure",
+      "persistent linked passage",
+      "retain Heart after Mint capture"
+    ]
+  },
+  "390": {
+    "intention": "Coral stops on the left anchor before Blue and Mint exchange right-edge positions. The Coral-only tile rejects Mint leftward, then admits Coral rightward against Mint. Mint descends until the shared Spade gate rejects it; Coral stops Blue leftward and Mint stops Blue downward. Coral relocates to the bottom, releasing Blue's upward capture, then Coral captures left and Mint left. Four helper jobs connect the exact anchor, color-specific route and shared-suit stopping distinction. Both Spade residents share suit access but not Coral's body-color permission; Mint has neither. The fifteen-input optimum contains no extra pause-only anchor.",
+    "decision": "replace",
+    "prerequisites": [
+      "anchor-to-permission launch",
+      "non-interchangeable shared-suit identities",
+      "four-job three-way capture planning"
+    ]
+  },
+  "391": {
+    "intention": "Mint first stops Blue on the bottom row, then relocates left to stop Blue below the central anchor. Blue uses the anchor to reach and open the left switch. Coral crosses the newly open top door and visibly bends downward around the corner, using Blue as its wall. Coral circles to the shared anchor before Mint captures upward. Retain Coral there: it stops Blue rightward onto Blue's downward capture column after Mint has left. Coral finishes down, right and down. Four helper jobs distinguish this eighteen-input capstone: earn the corner passage, then store the final anchor-side helper for a post-capture launch.",
+    "decision": "replace",
+    "prerequisites": [
+      "earned linked corner passage",
+      "continuous corner bend into a helper",
+      "retain Coral after Mint capture"
+    ]
+  },
+  "392": {
+    "intention": "Mint's rejected Blue-gate approach begins an upper-right relocation. Mint stops Blue rightward, Coral at the bottom stops Blue leftward, and Blue uses the rail's rejection to remain above the return lane. Coral loops to the right and returns against Blue, allowing Blue to capture left first. Only then does Coral rise until the same Blue-only tile rejects it. Mint relocates right to stop Coral on its upward capture column. Mint's last leftward input travels across the cleared row, bends upward at the clockwise left turner and captures at the top-left. Four helper jobs make delayed capture, permission-specific stopping and the final continuous turn one twenty-input idea.",
+    "decision": "replace",
+    "prerequisites": [
+      "identity-specific stopping",
+      "reciprocal helper relocation",
+      "retained Mint prepares the final bend"
+    ]
+  },
+  "393": {
+    "intention": "Coral opens the left door from the upper-right switch and stays beside the cross-island lane. Mint travels upward through the open door and uses Coral; Blue then uses Mint to park above its downward nest. Mint returns through the switch, closes the network and uses Coral below before traveling left through its Club-only gate. Coral reopens the door and relocates against Blue. Capture Blue down first, but retain Coral to stop Mint rightward after Mint returns through the open door. Mint captures up; Coral takes the cleared leftward and bottom return to capture right last. Four helper jobs distinguish permission-through-door returns and a helper retained after the first capture.",
+    "decision": "replace",
+    "prerequisites": [
+      "Club-only return passage",
+      "persistent close and reopen decisions",
+      "retain Coral after Blue capture"
+    ]
+  },
+  "394": {
+    "intention": "Blue and Coral share a Spade mark but not Blue's color permission. Blue circles around the bottom to stop Mint rightward; Mint rises to the top to stop Blue upward. Blue loops back to use Coral on the left. Coral rises to the anchor while Mint moves to the top-right; Coral's next input visibly bends right around the top-left turner and stops against Mint on its downward capture column. Capture Coral first, but retain Blue to stop Mint leftward. Blue passes its own Blue-only tile upward and captures right before Mint captures down. Four helper jobs connect a meaningful anchor departure, identity distinction and a corner turn over twenty-one inputs.",
+    "decision": "replace",
+    "prerequisites": [
+      "anchor-to-corner turn",
+      "Blue-specific passage",
+      "retain Blue after Coral capture"
+    ]
+  },
+  "395": {
+    "intention": "The two Blue residents share color but not suit. Mint stops Spade rightward and relocates to the lower-left to stop Heart downward; Spade then stops Heart rightward. Mint loops around the left side and returns against Spade at the lower-right, then against Heart for Mint's downward capture. After Mint leaves, Heart passes its Blue tile upward against Spade, loops left and up and becomes Spade's top-row wall. Spade passes the Spade-only gate leftward, reaches its lower-left capture column and captures down; Heart captures down last. Five physical helper jobs distinguish this twenty-four-input capstone: one identity can take the color passage, but only Spade can take the final suit passage.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-color different-suit permissions",
+      "five-job relocated helper relay",
+      "retain Heart after Mint capture"
+    ]
+  },
+  "396": {
+    "intention": "Coral opens the upper door and stops Blue after its first crossing. Coral circles below the upper rocks and uses Blue to reach the lower row. Blue returns against Coral to align the leftward bottom turn: a single input bends upward and parks Blue on the final lower-left helper row. Capture Coral right first, but do not capture Blue. Mint must rise, move left against Blue and capture down before Blue can finish right. Four physical helper jobs distinguish this eighteen-input culmination: an earned initial passage becomes a stored turned helper for a capture that cannot be prepared after Blue leaves.",
+    "decision": "replace",
+    "prerequisites": [
+      "persistent initial door passage",
+      "continuous turn places a retained helper",
+      "capture Coral and Mint before Blue"
+    ]
+  },
+  "397": {
+    "intention": "Blue passes its Blue tile rightward, then uses Coral at the top to stop on that same tile. Mint stops Blue leftward below, and Blue stops Coral downward. The upward rail rejects Coral's rightward approach, preparing Coral's return to the right edge. Blue and Mint exchange lower stopping columns; Coral stops Mint rightward for Mint's upward capture first. Retain Blue after Mint leaves: Blue must stop Coral leftward on Coral's downward capture column before Blue captures at the lower-left. Six helper jobs connect a permitted color passage, opposing identity access and directional restriction in nineteen inputs.",
     "decision": "replace",
     "prerequisites": [
       "opposing color permissions",
-      "rail and continuous-turn relay",
-      "retain a helper after first capture"
+      "directional rail entry",
+      "six-job retained-helper return"
+    ]
+  },
+  "398": {
+    "intention": "Coral first stops Blue on the top row. Blue loops left and descends to the interior anchor, stopping Mint's leftward approach; Blue then leaves the anchor while Mint relocates to the top to stop Coral. The Spade-only gate rejects Coral downward, positioning it on the shared lower return lane. Mint circles to use Coral, and Blue stops Coral leftward for Coral's upward capture first. Retain Mint beside Blue's nest column: Mint must stop Blue rightward after Coral has gone, allowing Blue to capture upward before Mint captures down. Six helper jobs connect exact anchor departure and opposing suit permission over nineteen inputs.",
+    "decision": "replace",
+    "prerequisites": [
+      "meaningful anchor departure",
+      "opposing suit permissions",
+      "retain Mint after Coral capture"
+    ]
+  },
+  "399": {
+    "intention": "Blue Heart uses the shared counterclockwise turner repeatedly, with visibly different paths from downward, leftward, upward and rightward entries. Heart's left-edge position first stops Spade upward. Mint's rejected Spade-gate approach then positions Mint to use Spade below and Heart on the left. Spade passes both its matching suit gate and Blue tile before capturing down first. The same Blue tile rejects Mint upward; Mint returns down and becomes Heart's leftward wall after Spade has left. Heart captures down before Mint captures left. Four helper jobs connect two distinct identity systems and multi-direction continuous turning in twenty-two inputs; the upper anchor is supporting stopping geometry, not an additional claimed mastery class.",
+    "decision": "replace",
+    "prerequisites": [
+      "same-color different-suit permissions",
+      "multi-direction continuous turner use",
+      "retain Mint after Spade capture"
+    ]
+  },
+  "400": {
+    "intention": "A unique seven-by-seven final network: Coral at the top stops Blue's first leftward approach. Blue crosses the switch downward, enters the newly open lower door and moves left to stop Coral on Coral's lower nest row. Blue returns through the switch to close both doors; the closed upper door now stops Blue on the vertical column that Coral can serve as a wall. Coral passes its own Coral-only tile leftward. Mint uses Blue on the middle row before Blue captures down; Mint then relocates below to stop Coral rightward through that same color permission. Capture Coral upward, retain Mint for the last delivery, and send Mint up through the switch and left to its top nest. Five helper jobs connect actual opening, useful closure, identity permission and deferred capture; the final eighteen-input route leaves the network open without adding any new mechanic.",
+    "decision": "replace",
+    "prerequisites": [
+      "opening and useful closed-door alignment",
+      "Coral-only shared passage",
+      "five-job network with staged captures"
     ]
   }
 }

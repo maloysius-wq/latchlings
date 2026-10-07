@@ -129,7 +129,7 @@ const mechanicTypes=['anchors','suitGates','colorGates','rails','turners','switc
   const denseLayout=await page.evaluate(()=>{const box=element=>{const rect=element.getBoundingClientRect();return{x:rect.x,y:rect.y,width:rect.width,height:rect.height}};return{board:box(document.querySelector('#board')),dpad:box(document.querySelector('#dpadRocker')),context:box(document.querySelector('#mechanicContext')),mapSize:getComputedStyle(document.querySelector('#board')).getPropertyValue('--n'),inspector:!!document.querySelector('#mechanicInspector')}});
   assert.equal(denseLayout.mapSize,'7','Level 366 must exercise the dense 7×7 board');
   assert(denseLayout.inspector,'dense Level 366 needs the mechanic inspector');
-  await inspect('anchors',['anchor','stop']);
+  await inspect('rails',['rail','left']);
   const inspectorLayout=await page.evaluate(()=>{const box=element=>{const rect=element.getBoundingClientRect();return{x:rect.x,y:rect.y,width:rect.width,height:rect.height}};return{panel:box(document.querySelector('#mechanicInspector')),context:box(document.querySelector('#mechanicContext')),board:box(document.querySelector('#board')),dpad:box(document.querySelector('#dpadRocker')),overflow:getComputedStyle(document.querySelector('#mechanicInspector')).overflow}});
   assert.equal(inspectorLayout.overflow,'auto','long mechanic descriptions must scroll within their compact region');
   assert(inspectorLayout.panel.width>0&&inspectorLayout.panel.height>0,'dense-board inspector needs a visible compact area');

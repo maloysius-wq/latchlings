@@ -4,11 +4,11 @@
 
 For repository work, GitHub is the canonical path. If GitHub repository functions are not already loaded, the first tool action for a repository task must be connector/plugin discovery for `GitHub`. Read this file through the GitHub connector before using a local checkout. If the wrong route is attempted first, recover immediately through GitHub and continue the original request without asking the user to repeat the plugin instruction. See `AGENTS.md` and `.github/REPOSITORY_ACCESS_PREFLIGHT.md`.
 
-## Current state — 2026-09-29
+## Current state — 2026-10-06
 
 ### Campaign rebuild — 2026-10-05
 
-**IN PROGRESS — Chapters 2–7 exported/proven; Aurora and closeout pending.** Native branch `codex/campaign-rebuild-20261005`, based on live `c79f39f`. There are 300 accepted records; Aurora has 29 individually reviewed intentions but no runtime export. Fresh preparatory `npm test` passes all 17 suites, including fixes for stale Hint/animation callbacks and Daily exit isolation; the 180-capture story matrix and 16 fail-fast authoring suites pass. These are provisional, not final campaign acceptance. Remaining: finish Aurora, rerun expanded tests and the full gameplay matrix, independent review, commit/push and exact-head CI. See `docs/reviews/2026-10-05-campaign-rebuild.md` for evidence. Preserve Chapter 1, slot allowances, saves, story and pre-Astra controls. No merge/deploy; physical-device, assistive-technology, audio and human enjoyment checks remain unverified.
+**IN PROGRESS — Chapters 2–8 exported/proven; final closeout pending.** Native branch `codex/campaign-rebuild-20261005`, based on live `c79f39f`. All 350 rebuilt slots have individual acceptance records; all 400 optima and original allowance margins are verified. Chapter 1 matches frozen Git bytes. Fresh full 17-suite regression, 180-capture story matrix, 1,536-capture gameplay motion/text matrix and 64 sampled actual-control clears pass. Expanded `npm test`, final independent review and final-head CI remain pending. See `docs/reviews/2026-10-05-campaign-rebuild.md` for exact evidence and replacement hashes. Preserve saves, story and pre-Astra controls. No merge/deploy; physical-device, assistive-technology, audio and human enjoyment checks remain unverified.
 
 ### Release — 2026-09-30
 

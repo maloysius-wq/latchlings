@@ -1,6 +1,30 @@
 # Campaign rebuild verification ledger
 
-Status: **IN PROGRESS**, Native execution on `codex/campaign-rebuild-20261005`. Chapters 2–7 are exported with 300 individual records; the fresh full 17-suite regression passes. Aurora, final compatibility, full visual matrix, independent review and final-head CI remain pending. No merge/deployment. Approved design and implementation plan are under `docs/superpowers/`.
+Status: **IN PROGRESS**, Native execution on `codex/campaign-rebuild-20261005`. Chapters 2–8 are exported with 350 individual records and fresh all-400 optimum/byte/margin evidence. Full legacy regression and both matrices pass; expanded regression, independent review and final-head CI remain pending. No merge/deployment. Approved design and implementation plan are under `docs/superpowers/`.
+
+## Aurora export and whole-campaign evidence
+
+- All 50 Aurora slots are individually reviewed replacements, with no canonical equivalent in the earlier 350 boards and no terrain/route near-clone flags. The first ten use focused expert pairs; later boards synthesize three or more connected classes, retain useful helpers after captures, distinguish identity permissions, or require actual closed/delayed door decisions. Level 366 remains dense 7×7. Level 400 is a unique 18-input 7×7 color/helper/linked-state network; its useful closed-door alignment and five helper jobs are recorded, rather than counting decorative fields.
+- Final-ten optima: **391–400 = 18/20/20/21/24/18/19/19/22/18**. Their board-specific intentions document different corner passages, permission returns, anchor departures, retained helpers and network timing. Ten-level medians **13.5 → 14 → 14 → 15 → 19.5** support the intended mastery progression without pretending move count proves human difficulty. Human enjoyment/difficulty testing is still pending.
+- Exact Chapter 8 preparation observed RED before the missing authoring file was created, then GREEN; regenerated static bytes, all 50 expert proofs and preservation of the earlier 300 records pass (`82963`). All-campaign acceptance (`91810`) reports **350 reviewed / 350 proven / zero failures**. Separate fresh proof (`35193`) confirms **400/400 optima**, every original allowance margin, exact authoring/export bytes for Chapters 2–8 and frozen Chapter 1 Git/working bytes.
+- Final Aurora phone run (`55925`, exit 0): **50 layouts and 100 actual-control optimal three-star clears**, 320×568 Large Text and 390×844 Normal, Reduced Motion. Every final-ten initial/setup frame was manually inspected at 320px; 390px 366/384/400 and additional middle frames were inspected. Evidence: `test-artifacts/campaign/aurora-final-captures/`. New standard polish suite reports **32 boards / 64 control-driven clears / 192 captures**, including the actual final reward action leading to Ending. It adds the longest 26-input future-state board 381 to the required early/mid/late, dense 366 and final-ten samples.
+- Two final-check failures were investigated, not suppressed: the Level 366 inspector fixture still demanded a removed anchor (now checks the real left rail while retaining Level 101 anchor coverage); the new final test initially assumed the base win button instead of the existing "See the living Skyway" reward action. The full matrix also found a real settled 0px board/Route Tip gap at tall portrait sizes. Only portrait board-wrapper flow spacing changed; immediate/settled diagnostic gap is now 4px. Existing control styles and all endpoint/clearance assertions remain intact.
+- Fresh legacy regression `30628`: exit 0, all **17/17 suites PASS**, including all 400 rendered routes and final story/ending checks. New standard control suite `80378`: exit 0, **64 clears / 192 captures**. Extended gameplay matrix `49717`: exit 0, **32 boards × 12 configurations / 1,536 captures**; 68 captures verified animating immediately before and after screenshot, with coverage in every phone/text normal-motion configuration. The matrix performs partial setup routes, not 384 full clears. Fresh post-export story matrix `69853`: exit 0, **180 settled captures / five viewports**, Normal/Large Text and OS/in-game Reduced Motion. Expanded 36-command regression remains running.
+
+Current exact SHA-256 campaign bytes:
+
+| Chapter | SHA-256 |
+| --- | --- |
+| 1, frozen | `8f3f99f27b3cea194cd41f8c45f1802bc080b5d423b9f03ad0d465a57433a003` |
+| 2 | `1c5c318f7d764b5bb0833808137fb38974a9c15d42cf029a62d45f18dcbea22b` |
+| 3 | `bc7898cb9d164299b8333a31f368998848dc0cd2dcc229a3f3c28da0736bccef` |
+| 4 | `dbc1929071bef06da6694ef06ad0478302eae283400e767a3c3418a490bebb4a` |
+| 5 | `56e7e10a15f8c8e076ceb3fb27be040a1d43fe3c7ddfa6d094f1f2c4c07571e7` |
+| 6 | `d1066d73768bb9e122c949b876de6d8b2942c1d5dc516d1d0978e746e1d0a85c` |
+| 7 | `ca36666af7cda1abf06d3d3434eaee0bd74a5cde313c2e0c1d29868492679361` |
+| 8 | `195ecafa194d22e05ca7dd00fc1ac8d570017e765777422870b20c67b1d5289e` |
+
+Earlier checkpoint results below are historical; they are not substituted for final verification on the completed branch.
 
 ## Stormswitch checkpoint — October 6
 

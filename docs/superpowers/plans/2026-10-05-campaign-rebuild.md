@@ -31,7 +31,7 @@
 
 ## File and Interface Map
 
-- `tools/campaign/runtime.cjs`: load exports and the shipped movement function in a VM; no product-engine refactor.
+- `tools/campaign/runtime.cjs`: isolate static exports in a VM and compile the exact shipped movement source in the host realm for offline search; browser parity verifies the extraction, with no product-engine refactor. See the recorded authoring-performance ruling.
 - `tools/campaign/solve.cjs`: complete breadth-first search with explicit resource/depth results.
 - `tools/campaign/fingerprint.cjs`: canonical and terrain fingerprints.
 - `tools/campaign/review.cjs`: route witnesses, comparisons and manifest validation.
