@@ -10,6 +10,10 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-05-campaign-rebuild-design.md` (player approved).
 
+## Execution record — October 7
+
+Tasks 1–11 are implemented and verified. All 350 records, 400 optima, exact exports, frozen Chapter 1, 37-suite regression, 90 control clears, 180 story captures and 2,160 gameplay captures pass. The independent review finding is repaired with a permanent switch-free-bypass regression. Source/test commit 5689c80 passed both exact-commit CI workflows; the documentation-only delivery head must be checked before handback. Evidence, exceptions and unverified physical-device/audio/player checks: docs/reviews/2026-10-05-campaign-rebuild.md. No merge or deployment.
+
 ## Global Constraints
 
 - Preserve 400 numbered slots, eight 50-level chapters, region identities, story beats, reward boundaries, the Level 400 homecoming, tap-per-spoken-line dialogue, no narrator voice, no Undo, and accepted pre-Astra Reset/D-pad/Hint controls.
@@ -84,13 +88,13 @@ Each chapter is its own reviewed deliverable. The steps below apply separately t
 
 **Interfaces consumed:** Task 1/2 signatures. **Produced:** 50 decoded authored levels, 50 complete `ReviewRecord`s, deterministic static chapter export and acceptance report.
 
-- [ ] Write failing chapter-contract tests for the task's specific curriculum below. For each stage assert allowed focus/prerequisites, mandatory actual witnesses, unique fingerprints, slot IDs, unchanged margins, proven optimum equal to route length and all captures complete. Assert rationale for numeric pacing exceptions; calculate ten-level medians and review decision-dependency evidence rather than enforcing monotonic move counts.
-- [ ] Run `node tools/campaign/accept.cjs --chapter N`; expect FAIL on baseline duplicates/relevance/curriculum gaps or absent records, not infrastructure errors.
-- [ ] Author `docs/campaign/authoring/chapter-N.json` deliberately by different solving ideas. Offline candidate search is allowed, but each acceptance record must describe a specific dependency, contrast or setup that the actual board demonstrates. Do not stamp a prose rationale over a random accepted array. Retained boards must pass all new gates. Check every candidate against all already accepted boards, including Chapter 1.
-- [ ] For each board prove the optimum, choose a valid shortest route, assign `moveLimit = optimum + baselineMargin`, fill witnesses/comparisons and review similarity flags. Ordinary teaching bands: local 1–5 focus, 6–15 practice, 16–30 earlier-skill combination, 31–45 deeper planning, 46–50 five distinct capstones. Indicative optima 3–6, 5–10, 7–13, 10–18, 12–22 respectively; document justified exceptions without manufacturing extra moves.
-- [ ] Export only `campaign400-N.js`. Run `node tests/campaign-tools.cjs`, chapter acceptance, and `node tests/gameplay-campaign.browser.cjs`. Where old Level 201/301 smoke assumptions no longer fit, replace only arbitrary size/piece/full-mix expectations with this chapter's semantic teaching contract; keep valid rendering and route assertions.
-- [ ] Inspect early/middle/late boards on 320×568 Large Text and 390×844; play a representative setup/capture sequence through actual controls. Record exact IDs, screenshots and limitations. Use the Task 11 matrix for full closeout.
-- [ ] Commit this chapter's authoring JSON, static export, records and tests, using the task's message below. Do not advance to the next chapter with unresolved required proof/relevance failures.
+- [x] Write failing chapter-contract tests for the task's specific curriculum below. For each stage assert allowed focus/prerequisites, mandatory actual witnesses, unique fingerprints, slot IDs, unchanged margins, proven optimum equal to route length and all captures complete. Assert rationale for numeric pacing exceptions; calculate ten-level medians and review decision-dependency evidence rather than enforcing monotonic move counts.
+- [x] Run `node tools/campaign/accept.cjs --chapter N`; expect FAIL on baseline duplicates/relevance/curriculum gaps or absent records, not infrastructure errors.
+- [x] Author `docs/campaign/authoring/chapter-N.json` deliberately by different solving ideas. Offline candidate search is allowed, but each acceptance record must describe a specific dependency, contrast or setup that the actual board demonstrates. Do not stamp a prose rationale over a random accepted array. Retained boards must pass all new gates. Check every candidate against all already accepted boards, including Chapter 1.
+- [x] For each board prove the optimum, choose a valid shortest route, assign `moveLimit = optimum + baselineMargin`, fill witnesses/comparisons and review similarity flags. Ordinary teaching bands: local 1–5 focus, 6–15 practice, 16–30 earlier-skill combination, 31–45 deeper planning, 46–50 five distinct capstones. Indicative optima 3–6, 5–10, 7–13, 10–18, 12–22 respectively; document justified exceptions without manufacturing extra moves.
+- [x] Export only `campaign400-N.js`. Run `node tests/campaign-tools.cjs`, chapter acceptance, and `node tests/gameplay-campaign.browser.cjs`. Where old Level 201/301 smoke assumptions no longer fit, replace only arbitrary size/piece/full-mix expectations with this chapter's semantic teaching contract; keep valid rendering and route assertions.
+- [x] Inspect early/middle/late boards on 320×568 Large Text and 390×844; play a representative setup/capture sequence through actual controls. Record exact IDs, screenshots and limitations. Use the Task 11 matrix for full closeout.
+- [x] Commit this chapter's authoring JSON, static export, records and tests, using the task's message below. Do not advance to the next chapter with unresolved required proof/relevance failures.
 
 ### Task 3: Lanternwood, Levels 51–100
 
@@ -154,12 +158,12 @@ Curriculum: 351–360 compact expert pairwise interactions; 361–375 three-way 
 
 **Interfaces:** Existing `chapterNote(L)` returns stage-accurate concise copy; existing `dailyRouteInfo(date, campaignProgress)` retains deterministic public shape and separate Daily saves. Eligibility is bounded by completed/introduced mechanic evidence, not merely chapter unlocked.
 
-- [ ] Add failing tests: completed 250/251/255 cannot select turners; completed 256 can use introduced turners but no switch; completing 300 without 301 cannot reveal switches. Test existing boundaries 50/100/150/200/250/300/350 and same-date deterministic selection.
-- [ ] Add backup/replay assertions: old `{unlocked:400,stars:{51:3,400:3}}` and seen-scene flags round-trip without schema change; earning one star on replacement 51 cannot lower its old three stars or unlocks; already-seen films/earned keepsakes are not revoked/replayed by loading new content; Daily completion leaves serialized campaign progress identical.
-- [ ] Run targeted progress and hint suites; expect new eligibility assertions to expose any current mismatch. If a save assertion already passes, preserve behavior rather than create an unnecessary migration.
-- [ ] Implement only necessary staged tip and Daily changes in existing interfaces. Do not invent narrator voices, modify story presentation or add controls. Check old story copy against new cooperation teaching and Level 400 purpose.
-- [ ] Test off-authored-route Hint on representative chapter boards with an independently known continuation; report existing solver budget limitations honestly rather than accepting a hint that cannot lead to a within-budget clear. No stale hint after Reset or level change.
-- [ ] Run `node tests/progress-daily.browser.cjs`, `node tests/current-hint.browser.cjs`, `node tests/gameplay-campaign.browser.cjs`; expect PASS. Commit `fix: align campaign teaching and Daily with rebuilt progression`.
+- [x] Add failing tests: completed 250/251/255 cannot select turners; completed 256 can use introduced turners but no switch; completing 300 without 301 cannot reveal switches. Test existing boundaries 50/100/150/200/250/300/350 and same-date deterministic selection.
+- [x] Add backup/replay assertions: old `{unlocked:400,stars:{51:3,400:3}}` and seen-scene flags round-trip without schema change; earning one star on replacement 51 cannot lower its old three stars or unlocks; already-seen films/earned keepsakes are not revoked/replayed by loading new content; Daily completion leaves serialized campaign progress identical.
+- [x] Run targeted progress and hint suites; expect new eligibility assertions to expose any current mismatch. If a save assertion already passes, preserve behavior rather than create an unnecessary migration.
+- [x] Implement only necessary staged tip and Daily changes in existing interfaces. Do not invent narrator voices, modify story presentation or add controls. Check old story copy against new cooperation teaching and Level 400 purpose.
+- [x] Test off-authored-route Hint on representative chapter boards with an independently known continuation; report existing solver budget limitations honestly rather than accepting a hint that cannot lead to a within-budget clear. No stale hint after Reset or level change.
+- [x] Run `node tests/progress-daily.browser.cjs`, `node tests/current-hint.browser.cjs`, `node tests/gameplay-campaign.browser.cjs`; expect PASS. Commit `fix: align campaign teaching and Daily with rebuilt progression`.
 
 ### Task 11: Whole-campaign verification and review delivery
 
@@ -167,13 +171,13 @@ Curriculum: 351–360 compact expert pairwise interactions; 361–375 three-way 
 
 **Interfaces:** New browser suite accepts `--capture-matrix` for extended captures; standard run asserts representative controls/rendering. `npm test` adds tools/design/new browser checks without removing any existing suite. Existing Validate Game workflow runs that exact command.
 
-- [ ] Add browser assertions for accepted board shapes and control-driven solution replay: early/middle/late from each chapter plus all 391–400. Fail on board/Route Tip overlap, clipped controls or stalled inputs. Include dense 366 and actual finale completion; preserve existing porch/action assertions.
-- [ ] Run new suite before adjustments; fix causes, not travel/endpoint/clearance/control assertions. Capture 320×568, 390×844, 430×932, Normal/Large Text, motion/Reduced Motion for sampled boards and final ten; inspect settled and in-motion representative frames. If all final-ten input routes are lengthy, chunk inputs and wait for actual settled state, never arbitrary blanket timeout inflation.
-- [ ] Run `node tools/campaign/accept.cjs --all`, `node tests/campaign-tools.cjs`, `node tests/campaign-design.cjs`; expect all 400 proven routes, all 350 review records, zero equivalent replacement boards and no required unproven evidence. Re-export authoring inputs and confirm byte equality. Verify exact Chapter 1 hash against baseline; record replacement hashes as new acceptance evidence.
-- [ ] Run full `npm test`, `node tests/phone-stage-certification.browser.cjs`, `node tests/campaign-polish.browser.cjs --capture-matrix`, and `git diff --check`; expect PASS with exact counts and report paths recorded. A flake gets investigated, not erased by a later success claim.
-- [ ] Record exact reviewed IDs/captures, originality and progression evidence, any unresolved subjective/playtesting/device/audio checks in the review ledger. Keep handoff status concise and link this ledger; do not claim 400 human playtests from automated route replay.
-- [ ] Obtain an independent whole-branch review through the chosen execution workflow; resolve findings and rerun affected checks. If reviewer delegation needs authorization, request it rather than fabricate independent review.
-- [ ] Commit accepted source/tests/evidence metadata, push `codex/campaign-rebuild-20261005`, verify game and access-guard CI on the exact final SHA through GitHub. Report SHA, acceptance results and remaining external checks. No merge/deploy. If CI fails, fix and repeat exact-head checks before marking software complete.
+- [x] Add browser assertions for accepted board shapes and control-driven solution replay: early/middle/late from each chapter plus all 391–400. Fail on board/Route Tip overlap, clipped controls or stalled inputs. Include dense 366 and actual finale completion; preserve existing porch/action assertions.
+- [x] Run new suite before adjustments; fix causes, not travel/endpoint/clearance/control assertions. Capture 320×568, 390×844, 430×932, Normal/Large Text, motion/Reduced Motion for sampled boards and final ten; inspect settled and in-motion representative frames. If all final-ten input routes are lengthy, chunk inputs and wait for actual settled state, never arbitrary blanket timeout inflation.
+- [x] Run `node tools/campaign/accept.cjs --all`, `node tests/campaign-tools.cjs`, `node tests/campaign-design.cjs`; expect all 400 proven routes, all 350 review records, zero equivalent replacement boards and no required unproven evidence. Re-export authoring inputs and confirm byte equality. Verify exact Chapter 1 hash against baseline; record replacement hashes as new acceptance evidence.
+- [x] Run full `npm test`, `node tests/phone-stage-certification.browser.cjs`, `node tests/campaign-polish.browser.cjs --capture-matrix`, and `git diff --check`; expect PASS with exact counts and report paths recorded. A flake gets investigated, not erased by a later success claim.
+- [x] Record exact reviewed IDs/captures, originality and progression evidence, any unresolved subjective/playtesting/device/audio checks in the review ledger. Keep handoff status concise and link this ledger; do not claim 400 human playtests from automated route replay.
+- [x] Obtain an independent whole-branch review through the chosen execution workflow; resolve findings and rerun affected checks. If reviewer delegation needs authorization, request it rather than fabricate independent review.
+- [x] Commit accepted source/tests/evidence metadata, push `codex/campaign-rebuild-20261005`, verify game and access-guard CI on the exact final SHA through GitHub. Report SHA, acceptance results and remaining external checks. No merge/deploy. If CI fails, fix and repeat exact-head checks before marking software complete.
 
 ## Execution Gate
 
