@@ -93,6 +93,19 @@ function linkedDependencies(level,simulateState){
  const idea=coop.motif+'|'+[...new Set(connections.map(w=>w.type))].sort().join('/')+'|'+[...new Set(earlierConnections.map(w=>w.type))].sort().join('/')+'|'+linksUsed.length;
  return {solved:travel.solved,toggles,openPasses,closedStops,connections,earlierConnections,cooperation:coop,linksUsed,idea};
 }
+function linkedSwitchProof(level,simulateState,settings={}){
+ const withoutCrossing=(board,positions,mask,pi,dir)=>{
+  const move=simulateState(board,positions,mask,pi,dir);
+  return move&&!move.path.some(at=>board.switches.some(sw=>same(sw,at)))?move:null;
+ };
+ return solve(level,withoutCrossing,{maxDepth:level.moveLimit??level.solution.length,...settings});
+}
+function linkedSwitchFailures(level,simulateState,settings={}){
+ const proof=linkedSwitchProof(level,simulateState,settings);
+ if(proof.status==='unproven')return ['Linked switch-free bypass proof unproven'];
+ if(proof.status==='solved')return ['Linked focus has a switch-free clear within its allowance'];
+ return [];
+}
 function linkedFailures(level,simulateState,capstoneIdeas=new Set()){
  const local=(level.id-1)%50+1,d=linkedDependencies(level,simulateState),errors=[];
  if(local<=5&&['anchors','suitGates','colorGates','rails','turners'].some(f=>level[f].length))errors.push('Premature mixed mechanics in linked introduction');
@@ -104,6 +117,7 @@ function linkedFailures(level,simulateState,capstoneIdeas=new Set()){
  if(local>=31&&(d.cooperation.participants!==level.pieces.length||d.cooperation.beforeFirstCapture<2))errors.push('Incomplete connected state planning chain');
  if(local>=46){if(d.cooperation.stops.length<3||d.cooperation.travelers<2)errors.push('Incomplete state capstone cooperation');if(capstoneIdeas.has(d.idea))errors.push('Repeated linked-state capstone idea');}
  if(local>=31&&!errors.length){const p=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});if(p.status==='unproven')errors.push('State helper bypass proof unproven');else if(p.status==='solved')errors.push('State planning has a perfect helper bypass');}
+ errors.push(...linkedSwitchFailures(level,simulateState));
  return errors;
 }
 function linkedCurriculumFailures(levels,simulateState){
@@ -112,4 +126,4 @@ function linkedCurriculumFailures(levels,simulateState){
  if(!types.has('delayed-opening'))errors.push('Later state curriculum lacks a useful postponed opening');
  return errors;
 }
-module.exports={linkedDependencies,linkedFailures,linkedCurriculumFailures};
+module.exports={linkedDependencies,linkedFailures,linkedCurriculumFailures,linkedSwitchProof,linkedSwitchFailures};

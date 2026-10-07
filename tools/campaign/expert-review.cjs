@@ -4,7 +4,7 @@ const {replay}=require('./review.cjs'),{cooperation}=require('./candidates.cjs')
 const {anchorDependencies}=require('./anchor-review.cjs');
 const {permissionDependencies,permissionIdentityDecisions}=require('./permission-review.cjs');
 const {routingDependencies}=require('./routing-review.cjs');
-const {linkedDependencies}=require('./linked-review.cjs');
+const {linkedDependencies,linkedSwitchFailures}=require('./linked-review.cjs');
 const {anchorPaddingFailures}=require('./anchor-padding.cjs'),{solve}=require('./solve.cjs');
 // A precise stop must change a later launch or another resident's travel.
 // Reversing from an anchor instead of the boundary is not enough by itself.
@@ -60,6 +60,7 @@ function expertEvidenceFailures(level,d,finalIdeas=new Set()){
 }
 function expertFailures(level,simulateState,finalIdeas=new Set()){
  const d=expertDependencies(level,simulateState),errors=[...anchorPaddingFailures(level,simulateState),...expertEvidenceFailures(level,d,finalIdeas)];
+ if(d.classes.includes('linked-state'))errors.push(...linkedSwitchFailures(level,simulateState));
  if(!errors.length){const p=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});if(p.status==='unproven')errors.push('Expert helper bypass proof unproven');else if(p.status==='solved')errors.push('Expert has a perfect helper-free bypass');}
  return errors;
 }

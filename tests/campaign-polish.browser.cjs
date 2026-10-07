@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),matrix=process.argv.includes('--capture-matrix');
-const samples=[...Array.from({length:7},(_,i)=>[51+i*50,75+i*50,100+i*50]).flat(),366,381,...Array.from({length:10},(_,i)=>391+i)];
+const samples=[...Array.from({length:7},(_,i)=>[51+i*50,75+i*50,100+i*50]).flat(),366,381,...Array.from({length:10},(_,i)=>391+i),301,304,305,314,316,317,319,321,325,328,330,332,339,342,347];
 const ids=[...new Set(samples)],captures=[],failures=[],out=path.join(root,'test-artifacts/campaign/polish');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'};
 const server=http.createServer((req,res)=>{

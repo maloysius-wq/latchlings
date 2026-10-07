@@ -29,6 +29,19 @@ console.log('PASS reachable linked-door passage, real closure launch, within-inp
  assert(!require('../tools/campaign/expert-review.cjs').expertDependencies(turnaround,simulateState).classes.includes('linked-state'),'a cosmetic closing turnaround cannot inflate a third mastery class');
 }
 const {linkedFailures,linkedCurriculumFailures}=require('../tools/campaign/linked-review.cjs');
+const bypass314={size:5,pieces:[{color:'blue',suit:'spade',pos:[3,2]},{color:'coral',suit:'heart',pos:[1,0]}],nests:[[3,1],[0,3]],rocks:[[0,2],[0,4],[2,0],[4,0]],anchors:[],suitGates:[],colorGates:[],rails:[],turners:[],switches:[[2,2,0]],doors:[[1,2,0]],optimal:7,moveLimit:10,solution:[[0,'U'],[0,'R'],[1,'R'],[0,'D'],[0,'L'],[0,'U'],[1,'U']],id:314,chapter:7};
+const bypassRoute=[[0,'L'],[1,'R'],[1,'D'],[1,'R'],[1,'U'],[1,'L'],[1,'U']];
+assert(replay(bypass314,simulateState,bypassRoute).solved,'literal seven-input alternative really clears');
+assert(replay(bypass314,simulateState,bypassRoute).steps.every(s=>s.result.mask===0&&!s.result.path.some(at=>bypass314.switches.some(sw=>sw[0]===at[0]&&sw[1]===at[1]))),'literal alternative crosses no switch');
+assert(linkedFailures(bypass314,simulateState).some(e=>/switch-free/.test(e)),'acceptance must reject an optimal switch-free clear despite a valid opened-door authored route');
+const {linkedSwitchProof,linkedSwitchFailures}=require('../tools/campaign/linked-review.cjs');
+assert.equal(linkedSwitchProof(bypass314,simulateState).optimum,7);
+const cancellation={...duringMove,switches:[[0,1,0],[0,2,0]],doors:[],optimal:1,moveLimit:1};
+assert.equal(replay(cancellation,simulateState).doorMask,0,'two switches cancel the final mask');
+assert.equal(linkedSwitchProof(cancellation,simulateState).status,'depth-exhausted','no switch-free clear within the literal one-input allowance, even when net mask stays zero');
+assert.deepEqual(linkedSwitchFailures({...duringMove,optimal:1,moveLimit:1},simulateState),[],'a required same-input opening must remain accepted');
+assert(linkedSwitchFailures(bypass314,simulateState,{maxStates:1}).some(e=>/unproven/.test(e)),'exhaustion cannot certify absence of a switch-free route');
+console.log('PASS linked acceptance rejects switch-free alternatives, canceled toggles and incomplete bypass proofs');
 assert.deepEqual(linkedFailures(introduction,simulateState),[]);
 assert(linkedFailures(decorative,simulateState).some(e=>/passage/.test(e)),'decorative mask toggles cannot qualify a lesson');
 assert(linkedFailures({...introduction,id:331},simulateState).some(e=>/planning/.test(e)),'late state boards require a real cooperative planning chain');

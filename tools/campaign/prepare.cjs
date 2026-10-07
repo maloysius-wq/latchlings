@@ -8,7 +8,7 @@ const {cooperation,cooperationFailures}=require('./candidates.cjs');
 const {anchorDependencies,anchorFailures,anchorHelperProof}=require('./anchor-review.cjs');
 const {permissionDependencies,permissionFailures,permissionHelperProof,permissionIdentityFailures,permissionIdentityDecisions}=require('./permission-review.cjs');
 const {routingDependencies,routingFailures,routingHelperProof}=require('./routing-review.cjs');
-const {linkedDependencies,linkedFailures,linkedCurriculumFailures}=require('./linked-review.cjs');
+const {linkedDependencies,linkedFailures,linkedCurriculumFailures,linkedSwitchProof}=require('./linked-review.cjs');
 const {solve}=require('./solve.cjs');
 const {anchorPaddingFailures}=require('./anchor-padding.cjs');
 const {expertDependencies,expertFailures}=require('./expert-review.cjs');
@@ -48,6 +48,7 @@ function prepareChapter(levels,notes,baseline,simulateState,{previous=[],existin
   if(chapter===6){const d=routingDependencies(level,simulateState);comparisons.routing={railPassed:d.railPassed,railBlocked:d.railBlocked,bends:d.bends,connections:d.connections,idea:d.idea};if(level.id>=281){const {elapsedMs,route,...restricted}=routingHelperProof(level,simulateState);comparisons.noHelper=restricted;}}
   if(chapter===7){const d=linkedDependencies(level,simulateState);comparisons.linked={toggles:d.toggles,openPasses:d.openPasses,closedStops:d.closedStops,connections:d.connections,earlierConnections:d.earlierConnections,linksUsed:d.linksUsed,idea:d.idea};if(level.id>=331){const {elapsedMs,route,...restricted}=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});comparisons.noHelper=restricted;}}
   if(expert){comparisons.expert={classes:expert.classes,connections:expert.connections,idea:expert.idea,futureState:expert.futureState,identity:expert.identity,linked:expert.linked,cooperation:expert.cooperation};const {elapsedMs,route,...restricted}=solve(level,simulateState,{maxStates:800000,maxMs:30000,maxDepth:level.solution.length,forbidMeaningfulHelperStops:true});comparisons.noHelper=restricted;}
+  if(chapter===7||expert?.classes.includes('linked-state')){const {elapsedMs,route,...restricted}=linkedSwitchProof(level,simulateState);comparisons.noSwitch=restricted;}
   const record={id:level.id,chapter,local:(level.id-1)%50+1,stage:stageFor(level.id),intention:note.intention,prerequisites:note.prerequisites||['edges','rocks','basic helpers'],focus,decision:note.decision||'replace',baselineMargin:baseline.margins[level.id-1],canonical:key,proof,witnesses,comparisons,contrastWith:note.contrastWith||[],rationale:note.rationale||'',visualEvidence};
   const errors=validateRecord(level,record,baseline,[]);if(errors.length)throw new Error(`${level.id}: ${errors.join('; ')}`);
   records.push(record);keys.add(key);

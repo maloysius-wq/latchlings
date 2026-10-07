@@ -4,11 +4,11 @@
 
 For repository work, GitHub is the canonical path. If GitHub repository functions are not already loaded, the first tool action for a repository task must be connector/plugin discovery for `GitHub`. Read this file through the GitHub connector before using a local checkout. If the wrong route is attempted first, recover immediately through GitHub and continue the original request without asking the user to repeat the plugin instruction. See `AGENTS.md` and `.github/REPOSITORY_ACCESS_PREFLIGHT.md`.
 
-## Current state — 2026-10-06
+## Current state — 2026-10-07
 
 ### Campaign rebuild — 2026-10-05
 
-**IN PROGRESS — implementation and local verification complete; independent review/CI pending.** Native branch `codex/campaign-rebuild-20261005`, based on live `c79f39f`. All 350 rebuilt slots have individual acceptance records; all 400 optima and original allowance margins are verified. Chapter 1 matches frozen Git bytes. Fresh full 36-suite `npm test`, 180-capture story matrix, 1,536-capture gameplay motion/text matrix and 64 sampled actual-control clears pass. Final independent review and exact-head CI remain pending. See `docs/reviews/2026-10-05-campaign-rebuild.md` for exact evidence and replacement hashes. Preserve saves, story and pre-Astra controls. No merge/deploy; physical-device, assistive-technology, audio and human enjoyment checks remain unverified.
+**IN PROGRESS — final independent-review repairs under verification.** Native branch `codex/campaign-rebuild-20261005`, based on live `c79f39f`. Candidate `ab7e685` passed full 36-suite local tests and both exact-commit CI workflows, but review independently found fifteen Stormswitch switch-free clears. The focused fixes, permanent within-allowance bypass proof and refreshed records require final regression/matrix/CI acceptance before completion. See `docs/reviews/2026-10-05-campaign-rebuild.md` for exact evidence and replacement hashes. Preserve Chapter 1, original allowance margins, saves, story and pre-Astra controls. No merge/deploy; physical-device, assistive-technology, audio and human enjoyment checks remain unverified.
 
 ### Release — 2026-09-30
 
@@ -38,7 +38,7 @@ Starting product: `63fa4cf`; the independent audit reopened presentation/earned-
 - Opening scene and motion: `opening-cinematic400.js`, `style400-opening-cinematic.css`, `tests/opening-world-coherence.browser.cjs`.
 - Other films and map/Homeward staging: `cinematics400.js`, `style400-cinematics.css`, `tests/story-staging.browser.cjs`.
 - Milestone rewards and ending: `style400-production-slice.css`, `style400-ui.css`, `tests/story-payoffs.browser.cjs`.
-- This rebuild's `npm test` runs 36 chained suites: campaign proof/design/export tooling, all 17 existing browser suites, Opening paint-readiness and sampled actual-control campaign clears. Run `node tests/phone-stage-certification.browser.cjs` separately for the 180-capture story matrix and `node tests/campaign-polish.browser.cjs --capture-matrix` for the 1,536-capture gameplay matrix. Check `git diff --check`; Chapter 1 must match the historical hash below, while Chapters 2–8 must match the new accepted hashes in the campaign review ledger.
+- This rebuild's `npm test` runs 36 chained suites: campaign proof/design/export tooling, all 17 existing browser suites, Opening paint-readiness and 45 sampled boards (90 actual-control campaign clears). Run `node tests/phone-stage-certification.browser.cjs` separately for the 180-capture story matrix and `node tests/campaign-polish.browser.cjs --capture-matrix` for the expanded 2,160-capture gameplay matrix. Check `git diff --check`; Chapter 1 must match the historical hash below, while Chapters 2–8 must match the new accepted hashes in the campaign review ledger.
 
 September 29 final local verification: **PASS** full 17-suite `npm test`, all 400 authored routes, the separate 180-capture / five-viewport Normal/Large Text OS/in-game Reduced Motion matrix, all eight campaign hashes, and `git diff --check`. The audit suite produced 211 additional captures at 320×568, 390×844 and 430×932, including motion/settled and dialogue-hidden views; its 800 short-phone motive renders, chapter knowledge boundaries, measured route/parcel landing, and Home framing checks passed. Representative frames were visually reviewed for Opening, Across, dated maps, Homeward, Levels 50/100/150/200 rewards, Levels 1/51/301/366, and the Level 400 ending. Captures are local temporary evidence, not game assets.
 
