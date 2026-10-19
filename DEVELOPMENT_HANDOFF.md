@@ -6,9 +6,9 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ## Current state — 2026-10-19
 
-### Energy and earned currency — design in progress
+### Energy and earned currency — plan review
 
-The player approved 20 starting/capped energy, +1 per 15 minutes, charging once on a fresh attempt's first valid move, free paid-attempt resume, 10/20/30 progression coins, 15-coin successful hints and 40-coin +5-move continuations. Written design: `docs/superpowers/specs/2026-10-19-energy-currency-design.md`. **Await written-spec review, then implementation-plan review; no economy code has been implemented.** The spec makes the proposed 2/4/6 replay rewards, existing-save initialization, Daily, purchase persistence and backup/reset policies explicit. Preserve the verified campaign and all presentation/control contracts below. Continue the existing review branch; no merge/deploy.
+The player approved the economy and written specification, including 20 starting/capped energy, +1 per 15 minutes, first-valid-move charging, free paid-attempt resume, 10/20/30 progression coins, 2/4/6 replays, 15-coin successful hints and 40-coin +5-move continuations. Design: `docs/superpowers/specs/2026-10-19-energy-currency-design.md`; implementation plan: `docs/superpowers/plans/2026-10-19-energy-currency.md`. **Await implementation-plan review; no economy code has been implemented or deployed.** Preserve the previously chosen Native method after approval. The plan covers serialized purchases, resume, receipts, Daily isolation, v1/v2 backups, import recovery, wallet UI and full verification. Preserve the campaign/presentation/control contracts below. Continue the existing review branch; no merge/deploy.
 
 ### Campaign rebuild — 2026-10-05
 

@@ -2,7 +2,7 @@
 
 Date: October 19, 2026
 
-Status: Written design for player review. The economy and prices were approved in conversation; this implementation-ready specification has not yet been reviewed. No economy code is implemented by this commit.
+Status: Approved by the player's “Well let's proceed then” on October 19, after being asked to review this written specification. Implementation plan: `docs/superpowers/plans/2026-10-19-energy-currency.md`, awaiting its own review. No economy code is implemented by this documentation change.
 
 Repository: `maloysius-wq/latchlings`. Continue the existing `codex/campaign-rebuild-20261005` branch, starting at `85f204524d5e5c529db1ee3a5d5ef6e7a1e3e5bb`. Do not merge or deploy.
 
