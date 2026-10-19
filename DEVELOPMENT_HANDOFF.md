@@ -4,7 +4,11 @@
 
 For repository work, GitHub is the canonical path. If GitHub repository functions are not already loaded, the first tool action for a repository task must be connector/plugin discovery for `GitHub`. Read this file through the GitHub connector before using a local checkout. If the wrong route is attempted first, recover immediately through GitHub and continue the original request without asking the user to repeat the plugin instruction. See `AGENTS.md` and `.github/REPOSITORY_ACCESS_PREFLIGHT.md`.
 
-## Current state — 2026-10-07
+## Current state — 2026-10-19
+
+### Energy and earned currency — design in progress
+
+The player approved 20 starting/capped energy, +1 per 15 minutes, charging once on a fresh attempt's first valid move, free paid-attempt resume, 10/20/30 progression coins, 15-coin successful hints and 40-coin +5-move continuations. Written design: `docs/superpowers/specs/2026-10-19-energy-currency-design.md`. **Await written-spec review, then implementation-plan review; no economy code has been implemented.** The spec makes the proposed 2/4/6 replay rewards, existing-save initialization, Daily, purchase persistence and backup/reset policies explicit. Preserve the verified campaign and all presentation/control contracts below. Continue the existing review branch; no merge/deploy.
 
 ### Campaign rebuild — 2026-10-05
 
