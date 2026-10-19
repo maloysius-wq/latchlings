@@ -42,6 +42,7 @@
   if(a.mode==='daily'){if(!record(a.daily)||!day(a.daily.key)||a.daily.level!==level.id||typeof a.daily.tier!=='string')bad();}else if(a.daily!==null)bad();
   if(!a.energyPaid&&(a.movesUsed!==0||a.extraMoves!==0||a.status!=='preview'||a.pendingMove!==null))bad();
   if(a.status==='completed'&&a.positions.some(Boolean))bad();
+  if(!integer(level.moveLimit+a.extraMoves))bad();
   for(const [key,value] of Object.entries(a.operations))if(!id(key)||!record(value)||typeof value.identity!=='string')bad();
   if(a.pendingMove&&(!id(a.pendingMove.token)||!integer(a.pendingMove.pi,0,level.pieces.length-1)||!['U','D','L','R'].includes(a.pendingMove.dir)||!record(a.pendingMove.result)))bad();
   if(a.paidHint&&(typeof a.paidHint.boardKey!=='string'||!integer(a.paidHint.pi,0,level.pieces.length-1)||!['U','D','L','R'].includes(a.paidHint.dir)))bad();
