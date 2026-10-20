@@ -8,7 +8,7 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ### Phone-sized browser viewport — IN PROGRESS
 
-Bounded presentation change on the existing development branch, followed by the authorized merge/deploy/live verification. Large browser windows use a centered same-origin phone preview, up to390×844 and shortened to fit; native portrait phones and short landscape layouts remain full viewport. A real iframe browsing context keeps existing mobile media queries, fixed overlays and measured cinematics coherent without changing the game, controls or save origin. New viewport regression observed RED before implementation and passed three desktop/four native layouts with actual gameplay, wallet persistence and resize. Full regression and publication follow; preserve unrelated artifacts.
+Bounded presentation change on the existing development branch, followed by the authorized merge/deploy/live verification. Large browser windows use a centered same-origin phone preview:390×844,360×800 or320×568, selecting a complete phone profile that fits; native portrait phones and short landscape layouts remain full viewport. A real iframe keeps mobile media queries, fixed overlays and measured cinematics coherent without changing the game, controls or save origin. New viewport regression observed RED before implementation. Independent review's Large Text overlap was reproduced and fixed by shell sizing only; targeted Large Text assertions now pass at four desktop/four native layouts. Full regression and publication follow; details: `docs/reviews/2026-10-20-phone-viewport.md`. Preserve unrelated artifacts.
 
 ### Release policy — current player authorization
 

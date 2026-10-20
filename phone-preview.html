@@ -10,10 +10,17 @@
     html, body { margin: 0; width: 100%; height: 100%; background: #182c3d; }
     body { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; overflow: hidden; }
     #phoneGameFrame {
-      display: block; border: 0; width: min(390px, calc(100vw - 32px));
-      height: min(844px, calc(100vh - 32px)); height: min(844px, calc(100dvh - 32px));
+      display: block; border: 0; width: 390px; height: 844px;
       border-radius: 20px; background: #b9dcf4;
       box-shadow: 0 0 0 1px #ffffff29, 0 16px 64px #0007;
+    }
+    /* Use complete phone profiles, not a wide phone with its height chopped.
+       Existing Large Text gameplay is certified at these portrait budgets. */
+    @media (max-height: 875px) {
+      #phoneGameFrame { width: 360px; height: 800px; }
+    }
+    @media (max-height: 831px) {
+      #phoneGameFrame { width: 320px; height: 568px; }
     }
     @media (max-width: 599px), (max-height: 599px) {
       #phoneGameFrame { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
