@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright');
+const {seedWallet}=require('./economy-fixture.cjs');
 const root=path.resolve(__dirname,'..'),matrix=process.argv.includes('--capture-matrix');
 const samples=[...Array.from({length:7},(_,i)=>[51+i*50,75+i*50,100+i*50]).flat(),366,381,...Array.from({length:10},(_,i)=>391+i),301,304,305,314,316,317,319,321,325,328,330,332,339,342,347];
 const ids=[...new Set(samples)],captures=[],failures=[],out=path.join(root,'test-artifacts/campaign/polish');
@@ -46,8 +47,10 @@ async function input(page,pi,dir,index){
    await context.addInitScript(()=>{localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(Object.fromEntries(Array.from({length:400},(_,i)=>[i+1,1]))))});
    const page=await context.newPage();page.on('pageerror',e=>failures.push(e.message));
    await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'networkidle'});
+   await page.evaluate(()=>LatchlingsEconomy.ready);
    await page.evaluate(text=>{LatchlingsPrefs.set('textSize',text);LatchlingsPrefs.set('motion','system')},config.text);
    for(const id of ids){
+    await seedWallet(page,{energy:20,attempt:null});
     const label=config.width+'x'+config.height+'-'+config.text+'-'+config.motion+'-'+id;
     await page.evaluate(id=>{closeModal();LatchlingsCinematics.finish(true);LatchlingsStoryTheme.close(false);startLevel(id);LatchlingsCinematics.finish(true);LatchlingsStoryTheme.close(false)},id);
     await page.waitForFunction(id=>currentLevel===id&&!animating&&document.body.dataset.screen==='game',id);
