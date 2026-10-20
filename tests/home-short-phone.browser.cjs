@@ -21,7 +21,7 @@ const server=http.createServer((request,response)=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  try{
-  for(const {width,height} of [{width:320,height:568},{width:360,height:568},{width:844,height:390}]){
+  for(const {width,height} of [{width:320,height:568},{width:360,height:568},{width:360,height:800},{width:390,height:800},{width:844,height:390}]){
    const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'}),page=await context.newPage();
    await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
    await page.waitForFunction(()=>document.querySelector('#homeTitleFrame')?.contentDocument?.readyState==='complete');
@@ -40,6 +40,6 @@ const server=http.createServer((request,response)=>{
    for(const group of layout.secondaryCopy)for(const text of group.copy)assert(text.left>=group.button.left&&text.right<=group.button.right&&text.top>=group.button.top&&text.bottom<=group.button.bottom,`${width}x${height}: Home action copy must not be clipped (${JSON.stringify(group)})`);
    await context.close();
   }
-  console.log('PASS Home scene separation and visible Play, Daily Puzzle, and Level Select actions at 320x568, 360x568, and 844x390');
+  console.log('PASS Home scene separation and visible Play, Daily Puzzle, and Level Select actions at 320x568, 360x568, 360x800, 390x800, and 844x390');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve))}
 })().catch(error=>{console.error(error);process.exitCode=1});
