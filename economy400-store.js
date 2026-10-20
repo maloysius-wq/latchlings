@@ -45,7 +45,7 @@
   api.read=()=>transaction(raw=>{if(raw===undefined)throw failure('NOT_INITIALIZED');const w=checked(raw);return {write:w,value:w};});
   api.transact=(command,context)=>transaction(raw=>{if(raw===undefined)throw failure('NOT_INITIALIZED');const result=C.reduce(checked(raw),command,context);if(command.type==='ACK_RECEIPT'&&context.deliverReceipt)context.deliverReceipt(result.value);return {write:result.state,value:result};},context);
   api.prepareImport=(target,originals)=>transaction(raw=>{const w=checked(raw);if(w.importJournal)throw failure('IMPORT_PENDING');if(originals.expectedRevision!==undefined&&originals.expectedRevision!==w.revision)throw failure('STALE');const wallet=C.validateWallet(target.economy);if(wallet.importJournal)throw failure('INVALID_IMPORT');const journal={id:root.crypto.randomUUID(),target:{...target,economy:wallet},originals:{...originals,economy:C.validateWallet(w)}};w.importJournal=journal;w.revision++;return {write:w,value:journal};});
-  api.finishImport=journalId=>transaction(raw=>{const w=checked(raw),j=w.importJournal;if(!j||j.id!==journalId)throw failure('STALE');const target=C.validateWallet(j.target.economy);if(target.importJournal)throw failure('INVALID_IMPORT');target.revision=Math.max(w.revision,target.revision)+1;return {write:target,value:target};});
+  api.finishImport=(journalId,installLocal)=>transaction(raw=>{const w=checked(raw),j=w.importJournal;if(!j||j.id!==journalId)throw failure('STALE');const target=C.validateWallet(j.target.economy);if(target.importJournal)throw failure('INVALID_IMPORT');if(installLocal)installLocal();target.revision=Math.max(w.revision,target.revision)+1;return {write:target,value:target};});
   return api;
  }
  root.LatchlingsEconomyStore=Object.freeze({open});

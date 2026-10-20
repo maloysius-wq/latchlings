@@ -342,6 +342,7 @@ function startLevel(L,mode='campaign',options={}){
  window.LatchlingsEconomy?.enterLevel(currentLevel,playMode,options);
  if(playMode==='daily'&&window.LatchlingsStoryTheme?.close)window.LatchlingsStoryTheme.close(false);
  screen('game');renderGame(true);
+ if(window.LatchlingsEconomy?.attempt?.status==='out-of-moves'){loseLevel({quiet:true});return;}
  if(playMode==='daily')return;
  const enterStory=()=>{if(window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.enterLevel(currentLevel)},enterCinematicOrStory=()=>{if(window.LatchlingsCinematics&&window.LatchlingsCinematics.maybeShowBeforeLevel(currentLevel,progress.unlocked,enterStory))return;enterStory()};if(activeScreenTransition&&activeScreenTransition.finished)activeScreenTransition.finished.then(enterCinematicOrStory).catch(enterCinematicOrStory);else enterCinematicOrStory()
 }

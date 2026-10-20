@@ -10,6 +10,7 @@
  async function readyStore(){await api.ready;if(startupError)throw startupError;await lifecycle;return store;}
  function report(error){
   if(error.code==='ABORTED')return;
+  if(error.code==='OUT_OF_MOVES'){loseLevel({quiet:true});return;}
   if(error.code==='NO_ENERGY'&&root.LatchlingsEconomyUI){root.LatchlingsEconomyUI.zeroEnergyDialog();return;}
   const titles={NO_ENERGY:'Energy is recharging',STALE:'This saved route changed',NO_COINS:'Not enough coins',OUT_OF_MOVES:'No moves left'};
   const messages={NO_ENERGY:'A new attempt costs 1 energy. You regain 1 every 15 minutes, up to 20. A paid saved attempt can still be resumed.',STALE:'Another tab or action changed this attempt. Resume the latest saved route before playing again.',NO_COINS:'Earn coins by completing routes. Nothing was purchased.',OUT_OF_MOVES:'Continue from the out-of-moves menu or start a new attempt.'};
@@ -48,14 +49,21 @@
   const target=root.LatchlingsProgressBackup.parse(JSON.stringify(root.LatchlingsProgressBackup.create(j.target.progress,j.target.seen,j.target.economy)));
   root.LatchlingsProgressBackup.create(j.originals.progress,j.originals.seenList,j.originals.economy);
   try{
-   localStorage.setItem(PROGRESS_KEY,JSON.stringify(target.progress));
-   localStorage.setItem(CINEMATIC_SEEN_STORAGE_KEY,JSON.stringify(Object.fromEntries(target.seen.map(id=>[id,1]))));
-   const installed=await store.finishImport(j.id);publish(installed);progress=target.progress;preview=null;startupError=null;updateHome(true);hideSaveStatus();return true;
+   const installed=await store.finishImport(j.id,()=>{
+    try{
+     localStorage.setItem(PROGRESS_KEY,JSON.stringify(target.progress));
+     localStorage.setItem(CINEMATIC_SEEN_STORAGE_KEY,JSON.stringify(Object.fromEntries(target.seen.map(id=>[id,1]))));
+    }catch(error){
+     let inconsistent=false;for(const [key,value] of [[PROGRESS_KEY,j.originals.campaign],[CINEMATIC_SEEN_STORAGE_KEY,j.originals.seen]])try{restoreStorageValue(key,value);}catch{inconsistent=true;}
+     error.rollbackIncomplete=inconsistent;throw error;
+    }
+   });publish(installed);progress=target.progress;preview=null;startupError=null;updateHome(true);hideSaveStatus();return true;
   }catch(error){
-   let inconsistent=false;for(const [key,value] of [[PROGRESS_KEY,j.originals.campaign],[CINEMATIC_SEEN_STORAGE_KEY,j.originals.seen]])try{restoreStorageValue(key,value);}catch{inconsistent=true;}
+   const latest=await store.read();
+   if(!latest.importJournal){publish(latest);progress=loadProgress();preview=null;startupError=null;updateHome(true);hideSaveStatus();return true;}
    startupError=Object.assign(new Error('Import recovery is pending'),{code:'IMPORT_PENDING',cause:error});
-   showSaveStatus(`Import could not be saved completely. ${inconsistent?'Local storage may be inconsistent. ':''}Recovery is pending; retry it or reload. Export keeps the coherent original journey and wallet.`);
-   publish(await store.read());return false;
+   showSaveStatus(`Import could not be saved completely. ${error.rollbackIncomplete?'Local storage may be inconsistent. ':''}Recovery is pending; retry it or reload. Export keeps the coherent original journey and wallet.`);
+   publish(latest);return false;
   }
  }
  function confirm({title,copy:copyText,confirmText='Continue',disabled=false,generation=moveRequestSerial}){
@@ -103,7 +111,8 @@
   },
   async commitMove(move,{selected:selection}){
    if(move.generation!==moveRequestSerial)fail('ABORTED');await readyStore();
-   const out=await store.transact({type:'COMMIT_MOVE',attemptId:move.attemptId,requestId:move.token,expectedRevision:move.revision,selected:selection},context({level:move.level,isCurrent:()=>move.generation===moveRequestSerial}));publish(out.state);if(ticket===move)ticket=null;if(preview?.id===move.attemptId)preview=clone(out.state.attempt);return out.value;
+   const controller=new AbortController();preparing=controller;
+   try{const out=await store.transact({type:'COMMIT_MOVE',attemptId:move.attemptId,requestId:move.token,expectedRevision:move.revision,selected:selection},context({level:move.level,signal:controller.signal,isCurrent:()=>move.generation===moveRequestSerial}));publish(out.state);if(ticket===move)ticket=null;if(preview?.id===move.attemptId)preview=clone(out.state.attempt);return out.value;}finally{if(preparing===controller)preparing=null;}
   },
   async cancelMove(move){if(!move)return;await readyStore();try{const out=await store.transact({type:'CANCEL_MOVE',attemptId:move.attemptId,requestId:move.token},context({level:move.level}));publish(out.state);if(preview?.id===move.attemptId)preview=clone(out.state.attempt);}catch(error){if(error.code!=='STALE')throw error;}if(ticket===move)ticket=null;},
   async completeAttempt(){await readyStore();const a=preview,generation=moveRequestSerial;if(!a)fail('STALE');const controller=new AbortController();preparing=controller;try{return await complete(a,{signal:controller.signal,isCurrent:()=>generation===moveRequestSerial&&preview?.id===a.id});}finally{if(preparing===controller)preparing=null;}},
@@ -114,11 +123,11 @@
    if(!w){showSaveStatus('The journey can be exported, but wallet storage is unavailable on this device. This backup does not contain energy or coins.');return root.LatchlingsProgressBackup.create(progress,seenFilms());}
    return root.LatchlingsProgressBackup.create(progress,seenFilms(),w);
   },
-  async restoreBackup(parsed){
+  async restoreBackup(parsed,{expectedWalletRevision}={}){
    try{
     if(![undefined,1,2].includes(parsed.version)||parsed.version===2&&!parsed.economy)fail('INVALID_IMPORT');
     const normalized=root.LatchlingsProgressBackup.parse(JSON.stringify(root.LatchlingsProgressBackup.create(parsed.progress,parsed.seen,parsed.economy||undefined)));
-    await readyStore();moveRequestSerial++;api.invalidate();await lifecycle;const old=await store.read();if(old.importJournal)fail('IMPORT_PENDING');
+    await readyStore();moveRequestSerial++;api.invalidate();await lifecycle;const old=await store.read();if(old.importJournal)fail('IMPORT_PENDING');if(expectedWalletRevision!==undefined&&old.revision!==expectedWalletRevision)fail('STALE');
     const targetWallet=normalized.economy||clone(old);
     if(!normalized.economy){for(const [key,stars] of Object.entries(normalized.progress.stars))targetWallet.accounted.campaign[key]=Math.max(targetWallet.accounted.campaign[key]||0,stars);for(const r of Object.values(targetWallet.receipts))r.delivered=true;if(targetWallet.attempt?.mode==='campaign'&&targetWallet.attempt.level>normalized.progress.unlocked)targetWallet.attempt=null;}
     const originals={campaign:localStorage.getItem(PROGRESS_KEY),seen:localStorage.getItem(CINEMATIC_SEEN_STORAGE_KEY),progress:clone(progress),seenList:seenFilms(),expectedRevision:old.revision};
@@ -127,7 +136,7 @@
    }catch(error){report(error);return false;}
   },
   async recoverImport(){await api.ready;if(!store)throw startupError;if(await recoverJournal()){await deliver();return true;}return false;},
-  async resetCampaign(){const w=await api.read();w.attempt=null;for(const r of Object.values(w.receipts))r.delivered=true;return api.restoreBackup({version:2,progress:{unlocked:1,stars:{}},seen:[],economy:w});},
+  async resetCampaign(){const w=await api.read(),expectedWalletRevision=w.revision;w.attempt=null;for(const r of Object.values(w.receipts))r.delivered=true;return api.restoreBackup({version:2,progress:{unlocked:1,stars:{}},seen:[],economy:w},{expectedWalletRevision});},
   async hintOffer(){
    const w=await api.read(),a=preview;if(!a||JSON.stringify([a.positions,a.doorMask,a.movesUsed])!==JSON.stringify([positions,doorMask,movesUsed]))fail('STALE');
    if(w.attempt?.id===a.id&&w.attempt.revision!==a.revision)fail('STALE');
@@ -151,6 +160,7 @@
   },
   async moveSelected(dir){
    if(animating)return;clearBlockerFeedback(true);clearHintFocus();const lev=LEVELS[currentLevel-1];
+   if(movesUsed>=api.effectiveLimit(lev)&&positions.some(Boolean)){loseLevel({quiet:true});return;}
    if(!positions[selected]){const order=clockwiseAvailable();if(!order.length)return;selected=order[0];}
    if(!simulate(selected,dir)){root.LatchlingsSFX?.invalidMove();showBlockedFeedback(immediateBlocker(selected,dir));shakeSelected();return;}
    animating=true;const generation=++moveRequestSerial,pi=selected;let move=null;
