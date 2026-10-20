@@ -42,7 +42,7 @@ async function matchesRenderedTransitions(){
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  let browser;
  try{
-  browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});const page=await browser.newPage();
+  browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
   await page.waitForFunction(()=>typeof simulateState==='function');
   for(const id of [1,51,101,151,201,251,301,366,400]){
