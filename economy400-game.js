@@ -1,7 +1,7 @@
 'use strict';
 (function(root){
  const C=root.LatchlingsEconomyCore;
- let store,wallet=null,preview=null,startupError=null,lifecycle=Promise.resolve(),preparing=null,ticket=null;
+ let store,wallet=null,preview=null,startupError=null,lifecycle=Promise.resolve(),preparing=null,ticket=null,presentingReceipt=false;
  const clone=x=>JSON.parse(JSON.stringify(x)),uid=()=>crypto.randomUUID();
  const fail=(code)=>{throw Object.assign(new Error(code),{code});};
  function publish(w){wallet=w;root.dispatchEvent(new CustomEvent('latchlings:economy',{detail:clone(w)}));return w;}
@@ -18,6 +18,30 @@
  }
  function matches(a,L,mode,daily){return a&&a.level===L&&a.mode===mode&&a.status!=='completed'&&(mode!=='daily'||a.daily.key===daily?.key);}
  function apply(a){positions=clone(a.positions);selected=a.selected;doorMask=a.doorMask;movesUsed=a.movesUsed;if(a.mode==='daily')dailySession=clone(a.daily);}
+ async function complete(a,extra={}){
+  const out=await store.transact({type:'COMPLETE',attemptId:a.id,expectedRevision:a.revision,requestId:uid()},context({level:LEVELS[a.level-1],...extra}));publish(out.state);if(preview?.id===a.id)preview=clone(out.state.attempt);return out.value;
+ }
+ async function deliver(){
+  const pending=Object.values((await store.read()).receipts).filter(r=>!r.delivered);
+  for(const receipt of pending){
+   let deliveredCampaign=null;
+   try{
+    const out=await store.transact({type:'ACK_RECEIPT',receiptId:receipt.id},context({deliverReceipt:r=>{
+     if(r.mode==='daily'){
+      const all=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');if(!all||typeof all!=='object'||Array.isArray(all))fail('INVALID_PROGRESS');const old=all[r.daily.key];
+      if(!old?.completed||r.stars>(old.stars||0)||r.stars===old.stars&&r.moves<(old.moves??Infinity))all[r.daily.key]={level:r.level,stars:r.stars,moves:r.moves,completed:true};
+      localStorage.setItem(DAILY_PROGRESS_KEY,JSON.stringify(all));
+     }else{
+      const stored=root.LatchlingsProgressBackup.create(JSON.parse(localStorage.getItem(PROGRESS_KEY)||'{"unlocked":1,"stars":{}}'),[]).campaign;
+      const next={unlocked:Math.max(stored.unlocked,progress.unlocked,Math.min(400,r.level+1)),stars:{...stored.stars}};
+      for(const [key,n] of Object.entries(progress.stars))next.stars[key]=Math.max(next.stars[key]||0,n);
+      next.stars[r.level]=Math.max(next.stars[r.level]||0,r.stars);localStorage.setItem(PROGRESS_KEY,JSON.stringify(next));deliveredCampaign=next;
+     }
+    }}));publish(out.state);if(deliveredCampaign){progress=deliveredCampaign;updateHome();}hideSaveStatus();
+   }catch(error){showSaveStatus('Your coins are saved. Journey progress still needs to be written on this device; keep the game open, retry, or export a backup.');return false;}
+  }
+  return true;
+ }
  function confirm({title,copy:copyText,confirmText='Continue',disabled=false,generation=moveRequestSerial}){
   return new Promise(resolve=>{
    modal(`<h2>${title}</h2><p>${copyText}</p><div class="modal-actions"><button class="primary-small" id="economyConfirm" ${disabled?'disabled':''}>${confirmText}</button><button class="secondary-small" id="economyCancel">Cancel</button></div>`);
@@ -28,7 +52,7 @@
   });
  }
  const api={
-  get snapshot(){return wallet;},get attempt(){return preview;},get error(){return startupError;},confirm,storageError,report,
+  get snapshot(){return wallet;},get attempt(){return preview;},get error(){return startupError;},get presentingReceipt(){return presentingReceipt;},confirm,storageError,report,
   ready:null,
   async read(){await readyStore();const w=await store.read();if(w.importJournal)return publish(w);return publish((await store.transact({type:'SETTLE'},context())).state);},
   effectiveLimit(lev){return lev.moveLimit+(preview?.level===lev.id?preview.extraMoves:0);},
@@ -62,6 +86,8 @@
    const out=await store.transact({type:'COMMIT_MOVE',attemptId:move.attemptId,requestId:move.token,expectedRevision:move.revision,selected:selection},context({level:move.level,isCurrent:()=>move.generation===moveRequestSerial}));publish(out.state);if(ticket===move)ticket=null;if(preview?.id===move.attemptId)preview=clone(out.state.attempt);return out.value;
   },
   async cancelMove(move){if(!move)return;await readyStore();try{const out=await store.transact({type:'CANCEL_MOVE',attemptId:move.attemptId,requestId:move.token},context({level:move.level}));publish(out.state);if(preview?.id===move.attemptId)preview=clone(out.state.attempt);}catch(error){if(error.code!=='STALE')throw error;}if(ticket===move)ticket=null;},
+  async completeAttempt(){await readyStore();const a=preview,generation=moveRequestSerial;if(!a)fail('STALE');const controller=new AbortController();preparing=controller;try{return await complete(a,{signal:controller.signal,isCurrent:()=>generation===moveRequestSerial&&preview?.id===a.id});}finally{if(preparing===controller)preparing=null;}},
+  async deliverPendingReceipts(){await readyStore();return deliver();},
   async moveSelected(dir){
    if(animating)return;clearBlockerFeedback(true);clearHintFocus();const lev=LEVELS[currentLevel-1];
    if(!positions[selected]){const order=clockwiseAvailable();if(!order.length)return;selected=order[0];}
@@ -77,11 +103,14 @@
     if(res.capture){let distance=Infinity;positions.forEach((p,i)=>{if(!p||i===pi)return;const d=(p[0]-res.r)**2+(p[1]-res.c)**2;if(d<distance){distance=d;next=i;}});}
     const a=await api.commitMove(move,{selected:next});if(generation!==moveRequestSerial)return;
     apply(a);lastNestArrival=res.capture?pi:null;renderGame(true);animating=false;
-    if(positions.every(p=>!p)){await winLevel();return;}
+    if(positions.every(p=>!p)){animating=true;try{await winLevel();}finally{if(generation===moveRequestSerial)animating=false;}return;}
     if(movesUsed>=api.effectiveLimit(lev))loseLevel();
    }catch(error){if(move)await api.cancelMove(move).catch(storageError);if(generation!==moveRequestSerial)return;animating=false;renderGame(true);report(error);}
   },
  };
- api.ready=(async()=>{try{store=await root.LatchlingsEconomyStore.open({indexedDB:root.indexedDB});let daily={};try{daily=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');}catch{}publish(await store.initialize({now:Date.now(),campaign:progress,daily}));if(store.resumeError)showSaveStatus('Your wallet is safe, but the saved board no longer matches this game. Please start a new attempt.');}catch(error){startupError=error;storageError(error);}})();
+ api.ready=(async()=>{try{store=await root.LatchlingsEconomyStore.open({indexedDB:root.indexedDB});let daily={};try{daily=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');}catch{}publish(await store.initialize({now:Date.now(),campaign:progress,daily}));if(wallet.attempt?.energyPaid&&wallet.attempt.status!=='completed'&&!wallet.attempt.pendingMove&&wallet.attempt.positions.every(p=>!p))await complete(wallet.attempt);await deliver();if(store.resumeError)showSaveStatus('Your wallet is safe, but the saved board no longer matches this game. Please start a new attempt.');}catch(error){startupError=error;storageError(error);}})();
  root.LatchlingsEconomy=api;
+ // Install after all chapter presenters so every milestone shares the same receipt gate.
+ const presentWin=winLevel;
+ winLevel=async function(){const generation=moveRequestSerial;try{const receipt=await api.completeAttempt();if(generation!==moveRequestSerial)return;presentingReceipt=true;try{presentWin();}finally{presentingReceipt=false;}const actions=document.querySelector('#modal .modal-actions');if(actions&&!document.querySelector('#modal .economy-earned')){const earned=document.createElement('p');earned.className='economy-earned';earned.textContent=`+${receipt.coins} coins earned`;actions.before(earned);}await api.deliverPendingReceipts();}catch(error){if(generation===moveRequestSerial)report(error);}};
 })(window);

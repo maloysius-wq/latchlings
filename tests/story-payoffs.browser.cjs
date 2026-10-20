@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {chromium}=require('playwright');
 const {openGame}=require('./browser-game-ready.cjs');
+const {syncAttemptFixture}=require('./economy-fixture.cjs');
 
 const repo=path.resolve(__dirname,'..');
 const evidence=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'latchlings-story-payoffs-'));
@@ -29,8 +30,9 @@ async function openReward(page,level,{reduced=false,priorUnlocked=level,textSize
   progress={unlocked:priorUnlocked,stars:{}};
   currentLevel=level;playMode='campaign';movesUsed=LEVELS[level-1].optimal;
   positions=LEVELS[level-1].pieces.map(()=>null);
-  winLevel();
  },{level,reduced,priorUnlocked,textSize});
+ await syncAttemptFixture(page,{energyPaid:true,status:'active'});
+ await page.evaluate(()=>winLevel());
  await page.waitForSelector('.chapter-reward-card');
 }
 

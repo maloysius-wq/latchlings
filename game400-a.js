@@ -45,7 +45,7 @@ function dailyRouteInfo(date=new Date(),campaignProgress=progress){
  return {key,level:pool[offset].id,tier};
 }
 function startDailyPuzzle(){dailySession=dailyRouteInfo();startLevel(dailySession.level,'daily')}
-function saveDailyCompletion(stars){if(!dailySession)return;try{const all=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');all[dailySession.key]={level:dailySession.level,stars,moves:movesUsed,completed:true};localStorage.setItem(DAILY_PROGRESS_KEY,JSON.stringify(all))}catch(_){}}
+function saveDailyCompletion(stars){if(window.LatchlingsEconomy?.presentingReceipt)return false;if(!dailySession)return;try{const all=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');all[dailySession.key]={level:dailySession.level,stars,moves:movesUsed,completed:true};localStorage.setItem(DAILY_PROGRESS_KEY,JSON.stringify(all))}catch(_){}}
 function leaveDailyForHome(){playMode='campaign';dailySession=null;document.body.dataset.playMode='campaign';screen('home')}
 let atlasRewardState=null,atlasRewardTimers=[];
 const ATLAS_REWARD_TIME_SCALE=1.7;
@@ -53,7 +53,7 @@ function atlasRewardMs(ms){return Math.round(ms*ATLAS_REWARD_TIME_SCALE)}
 function loadProgress(){try{const x=JSON.parse(localStorage.getItem(PROGRESS_KEY)||'{}');return {unlocked:Math.max(1,Math.min(400,x.unlocked||1)),stars:x.stars||{}}}catch(e){return {unlocked:1,stars:{}}}}
 function showSaveStatus(message){const banner=document.getElementById('saveStatusBanner'),copy=document.getElementById('saveStatusMessage');if(copy)copy.textContent=message;if(banner)banner.hidden=false}
 function hideSaveStatus(){const banner=document.getElementById('saveStatusBanner');if(banner)banner.hidden=true}
-function saveProgress(){let saved=false;try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress));saved=true}catch(_){showSaveStatus('Progress is safe for this session, but this device could not save it. Export a copy before closing.')}updateHome();if(saved)hideSaveStatus();return saved}
+function saveProgress(){if(window.LatchlingsEconomy?.presentingReceipt){updateHome();return false;}let saved=false;try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress));saved=true}catch(_){showSaveStatus('Progress is safe for this session, but this device could not save it. Export a copy before closing.')}updateHome();if(saved)hideSaveStatus();return saved}
 function showError(e){const d=document.getElementById('debug');d.style.display='block';d.dataset.playerSafe='true';d.textContent='Something went wrong. Return to Level Select and try again.'}
 window.addEventListener('error',e=>showError(e.error||e.message));window.addEventListener('unhandledrejection',e=>showError(e.reason));
 let activeScreenTransition=null;

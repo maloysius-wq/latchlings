@@ -3,6 +3,7 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const {chromium}=require('playwright');
+const {attemptFixtureScript}=require('./economy-fixture.cjs');
 
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml'};
@@ -20,6 +21,7 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true,timezoneId:'UTC'});
+  await context.addInitScript({content:attemptFixtureScript});
   await context.addInitScript(()=>{
    localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:12,stars:{'1':2,'2':1}}));
    localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1}));
@@ -31,7 +33,7 @@ const server=http.createServer((req,res)=>{
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
 
-  const daily=await page.evaluate(()=>{
+  const daily=await page.evaluate(async()=>{
    const date=new Date(),fresh=dailyRouteInfo(date,{unlocked:11,stars:{}}),justUnlockedAnchors=dailyRouteInfo(date,{unlocked:101,stars:{'100':1}}),advancedProgress={unlocked:351,stars:{'350':1}},advanced=dailyRouteInfo(date,advancedProgress);
    const repeated=dailyRouteInfo(new Date(date),advancedProgress);
    const sampledLaterRoutes=Array.from({length:400},(_,offset)=>dailyRouteInfo(new Date(date.getTime()+offset*86400000),advancedProgress).level);
@@ -43,7 +45,7 @@ const server=http.createServer((req,res)=>{
    const lev=LEVELS[currentLevel-1];
    for(let index=0;index<lev.solution.length;index++){const [pi,dir]=lev.solution[index],move=simulate(pi,dir);if(!move)throw new Error(`Daily Level ${lev.id} authored move failed`);positions[pi]=move.capture?null:[move.r,move.c];doorMask=move.mask;if(index===0)renderGame(true)}
    movesUsed=lev.solution.length;
-   winLevel();
+   await __syncEconomyAttemptFixture({energyPaid:true,status:'active'});await winLevel();
    const dailyHistory=JSON.parse(localStorage.getItem('latchlings_daily400_progress_v1')||'{}');
    return {fresh,justUnlockedAnchors,advanced,repeated,sampledLaterRoutes,dailyLevel:dailySession.level,dailyTier:dailySession.tier,campaignBefore,campaignAfter:JSON.stringify({unlocked:progress.unlocked,stars:progress.stars}),storedBefore,storedAfter:localStorage.getItem('latchlings_campaign400_progress_v1'),dailyRecord:dailyHistory[dailySession.key],title,dailyLabel,rulesTier,renderedTitle:document.getElementById('levelTitle').innerText,renderedLabel:document.querySelector('#mechanicNote .mechanic-chip-label').textContent};
   });
@@ -81,18 +83,19 @@ const server=http.createServer((req,res)=>{
   // A separate fresh context exercises a real version-1 returning-player save,
   // without inheriting the quota-failure doubles used later in this suite.
   const legacy=await browser.newContext({viewport:{width:390,height:844}});
+  await legacy.addInitScript({content:attemptFixtureScript});
   await legacy.addInitScript(()=>{
    localStorage.setItem('latchlings_campaign400_progress_v1',JSON.stringify({unlocked:400,stars:{50:1,51:3,100:2,150:1,200:3,250:2,300:1,350:3,400:3}}));
    localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));
    localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify({51:1}));
   });
   const legacyPage=await legacy.newPage();await legacyPage.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
-  const preserved=await legacyPage.evaluate(()=>{
+  const preserved=await legacyPage.evaluate(async()=>{
    const films=['opening','across-drift','old-maps','homeward'],sparse={unlocked:400,stars:{51:3,400:3}},backup=LatchlingsProgressBackup.create(sparse,films),parsed=LatchlingsProgressBackup.parse(JSON.stringify(backup));
    const before={progress:JSON.parse(JSON.stringify(progress)),seen:localStorage.getItem('latchlings_cinematics_seen_v1'),cards:localStorage.getItem('latchlings_story_cards_seen_v1'),earned:STORY.completedChapters(progress)};
    startLevel(51);const filmReplayed=document.querySelector('#cinematicOverlay')?.classList.contains('show')||false;
    const lev=LEVELS[50];for(const [pi,dir] of lev.solution){const m=simulate(pi,dir);if(!m)throw Error('Returning-player replay route invalid');positions[pi]=m.capture?null:[m.r,m.c];doorMask=m.mask;}
-   movesUsed=lev.optimal+2;winLevel();
+   movesUsed=lev.optimal+2;await __syncEconomyAttemptFixture({energyPaid:true,status:'active'});await winLevel();
    return{backupVersion:backup.version,backupKeys:Object.keys(backup).sort(),parsed,before,after:{progress:JSON.parse(JSON.stringify(progress)),stored:JSON.parse(localStorage.getItem('latchlings_campaign400_progress_v1')),seen:localStorage.getItem('latchlings_cinematics_seen_v1'),cards:localStorage.getItem('latchlings_story_cards_seen_v1'),earned:STORY.completedChapters(progress)},filmReplayed,allCaptured:positions.every(p=>p===null),earnedLabel:document.querySelector('.win-stars')?.getAttribute('aria-label'),rewardCards:document.querySelectorAll('.chapter-reward-card').length};
   });
   assert.equal(preserved.backupVersion,1);assert.deepStrictEqual(preserved.backupKeys,['campaign','cinematics','format','version']);
@@ -191,7 +194,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>settingsModal());
   await page.locator('#progressImportInput').setInputFiles({name:'replacement.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...source,campaign:{unlocked:20,stars:{'1':3,'2':2,'20':1}}}))});
   await page.locator('#confirmProgressImport').waitFor({state:'visible'});
-  await page.evaluate(()=>{
+  await page.evaluate(async()=>{
    const original=Storage.prototype.setItem;
    Object.defineProperty(Storage.prototype,'setItem',{configurable:true,writable:true,value:function(key,value){if(key==='latchlings_campaign400_progress_v1')throw new DOMException('Quota exceeded','QuotaExceededError');return original.call(this,key,value)}});
   });
@@ -203,10 +206,10 @@ const server=http.createServer((req,res)=>{
   await page.locator('#cancelProgressImport').click();
   await page.locator('#saveStatusDismiss').click();
 
-  await page.evaluate(()=>{
+  await page.evaluate(async()=>{
    const original=Storage.prototype.setItem;
    Object.defineProperty(Storage.prototype,'setItem',{configurable:true,writable:true,value:function(key,value){if(key==='latchlings_campaign400_progress_v1')throw new DOMException('Quota exceeded','QuotaExceededError');return original.call(this,key,value)}});
-   progress={unlocked:33,stars:{'1':2}};currentLevel=1;movesUsed=1;playMode='campaign';winLevel();
+   progress={unlocked:33,stars:{'1':2}};currentLevel=1;movesUsed=1;playMode='campaign';positions=[null];selected=0;doorMask=0;await __syncEconomyAttemptFixture({energyPaid:true,status:'active'});await winLevel();
   });
   const failedSave=await page.evaluate(()=>({progress:{unlocked:progress.unlocked,stars:{...progress.stars}},hidden:document.getElementById('saveStatusBanner').hidden,text:document.getElementById('saveStatusBanner').innerText,stored:localStorage.getItem('latchlings_campaign400_progress_v1'),result:saveProgress()}));
   assert.equal(failedSave.progress.unlocked,33,'failed save must preserve session unlock progress');
