@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" data-phone-viewport="host">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#182c3d">
+  <title>Latchlings</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; background: #182c3d; }
+    body { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; overflow: hidden; }
+    #phoneGameFrame {
+      display: block; border: 0; width: min(390px, calc(100vw - 32px));
+      height: min(844px, calc(100vh - 32px)); height: min(844px, calc(100dvh - 32px));
+      border-radius: 20px; background: #b9dcf4;
+      box-shadow: 0 0 0 1px #ffffff29, 0 16px 64px #0007;
+    }
+    @media (max-width: 599px), (max-height: 599px) {
+      #phoneGameFrame { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+    }
+  </style>
+  <script src="phone-viewport400.js" defer></script>
+</head>
+<body>
+  <iframe id="phoneGameFrame" title="Latchlings phone game" allow="autoplay; fullscreen"></iframe>
+  <noscript><a href="index.html">Open Latchlings</a></noscript>
+</body>
+</html>
