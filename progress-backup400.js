@@ -34,20 +34,36 @@
   return seen.sort();
  }
  function normalizeBackup(value){
-  exactKeys(value,['format','version','campaign','cinematics'],'Backup');
+  exactKeys(value,value?.version===2?['format','version','campaign','cinematics','economy']:['format','version','campaign','cinematics'],'Backup');
   if(value.format!==FORMAT)throw new Error('This is not a Latchlings progress backup');
-  if(value.version!==VERSION)throw new Error(`Unsupported backup version: ${String(value.version)}`);
-  return {format:FORMAT,version:VERSION,campaign:normalizeProgress(value.campaign),cinematics:normalizeSeen(value.cinematics)};
+  if(![1,2].includes(value.version))throw new Error(`Unsupported backup version: ${String(value.version)}`);
+  const result={format:FORMAT,version:value.version,campaign:normalizeProgress(value.campaign),cinematics:normalizeSeen(value.cinematics)};
+  if(value.version===2)result.economy=normalizeEconomy(value.economy);return result;
  }
- function create(progress,seen){
-  return normalizeBackup({format:FORMAT,version:VERSION,campaign:progress,cinematics:seen});
+ function normalizeEconomy(value){
+  const C=window.LatchlingsEconomyCore,w=C.validateWallet(value);
+  exactKeys(w,['version','revision','energy','coins','anchorMs','lastObservedMs','accounted','attempt','receipts','importJournal'],'Wallet');
+  exactKeys(w.accounted,['campaign','daily'],'Reward ledger');if(w.importJournal!==null)throw new Error('An unfinished import cannot be restored as a target wallet');
+  for(const r of Object.values(w.receipts)){exactKeys(r,['id','attemptId','mode','level','daily','stars','moves','coins','delivered'],'Completion receipt');if(r.mode==='daily')exactKeys(r.daily,['key','level','tier'],'Daily identity');else if(r.daily!==null)throw new Error('Campaign receipt has Daily data');}
+  if(w.attempt){
+   const a=w.attempt,level=window.LEVELS?.[a.level-1];C.validateAttempt(a,level);
+   exactKeys(a,['id','revision','mode','level','signature','positions','selected','doorMask','movesUsed','extraMoves','energyPaid','status','daily','pendingMove','paidHint','operations'],'Saved attempt');
+   if(a.mode==='daily')exactKeys(a.daily,['key','level','tier'],'Daily identity');
+   for(const op of Object.values(a.operations))exactKeys(op,['identity'],'Operation receipt');
+   if(a.pendingMove){exactKeys(a.pendingMove,['token','pi','dir','result'],'Pending move');const p=a.pendingMove,result=window.simulateState(level,a.positions,a.doorMask,p.pi,p.dir);if(!result||C.signature(result)!==C.signature(p.result))throw new Error('Invalid pending movement');}
+   if(a.paidHint){exactKeys(a.paidHint,['boardKey','pi','dir'],'Paid hint');if(a.paidHint.boardKey===C.boardKey(a)&&!window.simulateState(level,a.positions,a.doorMask,a.paidHint.pi,a.paidHint.dir))throw new Error('Invalid cached hint');}
+  }
+  return w;
+ }
+ function create(progress,seen,economy){
+  return normalizeBackup(economy===undefined?{format:FORMAT,version:VERSION,campaign:progress,cinematics:seen}:{format:FORMAT,version:2,campaign:progress,cinematics:seen,economy});
  }
  function parse(jsonText){
   if(typeof jsonText!=='string')throw new Error('Backup contents must be text');
   let value;
   try{value=JSON.parse(jsonText)}catch(_){throw new Error('Backup is not valid JSON')}
   const backup=normalizeBackup(value);
-  return {progress:backup.campaign,seen:backup.cinematics};
+  return {progress:backup.campaign,seen:backup.cinematics,economy:backup.economy||null,version:backup.version};
  }
  window.LatchlingsProgressBackup={create,parse};
 })();

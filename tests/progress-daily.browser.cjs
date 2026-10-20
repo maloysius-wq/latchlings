@@ -32,6 +32,7 @@ const server=http.createServer((req,res)=>{
   });
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+  await page.evaluate(()=>{window.__nativeEconomyStorageSet=Storage.prototype.setItem;});
 
   const daily=await page.evaluate(async()=>{
    const date=new Date(),fresh=dailyRouteInfo(date,{unlocked:11,stars:{}}),justUnlockedAnchors=dailyRouteInfo(date,{unlocked:101,stars:{'100':1}}),advancedProgress={unlocked:351,stars:{'350':1}},advanced=dailyRouteInfo(date,advancedProgress);
@@ -99,7 +100,7 @@ const server=http.createServer((req,res)=>{
    return{backupVersion:backup.version,backupKeys:Object.keys(backup).sort(),parsed,before,after:{progress:JSON.parse(JSON.stringify(progress)),stored:JSON.parse(localStorage.getItem('latchlings_campaign400_progress_v1')),seen:localStorage.getItem('latchlings_cinematics_seen_v1'),cards:localStorage.getItem('latchlings_story_cards_seen_v1'),earned:STORY.completedChapters(progress)},filmReplayed,allCaptured:positions.every(p=>p===null),earnedLabel:document.querySelector('.win-stars')?.getAttribute('aria-label'),rewardCards:document.querySelectorAll('.chapter-reward-card').length};
   });
   assert.equal(preserved.backupVersion,1);assert.deepStrictEqual(preserved.backupKeys,['campaign','cinematics','format','version']);
-  assert.deepStrictEqual(preserved.parsed,{progress:{unlocked:400,stars:{51:3,400:3}},seen:['across-drift','homeward','old-maps','opening']},'sparse old400save round-trips without migration');
+  assert.deepStrictEqual(preserved.parsed,{progress:{unlocked:400,stars:{51:3,400:3}},seen:['across-drift','homeward','old-maps','opening'],version:1,economy:null},'sparse old400save round-trips without migration');
   assert(preserved.allCaptured);assert.equal(Number.parseInt(preserved.earnedLabel,10),1,'a nonoptimal completed replay still earns its current one-star grade');
   assert.deepStrictEqual(preserved.after.progress,preserved.before.progress,'replaying replacement51 cannot lower old stars or unlocks');
   assert.deepStrictEqual(preserved.after.stored,preserved.before.progress,'persisted old achievements remain intact');
@@ -112,7 +113,7 @@ const server=http.createServer((req,res)=>{
    const backup=LatchlingsProgressBackup.create({unlocked:12,stars:{'1':3,'2':1,'12':2}},['opening','old-maps']);
    return LatchlingsProgressBackup.parse(JSON.stringify(backup));
   });
-  assert.deepStrictEqual(roundTrip,{progress:{unlocked:12,stars:{'1':3,'2':1,'12':2}},seen:['old-maps','opening']},'backup must round-trip unlocked level, sparse stars, and known cinematics');
+  assert.deepStrictEqual(roundTrip,{progress:{unlocked:12,stars:{'1':3,'2':1,'12':2}},seen:['old-maps','opening'],version:1,economy:null},'backup must round-trip unlocked level, sparse stars, and known cinematics');
 
   const invalid=await page.evaluate(()=>{
    const valid={format:'latchlings-progress',version:1,campaign:{unlocked:12,stars:{'1':2}},cinematics:['opening']};
@@ -142,7 +143,10 @@ const server=http.createServer((req,res)=>{
   await page.locator('#exportProgressBtn').click();
   const download=await downloadPromise;
   const exportedJson=fs.readFileSync(await download.path(),'utf8'),exported=JSON.parse(exportedJson);
-  assert.deepStrictEqual(exported,source,'Settings export must create the documented JSON backup');
+  assert.deepStrictEqual({format:exported.format,version:1,campaign:exported.campaign,cinematics:exported.cinematics},source,'Settings export preserves all legacy journey fields');
+  assert.equal(exported.version,2,'Settings exports the economy-aware format');
+  assert.deepStrictEqual(Object.keys(exported).sort(),['campaign','cinematics','economy','format','version']);
+  assert.equal(exported.economy.version,1);assert.equal(exported.economy.importJournal,null);
 
   await page.evaluate(()=>{
    window.__nativeFileText=File.prototype.text;
@@ -157,6 +161,7 @@ const server=http.createServer((req,res)=>{
   const beforeConfirm=await page.evaluate(()=>[localStorage.getItem('latchlings_campaign400_progress_v1'),localStorage.getItem('latchlings_cinematics_seen_v1')]);
   assert.deepStrictEqual(beforeConfirm,[JSON.stringify({unlocked:12,stars:{'1':2,'2':1}}),JSON.stringify({opening:1,'old-maps':1})],'valid import must not write until confirmed');
   await page.locator('#confirmProgressImport').click();
+  await page.waitForFunction(()=>!document.getElementById('overlay').classList.contains('show'));
   const imported=await page.evaluate(()=>({progress,stored:localStorage.getItem('latchlings_campaign400_progress_v1'),seen:localStorage.getItem('latchlings_cinematics_seen_v1')}));
   assert.deepStrictEqual(imported.progress,source.campaign,'confirmation must replace in-memory campaign progress');
   assert.deepStrictEqual(JSON.parse(imported.stored),source.campaign,'confirmation must save campaign progress');
@@ -183,6 +188,7 @@ const server=http.createServer((req,res)=>{
    Object.defineProperty(Storage.prototype,'setItem',{configurable:true,writable:true,value:function(key,value){if(key==='latchlings_cinematics_seen_v1'&&failOnce){failOnce=false;throw new DOMException('Quota exceeded','QuotaExceededError')}return original.call(this,key,value)}});
   });
   await page.locator('#confirmProgressImport').click();
+  await page.waitForFunction(()=>!!LatchlingsEconomy.snapshot.importJournal&&!document.getElementById('confirmProgressImport').disabled&&!document.getElementById('saveStatusBanner').hidden);
   const atomicAfter=await page.evaluate(()=>({campaign:localStorage.getItem('latchlings_campaign400_progress_v1'),seen:localStorage.getItem('latchlings_cinematics_seen_v1'),progress:{unlocked:progress.unlocked,stars:{...progress.stars}},warning:document.getElementById('saveStatusBanner').innerText}));
   assert.deepStrictEqual(atomicAfter.campaign,atomicBefore.campaign,'failed two-key import must restore the prior campaign value');
   assert.deepStrictEqual(atomicAfter.seen,atomicBefore.seen,'failed two-key import must restore the prior cinematic value');
@@ -190,6 +196,8 @@ const server=http.createServer((req,res)=>{
   assert(/could not be saved/i.test(atomicAfter.warning),'failed import must report its save failure');
   await page.locator('#cancelProgressImport').click();
   await page.locator('#saveStatusDismiss').click();
+  await page.evaluate(async()=>{await LatchlingsEconomy.recoverImport();});
+  const atomicBeforeRetry=await page.evaluate(()=>({progress:{unlocked:progress.unlocked,stars:{...progress.stars}}}));
 
   await page.evaluate(()=>settingsModal());
   await page.locator('#progressImportInput').setInputFiles({name:'replacement.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...source,campaign:{unlocked:20,stars:{'1':3,'2':2,'20':1}}}))});
@@ -199,12 +207,14 @@ const server=http.createServer((req,res)=>{
    Object.defineProperty(Storage.prototype,'setItem',{configurable:true,writable:true,value:function(key,value){if(key==='latchlings_campaign400_progress_v1')throw new DOMException('Quota exceeded','QuotaExceededError');return original.call(this,key,value)}});
   });
   await page.locator('#confirmProgressImport').click();
+  await page.waitForFunction(()=>!!LatchlingsEconomy.snapshot.importJournal&&!document.getElementById('confirmProgressImport').disabled&&!document.getElementById('saveStatusBanner').hidden);
   const inconsistent=await page.evaluate(()=>({progress:{unlocked:progress.unlocked,stars:{...progress.stars}},text:document.getElementById('saveStatusBanner').innerText}));
-  assert.deepStrictEqual(inconsistent.progress,atomicBefore.progress,'storage rollback failure must leave the in-memory session untouched');
+  assert.deepStrictEqual(inconsistent.progress,atomicBeforeRetry.progress,'storage rollback failure must leave the in-memory session untouched');
   assert(/local storage may be inconsistent/i.test(inconsistent.text),'failed rollback must explicitly warn that local storage may be inconsistent');
   assert(await page.locator('#saveStatusExport').isVisible(),'inconsistent-storage warning must offer an export of the active session');
   await page.locator('#cancelProgressImport').click();
   await page.locator('#saveStatusDismiss').click();
+  await page.evaluate(async()=>{Storage.prototype.setItem=window.__nativeEconomyStorageSet;await LatchlingsEconomy.recoverImport();});
 
   await page.evaluate(async()=>{
    const original=Storage.prototype.setItem;

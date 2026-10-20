@@ -42,6 +42,22 @@
   }
   return true;
  }
+ function seenFilms(){return Object.keys(root.LatchlingsCinematics?.CINEMATICS||{}).filter(id=>root.LatchlingsCinematics.hasSeen(id));}
+ async function recoverJournal(){
+  const current=await store.read(),j=current.importJournal;if(!j){startupError=null;publish(current);return true;}
+  const target=root.LatchlingsProgressBackup.parse(JSON.stringify(root.LatchlingsProgressBackup.create(j.target.progress,j.target.seen,j.target.economy)));
+  root.LatchlingsProgressBackup.create(j.originals.progress,j.originals.seenList,j.originals.economy);
+  try{
+   localStorage.setItem(PROGRESS_KEY,JSON.stringify(target.progress));
+   localStorage.setItem(CINEMATIC_SEEN_STORAGE_KEY,JSON.stringify(Object.fromEntries(target.seen.map(id=>[id,1]))));
+   const installed=await store.finishImport(j.id);publish(installed);progress=target.progress;preview=null;startupError=null;updateHome(true);hideSaveStatus();return true;
+  }catch(error){
+   let inconsistent=false;for(const [key,value] of [[PROGRESS_KEY,j.originals.campaign],[CINEMATIC_SEEN_STORAGE_KEY,j.originals.seen]])try{restoreStorageValue(key,value);}catch{inconsistent=true;}
+   startupError=Object.assign(new Error('Import recovery is pending'),{code:'IMPORT_PENDING',cause:error});
+   showSaveStatus(`Import could not be saved completely. ${inconsistent?'Local storage may be inconsistent. ':''}Recovery is pending; retry it or reload. Export keeps the coherent original journey and wallet.`);
+   publish(await store.read());return false;
+  }
+ }
  function confirm({title,copy:copyText,confirmText='Continue',disabled=false,generation=moveRequestSerial}){
   return new Promise(resolve=>{
    modal(`<h2>${title}</h2><p>${copyText}</p><div class="modal-actions"><button class="primary-small" id="economyConfirm" ${disabled?'disabled':''}>${confirmText}</button><button class="secondary-small" id="economyCancel">Cancel</button></div>`);
@@ -54,7 +70,7 @@
  const api={
   get snapshot(){return wallet;},get attempt(){return preview;},get error(){return startupError;},get presentingReceipt(){return presentingReceipt;},confirm,storageError,report,
   ready:null,
-  async read(){await readyStore();const w=await store.read();if(w.importJournal)return publish(w);return publish((await store.transact({type:'SETTLE'},context())).state);},
+  async read(){await api.ready;if(!store||startupError&&!wallet?.importJournal)throw startupError||Object.assign(new Error('Wallet unavailable'),{code:'STORAGE_UNAVAILABLE'});await lifecycle;const w=await store.read();if(w.importJournal)return publish(w);return publish((await store.transact({type:'SETTLE'},context())).state);},
   effectiveLimit(lev){return lev.moveLimit+(preview?.level===lev.id?preview.extraMoves:0);},
   invalidate(){preparing?.abort();preparing=null;if(ticket){const stale=ticket;ticket=null;lifecycle=lifecycle.then(()=>store.transact({type:'CANCEL_MOVE',attemptId:stale.attemptId,requestId:stale.token},context({level:stale.level}))).then(out=>{publish(out.state);}).catch(error=>{if(error.code!=='STALE')storageError(error);});}},
   enterLevel(L,mode,{fresh=false}={}){
@@ -88,6 +104,26 @@
   async cancelMove(move){if(!move)return;await readyStore();try{const out=await store.transact({type:'CANCEL_MOVE',attemptId:move.attemptId,requestId:move.token},context({level:move.level}));publish(out.state);if(preview?.id===move.attemptId)preview=clone(out.state.attempt);}catch(error){if(error.code!=='STALE')throw error;}if(ticket===move)ticket=null;},
   async completeAttempt(){await readyStore();const a=preview,generation=moveRequestSerial;if(!a)fail('STALE');const controller=new AbortController();preparing=controller;try{return await complete(a,{signal:controller.signal,isCurrent:()=>generation===moveRequestSerial&&preview?.id===a.id});}finally{if(preparing===controller)preparing=null;}},
   async deliverPendingReceipts(){await readyStore();return deliver();},
+  async exportBackup(){
+   await api.ready;let w=wallet;if(store)try{w=await store.read();}catch{}
+   if(w?.importJournal){const o=w.importJournal.originals;return root.LatchlingsProgressBackup.create(o.progress,o.seenList,o.economy);}
+   if(!w){showSaveStatus('The journey can be exported, but wallet storage is unavailable on this device. This backup does not contain energy or coins.');return root.LatchlingsProgressBackup.create(progress,seenFilms());}
+   return root.LatchlingsProgressBackup.create(progress,seenFilms(),w);
+  },
+  async restoreBackup(parsed){
+   try{
+    if(![undefined,1,2].includes(parsed.version)||parsed.version===2&&!parsed.economy)fail('INVALID_IMPORT');
+    const normalized=root.LatchlingsProgressBackup.parse(JSON.stringify(root.LatchlingsProgressBackup.create(parsed.progress,parsed.seen,parsed.economy||undefined)));
+    await readyStore();moveRequestSerial++;api.invalidate();await lifecycle;const old=await store.read();if(old.importJournal)fail('IMPORT_PENDING');
+    const targetWallet=normalized.economy||clone(old);
+    if(!normalized.economy){for(const [key,stars] of Object.entries(normalized.progress.stars))targetWallet.accounted.campaign[key]=Math.max(targetWallet.accounted.campaign[key]||0,stars);for(const r of Object.values(targetWallet.receipts))r.delivered=true;if(targetWallet.attempt?.mode==='campaign'&&targetWallet.attempt.level>normalized.progress.unlocked)targetWallet.attempt=null;}
+    const originals={campaign:localStorage.getItem(PROGRESS_KEY),seen:localStorage.getItem(CINEMATIC_SEEN_STORAGE_KEY),progress:clone(progress),seenList:seenFilms(),expectedRevision:old.revision};
+    const journal=await store.prepareImport({progress:normalized.progress,seen:normalized.seen,economy:targetWallet},originals);publish(await store.read());
+    if(!journal||!await recoverJournal())return false;playMode='campaign';dailySession=null;animating=false;screen('home');return true;
+   }catch(error){report(error);return false;}
+  },
+  async recoverImport(){await api.ready;if(!store)throw startupError;if(await recoverJournal()){await deliver();return true;}return false;},
+  async resetCampaign(){const w=await api.read();w.attempt=null;for(const r of Object.values(w.receipts))r.delivered=true;return api.restoreBackup({version:2,progress:{unlocked:1,stars:{}},seen:[],economy:w});},
   async hintOffer(){
    const w=await api.read(),a=preview;if(!a||JSON.stringify([a.positions,a.doorMask,a.movesUsed])!==JSON.stringify([positions,doorMask,movesUsed]))fail('STALE');
    if(w.attempt?.id===a.id&&w.attempt.revision!==a.revision)fail('STALE');
@@ -129,7 +165,7 @@
    }catch(error){if(move)await api.cancelMove(move).catch(storageError);if(generation!==moveRequestSerial)return;animating=false;renderGame(true);report(error);}
   },
  };
- api.ready=(async()=>{try{store=await root.LatchlingsEconomyStore.open({indexedDB:root.indexedDB});let daily={};try{daily=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');}catch{}publish(await store.initialize({now:Date.now(),campaign:progress,daily}));if(wallet.attempt?.energyPaid&&wallet.attempt.status!=='completed'&&!wallet.attempt.pendingMove&&wallet.attempt.positions.every(p=>!p))await complete(wallet.attempt);await deliver();if(store.resumeError)showSaveStatus('Your wallet is safe, but the saved board no longer matches this game. Please start a new attempt.');}catch(error){startupError=error;storageError(error);}})();
+ api.ready=(async()=>{try{store=await root.LatchlingsEconomyStore.open({indexedDB:root.indexedDB});let daily={};try{daily=JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY)||'{}');}catch{}publish(await store.initialize({now:Date.now(),campaign:progress,daily}));if(wallet.importJournal&&!await recoverJournal())return;if(wallet.attempt?.energyPaid&&wallet.attempt.status!=='completed'&&!wallet.attempt.pendingMove&&wallet.attempt.positions.every(p=>!p))await complete(wallet.attempt);await deliver();if(store.resumeError)showSaveStatus('Your wallet is safe, but the saved board no longer matches this game. Please start a new attempt.');}catch(error){startupError=error;storageError(error);}})();
  root.LatchlingsEconomy=api;
  // Install after all chapter presenters so every milestone shares the same receipt gate.
  const presentWin=winLevel;
