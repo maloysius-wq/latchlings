@@ -6,6 +6,10 @@ For repository work, GitHub is the canonical path. If GitHub repository function
 
 ## Current state — 2026-10-20
 
+### Phone-sized browser viewport — IN PROGRESS
+
+Bounded presentation change on the existing development branch, followed by the authorized merge/deploy/live verification. Large browser windows use a centered same-origin phone preview, up to390×844 and shortened to fit; native portrait phones and short landscape layouts remain full viewport. A real iframe browsing context keeps existing mobile media queries, fixed overlays and measured cinematics coherent without changing the game, controls or save origin. New viewport regression observed RED before implementation and passed three desktop/four native layouts with actual gameplay, wallet persistence and resize. Full regression and publication follow; preserve unrelated artifacts.
+
 ### Release policy — current player authorization
 
 The player explicitly authorized merging this work into `main` and publishing it on October20. For future approved Latchlings implementation work, completion includes merge, deployment to the existing GitHub Pages test site, and live verification unless the player explicitly requests branch-only work. Older "do not merge/deploy" statements in plans and historical records describe superseded review phases, not the current authorization. Preserve saves, run relevant verification, and report the actual published commit; never equate a branch push with a live release.
