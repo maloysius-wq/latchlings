@@ -1,6 +1,7 @@
 'use strict';
 (function(root){
  const CAP=20,INTERVAL=900000,HINT_PRICE=15,MOVES_PRICE=40;
+ const DAILY_TIERS=Object.freeze(['Edges','Helpers','Anchors','Suit Gates','Color Gates','Rails & Turns','Switches','Master Circuit']);
  const copy=value=>JSON.parse(JSON.stringify(value));
  const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
  function fail(code,message=code){const error=new Error(message);error.code=code;throw error}
@@ -14,7 +15,7 @@
   if(!record(w)||w.version!==1||!integer(w.revision)||!integer(w.energy,0,CAP)||!integer(w.coins)||!integer(w.anchorMs)||!integer(w.lastObservedMs)||w.anchorMs>w.lastObservedMs||!record(w.accounted)||!record(w.accounted.campaign)||!record(w.accounted.daily)||!record(w.receipts)||!(w.attempt===null||record(w.attempt))||!(w.importJournal===null||record(w.importJournal)))fail('INVALID_WALLET');
   for(const [key,n] of Object.entries(w.accounted.campaign))if(!/^(?:[1-9]\d{0,2})$/.test(key)||!integer(Number(key),1,400)||!integer(n,1,3))fail('INVALID_WALLET');
   for(const [key,n] of Object.entries(w.accounted.daily))if(!day(key)||!integer(n,1,3))fail('INVALID_WALLET');
-  for(const [key,r] of Object.entries(w.receipts))if(!id(key)||!record(r)||r.id!==key||r.attemptId!==key||!['campaign','daily'].includes(r.mode)||!integer(r.level,1,400)||!integer(r.stars,1,3)||!integer(r.moves)||!integer(r.coins,0,30)||typeof r.delivered!=='boolean'||(r.mode==='daily'&&(!record(r.daily)||!day(r.daily.key)||r.daily.level!==r.level)))fail('INVALID_WALLET');
+  for(const [key,r] of Object.entries(w.receipts))if(!id(key)||!record(r)||r.id!==key||r.attemptId!==key||!['campaign','daily'].includes(r.mode)||!integer(r.level,1,400)||!integer(r.stars,1,3)||!integer(r.moves)||!integer(r.coins,0,30)||typeof r.delivered!=='boolean'||(r.mode==='daily'&&(!record(r.daily)||!day(r.daily.key)||r.daily.level!==r.level||!DAILY_TIERS.includes(r.daily.tier))))fail('INVALID_WALLET');
   return copy(w);
  }
  function createState({now,campaign={stars:{}},daily={}}){
@@ -39,7 +40,7 @@
   if(!record(a)||!level||!id(a.id)||!integer(a.revision)||!['campaign','daily'].includes(a.mode)||a.level!==level.id||a.signature!==signature(level)||!Array.isArray(a.positions)||a.positions.length!==level.pieces.length||!integer(a.selected,0,level.pieces.length-1)||!integer(a.doorMask,0,0x7fffffff)||!integer(a.movesUsed)||!integer(a.extraMoves)||a.extraMoves%5!==0||typeof a.energyPaid!=='boolean'||!['preview','active','out-of-moves','completed'].includes(a.status)||!record(a.operations)||!(a.pendingMove===null||record(a.pendingMove))||!(a.paidHint===null||record(a.paidHint)))bad();
   const used=new Set();for(const p of a.positions){if(p===null)continue;if(!Array.isArray(p)||p.length!==2||!p.every(n=>integer(n,0,level.size-1))||used.has(p.join(':'))||(level.rocks||[]).some(r=>r[0]===p[0]&&r[1]===p[1]))bad();used.add(p.join(':'));}
   let allowedMask=0;for(const field of [...(level.switches||[]),...(level.doors||[])])allowedMask|=1<<field[2];if(a.doorMask&~allowedMask)bad();
-  if(a.mode==='daily'){if(!record(a.daily)||!day(a.daily.key)||a.daily.level!==level.id||typeof a.daily.tier!=='string')bad();}else if(a.daily!==null)bad();
+  if(a.mode==='daily'){if(!record(a.daily)||!day(a.daily.key)||a.daily.level!==level.id||!DAILY_TIERS.includes(a.daily.tier))bad();}else if(a.daily!==null)bad();
   if(!a.energyPaid&&(a.movesUsed!==0||a.extraMoves!==0||a.status!=='preview'||a.pendingMove!==null))bad();
   if(a.status==='completed'&&a.positions.some(Boolean))bad();
   if(!integer(level.moveLimit+a.extraMoves))bad();
@@ -83,6 +84,8 @@
    a.positions[p.pi]=result.capture?null:[result.r,result.c];a.doorMask=result.mask;a.movesUsed++;if(!integer(a.movesUsed))fail('OVERFLOW');a.selected=integer(c.selected,0,level.pieces.length-1)?c.selected:p.pi;a.pendingMove=null;a.paidHint=null;a.status=a.movesUsed>=level.moveLimit+a.extraMoves&&a.positions.some(Boolean)?'out-of-moves':'active';remember();bump();value=a;
   }else if(type==='CANCEL_MOVE'){
    assertActive();if(a.pendingMove?.token===c.requestId){a.pendingMove=null;bump();}value=a;
+  }else if(type==='SELECT'){
+   assertActive();expected();if(a.pendingMove||c.boardKey!==boardKey(a)||!integer(c.selected,0,level.pieces.length-1)||!a.positions[c.selected])fail('STALE');a.selected=c.selected;bump();value=a;
   }else if(type==='BUY_MOVES'){
    assertActive();if(prior()){value=a;return {state:validateWallet(wallet),value:copy(value)};}expected();if(a.status!=='out-of-moves'||a.pendingMove||a.movesUsed<level.moveLimit+a.extraMoves||!a.energyPaid||!a.positions.some(Boolean))fail('NOT_EXHAUSTED');if(w.coins<MOVES_PRICE)fail('NO_COINS');if(!integer(a.extraMoves+5)||!integer(level.moveLimit+a.extraMoves+5))fail('OVERFLOW');w.coins-=MOVES_PRICE;a.extraMoves+=5;a.status='active';if(integer(c.selected,0,level.pieces.length-1))a.selected=c.selected;remember();bump();value=a;
   }else if(type==='BUY_HINT'){
@@ -96,6 +99,6 @@
   }else fail('INVALID_COMMAND');
   if(w.attempt)validateAttempt(w.attempt,level);return finish();
  }
- const api=Object.freeze({CAP,INTERVAL,HINT_PRICE,MOVES_PRICE,createState,validateWallet,validateAttempt,settleEnergy,reduce,signature,boardKey,createAttempt});
+ const api=Object.freeze({DAILY_TIERS,CAP,INTERVAL,HINT_PRICE,MOVES_PRICE,createState,validateWallet,validateAttempt,settleEnergy,reduce,signature,boardKey,createAttempt});
  if(typeof module==='object'&&module.exports)module.exports=api;else root.LatchlingsEconomyCore=api;
 })(typeof window==='object'?window:globalThis);

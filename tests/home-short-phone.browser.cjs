@@ -28,7 +28,7 @@ const server=http.createServer((request,response)=>{
    const layout=await page.evaluate(()=>{
     const frame=document.querySelector('#homeTitleFrame'),frameBox=frame.getBoundingClientRect(),doc=frame.contentDocument,scaleX=frameBox.width/frame.clientWidth,scaleY=frameBox.height/frame.clientHeight;
     const project=element=>{const rect=element.getBoundingClientRect();return{left:frameBox.left+rect.left*scaleX,right:frameBox.left+rect.right*scaleX,top:frameBox.top+rect.top*scaleY,bottom:frameBox.top+rect.bottom*scaleY,width:rect.width*scaleX,height:rect.height*scaleY}};
-    return{frame:{width:frameBox.width,height:frameBox.height,top:frameBox.top,bottom:frameBox.bottom},island:project(doc.querySelector('#c2 .island-model')),brand:project(doc.querySelector('#c2 .toy-brand')),tools:project(doc.querySelector('#c2 .home-tools')),play:project(doc.querySelector('#c2 .play')),secondary:[...doc.querySelectorAll('#c2 .secondary button')].map(project),horizontal:document.documentElement.scrollWidth>innerWidth};
+    return{frame:{width:frameBox.width,height:frameBox.height,top:frameBox.top,bottom:frameBox.bottom},island:project(doc.querySelector('#c2 .island-model')),brand:project(doc.querySelector('#c2 .toy-brand')),tools:project(doc.querySelector('#c2 .home-tools')),play:project(doc.querySelector('#c2 .play')),secondary:[...doc.querySelectorAll('#c2 .secondary button')].map(project),secondaryCopy:[...doc.querySelectorAll('#c2 .secondary button')].map(button=>({button:project(button),copy:[...button.querySelectorAll('strong,span')].map(project)})),horizontal:document.documentElement.scrollWidth>innerWidth};
    });
    assert(layout.play.height>=44&&layout.play.top>=0&&layout.play.bottom<=height,`${width}x${height}: Home Play action must remain fully visible (${JSON.stringify(layout)})`);
    assert.equal(layout.secondary.length,2,`${width}x${height}: both secondary Home actions must render`);
@@ -37,6 +37,7 @@ const server=http.createServer((request,response)=>{
    if(width>height)assert(layout.island.right+8<=layout.play.left,`${width}x${height}: Home actions must not cover the island scene (${JSON.stringify(layout)})`);
    else assert(layout.island.bottom+4<=layout.play.top,`${width}x${height}: Home actions must not cover the island scene (${JSON.stringify(layout)})`);
    assert(!layout.horizontal,`${width}x${height}: Home must not scroll horizontally`);
+   for(const group of layout.secondaryCopy)for(const text of group.copy)assert(text.left>=group.button.left&&text.right<=group.button.right&&text.top>=group.button.top&&text.bottom<=group.button.bottom,`${width}x${height}: Home action copy must not be clipped (${JSON.stringify(group)})`);
    await context.close();
   }
   console.log('PASS Home scene separation and visible Play, Daily Puzzle, and Level Select actions at 320x568, 360x568, and 844x390');

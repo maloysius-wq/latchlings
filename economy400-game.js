@@ -85,6 +85,10 @@
   },
   async resumeAttempt(){const w=await api.read(),a=w.attempt;if(!a?.energyPaid||a.status==='completed')return false;if(a.mode==='daily')dailySession=clone(a.daily);startLevel(a.level,a.mode);return true;},
   async retireAttempt(){await readyStore();const a=preview;if(!a)return;const w=await store.read();if(w.attempt?.id!==a.id)return;const out=await store.transact({type:'RETIRE',attemptId:a.id,expectedRevision:w.attempt.revision},context());publish(out.state);},
+  saveSelection(){
+   if(!preview||animating)return;const id=preview.id,key=C.boardKey(preview),choice=selected,level=LEVELS[preview.level-1];preview.selected=choice;
+   lifecycle=lifecycle.then(async()=>{await api.ready;if(!store||startupError)return;const w=await store.read(),a=w.attempt;if(a?.id!==id||a.pendingMove||C.boardKey(a)!==key||a.selected===choice||a.status==='completed')return;const out=await store.transact({type:'SELECT',attemptId:id,expectedRevision:a.revision,boardKey:key,selected:choice},context({level}));publish(out.state);if(preview?.id===id&&C.boardKey(preview)===key){const live=preview.selected;preview=clone(out.state.attempt);preview.selected=live;}}).catch(problem=>{if(problem.code!=='STALE')storageError(problem);});return lifecycle;
+  },
   async prepareMove({pi,dir,generation}){
    await readyStore();const view=preview;if(!view||generation!==moveRequestSerial)fail('ABORTED');
    if(JSON.stringify([view.positions,view.doorMask,view.movesUsed])!==JSON.stringify([positions,doorMask,movesUsed]))fail('STALE');

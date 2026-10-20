@@ -300,6 +300,17 @@ html[data-motion="reduced"] .resident,html[data-motion="reduced"] .story-keepsak
   body:not(.cinematic-mode) #c2 .secondary span{font-size:9px;line-height:1.1;margin-top:4px}
   body:not(.cinematic-mode) #c2 .secondary svg{width:28px;height:28px;padding:4px}
 }
+/* Parent wallet reserves 44px; reframe the whole Home model, not its geometry. */
+@media(max-height:556px) and (orientation:portrait){
+ body:not(.cinematic-mode) #c2{--little-home-island-scale:.64}
+ body:not(.cinematic-mode) #c2 .toy-brand{top:60px}
+ body:not(.cinematic-mode) #c2 .toy-logo span{font-size:48px;-webkit-text-stroke:6px var(--navy)}
+ body:not(.cinematic-mode) #c2 .toy-tagline{margin-top:8px;padding:7px 14px;font-size:13px}
+ body:not(.cinematic-mode) #c2 .scene{top:68px}
+ body:not(.cinematic-mode) #c2 .secondary button{padding-top:6px;padding-bottom:6px}
+ body:not(.cinematic-mode) #c2 .secondary strong{font-size:13px;line-height:1.15;white-space:nowrap}
+ body:not(.cinematic-mode) #c2 .secondary span{line-height:1.15;margin-top:3px}
+}
 </style>
 </head>
 <body>

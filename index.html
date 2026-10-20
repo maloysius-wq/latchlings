@@ -23,11 +23,13 @@
 <link rel="stylesheet" href="pass3-chapter6-copperline.css?v=20260913-ch6pass3-1">
 <link rel="stylesheet" href="pass3-chapter7-stormswitch.css?v=20260913-ch7pass3-1">
 <link rel="stylesheet" href="pass3-chapter8-aurora.css?v=20260913-ch8pass3-1">
+<link rel="stylesheet" href="style400-economy.css">
 </head>
 <body data-screen="home">
 <div id="app">
   <div class="chapter-material-backdrop" id="chapterMaterialBackdrop" aria-hidden="true"></div>
   <main id="home" class="screen active production-home" aria-label="Latchlings home">
+    <div class="economy-wallet-row"><button class="economy-wallet-button" id="homeWalletBtn" aria-label="Wallet loading"><span class="economy-balance">Energy <b data-wallet-energy>—</b></span><span class="economy-balance">Coins <b data-wallet-coins>—</b></span></button></div>
     <div class="production-home-wrap">
       <iframe id="homeTitleFrame" class="production-home-frame" src="title-island-concepts/?c=2&amp;embed=1&amp;v=20260914-character-world1" title="Latchlings Little Home" scrolling="no"></iframe>
     </div>
@@ -44,7 +46,7 @@
       <div id="chapterNav" class="atlas-chapter-nav" aria-label="Chapter navigation"></div>
       <div id="rangeNav" class="atlas-waypoint-nav" aria-label="Chapter waypoints"></div>
       <div id="levelGrid" class="atlas-map" aria-label="Current Skyway route"></div>
-      <div class="level-footer atlas-footer"><button class="atlas-continue" id="continueBtn"><span>Continue journey</span><b>Level 1</b></button></div>
+      <div class="level-footer atlas-footer"><button class="atlas-continue" id="continueBtn"><span>Continue journey</span><b>Level 1</b></button><button class="economy-wallet-button" id="atlasWalletBtn" aria-label="Wallet loading"><span class="economy-balance">Energy <b data-wallet-energy>—</b></span><span class="economy-balance">Coins <b data-wallet-coins>—</b></span></button></div>
     </section>
   </main>
 
@@ -165,6 +167,7 @@
 <script src="gameplay-story-rail400.js?v=20260914-character-world1"></script>
 <script src="cinematic-geometry400.js?v=20260911-bubblestable1"></script>
 <script src="economy400-game.js"></script>
+<script src="economy400-ui.js"></script>
 </body>
 </html>
 
