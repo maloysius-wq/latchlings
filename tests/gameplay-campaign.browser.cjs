@@ -3,6 +3,7 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const {chromium}=require('playwright');
+const {syncAttemptFixture}=require('./economy-fixture.cjs');
 
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml'};
@@ -23,6 +24,7 @@ const server=http.createServer((req,res)=>{
   await context.addInitScript(()=>{localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(Object.fromEntries(Array.from({length:400},(_,i)=>[i+1,1]))))});
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+  await page.evaluate(()=>LatchlingsEconomy.ready);
 
   const audit=await page.evaluate(()=>{
    const failures=[];
@@ -88,7 +90,9 @@ const server=http.createServer((req,res)=>{
     closeModal();LatchlingsPrefs.set('motion','system');startLevel(51);
     const [pi,dir]=LEVELS[50].solution[0];
     document.querySelector('.latchling[data-pi="'+pi+'"]').click();
-    const oldMove=moveSelected(dir),inMotion=animating&&movesUsed===1;
+    const oldMove=moveSelected(dir);
+    await new Promise(resolve=>{const check=()=>{if(!animating||document.querySelector('.latchling[data-pi="'+pi+'"]')?.getAnimations().some(a=>a.playState==='running'))resolve();else requestAnimationFrame(check)};check()});
+    const inMotion=animating&&movesUsed===0&&document.querySelector('.latchling[data-pi="'+pi+'"]')?.getAnimations().some(a=>a.playState==='running');
     if(target===51)document.getElementById('resetLevelBtn').click();else startLevel(target);
     const expected=LEVELS[target-1].pieces.map(p=>p.pos.slice());
     await oldMove;
@@ -98,11 +102,17 @@ const server=http.createServer((req,res)=>{
    assert.deepStrictEqual(reset.positions,reset.expected,target+': a late animation cannot overwrite a reset or newly selected board');
    assert.equal(reset.level,target);assert.equal(reset.moves,0);assert.equal(reset.mask,0);assert.equal(reset.animating,false);
   }
-  const dailyExit=await page.evaluate(async()=>{
-   closeModal();startLevel(1,'daily');const lev=LEVELS[0],before=JSON.stringify(progress);
+  await page.evaluate(()=>{
+   closeModal();startLevel(1,'daily');const lev=LEVELS[0];
    for(const [pi,dir] of lev.solution.slice(0,-1)){const m=simulate(pi,dir);if(!m)throw Error('invalid Daily fixture prefix');positions[pi]=m.capture?null:[m.r,m.c];doorMask=m.mask;movesUsed++;}
-   renderGame(true);const [pi,dir]=lev.solution.at(-1);selected=pi;
-   const oldMove=moveSelected(dir),inMotion=animating;
+   renderGame(true);const [pi]=lev.solution.at(-1);selected=pi;
+  });
+  await syncAttemptFixture(page);
+  const dailyExit=await page.evaluate(async()=>{
+   const lev=LEVELS[0],before=JSON.stringify(progress),[pi,dir]=lev.solution.at(-1);
+   const oldMove=moveSelected(dir);
+   await new Promise(resolve=>{const check=()=>{if(!animating||document.querySelector('.latchling[data-pi="'+pi+'"]')?.getAnimations().some(a=>a.playState==='running'))resolve();else requestAnimationFrame(check)};check()});
+   const inMotion=animating&&document.querySelector('.latchling[data-pi="'+pi+'"]')?.getAnimations().some(a=>a.playState==='running');
    leaveDailyForHome();await oldMove;
    return{inMotion,before,after:JSON.stringify(progress),mode:playMode,screen:document.body.dataset.screen,overlay:document.getElementById('overlay').classList.contains('show')};
   });

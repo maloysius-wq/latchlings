@@ -168,6 +168,7 @@ function initializeEndingHomecoming(){
 }
 function screen(id){
  const next=document.getElementById(id);if(!next)return;
+ if(id!=='game'&&document.body.dataset.screen==='game')window.LatchlingsEconomy?.invalidate();
  if(id!=='game'&&document.body.dataset.screen==='game'){moveRequestSerial++;animating=false;if(activeHintSearch){cancelHintSearch(activeHintSearch.id);closeModal()}clearHintFocus()}
  if(activeScreenTransition&&typeof activeScreenTransition.skipTransition==='function')activeScreenTransition.skipTransition();
  const current=document.querySelector('.screen.active');
@@ -330,13 +331,15 @@ const ch=CHAPTERS[chapterView-1],atlasBlurb=STORY?.chapterSummaryFor?{full:STORY
  map.querySelectorAll('.atlas-node:not(.locked)').forEach(b=>b.onclick=()=>startLevel(+b.dataset.level));
  const continueBtn=document.getElementById('continueBtn');if(continueBtn)continueBtn.innerHTML=`<span>${progress.stars[progress.unlocked]?'Return to latest stop':'Continue journey'}</span><b>Level ${progress.unlocked}</b>`;
 }
-function startLevel(L,mode='campaign'){
+async function continueJourney(){try{if(!await window.LatchlingsEconomy.resumeAttempt())startLevel(progress.unlocked);}catch(error){window.LatchlingsEconomy.report(error);}}
+function startLevel(L,mode='campaign',options={}){
  moveRequestSerial++;
  if(activeHintSearch){cancelHintSearch(activeHintSearch.id);closeModal()}clearHintFocus();
  playMode=mode==='daily'?'daily':'campaign';document.body.dataset.playMode=playMode;
  currentLevel=Math.max(1,Math.min(400,L));const lev=LEVELS[currentLevel-1];if(!lev){showError('Missing level '+currentLevel);return}clearMechanicInspector();
  if(playMode==='daily'&&!dailySession)dailySession={...dailyRouteInfo(),level:currentLevel};
  chapterView=Math.ceil(currentLevel/50);rangeView=Math.floor(((currentLevel-1)%50)/10);applyTheme(chapterView);positions=lev.pieces.map(p=>p.pos.slice());doorMask=0;movesUsed=0;selected=0;hintStep=0;animating=false;lastNestArrival=null;
+ window.LatchlingsEconomy?.enterLevel(currentLevel,playMode,options);
  if(playMode==='daily'&&window.LatchlingsStoryTheme?.close)window.LatchlingsStoryTheme.close(false);
  screen('game');renderGame(true);
  if(playMode==='daily')return;
@@ -345,7 +348,7 @@ function startLevel(L,mode='campaign'){
 function boardRangeForLevel(L){return Math.floor(((L-1)%50)/10)+1}
 function renderGame(full=false){
  const lev=LEVELS[currentLevel-1],chapter=Math.ceil(currentLevel/50),boardRange=boardRangeForLevel(currentLevel);applyTheme(chapter);const campaign=playMode==='campaign',storyMeta=campaign&&STORY?STORY.levelMeta(currentLevel):null;
- const board=document.getElementById('board'),game=document.getElementById('game'),visualSlice=visualSliceForLevel(currentLevel);board.dataset.level=String(currentLevel);if(visualSlice){board.dataset.visualSlice=visualSlice;if(game)game.dataset.visualSlice=visualSlice}else{delete board.dataset.visualSlice;if(game)delete game.dataset.visualSlice}document.getElementById('levelTitle').textContent=campaign?'Level '+currentLevel:'Daily Route';document.getElementById('movesLeft').textContent=Math.max(0,lev.moveLimit-movesUsed);
+ const board=document.getElementById('board'),game=document.getElementById('game'),visualSlice=visualSliceForLevel(currentLevel);board.dataset.level=String(currentLevel);if(visualSlice){board.dataset.visualSlice=visualSlice;if(game)game.dataset.visualSlice=visualSlice}else{delete board.dataset.visualSlice;if(game)delete game.dataset.visualSlice}document.getElementById('levelTitle').textContent=campaign?'Level '+currentLevel:'Daily Route';document.getElementById('movesLeft').textContent=Math.max(0,(window.LatchlingsEconomy?.effectiveLimit(lev)??lev.moveLimit)-movesUsed);
  const storyBtn=document.getElementById('storyCardBtn');if(storyBtn){storyBtn.hidden=!campaign;storyBtn.setAttribute('aria-hidden',campaign?'false':'true')}
  const note=document.getElementById('mechanicNote');note.className='mechanic-note mechanic-chip';note.dataset.feedback='tip';note.setAttribute('role','status');note.setAttribute('aria-live','polite');const isLevelOneHandoff=campaign&&currentLevel===1,levelOneHandoff=isLevelOneHandoff?'<span class="route-handoff-copy" data-route-handoff="level-one" aria-label="Bakery Perch to Little Home Porch. This grid is a route model, not an island map. Use edges and rocks for stops.">Bakery Perch → Little Home Porch · route model, not an island map. Use edges and rocks for stops.</span>':'';note.classList.toggle('has-route-handoff',isLevelOneHandoff);note.innerHTML=`<span class="mechanic-chip-label">Route tip</span><span class="mechanic-chip-copy">${isLevelOneHandoff?'':chapterNote(currentLevel)}${levelOneHandoff}</span><span class="mastery-guide" id="masteryGuide" aria-label="Star criteria">3★ ≤ ${lev.optimal} · 2★ ≤ ${lev.optimal+1} · 1★ finish</span>`;
  const props=document.getElementById('levelProps');if(campaign&&window.LatchlingsStoryTheme)window.LatchlingsStoryTheme.decorateLevel(currentLevel,storyMeta);else if(props){props.innerHTML='';props.hidden=true;props.setAttribute('aria-hidden','true')}
