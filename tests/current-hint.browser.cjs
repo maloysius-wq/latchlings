@@ -4,6 +4,8 @@ const fs=require('fs');
 const path=require('path');
 const os=require('os');
 const {chromium}=require('playwright');
+const {seedWallet,syncAttemptFixture,attemptFixtureScript}=require('./economy-fixture.cjs');
+async function requestHint(page){await page.locator('#hintBtn').click();for(let i=0;i<3;i++){await page.waitForFunction(()=>document.getElementById('overlay').classList.contains('show')&&(document.getElementById('economyConfirm')||document.getElementById('hintSearching')||document.getElementById('hintFound')||document.getElementById('hintImpossible')||document.getElementById('hintInconclusive')));if(!await page.locator('#economyConfirm').count())break;await page.locator('#economyConfirm').click();}}
 
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml'};
@@ -21,9 +23,11 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}});
+  await context.addInitScript({content:attemptFixtureScript});
   await context.addInitScript(()=>{localStorage.setItem('latchlings_cinematics_seen_v1',JSON.stringify({opening:1,'across-drift':1,'old-maps':1,homeward:1}));localStorage.setItem('latchlings_story_cards_seen_v1',JSON.stringify(Object.fromEntries(Array.from({length:400},(_,i)=>[i+1,1]))))});
   const page=await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'networkidle'});
+  await page.evaluate(()=>LatchlingsEconomy.ready);await seedWallet(page,{energy:20,coins:1000});
 
   const search=await page.evaluate(async()=>{
    const lev=LEVELS[3],initial=lev.pieces.map(piece=>piece.pos.slice()),initialJson=JSON.stringify(initial);
@@ -71,7 +75,7 @@ const server=http.createServer((req,res)=>{
    const lev=LEVELS[3],[pi,dir]=lev.solution[0],move=simulate(pi,dir);
    positions[pi]=move.capture?null:[move.r,move.c];doorMask=move.mask;movesUsed=1;renderGame(true);
   });
-  await page.evaluate(()=>showHint());
+  await syncAttemptFixture(page);await requestHint(page);await page.locator('#hintFound').waitFor({state:'visible'});
   const modalText=await page.locator('#modal').innerText();
   assert(await page.locator('#hintFound').isVisible(),'current position with a valid continuation must show one useful hint');
   assert.equal(await page.locator('.hint-next-step').count(),1,'hint UI must reveal only the next step, not the full route');
@@ -82,7 +86,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{
    const lev=LEVELS[3];movesUsed=lev.moveLimit;renderGame(true);
   });
-  await page.evaluate(()=>showHint());
+  await syncAttemptFixture(page);await requestHint(page);await page.locator('#hintImpossible').waitFor({state:'visible'});
   assert(await page.locator('#hintImpossible').isVisible(),'exhausted current move budget must have a truthful no-route message');
   assert(await page.locator('#hintResetBoard').isVisible(),'impossible hint must offer Reset');
   assert(await page.locator('#hintKeepPlaying').isVisible(),'impossible hint must let the player keep playing');
@@ -98,7 +102,7 @@ const server=http.createServer((req,res)=>{
    window.__realFindNext=LatchlingsRouteHint.findNext;
    LatchlingsRouteHint.findNext=()=>new Promise(resolve=>window.__resolveHeldHint=resolve);
   });
-  await page.locator('#hintBtn').click();
+  await requestHint(page);
   await page.locator('#hintSearching').waitFor({state:'visible'});
   await page.locator('#cancelHintSearch').click();
   await page.waitForFunction(()=>!document.getElementById('overlay').classList.contains('show'));
@@ -108,7 +112,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{LatchlingsRouteHint.findNext=window.__realFindNext});
 
   await page.evaluate(()=>{LatchlingsRouteHint.findNext=async()=>({status:'inconclusive'})});
-  await page.locator('#hintBtn').click();
+  await requestHint(page);
   await page.locator('#hintInconclusive').waitFor({state:'visible'});
   assert(await page.locator('#hintInconclusiveReset').isVisible(),'inconclusive search must offer Reset');
   assert(await page.locator('#hintInconclusiveKeep').isVisible(),'inconclusive search must offer Keep Playing');
@@ -126,7 +130,9 @@ const server=http.createServer((req,res)=>{
    let routeCheck=lev.pieces.map(piece=>piece.pos.slice()),routeCheckMask=0;
    for(const [pi,dir] of lev.solution.slice(0,applied)){const result=simulateState(lev,routeCheck,routeCheckMask,pi,dir);if(!result)throw new Error(`Level 301 pure route prefix move ${applied+1} is invalid`);routeCheck[pi]=result.capture?null:[result.r,result.c];routeCheckMask=result.mask}
    renderGame(true);
-   const expected=lev.solution[applied],started=performance.now();await showHint();const elapsedMs=performance.now()-started;
+   await __syncEconomyAttemptFixture();
+   const expected=lev.solution[applied],started=performance.now(),pending=showHint();
+   await new Promise(resolve=>{const check=()=>{if(document.getElementById('economyConfirm'))resolve();else requestAnimationFrame(check)};check()});document.getElementById('economyConfirm').click();await pending;const elapsedMs=performance.now()-started;
    const status=document.getElementById('hintFound')?'found':document.getElementById('hintImpossible')?'impossible':document.getElementById('hintInconclusive')?'inconclusive':'missing';
    return {id:lev.id,doors:lev.doors.length,switches:lev.switches.length,applied,remaining:lev.moveLimit-movesUsed,doorMask,expectedPi:expected[0],expectedDir:expected[1],selected,positions,routeCheck,routeCheckMask,elapsedMs,status,text:document.getElementById('modal').innerText};
   });
@@ -171,7 +177,7 @@ const server=http.createServer((req,res)=>{
   }
   for(const action of ['reset','change']){
    await page.evaluate(()=>{closeModal();startLevel(51);LatchlingsStoryTheme.close(false);window.__realFindNext=LatchlingsRouteHint.findNext;LatchlingsRouteHint.findNext=()=>new Promise(resolve=>window.__resolveHeldHint=resolve)});
-   await page.locator('#hintBtn').click();await page.locator('#hintSearching').waitFor({state:'visible'});
+   await requestHint(page);await page.locator('#hintSearching').waitFor({state:'visible'});
    await page.evaluate(action=>{if(action==='reset')document.getElementById('resetLevelBtn').click();else startLevel(151);window.__resolveHeldHint({status:'found',pi:0,dir:'L'});LatchlingsRouteHint.findNext=window.__realFindNext},action);
    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
    assert.equal(await page.locator('#hintFound').count(),0,action+': stale search cannot reopen a hint');

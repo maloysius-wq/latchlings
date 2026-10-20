@@ -84,11 +84,11 @@
   }else if(type==='CANCEL_MOVE'){
    assertActive();if(a.pendingMove?.token===c.requestId){a.pendingMove=null;bump();}value=a;
   }else if(type==='BUY_MOVES'){
-   assertActive();if(prior()){value=a;return {state:validateWallet(wallet),value:copy(value)};}expected();if(a.status!=='out-of-moves'||a.pendingMove||a.movesUsed<level.moveLimit+a.extraMoves||!a.energyPaid||!a.positions.some(Boolean))fail('NOT_EXHAUSTED');if(w.coins<MOVES_PRICE)fail('NO_COINS');if(!integer(a.extraMoves+5)||!integer(level.moveLimit+a.extraMoves+5))fail('OVERFLOW');w.coins-=MOVES_PRICE;a.extraMoves+=5;a.status='active';remember();bump();value=a;
+   assertActive();if(prior()){value=a;return {state:validateWallet(wallet),value:copy(value)};}expected();if(a.status!=='out-of-moves'||a.pendingMove||a.movesUsed<level.moveLimit+a.extraMoves||!a.energyPaid||!a.positions.some(Boolean))fail('NOT_EXHAUSTED');if(w.coins<MOVES_PRICE)fail('NO_COINS');if(!integer(a.extraMoves+5)||!integer(level.moveLimit+a.extraMoves+5))fail('OVERFLOW');w.coins-=MOVES_PRICE;a.extraMoves+=5;a.status='active';if(integer(c.selected,0,level.pieces.length-1))a.selected=c.selected;remember();bump();value=a;
   }else if(type==='BUY_HINT'){
    candidate();if(prior()){value=a.paidHint;return {state:validateWallet(wallet),value:copy(value)};}expected();if(a.pendingMove||a.status==='completed'||a.movesUsed>=level.moveLimit+a.extraMoves)fail('NOT_PLAYABLE');if(c.boardKey!==boardKey(a))fail('STALE');
    if(a.paidHint?.boardKey===c.boardKey){value=a.paidHint;return {state:validateWallet(wallet),value:copy(value)};}if(!a.energyPaid&&w.energy<1)fail('NO_ENERGY');if(w.coins<HINT_PRICE)fail('NO_COINS');if(!integer(c.pi,0,level.pieces.length-1)||!['U','D','L','R'].includes(c.dir)||!simulateState(level,a.positions,a.doorMask,c.pi,c.dir))fail('INVALID_HINT');
-   w.coins-=HINT_PRICE;a.paidHint={boardKey:c.boardKey,pi:c.pi,dir:c.dir};remember();bump();value=a.paidHint;
+   w.coins-=HINT_PRICE;a.selected=c.pi;a.paidHint={boardKey:c.boardKey,pi:c.pi,dir:c.dir};remember();bump();value=a.paidHint;
   }else if(type==='COMPLETE'){
    assertActive();expected();if(!a.energyPaid||a.pendingMove||a.positions.some(Boolean)||a.movesUsed>level.moveLimit+a.extraMoves)fail('NOT_SOLVED');
    const stars=a.movesUsed<=level.optimal?3:a.movesUsed<=level.optimal+1?2:1,key=a.mode==='daily'?a.daily.key:String(a.level),tiers=w.accounted[a.mode],before=tiers[key]||0,coins=stars>before?(stars-before)*10:stars*2;

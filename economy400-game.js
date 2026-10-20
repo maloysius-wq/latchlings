@@ -88,6 +88,27 @@
   async cancelMove(move){if(!move)return;await readyStore();try{const out=await store.transact({type:'CANCEL_MOVE',attemptId:move.attemptId,requestId:move.token},context({level:move.level}));publish(out.state);if(preview?.id===move.attemptId)preview=clone(out.state.attempt);}catch(error){if(error.code!=='STALE')throw error;}if(ticket===move)ticket=null;},
   async completeAttempt(){await readyStore();const a=preview,generation=moveRequestSerial;if(!a)fail('STALE');const controller=new AbortController();preparing=controller;try{return await complete(a,{signal:controller.signal,isCurrent:()=>generation===moveRequestSerial&&preview?.id===a.id});}finally{if(preparing===controller)preparing=null;}},
   async deliverPendingReceipts(){await readyStore();return deliver();},
+  async hintOffer(){
+   const w=await api.read(),a=preview;if(!a||JSON.stringify([a.positions,a.doorMask,a.movesUsed])!==JSON.stringify([positions,doorMask,movesUsed]))fail('STALE');
+   if(w.attempt?.id===a.id&&w.attempt.revision!==a.revision)fail('STALE');
+   const key=C.boardKey(a),solved=a.positions.every(p=>!p),exhausted=a.movesUsed>=api.effectiveLimit(LEVELS[a.level-1]);
+   if(!solved&&!exhausted&&!a.energyPaid&&w.energy===0)fail('NO_ENERGY');
+   const cached=a.paidHint?.boardKey===key?a.paidHint:null;
+   if(cached&&!simulateState(LEVELS[a.level-1],a.positions,a.doorMask,cached.pi,cached.dir))fail('INVALID_HINT');
+   let replacePaid=false;
+   if(!solved&&!exhausted&&w.attempt?.id!==a.id&&w.attempt?.energyPaid&&w.attempt.status!=='completed'){
+    replacePaid=await confirm({title:'Replace the saved route?',copy:'Purchasing a hint here replaces your unfinished saved attempt. Its spent energy is not refunded.',confirmText:'Replace saved attempt'});if(!replacePaid)fail('ABORTED');
+   }
+   return {boardKey:key,cached,replacePaid,requestId:uid(),feeNeeded:!cached&&!solved&&!exhausted};
+  },
+  async purchaseHint({requestId,boardKey,pi,dir,replacePaid=false,signal,isCurrent=()=>true}){
+   await readyStore();const a=preview,generation=moveRequestSerial;if(!a)fail('STALE');
+   const out=await store.transact({type:'BUY_HINT',attempt:a,attemptId:a.id,expectedRevision:a.revision,requestId,boardKey,pi,dir,replacePaid},context({signal,isCurrent:()=>generation===moveRequestSerial&&preview?.id===a.id&&isCurrent()}));publish(out.state);if(preview?.id===a.id)preview=clone(out.state.attempt);return out.value;
+  },
+  async purchaseMoves({requestId}){
+   await readyStore();const a=preview,generation=moveRequestSerial;if(!a)fail('STALE');const controller=new AbortController();preparing=controller;
+   try{const out=await store.transact({type:'BUY_MOVES',attemptId:a.id,expectedRevision:a.revision,requestId,selected},context({signal:controller.signal,isCurrent:()=>generation===moveRequestSerial&&preview?.id===a.id}));publish(out.state);if(generation===moveRequestSerial&&preview?.id===a.id){preview=clone(out.state.attempt);apply(preview);}return out.value;}finally{if(preparing===controller)preparing=null;}
+  },
   async moveSelected(dir){
    if(animating)return;clearBlockerFeedback(true);clearHintFocus();const lev=LEVELS[currentLevel-1];
    if(!positions[selected]){const order=clockwiseAvailable();if(!order.length)return;selected=order[0];}
